@@ -1,7 +1,11 @@
+import BackgroundGrid from "./components/background/background-grid";
+import LogoMain from "./components/background/logo-main";
+
 export default function Home() {
   return (
-    <h1 className="flex justify-center items-center h-screen text-7xl">
-      Join GLUE 2025
-    </h1>
+    <main className="fixed inset-0 flex justify-center items-center">
+      <LogoMain />
+      <BackgroundGrid />
+    </main>
   );
 }
