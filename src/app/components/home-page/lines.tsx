@@ -12,7 +12,7 @@ function Lines() {
         <polygon
           points="0 0, 100 0, 0 100, 100 100"
           className="stroke-white"
-          strokeWidth="0.3"
+          strokeWidth="0.4"
           fill="none"
         ></polygon>
       </svg>

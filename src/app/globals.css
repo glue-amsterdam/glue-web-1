@@ -9,6 +9,45 @@
 }
 
 @layer components {
+  .flex-center {
+    @apply flex justify-center items-center;
+  }
+
+  .flex-column {
+    @apply flex flex-col;
+  }
+
+  .navLabel {
+    @apply text-4xl flex-1 sm:text-[3rem] md:text-6xl lg:text-[4.7rem] xl:text-[4.9rem] [line-height:1.3] text-white;
+  }
+
+  .upperbutton {
+    clip-path: polygon(50% 50%, 100% 0, 0 0);
+    width: 100%;
+    height: 100%;
+    position: absolute;
+  }
+
+  .leftbutton {
+    clip-path: polygon(50% 50%, 0 0, 0 100%);
+    width: 100%;
+    height: 100%;
+    position: absolute;
+  }
+
+  .downbutton {
+    clip-path: polygon(50% 50%, 0 100%, 100% 100%);
+    width: 100%;
+    height: 100%;
+    position: absolute;
+  }
+
+  .rightbutton {
+    clip-path: polygon(100% 0, 100% 50%, 100% 100%, 50% 50%);
+    width: 100%;
+    height: 100%;
+    position: absolute;
+  }
   .triangle {
     clip-path: polygon(100% 0, 100% 50%, 100% 100%, 50% 50%);
     width: 100%;
