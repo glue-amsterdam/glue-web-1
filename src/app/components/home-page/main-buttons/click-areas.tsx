@@ -10,23 +10,23 @@ interface ClickArea {
 function ClickAreas() {
   const clickAreas: ClickArea[] = [
     {
-      label: "JOIN GLUE 2025",
-      section: "section1",
+      label: "dashboard",
+      section: "dashboard",
       className: "leftbutton",
     },
     {
       label: "about",
-      section: "section2",
+      section: "about",
       className: "upperbutton",
     },
     {
       label: "events",
-      section: "section3",
+      section: "events",
       className: "rightbutton",
     },
     {
       label: "map",
-      section: "section4",
+      section: "map",
       className: "downbutton",
     },
   ];
@@ -39,7 +39,7 @@ function ClickAreas() {
             <Link
               id={area.label}
               className={`${area.className}`}
-              href={`?=${area.section}`}
+              href={`/${area.section}`}
             />
           </li>
         ))}

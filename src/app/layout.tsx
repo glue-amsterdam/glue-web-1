@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import NavBar from "./components/navbar/navbar";
 
 const lausanne = localFont({
   src: [
@@ -54,7 +55,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${lausanne.variable}  antialiased`}>{children}</body>
+      <body className={`${lausanne.variable} text-white antialiased`}>
+        <NavBar />
+        {children}
+      </body>
     </html>
   );
 }
