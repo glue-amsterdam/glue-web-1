@@ -1,55 +1,31 @@
+import { fetchMainMenu } from "@/utils/api";
+import { MainMenu } from "@/utils/menu-types";
 import Link from "next/link";
-import React from "react";
+import React, { Suspense } from "react";
 
-interface ClickArea {
-  label: string;
-  section: string;
-  className: string;
-}
-
-function ClickAreas() {
-  const clickAreas: ClickArea[] = [
-    {
-      label: "dashboard",
-      section: "dashboard",
-      className: "leftbutton",
-    },
-    {
-      label: "about",
-      section: "about",
-      className: "upperbutton",
-    },
-    {
-      label: "events",
-      section: "events",
-      className: "rightbutton",
-    },
-    {
-      label: "map",
-      section: "map",
-      className: "downbutton",
-    },
-  ];
-
+async function ClickAreas() {
+  const clickAreas = await fetchMainMenu();
   return (
-    <nav className="fixed inset-0 z-30">
-      <ul>
-        {clickAreas.map((area) => (
-          <li key={area.section}>
-            <Link
-              id={area.label}
-              className={`${area.className}`}
-              href={`/${area.section}`}
-            />
-          </li>
-        ))}
-      </ul>
-      <Labels clickAreas={clickAreas} />
-    </nav>
+    <Suspense>
+      <nav className="fixed inset-0 z-30">
+        <ul>
+          {clickAreas.map((area) => (
+            <li key={area.section}>
+              <Link
+                id={area.label}
+                className={`${area.className}`}
+                href={`/${area.section}`}
+              />
+            </li>
+          ))}
+        </ul>
+        <Labels clickAreas={clickAreas} />
+      </nav>{" "}
+    </Suspense>
   );
 }
 
-function Labels({ clickAreas }: { clickAreas: ClickArea[] }) {
+function Labels({ clickAreas }: { clickAreas: MainMenu[] }) {
   return (
     <div className="h-full flex-center pointer-events-none">
       <div className="w-[90%] md:w-[85%] h-[60%] relative">

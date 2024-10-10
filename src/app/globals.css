@@ -48,6 +48,7 @@
     height: 100%;
     position: absolute;
   }
+
   .triangle {
     clip-path: polygon(100% 10%, 100% 90%, 50% 50%);
     width: 100%;
@@ -56,7 +57,21 @@
   }
 
   .mainLogoLetter {
-    @apply size-24 md:size-32 lg:size-36 xl:size-36 absolute bg-black;
+    @apply size-24 md:size-28 lg:size-36 xl:size-36 absolute bg-black;
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  .delayed-appearance {
+    opacity: 0;
+    animation: fadeIn 0.5s ease-in-out 1s forwards; /* 1s duración, 2s retraso */
   }
 }
 
