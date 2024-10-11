@@ -17,7 +17,7 @@ function AboutPage({}) {
   return (
     <div className="fixed inset-0 flex justify-center overflow-y-scroll bg-black">
       <main
-        className={`container delayed-appearance min-h-[70vh] mt-[15vh] p-4 xl:max-w-[1400px] rounded-xl bg-gray/5 shadow-lg absolute z-10 flex flex-col gap-[25vh]`}
+        className={`container min-h-[70vh] mt-[15vh] p-4 xl:max-w-[1400px] rounded-xl shadow-lg absolute z-10 flex flex-col gap-[25vh]`}
       >
         <MainSectionSuspense />
         <ParticipantsSectionSuspense />

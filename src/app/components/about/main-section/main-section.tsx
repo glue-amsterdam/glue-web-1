@@ -26,21 +26,37 @@ export default function MainSection({ content }: MainSectionProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
 
+  const changedText = content?.title.split(" ");
+
   if (!content) return <div className="text-center py-8">No Data</div>;
 
   return (
     <section className="mb-12 container mx-auto" aria-label="Main content">
-      <motion.header
-        className="my-6 text-center"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-      >
+      <header className="my-6">
         <h1 className="text-4xl md:text-6xl xl:text-7xl font-bold mb-2 tracking-wide ">
-          {content.title}
+          {changedText?.map((el, i) => (
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{
+                duration: 0.25,
+                delay: i / 2,
+              }}
+              key={i}
+            >
+              {el}{" "}
+            </motion.span>
+          ))}
         </h1>
-        <p className="opacity-90">{content.description}</p>
-      </motion.header>
+        <motion.p
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 1.5 }}
+          className="opacity-90"
+        >
+          {content.description}
+        </motion.p>
+      </header>
       <Carousel
         className="w-full max-w-6xl mx-auto"
         plugins={[
@@ -52,9 +68,14 @@ export default function MainSection({ content }: MainSectionProps) {
         <CarouselContent>
           {content.slides.map((slide, index) => (
             <CarouselItem key={index}>
-              <Card className="border-none">
+              <Card className="border-none bg-transparent">
                 <CardContent className="p-0">
-                  <div className="relative w-full h-[300px] sm:h-[500px] cursor-pointer transition-transform hover:scale-105">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.2 }}
+                    className="relative w-full h-[300px] sm:h-[500px] cursor-pointer transition-transform hover:scale-105"
+                  >
                     <Image
                       src={slide.src}
                       alt={slide.alt}
@@ -66,7 +87,7 @@ export default function MainSection({ content }: MainSectionProps) {
                         setModalOpen(true);
                       }}
                     />
-                  </div>
+                  </motion.div>
                 </CardContent>
               </Card>
             </CarouselItem>
