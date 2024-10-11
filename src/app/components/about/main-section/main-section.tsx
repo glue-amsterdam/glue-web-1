@@ -41,7 +41,7 @@ export default function MainSection({ content }: MainSectionProps) {
         <p className="opacity-90">{content.description}</p>
       </motion.header>
       <Carousel
-        className="w-full max-w-4xl mx-auto"
+        className="w-full max-w-6xl mx-auto"
         plugins={[
           Autoplay({
             delay: 4000,
