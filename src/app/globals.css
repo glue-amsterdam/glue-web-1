@@ -56,6 +56,19 @@
     position: absolute;
   }
 
+  .citizen-triangle {
+    clip-path: polygon(100% 0, 0 100%, 100% 100%);
+    position: absolute;
+    inset: 0;
+    background-color: black;
+  }
+  .citizen-card-triangle {
+    clip-path: polygon(100% 50%, 0 100%, 100% 100%);
+    position: absolute;
+    inset: 0;
+    background-color: black;
+  }
+
   .mainLogoLetter {
     @apply size-24 md:size-28 lg:size-36 xl:size-36 absolute bg-black;
   }

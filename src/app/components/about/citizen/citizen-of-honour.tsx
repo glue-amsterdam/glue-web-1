@@ -2,12 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -16,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Citizen } from "@/utils/about-types";
+import { motion } from "framer-motion";
 
 interface CitizenOfHonourContentProps {
   years: number[];
@@ -49,22 +45,21 @@ export default function CitizenOfHonour({
   };
 
   const CitizenCard = ({ citizen }: { citizen: Citizen }) => (
-    <Card className="cursor-pointer" onClick={() => openModal(citizen)}>
+    <Card
+      className="cursor-pointer border-none bg-transparent "
+      onClick={() => openModal(citizen)}
+    >
       <CardContent className="p-0">
-        <div className="relative w-full h-48">
+        <div className="relative w-full h-80 lg:h-[500px] group ">
+          <div className="citizen-triangle z-10 opacity-20 group-hover:opacity-0 transition-all" />
           <img
             src={citizen.image}
             alt={citizen.name}
-            className="absolute inset-0 w-full h-full object-cover rounded-t-lg"
+            className="absolute inset-0 w-full h-full object-cover z-0 group-hover:blur-[0.2] group-hover:grayscale-[0.3]"
           />
-        </div>
-        <div className="p-4">
-          <>
-            <h3 className="font-bold text-lg mb-2">{citizen.name}</h3>
-            <p className="text-sm text-muted-foreground truncate">
-              {citizen.description}
-            </p>
-          </>
+          <div className="z-30 absolute p-5 bottom-10 right-0">
+            <h3 className="font-bold text-white text-4xl">{citizen.name}</h3>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -72,10 +67,17 @@ export default function CitizenOfHonour({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between">
-        <h2 id="citizens-heading" className="text-3xl font-bold mb-6">
+      <div className="flex justify-between items-center">
+        <motion.h2
+          id="citizens-heading"
+          className="text-7xl uppercase tracking-wider font-bold mb-6"
+          initial={{ opacity: 0, x: 30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 1 }}
+        >
           Creative Citizens of Honour
-        </h2>
+        </motion.h2>
         <Select onValueChange={handleYearChange} value={selectedYear}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select year" />
@@ -97,24 +99,39 @@ export default function CitizenOfHonour({
       </div>
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="text-black">
-          <DialogHeader>
-            <DialogTitle>{selectedCitizen?.name}</DialogTitle>
-          </DialogHeader>
-          <div className="mt-2">
+        <DialogContent className="text-white min-w-[50vw] border-none rounded-none bg-transparent">
+          <div>
             {selectedCitizen && (
-              <div className="relative w-full h-[400px]">
+              <div className="relative w-full h-[70vh]">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.1 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="citizen-card-triangle z-10"
+                />
                 <img
                   src={selectedCitizen.image}
                   alt={selectedCitizen.name}
-                  className="absolute inset-0 w-full h-full object-cover rounded-lg mb-4"
+                  className="absolute inset-0 w-full h-full object-cover mb-4 z-0"
                 />
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute flex items-center justify-between w-full p-4"
+                >
+                  <DialogTitle className="text-6xl tracking-widest">
+                    {selectedCitizen?.name}
+                  </DialogTitle>
+                  <p className="text-sm font-bold">
+                    Year: {selectedCitizen?.year}
+                  </p>
+                </motion.div>
+                <p className="absolute text-lg bottom-5 right-0 w-1/4">
+                  {selectedCitizen?.description}
+                </p>
               </div>
             )}
-            <p>{selectedCitizen?.description}</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Year: {selectedCitizen?.year}
-            </p>
           </div>
         </DialogContent>
       </Dialog>
