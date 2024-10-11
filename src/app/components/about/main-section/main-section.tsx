@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 interface MainSectionProps {
   content: MainSectionContent | undefined;
@@ -53,16 +54,19 @@ export default function MainSection({ content }: MainSectionProps) {
             <CarouselItem key={index}>
               <Card className="border-none">
                 <CardContent className="p-0">
-                  <img
-                    src={slide.src}
-                    alt={slide.alt}
-                    loading="lazy"
-                    className="w-full h-[300px] sm:h-[500px] object-cover cursor-pointer transition-transform hover:scale-105"
-                    onClick={() => {
-                      setSelectedImage(index);
-                      setModalOpen(true);
-                    }}
-                  />
+                  <div className="relative w-full h-[300px] sm:h-[500px] cursor-pointer transition-transform hover:scale-105">
+                    <Image
+                      src={slide.src}
+                      alt={slide.alt}
+                      className="object-cover"
+                      quality={100}
+                      fill
+                      onClick={() => {
+                        setSelectedImage(index);
+                        setModalOpen(true);
+                      }}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             </CarouselItem>

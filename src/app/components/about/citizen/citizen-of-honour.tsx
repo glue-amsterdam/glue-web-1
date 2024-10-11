@@ -72,7 +72,7 @@ export default function CitizenOfHonour({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-evenly">
+      <div className="flex justify-between">
         <h2 id="citizens-heading" className="text-3xl font-bold mb-6">
           Creative Citizens of Honour
         </h2>

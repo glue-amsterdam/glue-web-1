@@ -7,6 +7,11 @@ import InfoSectionSuspense from "../components/about/info-section/info-section-s
 import PressSectionSuspense from "../components/about/press-section/press-section-suspense";
 import SponsorsCarouselSuspense from "../components/about/sponsors-carousel/sponsors-carousel-suspense";
 import GlueInternationalSuspense from "../components/about/glue-international/glue-international-suspense";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "GLUE - About",
+};
 
 function AboutPage({}) {
   return (

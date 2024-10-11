@@ -1,5 +1,4 @@
 import { MainSectionContent } from "@/utils/about-types";
-import { getRandomNumber } from "@/utils/functions";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -10,17 +9,17 @@ export async function GET() {
     slides: [
       {
         id: 1,
-        src: `https://picsum.photos/id/${getRandomNumber()}/200/300`,
+        src: `/placeholders/placeholder-1.jpg`,
         alt: "Innovative architectural fashion design 1",
       },
       {
         id: 2,
-        src: `https://picsum.photos/id/${getRandomNumber()}/200/300`,
+        src: `/placeholders/placeholder-2.jpg`,
         alt: "Cutting-edge fashion structure 2",
       },
       {
         id: 3,
-        src: `https://picsum.photos/id/${getRandomNumber()}/200/300`,
+        src: `/placeholders/placeholder-3.jpg`,
         alt: "Fusion of architecture and style 3",
       },
     ],

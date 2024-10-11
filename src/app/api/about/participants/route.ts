@@ -1,13 +1,14 @@
 import { Participant } from "@/utils/about-types";
-import { getRandomNumber } from "@/utils/functions";
 import { NextResponse } from "next/server";
 
 export async function GET() {
+  const getRandomNumber = () => Math.floor(Math.random() * 4) + 1;
+
   const participants: Participant[] = [
     {
       id: 1,
       name: "John Doe",
-      image: `https://picsum.photos/id/${getRandomNumber()}/200/200`,
+      image: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       website: "https://johndoe.com",
       description:
         "lorem ipsum dolor sit amet, consectetur adipiscing elit sed",
@@ -15,7 +16,7 @@ export async function GET() {
     {
       id: 2,
       name: "Jane Smith",
-      image: `https://picsum.photos/id/${getRandomNumber()}/200/200`,
+      image: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       website: "https://janesmith.com",
       description:
         "lorem ipsum dolor sit amet, consectetur adipiscing elit sed",
@@ -23,7 +24,7 @@ export async function GET() {
     {
       id: 3,
       name: "Bob Johnson",
-      image: `https://picsum.photos/id/${getRandomNumber()}/200/200`,
+      image: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       website: "https://bobjohnson.com",
       description:
         "lorem ipsum dolor sit amet, consectetur adipiscing elit sed",
@@ -31,7 +32,7 @@ export async function GET() {
     {
       id: 4,
       name: "Alice Brown",
-      image: `https://picsum.photos/id/${getRandomNumber()}/200/200`,
+      image: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       website: "https://alicebrown.com",
       description:
         "lorem ipsum dolor sit amet, consectetur adipiscing elit sed",
@@ -39,7 +40,7 @@ export async function GET() {
     {
       id: 5,
       name: "Charlie Davis",
-      image: `https://picsum.photos/id/${getRandomNumber()}/200/200`,
+      image: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       website: "https://charliedavis.com",
       description:
         "lorem ipsum dolor sit amet, consectetur adipiscing elit sed",
@@ -47,7 +48,7 @@ export async function GET() {
     {
       id: 6,
       name: "Eva Wilson",
-      image: `https://picsum.photos/id/${getRandomNumber()}/200/200`,
+      image: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       website: "https://evawilson.com",
       description:
         "lorem ipsum dolor sit amet, consectetur adipiscing elit sed",
