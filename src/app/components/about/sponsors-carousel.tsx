@@ -45,9 +45,14 @@ export default function SponsorsCarousel({ sponsors }: SponsorsCarouselProps) {
                         className="w-full h-full object-contain"
                       />
                       <div className="absolute inset-0 bg-black bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <p className="text-center font-semibold">
-                          {sponsor.name}
-                        </p>
+                        <div>
+                          <p className="text-center font-semibold">
+                            {sponsor.name}
+                          </p>
+                          <p className="text-center font-semibold">
+                            {sponsor.sponsorT}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </CardContent>

@@ -52,6 +52,7 @@ export interface Sponsor {
   name: string;
   logo: string;
   website: string;
+  sponsorT: string;
 }
 
 export interface GlueInternationalContent {
