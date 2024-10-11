@@ -1,12 +1,12 @@
 import BackgroundGrid from "../components/background-grid";
-import MainSectionSuspense from "../components/about/main-section-suspense";
-import ParticipantsSectionSuspense from "../components/about/participants-section-suspense";
-import CitizenOfHonourSuspense from "../components/about/citizen-of-honour-suspense";
-import CuratedMembersSuspense from "../components/about/curated-members-suspense";
-import InfoSectionSuspense from "../components/about/info-section-suspense";
-import PressSectionSuspense from "../components/about/press-section-suspense";
-import SponsorsCarouselSuspense from "../components/about/sponsors-carousel-suspense";
-import GlueInternationalSuspense from "../components/about/glue-international-suspense";
+import MainSectionSuspense from "../components/about/main-section/main-section-suspense";
+import ParticipantsSectionSuspense from "../components/about/participants-section/participants-section-suspense";
+import CitizenOfHonourSuspense from "../components/about/citizen/citizen-of-honour-suspense";
+import CuratedMembersSuspense from "../components/about/curated/curated-members-suspense";
+import InfoSectionSuspense from "../components/about/info-section/info-section-suspense";
+import PressSectionSuspense from "../components/about/press-section/press-section-suspense";
+import SponsorsCarouselSuspense from "../components/about/sponsors-carousel/sponsors-carousel-suspense";
+import GlueInternationalSuspense from "../components/about/glue-international/glue-international-suspense";
 
 function AboutPage({}) {
   return (

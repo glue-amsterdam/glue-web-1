@@ -1,6 +1,6 @@
 import { fetchParticipants } from "@/utils/api";
 import { Suspense } from "react";
-import CenteredLoader from "../loader";
+import CenteredLoader from "../../loader";
 import ParticipantsSection from "./participants-section";
 
 async function Participants() {
