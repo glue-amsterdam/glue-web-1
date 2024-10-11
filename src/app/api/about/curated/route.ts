@@ -17,5 +17,9 @@ export async function GET() {
     { id: 12, name: "Liam Neeson", year: 2025 },
   ];
 
-  return NextResponse.json(curatedMembers);
+  const years = Array.from(
+    new Set(curatedMembers.map((curatedMember) => curatedMember.year))
+  ).sort((a, b) => b - a);
+
+  return NextResponse.json({ curatedMembers, years });
 }

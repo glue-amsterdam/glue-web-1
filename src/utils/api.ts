@@ -49,13 +49,15 @@ export const fetchCitizensData = cache(
   }
 );
 
-export const fetchCuratedMembers = cache(async (): Promise<CuratedMember[]> => {
-  const res = await fetch(`${BASE_URL}/about/curated-members`, {
-    next: { revalidate: 3600 },
-  });
-  if (!res.ok) throw new Error("Failed to fetch curated members");
-  return res.json();
-});
+export const fetchCuratedMembers = cache(
+  async (): Promise<{ curatedMembers: CuratedMember[]; years: number[] }> => {
+    const res = await fetch(`${BASE_URL}/about/curated`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) throw new Error("Failed to fetch curated members");
+    return res.json();
+  }
+);
 
 export const fetchInfoItems = cache(async (): Promise<InfoItem[]> => {
   const res = await fetch(`${BASE_URL}/about/info-items`, {

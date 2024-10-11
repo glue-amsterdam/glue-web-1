@@ -44,6 +44,7 @@ export interface PressItem {
   title: string;
   image: string;
   description: string;
+  content?: string;
 }
 
 export interface Sponsor {

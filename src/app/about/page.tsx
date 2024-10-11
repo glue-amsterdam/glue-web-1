@@ -2,14 +2,11 @@ import BackgroundGrid from "../components/background-grid";
 import MainSectionSuspense from "../components/about/main-section-suspense";
 import ParticipantsSectionSuspense from "../components/about/participants-section-suspense";
 import CitizenOfHonourSuspense from "../components/about/citizen-of-honour-suspense";
-/* import ParticipantsSection from "./participants-section";
-import CitizenOfHonourSection from "./citizen-of-honour-section";
-import CuratedMembersSection from "./curated-members-section";
-import InfoSection from "./info-section";
-import PressSection from "./press-section";
-import SponsorsCarousel from "./sponsors-carousel";
-import GlueInternational from "./glue-international";
-; */
+import CuratedMembersSuspense from "../components/about/curated-members-suspense";
+import InfoSectionSuspense from "../components/about/info-section-suspense";
+import PressSectionSuspense from "../components/about/press-section-suspense";
+import SponsorsCarouselSuspense from "../components/about/sponsors-carousel-suspense";
+import GlueInternationalSuspense from "../components/about/glue-international-suspense";
 
 function AboutPage({}) {
   return (
@@ -20,6 +17,11 @@ function AboutPage({}) {
         <MainSectionSuspense />
         <ParticipantsSectionSuspense />
         <CitizenOfHonourSuspense />
+        <CuratedMembersSuspense />
+        <InfoSectionSuspense />
+        <PressSectionSuspense />
+        <SponsorsCarouselSuspense />
+        <GlueInternationalSuspense />
       </main>
       <BackgroundGrid />
     </div>
