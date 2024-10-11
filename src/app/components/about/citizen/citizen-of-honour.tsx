@@ -51,7 +51,7 @@ export default function CitizenOfHonour({
     >
       <CardContent className="p-0">
         <div className="relative w-full h-80 lg:h-[500px] group ">
-          <div className="citizen-triangle z-10 opacity-20 group-hover:opacity-0 transition-all" />
+          <div className="citizen-triangle z-10 group-hover:opacity-20 opacity-0 transition-all" />
           <img
             src={citizen.image}
             alt={citizen.name}
