@@ -31,9 +31,12 @@ export default function MainSection({ content }: MainSectionProps) {
   if (!content) return <div className="text-center py-8">No Data</div>;
 
   return (
-    <section className="mb-12 container mx-auto" aria-label="Main content">
+    <section
+      className="mb-12 container mx-auto mt-[15vh]"
+      aria-label="Main content"
+    >
       <header className="my-6 text-center">
-        <h1 className="text-4xl md:text-6xl xl:text-7xl font-bold mb-2 tracking-wide">
+        <h1 className="text-5xl md:text-6xl xl:text-7xl font-bold mb-2 tracking-wide">
           {changedText?.map((el, i) => (
             <motion.span
               initial={{ opacity: 0 }}
@@ -48,14 +51,6 @@ export default function MainSection({ content }: MainSectionProps) {
             </motion.span>
           ))}
         </h1>
-        <motion.p
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          className="opacity-90"
-        >
-          {content.description}
-        </motion.p>
       </header>
       <Carousel
         className="w-full max-w-6xl mx-auto"
@@ -74,7 +69,7 @@ export default function MainSection({ content }: MainSectionProps) {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.2 }}
-                    className="relative w-full h-[300px] sm:h-[500px] cursor-pointer transition-transform hover:scale-105"
+                    className="relative w-full h-[500px] lg:h-[550px] cursor-pointer transition-transform hover:scale-105"
                   >
                     <Image
                       src={slide.src}
@@ -96,7 +91,14 @@ export default function MainSection({ content }: MainSectionProps) {
         <CarouselPrevious className="hidden md:flex text-black" />
         <CarouselNext className="hidden md:flex text-black" />
       </Carousel>
-
+      <motion.p
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 1.5 }}
+        className="opacity-90 text-center mt-4 text-lg"
+      >
+        {content.description}
+      </motion.p>
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="w-full p-0 max-w-[90vw] md:max-w-[70vw] ">
           <div className="relative w-full h-full">

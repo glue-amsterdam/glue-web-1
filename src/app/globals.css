@@ -78,6 +78,11 @@
     position: absolute;
     inset: 0;
   }
+  .citizens-bg {
+    clip-path: polygon(100% 0, 100% 30%, 51% 90%, 0 30%, 0 0);
+    position: absolute;
+    inset: 0;
+  }
 
   .mainLogoLetter {
     @apply size-24 md:size-28 lg:size-36 xl:size-36 absolute bg-black;

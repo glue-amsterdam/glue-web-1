@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 import { MdMenuOpen } from "react-icons/md";
 import { CiInstagram, CiLinkedin, CiSearch, CiUser } from "react-icons/ci";
@@ -31,11 +32,8 @@ interface SearchFormProps {
   onSearchComplete?: () => void;
 }
 
-interface NavbarProps {}
-
-export default function NavbarBurguer({}: NavbarProps) {
+export default function NavbarBurger() {
   const [isOpen, setIsOpen] = useState(false);
-
   const router = useRouter();
   const pathname = usePathname();
 
@@ -47,66 +45,81 @@ export default function NavbarBurguer({}: NavbarProps) {
   };
 
   return (
-    <nav
-      className={`flex items-center h-[15vh] justify-between p-4 z-50 w-full mx-auto gap-4  absolute
-    ${
-      pathname == "/" ? "md:max-w-[580px] xl:max-w-[800px]" : "max-w-[1400px]"
-    } transition-all duration-500`}
-    >
+    <header className="w-full z-50 relative h-[15vh]">
+      <motion.div
+        className="absolute inset-0 z-0"
+        initial={false}
+        animate={{
+          backgroundColor: pathname !== "/" ? "#2b2b2b" : "transparent",
+          translateY: pathname !== "/" ? "0%" : "-100%",
+        }}
+        transition={{ duration: 0.3 }}
+      />
+
       <div
-        className={`${
-          pathname == "/" ? "opacity-0 pointer-events-none" : "opacity-100"
-        }`}
+        className={`relative z-10 mx-auto ${
+          pathname === "/"
+            ? "md:max-w-[580px] xl:max-w-[800px]"
+            : "max-w-[1400px]"
+        } transition-all duration-500`}
       >
-        <Link href="/">
-          <div className="relative size-16 md:size-20 xl:size-24">
-            <Image
-              src={"/logos/logo-main.png"}
-              alt="GLUE logo, connected by design"
-              fill
-            />
+        <nav className="flex items-center h-full justify-between p-4 w-full gap-4">
+          <div
+            className={
+              pathname === "/" ? "opacity-0 pointer-events-none" : "opacity-100"
+            }
+          >
+            <Link href="/">
+              <div className="relative size-16 md:size-20 xl:size-24">
+                <Image
+                  src="/logos/logo-main.png"
+                  alt="GLUE logo, connected by design"
+                  fill
+                />
+              </div>
+            </Link>
           </div>
-        </Link>
-      </div>
 
-      <div className="hidden md:flex items-center space-x-4 flex-grow justify-center">
-        <SearchForm
-          onSearch={handleSearch}
-          onSearchComplete={() => setIsOpen(false)}
-        />
-      </div>
-
-      <div className="hidden md:flex items-center space-x-4">
-        <SocialIcons />
-        <UserMenu />
-      </div>
-
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild className="md:hidden ">
-          <Button variant="ghost" size="icon">
-            <MdMenuOpen className="size-20" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent
-          side="right"
-          className="w-[300px] sm:w-[400px] flex flex-col text-black"
-        >
-          <nav className="flex flex-col space-y-4  ">
-            <SheetClose asChild>
-              <Link href="/">Home</Link>
-            </SheetClose>
+          <div className="hidden md:flex items-center space-x-4 flex-grow justify-center">
             <SearchForm
               onSearch={handleSearch}
               onSearchComplete={() => setIsOpen(false)}
             />
-            <UserMenuItems />
-          </nav>
-          <div className="mt-10 pt-4 border-t">
-            <SocialIcons />
           </div>
-        </SheetContent>
-      </Sheet>
-    </nav>
+
+          <div className="hidden md:flex items-center space-x-4">
+            <SocialIcons />
+            <UserMenu />
+          </div>
+
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon">
+                <MdMenuOpen className="size-20" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="right"
+              className="w-[300px] sm:w-[400px] flex flex-col text-black"
+            >
+              <nav className="flex flex-col space-y-4">
+                <SheetClose asChild>
+                  <Link href="/">Home</Link>
+                </SheetClose>
+                <SearchForm
+                  onSearch={handleSearch}
+                  onSearchComplete={() => setIsOpen(false)}
+                />
+                <UserMenuItems />
+              </nav>
+              <div className="mt-10 pt-4 border-t">
+                <SocialIcons />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </nav>
+      </div>
+    </header>
   );
 }
 

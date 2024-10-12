@@ -29,20 +29,11 @@ export default function ParticipantsSection({
       className="mb-12 space-y-10 container mx-auto px-4 relative"
       aria-labelledby="participants-heading"
     >
-      <motion.h2
-        id="participants-heading"
-        className="text-5xl md:text-7xl uppercase tracking-widest font-bold"
-        initial={{ opacity: 0, x: 70 }}
-        whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.7 }}
-      >
-        Participants
-      </motion.h2>
       <motion.div
-        initial={{ rotate: 10 }}
-        whileInView={{ rotate: 0 }}
-        viewport={{ amount: "all", once: true, margin: "40%" }}
+        initial={{ rotate: 25, opacity: 0 }}
+        whileInView={{ rotate: 0, opacity: 1 }}
+        viewport={{ once: true, margin: "-500px" }}
+        transition={{ duration: 1 }}
       >
         <Carousel
           className="w-[70%] mx-auto sm:w-full"
@@ -65,7 +56,7 @@ export default function ParticipantsSection({
                 >
                   <div className="p-1">
                     <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-300">
-                      <CardContent className="flex aspect-square items-center justify-center p-0">
+                      <CardContent className="flex h-80 items-center justify-center p-0">
                         <div className="relative w-full h-full group">
                           <img
                             src={participant.image}
@@ -88,7 +79,17 @@ export default function ParticipantsSection({
           <CarouselPrevious className="hidden md:flex text-black" />
           <CarouselNext className="hidden md:flex text-black" />
         </Carousel>
-      </motion.div>
+      </motion.div>{" "}
+      <motion.h2
+        id="participants-heading"
+        className="text-5xl md:text-6xl lg:text-7xl xl:text-9xl uppercase tracking-widest font-bold text-[#2b2b2b] text-center lg:text-right mt-4"
+        initial={{ opacity: 0, x: -70 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+      >
+        Participants
+      </motion.h2>
     </section>
   );
 }

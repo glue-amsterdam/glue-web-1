@@ -56,9 +56,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${lausanne.variable} text-white antialiased`}>
-        <header className="w-full flex justify-center">
-          <NavbarBurguer />
-        </header>
+        <NavbarBurguer />
+
         {children}
       </body>
     </html>

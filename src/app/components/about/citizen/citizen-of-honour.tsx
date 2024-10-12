@@ -44,42 +44,52 @@ export default function CitizenOfHonour({
     setModalOpen(true);
   };
 
-  const CitizenCard = ({ citizen }: { citizen: Citizen }) => (
-    <Card
-      className="cursor-pointer border-none bg-transparent "
-      onClick={() => openModal(citizen)}
+  const CitizenCard = ({ citizen, i }: { citizen: Citizen; i: number }) => (
+    <motion.div
+      initial={{ y: 50, opacity: 0 }}
+      whileInView={{ y: 0, opacity: 1 }}
+      transition={{ delay: i / 6 }}
+      viewport={{ once: true }}
     >
-      <CardContent className="p-0">
-        <div className="relative w-full h-80 lg:h-[500px] group ">
-          <div className="citizen-triangle z-10 group-hover:opacity-20 opacity-0 transition-all" />
-          <img
-            src={citizen.image}
-            alt={citizen.name}
-            className="absolute inset-0 w-full h-full object-cover z-0 group-hover:blur-[0.2] group-hover:grayscale-[0.3]"
-          />
-          <div className="z-30 absolute p-5 bottom-10 right-0">
-            <h3 className="font-bold text-white text-4xl">{citizen.name}</h3>
+      <Card
+        className="cursor-pointer border-none bg-transparent "
+        onClick={() => openModal(citizen)}
+      >
+        <CardContent className="p-0">
+          <div className="relative w-full h-52 lg:h-80 group">
+            <div className="citizen-triangle z-10 group-hover:opacity-20 opacity-0 transition-all" />
+            <img
+              src={citizen.image}
+              alt={citizen.name}
+              className="absolute inset-0 w-full h-full object-cover z-0 group-hover:blur-[0.2] group-hover:grayscale-[0.3]"
+            />
+            <div className="z-30 absolute p-5 bottom-10 right-0">
+              <h3 className="font-bold text-white text-4xl">{citizen.name}</h3>
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 
   return (
-    <div className="space-y-4">
+    <section
+      className="mb-12 mt-[15vh] space-y-10 container mx-auto px-4 relative"
+      aria-labelledby="citizens-heading"
+    >
       <div className="flex justify-between items-center">
         <motion.h2
           id="citizens-heading"
-          className="text-7xl uppercase tracking-wider font-bold mb-6"
-          initial={{ opacity: 0, x: 30 }}
+          className="text-5xl md:text-7xl uppercase tracking-widest font-bold text-[#2b2b2b]"
+          initial={{ opacity: 0, x: 70 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 1 }}
+          transition={{ delay: 0.7 }}
         >
           Creative Citizens of Honour
         </motion.h2>
         <Select onValueChange={handleYearChange} value={selectedYear}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] bg-[#2b2b2b]">
             <SelectValue placeholder="Select year" />
           </SelectTrigger>
           <SelectContent>
@@ -92,9 +102,9 @@ export default function CitizenOfHonour({
         </Select>
       </div>
 
-      <div className="grid grid-cols-2  lg:grid-cols-3 gap-4">
-        {filteredCitizens.map((citizen) => (
-          <CitizenCard key={citizen.id} citizen={citizen} />
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredCitizens.map((citizen, index) => (
+          <CitizenCard key={citizen.id} i={index} citizen={citizen} />
         ))}
       </div>
 
@@ -132,6 +142,6 @@ export default function CitizenOfHonour({
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </section>
   );
 }
