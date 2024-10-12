@@ -105,8 +105,10 @@ async function AboutPage({}) {
           </div>
           <div className="h-screen snap-start bg-[#f00]">
             <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
-              <SponsorsCarouselSuspense />
-              <GlueInternationalSuspense />
+              <div>
+                <SponsorsCarouselSuspense />
+                <GlueInternationalSuspense />
+              </div>
             </div>
           </div>
         </div>

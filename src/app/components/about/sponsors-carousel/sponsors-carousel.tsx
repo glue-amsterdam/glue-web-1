@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/carousel";
 import { Sponsor } from "@/utils/about-types";
 import Autoplay from "embla-carousel-autoplay";
+import { motion } from "framer-motion";
 
 interface SponsorsCarouselProps {
   sponsors: Sponsor[];
@@ -15,10 +16,17 @@ interface SponsorsCarouselProps {
 
 export default function SponsorsCarousel({ sponsors }: SponsorsCarouselProps) {
   return (
-    <div className="space-y-4">
-      <h2 id="sponsors-heading" className="text-3xl font-bold mb-6">
+    <section aria-labelledby="sponsors-heading" className="space-y-4 mt-[15vh]">
+      <motion.h2
+        id="sponsors-heading"
+        className="text-5xl md:text-7xl uppercase tracking-widest font-bold text-[#2b2b2b]"
+        initial={{ opacity: 0, x: 70 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.7 }}
+      >
         Our Sponsors
-      </h2>
+      </motion.h2>
 
       <Carousel
         className="w-full"
@@ -62,6 +70,6 @@ export default function SponsorsCarousel({ sponsors }: SponsorsCarouselProps) {
           ))}
         </CarouselContent>
       </Carousel>
-    </div>
+    </section>
   );
 }

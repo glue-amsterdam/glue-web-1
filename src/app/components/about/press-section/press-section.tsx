@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PressItem } from "@/utils/about-types";
+import { motion } from "framer-motion";
 
 interface PressSectionProps {
   pressItems: PressItem[];
@@ -18,13 +19,16 @@ export default function PressSection({ pressItems }: PressSectionProps) {
   const [selectedItem, setSelectedItem] = useState<PressItem | null>(null);
 
   const PressCard = ({ item }: { item: PressItem }) => (
-    <Card className="cursor-pointer" onClick={() => setSelectedItem(item)}>
+    <Card
+      className="cursor-pointer rounded-none border-none group"
+      onClick={() => setSelectedItem(item)}
+    >
       <CardContent className="p-0">
-        <div className="relative w-full h-40">
+        <div className="relative w-full h-[20vh] md:h-[50vh] lg:h-[60vh] overflow-hidden transition-all">
           <img
             src={item.image}
             alt={item.title}
-            className="absolute inset-0 w-full h-full object-cover rounded-t-lg"
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105"
           />
         </div>
         <div className="p-4">
@@ -40,11 +44,17 @@ export default function PressSection({ pressItems }: PressSectionProps) {
   const hasGlueTV = pressItems.some((item) => item.title === "GLUE TV");
 
   return (
-    <div className="space-y-4">
-      <h2 id="press-heading" className="text-3xl font-bold mb-6">
+    <section aria-labelledby="press-heading" className="space-y-4 mt-[15vh]">
+      <motion.h2
+        id="press-heading"
+        className="text-5xl md:text-7xl uppercase tracking-widest font-bold text-[#2b2b2b]"
+        initial={{ opacity: 0, x: 70 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.7 }}
+      >
         Press
-      </h2>
-
+      </motion.h2>
       <div
         className={`grid gap-4 ${
           hasGlueTV
@@ -84,6 +94,6 @@ export default function PressSection({ pressItems }: PressSectionProps) {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </section>
   );
 }
