@@ -8,27 +8,72 @@ import PressSectionSuspense from "../components/about/press-section/press-sectio
 import SponsorsCarouselSuspense from "../components/about/sponsors-carousel/sponsors-carousel-suspense";
 import GlueInternationalSuspense from "../components/about/glue-international/glue-international-suspense";
 import { Metadata } from "next";
+import { fetchMainColors } from "@/utils/api";
 
 export const metadata: Metadata = {
   title: "GLUE - About",
 };
 
-function AboutPage({}) {
+async function AboutPage({}) {
+  const colors = await fetchMainColors();
+
   return (
-    <div className="fixed inset-0 flex justify-center overflow-y-scroll bg-black">
-      <main
-        className={`container min-h-[70vh] mt-[15vh] p-4 xl:max-w-[1400px] rounded-xl shadow-lg absolute z-10 flex flex-col gap-[25vh]`}
-      >
-        <MainSectionSuspense />
-        <ParticipantsSectionSuspense />
-        <CitizenOfHonourSuspense />
-        <CuratedMembersSuspense />
-        <InfoSectionSuspense />
-        <PressSectionSuspense />
-        <SponsorsCarouselSuspense />
-        <GlueInternationalSuspense />
+    <div className="fixed inset-0 overflow-y-scroll snap-y snap-mandatory">
+      <main className="relative z-10">
+        <div className="h-screen snap-start">
+          <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
+            <MainSectionSuspense />
+          </div>
+          <div className="h-screen relative snap-start bg-black/80">
+            <div className="absolute inset-0 grid grid-cols-2">
+              <div className="relative">
+                <div
+                  style={{ background: colors.box1 }}
+                  className={`participants-bg`}
+                />
+              </div>
+              <div className="relative">
+                <div
+                  style={{ background: colors.box2 }}
+                  className="participants-bg-r"
+                />
+              </div>
+            </div>
+            <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
+              <ParticipantsSectionSuspense />
+            </div>
+          </div>
+          <div className="h-screen snap-start bg-[#2e41ad]">
+            <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
+              <CitizenOfHonourSuspense />
+            </div>
+          </div>
+          <div className="h-screen snap-start bg-[#bd6a26]">
+            <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
+              <CuratedMembersSuspense />
+            </div>
+          </div>
+          <div className="h-screen snap-start bg-[#982ea7]">
+            <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
+              <InfoSectionSuspense />
+            </div>
+          </div>
+          <div className="h-screen snap-start bg-[#2de02d]">
+            <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
+              <PressSectionSuspense />
+            </div>
+          </div>
+          <div className="h-screen snap-start bg-[#f00]">
+            <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
+              <SponsorsCarouselSuspense />
+              <GlueInternationalSuspense />
+            </div>
+          </div>
+        </div>
       </main>
-      <BackgroundGrid />
+      <div className="fixed inset-0">
+        <BackgroundGrid />
+      </div>
     </div>
   );
 }

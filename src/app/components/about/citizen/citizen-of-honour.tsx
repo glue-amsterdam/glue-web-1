@@ -100,39 +100,36 @@ export default function CitizenOfHonour({
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="text-white min-w-[50vw] border-none rounded-none bg-transparent">
-          <div>
-            {selectedCitizen && (
-              <div className="relative w-full h-[70vh]">
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.1 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="citizen-card-triangle z-10"
-                />
-                <img
-                  src={selectedCitizen.image}
-                  alt={selectedCitizen.name}
-                  className="absolute inset-0 w-full h-full object-cover mb-4 z-0"
-                />
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="absolute flex items-center justify-between w-full p-4"
-                >
-                  <DialogTitle className="text-6xl tracking-widest">
-                    {selectedCitizen?.name}
-                  </DialogTitle>
-                  <p className="text-sm font-bold">
-                    Year: {selectedCitizen?.year}
-                  </p>
-                </motion.div>
-                <p className="absolute text-lg bottom-5 right-0 w-1/4">
-                  {selectedCitizen?.description}
+          {selectedCitizen && (
+            <div className="relative w-full h-[70vh] overflow-hidden">
+              <motion.div
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute flex items-center justify-between w-full p-4 z-20"
+              >
+                <DialogTitle className="text-6xl tracking-widest">
+                  {selectedCitizen?.name}
+                </DialogTitle>
+                <p className="text-sm font-bold">
+                  Year: {selectedCitizen?.year}
                 </p>
-              </div>
-            )}
-          </div>
+              </motion.div>
+              <p className="absolute text-right text-lg bottom-5 right-5 w-1/2 z-20">
+                {selectedCitizen?.description}
+              </p>
+              <motion.div
+                initial={{ x: 1000, opacity: 0 }}
+                animate={{ x: 0, opacity: 0.4 }}
+                className="citizen-card-triangle z-10"
+                transition={{ type: "keyframes", delay: 1 }}
+              />
+              <img
+                src={selectedCitizen.image}
+                alt={selectedCitizen.name}
+                className="absolute inset-0 w-full h-full object-cover mb-4 z-0"
+              />
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

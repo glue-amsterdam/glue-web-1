@@ -26,16 +26,16 @@ export default function ParticipantsSection({
 
   return (
     <section
-      className="mb-12 space-y-10 container mx-auto px-4"
+      className="mb-12 space-y-10 container mx-auto px-4 relative"
       aria-labelledby="participants-heading"
     >
       <motion.h2
         id="participants-heading"
-        className="text-7xl uppercase tracking-wider font-bold"
-        initial={{ opacity: 0, x: 30 }}
+        className="text-5xl md:text-7xl uppercase tracking-widest font-bold"
+        initial={{ opacity: 0, x: 70 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
-        transition={{ delay: 1 }}
+        transition={{ delay: 0.7 }}
       >
         Participants
       </motion.h2>

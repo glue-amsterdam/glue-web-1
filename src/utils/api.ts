@@ -9,9 +9,11 @@ import {
   Sponsor,
   GlueInternationalContent,
 } from "@/utils/about-types";
-import { MainMenu } from "./menu-types";
+import { MainColors, MainMenu } from "./menu-types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
+/* MAIN */
 
 export const fetchMainMenu = cache(async (): Promise<MainMenu[]> => {
   const res = await fetch(`${BASE_URL}/main/main-menu`, {
@@ -20,6 +22,18 @@ export const fetchMainMenu = cache(async (): Promise<MainMenu[]> => {
   if (!res.ok) throw new Error("Failed to fetch mainMenu");
   return res.json();
 });
+
+export const fetchMainColors = cache(async (): Promise<MainColors> => {
+  const res = await fetch(`${BASE_URL}/main/main-colors`, {
+    next: { revalidate: 3600 },
+  });
+  if (!res.ok) throw new Error("Failed to fetch colors");
+  return res.json();
+});
+
+/*  */
+
+/* ABOUT */
 
 export const fetchMainSectionContent = cache(
   async (): Promise<MainSectionContent> => {

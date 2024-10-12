@@ -32,8 +32,8 @@ export default function MainSection({ content }: MainSectionProps) {
 
   return (
     <section className="mb-12 container mx-auto" aria-label="Main content">
-      <header className="my-6">
-        <h1 className="text-4xl md:text-6xl xl:text-7xl font-bold mb-2 tracking-wide ">
+      <header className="my-6 text-center">
+        <h1 className="text-4xl md:text-6xl xl:text-7xl font-bold mb-2 tracking-wide">
           {changedText?.map((el, i) => (
             <motion.span
               initial={{ opacity: 0 }}
