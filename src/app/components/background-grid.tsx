@@ -70,7 +70,7 @@ function BackgroundGrid({}) {
     box1: {
       initial: { backgroundColor: "transparent", y: 500 },
       animate: { backgroundColor: colors.box3, y: 0 },
-      transition: { duration: 1, ease: "easeInOut" },
+      transition: { duration: 0.8, ease: "easeInOut" },
     },
     box2: {
       initial: {},
@@ -81,7 +81,7 @@ function BackgroundGrid({}) {
     box4: {
       initial: { backgroundColor: "transparent", y: -500 },
       animate: { backgroundColor: colors.box2, y: 0 },
-      transition: { duration: 1, delay: 0.3, ease: "easeInOut" },
+      transition: { duration: 0.8, delay: 0.3, ease: "easeInOut" },
     },
     triangle: {
       initial: {},
@@ -108,7 +108,7 @@ function BackgroundGrid({}) {
         y: 0,
       },
       transition: {
-        duration: 1,
+        duration: 0.8,
       },
     },
     triangle: { initial: {}, animate: {}, transition: {} },
@@ -121,7 +121,7 @@ function BackgroundGrid({}) {
         translateX: "-98vw",
       },
       transition: {
-        duration: 1,
+        duration: 0.8,
       },
     },
     box1: { initial: {}, animate: {}, transition: {} },
@@ -141,7 +141,7 @@ function BackgroundGrid({}) {
       animate: {
         scaleY: 2.5,
       },
-      transition: { duration: 2 },
+      transition: { duration: 0.8 },
     },
     extra: {
       initial: {

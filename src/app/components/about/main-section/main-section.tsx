@@ -26,31 +26,23 @@ export default function MainSection({ content }: MainSectionProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
 
-  const changedText = content?.title.split(" ");
-
   if (!content) return <div className="text-center py-8">No Data</div>;
 
   return (
-    <section
-      className="mb-12 container mx-auto mt-[15vh]"
-      aria-label="Main content"
-    >
+    <section className="container mx-auto mt-[15vh]" aria-label="Main content">
       <header className="my-6 text-center">
-        <h1 className="text-5xl md:text-6xl xl:text-7xl font-bold mb-2 tracking-wide">
-          {changedText?.map((el, i) => (
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{
-                duration: 0.25,
-                delay: i / 2,
-              }}
-              key={i}
-            >
-              {el}{" "}
-            </motion.span>
-          ))}
-        </h1>
+        <motion.h1
+          initial={{ opacity: 0, y: -60 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.5,
+            delay: 0.5,
+          }}
+          viewport={{ once: true }}
+          className="text-5xl md:text-6xl xl:text-7xl font-bold mb-2 tracking-wide"
+        >
+          {content.title}
+        </motion.h1>
       </header>
       <Carousel
         className="w-full max-w-6xl mx-auto"

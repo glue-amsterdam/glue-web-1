@@ -57,7 +57,7 @@ export default function NavbarBurger() {
       />
 
       <div
-        className={`relative z-10 mx-auto ${
+        className={`relative h-full z-10 mx-auto  ${
           pathname === "/"
             ? "md:max-w-[580px] xl:max-w-[800px]"
             : "max-w-[1400px]"
@@ -70,7 +70,7 @@ export default function NavbarBurger() {
             }
           >
             <Link href="/">
-              <div className="relative size-16 md:size-20 xl:size-24">
+              <div className="relative size-20 md:size-24 xl:size-32">
                 <Image
                   src="/logos/logo-main.png"
                   alt="GLUE logo, connected by design"

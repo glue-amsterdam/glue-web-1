@@ -33,7 +33,7 @@ export default function ParticipantsSection({
         initial={{ rotate: 25, opacity: 0 }}
         whileInView={{ rotate: 0, opacity: 1 }}
         viewport={{ once: true, margin: "-500px" }}
-        transition={{ duration: 1 }}
+        transition={{ duration: 0.5 }}
       >
         <Carousel
           className="w-[70%] mx-auto sm:w-full"
@@ -82,7 +82,7 @@ export default function ParticipantsSection({
       </motion.div>{" "}
       <motion.h2
         id="participants-heading"
-        className="text-5xl md:text-6xl lg:text-7xl xl:text-9xl uppercase tracking-widest font-bold text-[#2b2b2b] text-center lg:text-right mt-4"
+        className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl uppercase tracking-widest font-bold text-uiblack text-center lg:text-right mt-4"
         initial={{ opacity: 0, x: -70 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}

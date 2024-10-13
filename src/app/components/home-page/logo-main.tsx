@@ -1,9 +1,35 @@
-function LogoMain({}) {
+"use client";
+
+import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+
+function LogoMain() {
+  const pathname = usePathname();
+
+  const variables = {
+    initial: { scale: 0.2, opacity: 0 },
+    animate: {
+      scale: pathname == "/" ? 1 : 0,
+      opacity: 1,
+      transition: { delay: 0.2 },
+    },
+    exit: { scale: 1, opacity: 0 },
+  };
+
   return (
-    <div className="mix-blend-lighten z-10 absolute inset-0 flex justify-center items-center">
-      <LogoLetters />
-      <Lines />
-    </div>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={pathname}
+        variants={variables}
+        className="mix-blend-lighten z-10 fixed inset-0 flex justify-center items-center pointer-events-none"
+        initial="initial"
+        animate="animate"
+        exit="exit"
+      >
+        <LogoLetters />
+        <Lines />
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
@@ -16,7 +42,7 @@ function Lines() {
           height="100%"
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
-          vectorEffect="none-scaling-stroke"
+          vectorEffect="non-scaling-stroke"
           className="absolute overflow-visible"
         >
           <polygon
@@ -24,7 +50,7 @@ function Lines() {
             className="stroke-white"
             strokeWidth="0.2"
             fill="none"
-          ></polygon>
+          />
         </svg>
       </div>
     </div>

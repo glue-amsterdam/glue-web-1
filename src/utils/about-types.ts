@@ -51,7 +51,7 @@ export interface Sponsor {
   id: number;
   name: string;
   logo: string;
-  website: string;
+  website?: string;
   sponsorT: string;
 }
 
@@ -59,6 +59,7 @@ export interface GlueInternationalContent {
   title: string;
   buttonText: string;
   website: string;
+  subtitle: string;
 }
 
 export interface DatabaseContent {

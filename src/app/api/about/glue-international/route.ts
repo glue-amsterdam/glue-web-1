@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const glueInternationalContent: GlueInternationalContent = {
     title: "GLUE International",
+    subtitle: "GLUE arround the world",
     buttonText: "Visit GLUE International",
     website: "http://glue-international.com",
   };

@@ -55,9 +55,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${lausanne.variable} text-white antialiased`}>
+      <body className={`${lausanne.variable} text-uiwhite antialiased`}>
         <NavbarBurguer />
-
         {children}
       </body>
     </html>

@@ -60,13 +60,11 @@
     clip-path: polygon(100% 0, 0 100%, 100% 100%);
     position: absolute;
     inset: 0;
-    background-color: black;
   }
   .citizen-card-triangle {
     clip-path: polygon(100% 50%, 0 100%, 100% 100%);
     position: absolute;
     inset: 0;
-    background-color: black;
   }
   .participants-bg {
     clip-path: polygon(0 0, 0 85%, 100% 0);
@@ -80,6 +78,11 @@
   }
   .citizens-bg {
     clip-path: polygon(100% 0, 100% 30%, 51% 90%, 0 30%, 0 0);
+    position: absolute;
+    inset: 0;
+  }
+  .press-bg {
+    clip-path: polygon(100% 0, 100% 30%, 0 86%, 0 32%, 0 0);
     position: absolute;
     inset: 0;
   }

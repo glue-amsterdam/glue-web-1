@@ -10,6 +10,7 @@ import GlueInternationalSuspense from "../components/about/glue-international/gl
 import { Metadata } from "next";
 import { fetchMainColors } from "@/utils/api";
 import Image from "next/image";
+import LogoMain from "../components/home-page/logo-main";
 
 export const metadata: Metadata = {
   title: "GLUE - About",
@@ -17,7 +18,6 @@ export const metadata: Metadata = {
 
 async function AboutPage({}) {
   const colors = await fetchMainColors();
-  const graybg = "#e4e9ed";
 
   return (
     <div className="fixed inset-0 overflow-y-scroll snap-y snap-mandatory">
@@ -26,15 +26,12 @@ async function AboutPage({}) {
           <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
             <MainSectionSuspense />
           </div>
-          <div
-            style={{ backgroundColor: graybg }}
-            className={`h-screen relative snap-start`}
-          >
-            <div className="absolute  z-10 bottom-20 left-60 rotate-[35deg]">
-              <div className="relative size-40 lg:size-60">
+          <div className={`h-screen relative snap-start bg-uiwhite`}>
+            <div className="absolute  z-10 bottom-20 right-10">
+              <div className="relative size-40 lg:size-52">
                 <Image
                   src={"/logos/logo-main.png"}
-                  className="invert opacity-70"
+                  className="invert opacity-30"
                   alt="GLUE logo, connected by design"
                   fill
                 />
@@ -62,7 +59,7 @@ async function AboutPage({}) {
             style={{ backgroundColor: colors.box3 }}
             className="h-screen snap-start relative"
           >
-            <div style={{ backgroundColor: graybg }} className="citizens-bg" />
+            <div className="citizens-bg bg-uiwhite" />
 
             <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
               <CitizenOfHonourSuspense />
@@ -93,27 +90,42 @@ async function AboutPage({}) {
               <CuratedMembersSuspense />
             </div>
           </div>
-          <div className="h-screen snap-start bg-[#982ea7]">
+          <div
+            style={{ backgroundColor: colors.box2 }}
+            className="h-screen snap-start"
+          >
             <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
               <InfoSectionSuspense />
             </div>
           </div>
-          <div className="h-screen snap-start bg-[#2de02d]">
+          <div
+            style={{ backgroundColor: colors.box2 }}
+            className="h-screen snap-start relative "
+          >
+            <div className="press-bg rotate-180 bg-uiwhite" />
+            <Image
+              src={"/logos/connected.png"}
+              className="absolute bottom-0 right-0 opacity-20 md:opacity-50"
+              alt="GLUE logo, connected by design"
+              width={250}
+              height={100}
+            />
             <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
               <PressSectionSuspense />
             </div>
           </div>
-          <div className="h-screen snap-start bg-[#f00]">
+          <div className="h-screen snap-start bg-uiwhite">
             <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
               <div>
-                <SponsorsCarouselSuspense />
                 <GlueInternationalSuspense />
+                <SponsorsCarouselSuspense />
               </div>
             </div>
           </div>
         </div>
       </main>
       <div className="fixed inset-0">
+        <LogoMain />
         <BackgroundGrid />
       </div>
     </div>
