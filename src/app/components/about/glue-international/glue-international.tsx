@@ -43,12 +43,12 @@ export default function GlueInternational({ content }: GlueInternationalProps) {
         </div>
         <Button
           asChild
-          className="flex-1 py-6 text-lg bg-[#D36427] rounded-none scale-90 hover:scale-100 transition duration-500"
+          className="flex-1 py-6 text-lg bg-[#D36427] scale-90 hover:scale-100 transition duration-500"
         >
           <a
             href={content.website}
             target="_blank"
-            className="text-uiblack hover:text-uiwhite flex gap-2 h-auto"
+            className="text-uiwhite flex gap-2 h-auto"
             rel="noopener noreferrer"
           >
             <GiWorld className="" size={50} />

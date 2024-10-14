@@ -124,10 +124,16 @@ async function AboutPage({}) {
           </div>
         </div>
       </main>
-      <div className="fixed inset-0">
-        <LogoMain />
-        <BackgroundGrid />
-      </div>
+      <Background />
+    </div>
+  );
+}
+
+function Background() {
+  return (
+    <div className="fixed inset-0">
+      <LogoMain />
+      <BackgroundGrid />
     </div>
   );
 }

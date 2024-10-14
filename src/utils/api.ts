@@ -10,6 +10,7 @@ import {
   GlueInternationalContent,
 } from "@/utils/about-types";
 import { MainColors, MainMenu } from "./menu-types";
+import { EventsResponse } from "./event-types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -103,6 +104,18 @@ export const fetchGlueInternationalContent = cache(
       next: { revalidate: 3600 },
     });
     if (!res.ok) throw new Error("Failed to fetch GLUE International content");
+    return res.json();
+  }
+);
+
+/* EVENTS */
+
+export const fetchEvents = cache(
+  async (searchParams: URLSearchParams): Promise<EventsResponse> => {
+    const res = await fetch(`${BASE_URL}/events?${searchParams.toString()}`, {
+      next: { revalidate: 0 },
+    });
+    if (!res.ok) throw new Error("Failed to fetch events");
     return res.json();
   }
 );
