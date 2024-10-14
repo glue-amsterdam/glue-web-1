@@ -6,12 +6,12 @@ import NavbarBurguer from "./components/navbar/responsive-navbar-with-hamburger"
 const lausanne = localFont({
   src: [
     {
-      path: "fonts/Lausanne/Lausanne.woff2",
+      path: "fonts/lausanne/lausanne.woff2",
       weight: "300",
       style: "normal",
     },
     {
-      path: "fonts/Lausanne/Lausanne-italic.ttf",
+      path: "fonts/lausanne/lausanne-italic.ttf",
       weight: "300",
       style: "italic",
     },
