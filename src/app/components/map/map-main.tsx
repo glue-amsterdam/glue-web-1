@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { MenuIcon, MapPin, LockIcon, UnlockIcon } from "lucide-react";
-import { LocationGroup } from "@/utils/map-types";
+import { Location, LocationGroup } from "@/utils/map-types";
 import { motion } from "framer-motion";
 
 function useMediaQuery(query: string): boolean {
@@ -59,13 +59,16 @@ export default function MapMain({
     setUser(getUser());
   }, []);
 
-  const handleGroupSelect = (group) => {
+  const handleGroupSelect = (group: LocationGroup) => {
     if (group.protected && !user) {
       setIsDialogOpen(true);
     }
   };
 
-  const handleLocationSelect = (location, group) => {
+  const handleLocationSelect = (
+    location: Location,
+    group: LocationGroup
+  ): void => {
     if (group.protected && !user) {
       setIsDialogOpen(true);
     } else {
