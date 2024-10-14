@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Loader from "@/app/components/loader";
+import Loader from "@/app/components/centered-loader";
 import { fetchSponsors } from "@/utils/api";
 import SponsorsCarousel from "./sponsors-carousel";
 

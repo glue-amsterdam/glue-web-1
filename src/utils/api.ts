@@ -11,6 +11,7 @@ import {
 } from "@/utils/about-types";
 import { MainColors, MainMenu } from "./menu-types";
 import { EventsResponse } from "./event-types";
+import { LocationGroup } from "./map-types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -119,3 +120,25 @@ export const fetchEvents = cache(
     return res.json();
   }
 );
+
+/* MAP */
+
+export const fetchLocationGroups = cache(async (): Promise<LocationGroup[]> => {
+  const res = await fetch(`${BASE_URL}/locations`, {
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) throw new Error("Failed to fetch Locations");
+  return res.json();
+});
+
+/* MEMBERS */
+
+export const fetchMember = cache(async (slug: string): Promise<Participant> => {
+  console.log(slug);
+
+  const res = await fetch(`${BASE_URL}/members/${slug}`, {
+    next: { revalidate: 3600 },
+  });
+  if (!res.ok) throw new Error("Failed to fetch Members");
+  return res.json();
+});

@@ -6,6 +6,7 @@ import { EventModal } from "../components/events/event-modal";
 import { fetchEvents } from "@/utils/api";
 import EventsList from "../components/events/events-list";
 import EventHeader from "../components/events/event-header";
+import CenteredLoader from "../components/centered-loader";
 
 export default async function EventPage({
   searchParams,
@@ -28,7 +29,7 @@ export default async function EventPage({
           <SearchAndFilter />
         </section>
         <section aria-label="Event list">
-          <Suspense fallback={<div>Loading events...</div>}>
+          <Suspense fallback={<CenteredLoader />}>
             <EventsList events={events} />
           </Suspense>
         </section>

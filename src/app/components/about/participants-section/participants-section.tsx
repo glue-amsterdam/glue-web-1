@@ -24,6 +24,10 @@ export default function ParticipantsSection({
     return <div className="text-center py-8">No Participants Data</div>;
   }
 
+  function generateSlug(name: string) {
+    return name.toLowerCase().replace(/\s+/g, "-");
+  }
+
   return (
     <section
       className="mb-12 space-y-10 container mx-auto px-4 relative"
@@ -52,14 +56,16 @@ export default function ParticipantsSection({
               >
                 <Link
                   target="_blank"
-                  href={`/member/${encodeURIComponent(participant.name)}`}
+                  href={`/members/${encodeURIComponent(
+                    generateSlug(participant.name)
+                  )}`}
                 >
                   <div className="p-1">
                     <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-300">
                       <CardContent className="flex h-80 items-center justify-center p-0">
                         <div className="relative w-full h-full group">
                           <img
-                            src={participant.image}
+                            src={participant.images[0]}
                             alt={participant.name}
                             className="w-full h-full object-cover"
                           />

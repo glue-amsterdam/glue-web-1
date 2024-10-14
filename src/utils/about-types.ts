@@ -10,13 +10,30 @@ export interface MainSectionContent {
   slides: SlideImage[];
 }
 
-export interface Participant {
-  id: number;
+type VisitingHours = {
+  [day: string]: string;
+};
+
+type SocialMediaLinks = {
+  instagram?: string;
+  facebook?: string;
+  linkedin?: string;
+};
+
+export type Participant = {
+  id: string;
+  slug: string;
   name: string;
-  image: string;
-  website: string;
+  shortDescription: string;
   description: string;
-}
+  address: string;
+  visitingHours: VisitingHours;
+  phoneNumber: string;
+  email: string;
+  website: string;
+  socialMedia: SocialMediaLinks;
+  images: string[];
+};
 
 export interface Citizen {
   id: number;

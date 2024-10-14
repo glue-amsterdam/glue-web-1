@@ -1,7 +1,7 @@
 import { fetchMainSectionContent } from "@/utils/api";
 import MainSection from "./main-section";
 import { Suspense } from "react";
-import CenteredLoader from "../../loader";
+import CenteredLoader from "../../centered-loader";
 
 async function Main() {
   const mainSection = await fetchMainSectionContent();

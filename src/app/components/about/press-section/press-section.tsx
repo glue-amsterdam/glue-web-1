@@ -12,7 +12,7 @@ interface PressSectionProps {
 
 export default function PressSection({ pressItems }: PressSectionProps) {
   const [selectedItem, setSelectedItem] = useState<PressItem | null>(null);
-  const hasAnimatedRef = useRef(false); // To track if animations have run
+  const hasAnimatedRef = useRef(false);
 
   const PressCard = ({ item, i }: { item: PressItem; i: number }) => {
     const xSide = i === 0 ? -100 : 100;
@@ -27,9 +27,10 @@ export default function PressSection({ pressItems }: PressSectionProps) {
           opacity: hasAnimatedRef.current ? 1 : 0,
           rotate: hasAnimatedRef.current ? 0 : rotateSide,
         }}
-        animate={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
+        whileInView={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
         transition={{ duration: 0.5 }}
-        onViewportEnter={() => (hasAnimatedRef.current = true)} // Set flag when in view
+        viewport={{ once: true }}
+        onViewportEnter={() => (hasAnimatedRef.current = true)}
       >
         <Card
           className="cursor-pointer rounded-none border-none group shadow-md"
