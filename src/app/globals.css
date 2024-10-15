@@ -9,6 +9,12 @@
 }
 
 @layer components {
+  .h1-titles {
+    @apply text-4xl md:text-6xl xl:text-7xl mt-4;
+  }
+  .h2-titles {
+    @apply text-4xl md:text-6xl lg:text-7xl xl:text-8xl mt-4 tracking-widest uppercase;
+  }
   .flex-center {
     @apply flex justify-center items-center;
   }

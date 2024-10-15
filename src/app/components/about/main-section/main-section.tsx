@@ -29,7 +29,10 @@ export default function MainSection({ content }: MainSectionProps) {
   if (!content) return <div className="text-center py-8">No Data</div>;
 
   return (
-    <section className="container mx-auto" aria-label="Main content">
+    <section
+      className="container mx-auto lg:mt-[10vh]"
+      aria-label="Main content"
+    >
       <header className="my-6">
         <motion.h1
           initial={{ opacity: 0, y: -60 }}
@@ -39,7 +42,7 @@ export default function MainSection({ content }: MainSectionProps) {
             delay: 0.8,
           }}
           viewport={{ once: true }}
-          className="text-4xl md:text-6xl xl:text-7xl font-bold mb-2 w-[90%] mx-auto tracking-wide"
+          className="h1-titles font-bold mb-2 w-[90%] mx-auto tracking-wide"
         >
           {content.title}
         </motion.h1>

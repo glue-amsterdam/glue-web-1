@@ -30,7 +30,7 @@ export default function ParticipantsSection({
 
   return (
     <section
-      className="mb-12 space-y-10 container mx-auto px-4 relative"
+      className="space-y-10 container mx-auto px-4 relative"
       aria-labelledby="participants-heading"
     >
       <motion.div
@@ -69,7 +69,7 @@ export default function ParticipantsSection({
                             alt={participant.name}
                             className="w-full h-full object-cover"
                           />
-                          <div className="absolute inset-0 bg-black bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                          <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
                             <p className="text-center font-semibold text-sm">
                               {participant.name}
                             </p>
@@ -82,13 +82,13 @@ export default function ParticipantsSection({
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="hidden md:flex text-black" />
-          <CarouselNext className="hidden md:flex text-black" />
+          <CarouselPrevious className="hidden md:flex text-uiblack" />
+          <CarouselNext className="hidden md:flex text-uiblack" />
         </Carousel>
       </motion.div>{" "}
       <motion.h2
         id="participants-heading"
-        className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl uppercase tracking-widest font-bold text-uiblack text-right mt-4"
+        className="h2-titles uppercase tracking-widest font-bold text-uiblack text-right"
         initial={{ opacity: 0, x: -70 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}

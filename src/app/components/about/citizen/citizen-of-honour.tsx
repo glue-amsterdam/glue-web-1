@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -27,7 +27,6 @@ export default function CitizenOfHonour({
   );
   const [selectedCitizen, setSelectedCitizen] = useState<Citizen | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const hasAnimatedRef = useRef(false); // To track if animations have run
 
   const filteredCitizens = useMemo(() => {
     if (selectedYear === "all") return initialCitizens;
@@ -48,28 +47,28 @@ export default function CitizenOfHonour({
   const CitizenCard = ({ citizen, i }: { citizen: Citizen; i: number }) => (
     <motion.div
       initial={{
-        y: hasAnimatedRef.current ? 0 : 50,
-        opacity: hasAnimatedRef.current ? 1 : 0,
+        y: 50,
+        opacity: 0,
       }}
-      whileInView={{ y: 0, opacity: 1 }}
+      animate={{ y: 0, opacity: 1 }}
       transition={{ delay: i / 6 }}
-      viewport={{ once: true }}
-      onViewportEnter={() => (hasAnimatedRef.current = true)} // Set flag when in view
     >
       <Card
-        className="cursor-pointer border-none bg-transparent"
+        className="cursor-pointer border-none "
         onClick={() => openModal(citizen)}
       >
         <CardContent className="p-0">
-          <div className="relative w-full h-52 lg:h-80 group">
-            <div className="citizen-triangle bg-uiblack z-10 group-hover:opacity-20 opacity-0 transition-all" />
+          <div className="relative w-full h-[25vh] lg:h-[35vh] group">
+            <div className="citizen-triangle bg-uiblack z-10 group-hover:opacity-50 opacity-20 transition-all" />
             <img
               src={citizen.image}
               alt={citizen.name}
-              className="absolute inset-0 w-full h-full object-cover z-0 group-hover:blur-[0.2] group-hover:grayscale-[0.3]"
+              className="absolute inset-0 w-full h-full object-cover z-0 group-hover:grayscale-[0] md:grayscale-[0.2]"
             />
-            <div className="z-30 absolute p-5 bottom-10 right-0">
-              <h3 className="font-bold text-white text-4xl">{citizen.name}</h3>
+            <div className="z-30 absolute bottom-0 right-0">
+              <h3 className="font-bold text-uiwhite text-right text-lg w-[90%] md:text-4xl">
+                {citizen.name}
+              </h3>
             </div>
           </div>
         </CardContent>
@@ -79,13 +78,13 @@ export default function CitizenOfHonour({
 
   return (
     <section
-      className="mb-12 mt-[15vh] space-y-10 container mx-auto px-4 relative"
+      className="mt-[15vh] items-center container mx-auto px-4 relative"
       aria-labelledby="citizens-heading"
     >
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between md:items-center">
         <motion.h2
           id="citizens-heading"
-          className="text-5xl md:text-7xl uppercase tracking-widest font-bold text-uiblack"
+          className="h2-titles font-bold text-uiblack"
           initial={{ opacity: 0, x: 70 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
@@ -94,7 +93,7 @@ export default function CitizenOfHonour({
           Creative Citizens of Honour
         </motion.h2>
         <Select onValueChange={handleYearChange} value={selectedYear}>
-          <SelectTrigger className="w-[180px] bg-uiblack">
+          <SelectTrigger className="w-[180px] bg-uiblack mt-4 rounded-none">
             <SelectValue placeholder="Select year" />
           </SelectTrigger>
           <SelectContent>
@@ -114,27 +113,28 @@ export default function CitizenOfHonour({
       </div>
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="text-white min-w-[50vw] border-none rounded-none bg-transparent">
+        <DialogContent className="text-uiwhite min-w-[50vw] border-none rounded-none bg-transparent">
           {selectedCitizen && (
             <div className="relative w-full h-[70vh] overflow-hidden">
               <motion.div
                 initial={{ opacity: 0, y: -50 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="absolute flex items-center ustify-between w-full p-4 z-20"
+                className="absolute flex flex-col w-full p-4 z-20"
               >
                 <DialogTitle className="text-6xl tracking-widest">
                   {selectedCitizen?.name}
                 </DialogTitle>
-                <p className="text-sm font-bold">
-                  Year: {selectedCitizen?.year}
+                <p className="text-sm font-bold flex flex-col">
+                  <span>Year</span>
+                  <span>{selectedCitizen?.year}</span>
                 </p>
               </motion.div>
-              <p className="absolute text-right text-lg bottom-5 right-5 w-1/2 z-20">
+              <p className="absolute text-right text-sm md:text-lg bottom-5 right-5 w-[80%] z-20">
                 {selectedCitizen?.description}
               </p>
               <motion.div
-                initial={{ x: 1000, opacity: 0 }}
-                animate={{ x: 0, opacity: 0.4 }}
+                initial={{ x: 1000, opacity: 0, y: -170, scale: 2 }}
+                animate={{ x: 0, opacity: 0.5 }}
                 className="citizen-card-triangle bg-uiblack z-10"
                 transition={{ type: "keyframes", delay: 0.5 }}
               />
