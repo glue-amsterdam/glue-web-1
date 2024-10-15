@@ -5,12 +5,11 @@ import CitizenOfHonourSuspense from "../components/about/citizen/citizen-of-hono
 import CuratedMembersSuspense from "../components/about/curated/curated-members-suspense";
 import InfoSectionSuspense from "../components/about/info-section/info-section-suspense";
 import PressSectionSuspense from "../components/about/press-section/press-section-suspense";
-import SponsorsCarouselSuspense from "../components/about/sponsors-carousel/sponsors-carousel-suspense";
-import GlueInternationalSuspense from "../components/about/glue-international/glue-international-suspense";
 import { Metadata } from "next";
 import { fetchMainColors } from "@/utils/api";
 import Image from "next/image";
 import LogoMain from "../components/home-page/logo-main";
+import LastPageSuspense from "../components/about/last-page-suspense";
 
 export const metadata: Metadata = {
   title: "GLUE - About",
@@ -22,11 +21,9 @@ async function AboutPage({}) {
   return (
     <div className="fixed inset-0 overflow-y-scroll snap-y snap-mandatory">
       <main className="relative z-10">
-        <div className="h-screen snap-start">
-          <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
-            <MainSectionSuspense />
-          </div>
-          <div className={`h-screen relative snap-start bg-uiwhite`}>
+        <div className="h-screen snap-start scroll-m-0">
+          <MainSectionSuspense />
+          <div className="h-screen relative snap-start bg-uiwhite">
             <div className="absolute z-10 bottom-0 md:bottom-20 right-0 md:right-10">
               <div className="relative size-32 md:size-40 lg:size-52">
                 <Image
@@ -51,9 +48,7 @@ async function AboutPage({}) {
                 />
               </div>
             </div>
-            <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
-              <ParticipantsSectionSuspense />
-            </div>
+            <ParticipantsSectionSuspense />
           </div>
           <div
             style={{ backgroundColor: colors.box3 }}
@@ -61,9 +56,7 @@ async function AboutPage({}) {
           >
             <div className="citizens-bg bg-uiwhite" />
 
-            <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
-              <CitizenOfHonourSuspense />
-            </div>
+            <CitizenOfHonourSuspense />
           </div>
           <div
             style={{ backgroundColor: colors.box3 }}
@@ -86,7 +79,7 @@ async function AboutPage({}) {
                 />
               </div>
             </div>
-            <div className="container xl:max-w-[1400px] mx-auto h-full flex-center z-10">
+            <div className="z-10">
               <CuratedMembersSuspense />
             </div>
           </div>
@@ -94,9 +87,7 @@ async function AboutPage({}) {
             style={{ backgroundColor: colors.box2 }}
             className="h-screen snap-start"
           >
-            <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
-              <InfoSectionSuspense />
-            </div>
+            <InfoSectionSuspense />
           </div>
           <div
             style={{ backgroundColor: colors.box2 }}
@@ -110,17 +101,15 @@ async function AboutPage({}) {
               width={250}
               height={100}
             />
-            <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
-              <PressSectionSuspense />
-            </div>
+
+            <PressSectionSuspense />
           </div>
           <div className="h-screen snap-start bg-uiwhite">
-            <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
-              <div>
-                <GlueInternationalSuspense />
-                <SponsorsCarouselSuspense />
+            <section className="section-container">
+              <div className="screen-size">
+                <LastPageSuspense />
               </div>
-            </div>
+            </section>
           </div>
         </div>
       </main>

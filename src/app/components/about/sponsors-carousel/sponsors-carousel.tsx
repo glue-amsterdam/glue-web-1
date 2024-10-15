@@ -17,10 +17,10 @@ interface SponsorsCarouselProps {
 
 export default function SponsorsCarousel({ sponsors }: SponsorsCarouselProps) {
   return (
-    <section aria-labelledby="sponsors-heading" className="space-y-4 mt-[15vh]">
+    <section aria-labelledby="sponsors-heading">
       <motion.h2
         id="sponsors-heading"
-        className="text-5xl md:text-7xl uppercase tracking-widest font-bold text-uiblack text-center"
+        className="h2-titles text-uiblack"
         initial={{ opacity: 0, x: 70 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}

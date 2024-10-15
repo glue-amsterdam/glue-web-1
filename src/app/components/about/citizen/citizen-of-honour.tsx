@@ -77,76 +77,75 @@ export default function CitizenOfHonour({
   );
 
   return (
-    <section
-      className="mt-[15vh] items-center container mx-auto px-4 relative"
-      aria-labelledby="citizens-heading"
-    >
-      <div className="flex justify-between md:items-center">
-        <motion.h2
-          id="citizens-heading"
-          className="h2-titles font-bold text-uiblack"
-          initial={{ opacity: 0, x: 70 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.7 }}
-        >
-          Creative Citizens of Honour
-        </motion.h2>
-        <Select onValueChange={handleYearChange} value={selectedYear}>
-          <SelectTrigger className="w-[180px] bg-uiblack mt-4 rounded-none">
-            <SelectValue placeholder="Select year" />
-          </SelectTrigger>
-          <SelectContent>
-            {years.map((year) => (
-              <SelectItem key={year} value={year.toString()}>
-                {year}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+    <section className="section-container" aria-labelledby="citizens-heading">
+      <div className="screen-size">
+        <div className="flex justify-between md:items-center">
+          <motion.h2
+            id="citizens-heading"
+            className="h2-titles font-bold text-uiblack"
+            initial={{ opacity: 0, x: 70 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.7 }}
+          >
+            Creative Citizens of Honour
+          </motion.h2>
+          <Select onValueChange={handleYearChange} value={selectedYear}>
+            <SelectTrigger className="w-[180px] bg-uiblack mt-4 rounded-none">
+              <SelectValue placeholder="Select year" />
+            </SelectTrigger>
+            <SelectContent>
+              {years.map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredCitizens.map((citizen, index) => (
-          <CitizenCard key={citizen.id} i={index} citizen={citizen} />
-        ))}
-      </div>
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredCitizens.map((citizen, index) => (
+            <CitizenCard key={citizen.id} i={index} citizen={citizen} />
+          ))}
+        </div>
 
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="text-uiwhite min-w-[50vw] border-none rounded-none bg-transparent">
-          {selectedCitizen && (
-            <div className="relative w-full h-[70vh] overflow-hidden">
-              <motion.div
-                initial={{ opacity: 0, y: -50 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="absolute flex flex-col w-full p-4 z-20"
-              >
-                <DialogTitle className="text-6xl tracking-widest">
-                  {selectedCitizen?.name}
-                </DialogTitle>
-                <p className="text-sm font-bold flex flex-col">
-                  <span>Year</span>
-                  <span>{selectedCitizen?.year}</span>
+        <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+          <DialogContent className="text-uiwhite min-w-[50vw] border-none rounded-none bg-transparent">
+            {selectedCitizen && (
+              <div className="relative w-full h-[70vh] overflow-hidden">
+                <motion.div
+                  initial={{ opacity: 0, y: -50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute flex flex-col w-full p-4 z-20"
+                >
+                  <DialogTitle className="text-6xl tracking-widest">
+                    {selectedCitizen?.name}
+                  </DialogTitle>
+                  <p className="text-sm font-bold flex flex-col">
+                    <span>Year</span>
+                    <span>{selectedCitizen?.year}</span>
+                  </p>
+                </motion.div>
+                <p className="absolute text-right text-sm md:text-lg bottom-5 right-5 w-[80%] z-20">
+                  {selectedCitizen?.description}
                 </p>
-              </motion.div>
-              <p className="absolute text-right text-sm md:text-lg bottom-5 right-5 w-[80%] z-20">
-                {selectedCitizen?.description}
-              </p>
-              <motion.div
-                initial={{ x: 1000, opacity: 0, y: -170, scale: 2 }}
-                animate={{ x: 0, opacity: 0.5 }}
-                className="citizen-card-triangle bg-uiblack z-10"
-                transition={{ type: "keyframes", delay: 0.5 }}
-              />
-              <img
-                src={selectedCitizen.image}
-                alt={selectedCitizen.name}
-                className="absolute inset-0 w-full h-full object-cover mb-4 z-0"
-              />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+                <motion.div
+                  initial={{ x: 1000, opacity: 0, y: -170, scale: 2 }}
+                  animate={{ x: 0, opacity: 0.5 }}
+                  className="citizen-card-triangle bg-uiblack z-10"
+                  transition={{ type: "keyframes", delay: 0.5 }}
+                />
+                <img
+                  src={selectedCitizen.image}
+                  alt={selectedCitizen.name}
+                  className="absolute inset-0 w-full h-full object-cover mb-4 z-0"
+                />
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
     </section>
   );
 }

@@ -10,13 +10,8 @@ async function GlueInternationalContent() {
 
 export default async function GlueInternationalSuspense() {
   return (
-    <section
-      className="mb-12 container mx-auto px-4"
-      aria-labelledby="glue-international-heading"
-    >
-      <Suspense fallback={<Loader />}>
-        <GlueInternationalContent />
-      </Suspense>
-    </section>
+    <Suspense fallback={<Loader />}>
+      <GlueInternationalContent />
+    </Suspense>
   );
 }

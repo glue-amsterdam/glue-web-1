@@ -13,16 +13,14 @@
     @apply text-4xl md:text-6xl xl:text-7xl mt-4;
   }
   .h2-titles {
-    @apply text-4xl md:text-6xl lg:text-7xl xl:text-8xl mt-4 tracking-widest uppercase;
+    @apply text-4xl md:text-6xl lg:text-7xl xl:text-8xl mt-4 tracking-widest uppercase font-bold;
   }
-  .flex-center {
-    @apply flex justify-center items-center;
+  .section-container {
+    @apply container xl:max-w-[1400px] mx-auto px-4 relative h-full flex flex-col;
   }
-
-  .flex-column {
-    @apply flex flex-col;
+  .screen-size {
+    @apply mt-[15vh] h-[85vh];
   }
-
   .navLabel {
     @apply text-4xl flex-1 sm:text-[3rem] md:text-6xl lg:text-[4.7rem] xl:text-[4.9rem] [line-height:1.3];
   }
@@ -108,7 +106,7 @@
 
   .delayed-appearance {
     opacity: 0;
-    animation: fadeIn 0.5s ease-in-out 1s forwards; /* 1s duración, 2s retraso */
+    animation: fadeIn 0.2s ease-in-out 1.2s forwards; /* 1s duración, 2s retraso */
   }
 }
 

@@ -53,39 +53,41 @@ export default function CuratedMembers({
   return (
     <section
       aria-labelledby="curated-members-heading"
-      className="flex flex-col max-h-[80%] h-full container mx-auto px-4 relative mt-[15vh]"
+      className="section-container"
     >
-      <div className="flex justify-between mb-12">
-        <motion.h2
-          id="curated-members-heading"
-          className="h2-titles font-bold"
-          initial={{ opacity: 0, x: 30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 1 }}
-        >
-          Curated Sticky Members
-        </motion.h2>
-        <Select onValueChange={handleYearChange} value={selectedYear}>
-          <SelectTrigger className="w-[180px] mt-4 rounded-none">
-            <SelectValue placeholder="Select year" />
-          </SelectTrigger>
-          <SelectContent>
-            {years.map((year) => (
-              <SelectItem key={year} value={year.toString()}>
-                {year}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <div className="screen-size">
+        <div className="flex justify-between mb-12">
+          <motion.h2
+            id="curated-members-heading"
+            className="h2-titles font-bold"
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 1 }}
+          >
+            Curated Sticky Members
+          </motion.h2>
+          <Select onValueChange={handleYearChange} value={selectedYear}>
+            <SelectTrigger className="w-[180px] mt-4 rounded-none">
+              <SelectValue placeholder="Select year" />
+            </SelectTrigger>
+            <SelectContent>
+              {years.map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {filteredMembers.map((member, i) => (
-          <div key={member.id}>
-            <MemberCard member={member} i={i} />
-          </div>
-        ))}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {filteredMembers.map((member, i) => (
+            <div key={member.id}>
+              <MemberCard member={member} i={i} />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

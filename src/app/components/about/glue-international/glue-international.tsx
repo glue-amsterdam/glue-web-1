@@ -12,15 +12,12 @@ interface GlueInternationalProps {
 
 export default function GlueInternational({ content }: GlueInternationalProps) {
   return (
-    <section
-      aria-labelledby="glue-international-heading"
-      className="mt-[15vh] relative"
-    >
+    <div className="relative mt-6 max-h-[80%] mx-auto">
       <motion.div
         initial={{ x: 80, y: 20 }}
         whileInView={{ x: 0 }}
         transition={{ duration: 0.4 }}
-        className="absolute inset-0 w-[90%] mx-auto bg-[#D36427] min-h-[30vh] rounded-lg"
+        className="absolute inset-0 w-[90%] mx-auto bg-[#D36427] rounded-lg"
       />
       <motion.div
         initial={{ x: -120, opacity: 0 }}
@@ -43,7 +40,7 @@ export default function GlueInternational({ content }: GlueInternationalProps) {
         </div>
         <Button
           asChild
-          className="flex-1 py-6 text-lg bg-[#D36427] scale-90 hover:scale-100 transition duration-500"
+          className="flex-1 md:py-6 text-lg bg-[#D36427] scale-90 hover:scale-100 transition duration-500"
         >
           <a
             href={content.website}
@@ -52,10 +49,12 @@ export default function GlueInternational({ content }: GlueInternationalProps) {
             rel="noopener noreferrer"
           >
             <GiWorld className="" size={50} />
-            <span className="text-xl font-bold">{content.buttonText}</span>
+            <span className="text-sm lg:text-lg font-bold">
+              {content.buttonText}
+            </span>
           </a>
         </Button>
       </motion.div>
-    </section>
+    </div>
   );
 }

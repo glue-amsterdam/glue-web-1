@@ -8,7 +8,7 @@ import EventsList from "../components/events/events-list";
 import EventHeader from "../components/events/event-header";
 import CenteredLoader from "../components/centered-loader";
 
-export default async function EventPage({
+export default async function Component({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
@@ -21,28 +21,31 @@ export default async function EventPage({
   });
 
   const { events } = await fetchEvents(params);
-  return (
-    <div className="fixed inset-0 overflow-y-scroll">
-      <main className="container mt-[15vh] relative mx-auto px-4 py-8 z-10">
-        <EventHeader />
-        <section aria-label="Event search and filters">
-          <SearchAndFilter />
-        </section>
-        <section aria-label="Event list">
-          <Suspense fallback={<CenteredLoader />}>
-            <EventsList events={events} />
-          </Suspense>
-        </section>
 
-        <EventModal />
-      </main>
+  return (
+    <div className="min-h-screen relative">
       <Background />
+      <main className="relative z-10pb-16">
+        <div className="container mx-auto px-4">
+          <EventHeader />
+          <section aria-label="Event search and filters">
+            <SearchAndFilter />
+          </section>
+          <section aria-label="Event list">
+            <Suspense fallback={<CenteredLoader />}>
+              <EventsList events={events} />
+            </Suspense>
+          </section>
+          <EventModal />
+        </div>
+      </main>
     </div>
   );
 }
+
 function Background() {
   return (
-    <div className="fixed inset-0">
+    <div className="fixed inset-0 z-0">
       <LogoMain />
       <BackgroundGrid />
     </div>

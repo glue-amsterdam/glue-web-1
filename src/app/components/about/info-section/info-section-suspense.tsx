@@ -10,13 +10,8 @@ async function InfoSectionContent() {
 
 export default async function InfoSectionSuspense() {
   return (
-    <section
-      className="mb-12 container mx-auto px-4"
-      aria-labelledby="info-heading"
-    >
-      <Suspense fallback={<Loader />}>
-        <InfoSectionContent />
-      </Suspense>
-    </section>
+    <Suspense fallback={<Loader />}>
+      <InfoSectionContent />
+    </Suspense>
   );
 }

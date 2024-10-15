@@ -10,13 +10,8 @@ async function PressSectionContent() {
 
 export default async function PressSectionSuspense() {
   return (
-    <section
-      className="mb-12 container mx-auto px-4"
-      aria-labelledby="press-heading"
-    >
-      <Suspense fallback={<Loader />}>
-        <PressSectionContent />
-      </Suspense>
-    </section>
+    <Suspense fallback={<Loader />}>
+      <PressSectionContent />
+    </Suspense>
   );
 }

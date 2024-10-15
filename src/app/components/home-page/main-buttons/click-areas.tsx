@@ -27,7 +27,7 @@ async function ClickAreas() {
 
 function Labels({ clickAreas }: { clickAreas: MainMenu[] }) {
   return (
-    <div className="h-full flex-center pointer-events-none">
+    <div className="h-full flex justify-center items-center pointer-events-none">
       <div className="w-[90%] md:w-[85%] h-[60%] relative">
         <div className="flex items-center h-full w-full absolute">
           <label className="navLabel " htmlFor={clickAreas[0].label}>
@@ -40,7 +40,7 @@ function Labels({ clickAreas }: { clickAreas: MainMenu[] }) {
             {clickAreas[2].label}
           </label>
         </div>
-        <div className="flex-column items-center h-full w-full absolute">
+        <div className="flex flex-col items-center h-full w-full absolute">
           <label className="navLabel" htmlFor={clickAreas[1].label}>
             {clickAreas[1].label}
           </label>
