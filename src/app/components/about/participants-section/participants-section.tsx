@@ -36,11 +36,11 @@ export default function ParticipantsSection({
       <motion.div
         initial={{ rotate: 25, opacity: 0 }}
         whileInView={{ rotate: 0, opacity: 1 }}
-        viewport={{ once: true, margin: "-500px" }}
+        viewport={{ once: true, margin: "-20%" }}
         transition={{ duration: 0.5 }}
       >
         <Carousel
-          className="w-[70%] mx-auto sm:w-full"
+          className="w-full md:w-[80%] mx-auto mt-[10vh] md:mt-auto"
           plugins={[
             Autoplay({
               stopOnMouseEnter: true,
@@ -52,7 +52,7 @@ export default function ParticipantsSection({
             {participants.map((participant, index) => (
               <CarouselItem
                 key={index}
-                className="sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5"
+                className="basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5"
               >
                 <Link
                   target="_blank"
@@ -88,7 +88,7 @@ export default function ParticipantsSection({
       </motion.div>{" "}
       <motion.h2
         id="participants-heading"
-        className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl uppercase tracking-widest font-bold text-uiblack text-center lg:text-right mt-4"
+        className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl uppercase tracking-widest font-bold text-uiblack text-right mt-4"
         initial={{ opacity: 0, x: -70 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
