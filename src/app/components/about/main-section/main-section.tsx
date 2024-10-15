@@ -29,17 +29,17 @@ export default function MainSection({ content }: MainSectionProps) {
   if (!content) return <div className="text-center py-8">No Data</div>;
 
   return (
-    <section className="container mx-auto mt-[15vh]" aria-label="Main content">
-      <header className="my-6 text-center">
+    <section className="container mx-auto" aria-label="Main content">
+      <header className="my-6">
         <motion.h1
           initial={{ opacity: 0, y: -60 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{
             duration: 0.5,
-            delay: 0.5,
+            delay: 0.8,
           }}
           viewport={{ once: true }}
-          className="text-5xl md:text-6xl xl:text-7xl font-bold mb-2 tracking-wide"
+          className="text-4xl md:text-6xl xl:text-7xl font-bold mb-2 w-[90%] mx-auto tracking-wide"
         >
           {content.title}
         </motion.h1>
@@ -60,8 +60,8 @@ export default function MainSection({ content }: MainSectionProps) {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 1.2 }}
-                    className="relative w-full h-[500px] lg:h-[550px] cursor-pointer transition-transform hover:scale-105"
+                    transition={{ delay: 0.9 }}
+                    className="relative w-full h-[40vh] lg:h-[550px] cursor-pointer transition-transform hover:scale-105"
                   >
                     <Image
                       src={slide.src}
@@ -80,14 +80,14 @@ export default function MainSection({ content }: MainSectionProps) {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="hidden md:flex text-black" />
-        <CarouselNext className="hidden md:flex text-black" />
+        <CarouselPrevious className="hidden md:flex text-uiblack" />
+        <CarouselNext className="hidden md:flex text-uiblack" />
       </Carousel>
       <motion.p
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="opacity-90 text-center mt-4 text-lg"
+        transition={{ delay: 1.3 }}
+        className="opacity-90 w-[90%] mx-auto mt-4 text-md md:text-lg"
       >
         {content.description}
       </motion.p>
