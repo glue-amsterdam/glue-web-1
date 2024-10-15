@@ -19,7 +19,7 @@ async function AboutPage({}) {
   const colors = await fetchMainColors();
 
   return (
-    <div className="fixed inset-0 overflow-y-scroll snap-y snap-mandatory">
+    <div className="fixed inset-0 overflow-x-hidden overflow-y-scroll snap-y snap-mandatory">
       <main className="relative z-10">
         <div className="h-screen snap-start scroll-m-0">
           <MainSectionSuspense />

@@ -32,8 +32,8 @@ export default function EventCard({ event, i }: EventCardProps) {
           alt={event.name}
           className="absolute rounded-md top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0"
         />
-        <div className="absolute inset-0 flex flex-col justify-center px-10 z-20 group-hover:text-uiblack transition-all duration-200">
-          <h3 className="text-4xl tracking-widest ">{event.name}</h3>
+        <motion.div className="absolute inset-0 flex flex-col justify-center px-2 md:px-10 z-20 group-hover:text-uiblack transition-all duration-200">
+          <h3 className="text-xl md:text-4xl tracking-widest ">{event.name}</h3>
           <time
             className="text-sm text-gray-500 mb-2 block"
             dateTime={`${event.date}T${event.startTime}`}
@@ -45,19 +45,21 @@ export default function EventCard({ event, i }: EventCardProps) {
           </time>
           <div>
             <div className="flex gap-2 items-center">
-              <span className="text-lg font-bold">Creator:</span>{" "}
-              <p>{event.creator.name}</p>
+              <span className="text-sm md:text-lg font-bold">Creator:</span>{" "}
+              <p className="text-xs md:text-sm">{event.creator.name}</p>
             </div>
             <div className="flex gap-2 items-center">
-              <span className="text-lg font-bold">Contributors:</span>{" "}
+              <span className="text-sm md:text-lg font-bold">
+                Contributors:
+              </span>{" "}
               {event.contributors.map((contributor: Contributor) => (
-                <p key={contributor.name}>
+                <p className="text-xs md:text-sm" key={contributor.name}>
                   <span>{contributor.name}</span>
                 </p>
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </motion.article>
   );
