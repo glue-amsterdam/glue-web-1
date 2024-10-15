@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { FaUserCircle } from "react-icons/fa";
 import {
   Select,
   SelectContent,
@@ -39,24 +39,26 @@ export default function CuratedMembers({
   const MemberCard = ({ member, i }: { member: CuratedMember; i: number }) => (
     <motion.div
       initial={{ y: 20, scale: 0, rotate: "10deg" }}
-      whileInView={{ y: 0, scale: 1, rotate: 0 }}
-      viewport={{ margin: "500px", once: true }}
+      animate={{ y: 0, scale: 1, rotate: 0 }}
       transition={{ delay: i / 6 }}
+      className="flex items-center gap-2 "
     >
-      <Card>
-        <CardContent className="p-4 text-center">
-          <h3 className="font-semibold">{member.name}</h3>
-        </CardContent>
-      </Card>
+      <FaUserCircle />
+      <h3 className="font-semibold text-base md:text-xl lg:text-2xl">
+        {member.name}
+      </h3>
     </motion.div>
   );
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
+    <section
+      aria-labelledby="curated-members-heading"
+      className="flex flex-col max-h-[80%] h-full container mx-auto px-4 relative mt-[15vh]"
+    >
+      <div className="flex justify-between mb-12">
         <motion.h2
           id="curated-members-heading"
-          className="text-7xl uppercase tracking-wider font-bold mb-6"
+          className="h2-titles font-bold"
           initial={{ opacity: 0, x: 30 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
@@ -65,7 +67,7 @@ export default function CuratedMembers({
           Curated Sticky Members
         </motion.h2>
         <Select onValueChange={handleYearChange} value={selectedYear}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] mt-4 rounded-none">
             <SelectValue placeholder="Select year" />
           </SelectTrigger>
           <SelectContent>
@@ -80,9 +82,11 @@ export default function CuratedMembers({
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {filteredMembers.map((member, i) => (
-          <MemberCard key={member.id} member={member} i={i} />
+          <div key={member.id}>
+            <MemberCard member={member} i={i} />
+          </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

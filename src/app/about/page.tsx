@@ -76,7 +76,7 @@ async function AboutPage({}) {
               width={250}
               height={100}
             />
-            <div className="absolute z-10 right-20 top-10 rotate-[-40deg]">
+            <div className="absolute right-20 top-10 rotate-[-40deg]">
               <div className="relative size-80">
                 <Image
                   src={"/logos/logo-main.png"}
@@ -86,7 +86,7 @@ async function AboutPage({}) {
                 />
               </div>
             </div>
-            <div className="container xl:max-w-[1400px] mx-auto h-full flex-center">
+            <div className="container xl:max-w-[1400px] mx-auto h-full flex-center z-10">
               <CuratedMembersSuspense />
             </div>
           </div>

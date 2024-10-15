@@ -10,13 +10,8 @@ async function CuratedMembersContent() {
 
 export default async function CuratedMembersSuspense() {
   return (
-    <section
-      className="mb-12 container mx-auto px-4"
-      aria-labelledby="curated-members-heading"
-    >
-      <Suspense fallback={<Loader />}>
-        <CuratedMembersContent />
-      </Suspense>
-    </section>
+    <Suspense fallback={<Loader />}>
+      <CuratedMembersContent />
+    </Suspense>
   );
 }
