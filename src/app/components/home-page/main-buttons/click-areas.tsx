@@ -20,7 +20,7 @@ async function ClickAreas() {
           ))}
         </ul>
         <Labels clickAreas={clickAreas} />
-      </nav>{" "}
+      </nav>
     </Suspense>
   );
 }
@@ -29,23 +29,28 @@ function Labels({ clickAreas }: { clickAreas: MainMenu[] }) {
   return (
     <div className="h-full flex justify-center items-center pointer-events-none">
       <div className="w-[90%] md:w-[85%] h-[60%] relative">
-        <div className="flex items-center h-full w-full absolute">
-          <label className="navLabel " htmlFor={clickAreas[0].label}>
-            {clickAreas[0].label}
-          </label>
+        <div className="flex items-center justify-evenly h-full w-full absolute ">
+          <div className="w-[12vh] md:w-[30vw]">
+            <label
+              className="navLabel break-words "
+              htmlFor={clickAreas[0].label}
+            >
+              {clickAreas[0].label}
+            </label>
+          </div>
           <label
-            className="navLabel flex justify-center"
+            className="navLabel break-words flex justify-end"
             htmlFor={clickAreas[2].label}
           >
             {clickAreas[2].label}
           </label>
         </div>
         <div className="flex flex-col items-center h-full w-full absolute">
-          <label className="navLabel" htmlFor={clickAreas[1].label}>
+          <label className="navLabel break-words" htmlFor={clickAreas[1].label}>
             {clickAreas[1].label}
           </label>
           <label
-            className="navLabel flex items-end"
+            className="navLabel break-words flex items-end"
             htmlFor={clickAreas[3].label}
           >
             {clickAreas[3].label}
