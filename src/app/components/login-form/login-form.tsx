@@ -21,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useAuth } from "./auth-context";
 import { LockIcon } from "lucide-react";
 
 const formSchema = z.object({
@@ -32,13 +33,14 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-type LoginFormProps = {
+export function LoginForm({
+  isOpen,
+  onClose,
+}: {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (email: string, password: string) => Promise<void>;
-};
-
-export function LoginForm({ isOpen, onClose, onLogin }: LoginFormProps) {
+}) {
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormData>({
@@ -52,7 +54,8 @@ export function LoginForm({ isOpen, onClose, onLogin }: LoginFormProps) {
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
-      await onLogin(data.email, data.password);
+      await login(data.email, data.password);
+      onClose();
     } catch (error) {
       console.error("Failed to log in:", error);
       // Handle error (e.g., show error message to user)
