@@ -11,16 +11,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+
 import { MenuIcon, MapPin, LockIcon, UnlockIcon } from "lucide-react";
 import { Location, LocationGroup } from "@/utils/map-types";
 import { motion } from "framer-motion";
+import { useAuth } from "../login-form/auth-context";
+import { LoginForm } from "../login-form/login-form";
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false);
@@ -43,25 +39,23 @@ export default function MapMain({
 }: {
   locationGroups: LocationGroup[];
 }) {
-  const getUser = () => {
-    const user =
-      Math.random() > 0.5 ? { id: 1, name: "Usuario Ejemplo" } : null;
-    return user;
-  };
-
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
   const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
-  const [user, setUser] = useState<{ id: number; name: string } | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  useEffect(() => {
-    // Simular la verificación del usuario al cargar el componente
-    setUser(getUser());
-  }, []);
+  const { user, login } = useAuth();
 
   const handleGroupSelect = (group: LocationGroup) => {
     if (group.protected && !user) {
-      setIsDialogOpen(true);
+      setIsLoginModalOpen(true);
+    }
+  };
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      await login(email, password);
+      setIsLoginModalOpen(false);
+    } catch (error) {
+      console.error("Login failed:", error);
     }
   };
 
@@ -70,7 +64,7 @@ export default function MapMain({
     group: LocationGroup
   ): void => {
     if (group.protected && !user) {
-      setIsDialogOpen(true);
+      setIsLoginModalOpen(true);
     } else {
       setSelectedLocation(location.id);
     }
@@ -80,40 +74,48 @@ export default function MapMain({
     <ScrollArea className={`h-full text-uiblack ${className}`}>
       <div className="p-4">
         {user && (
-          <div className="mb-4 flex items-center justify-between">
-            <Button variant="outline" onClick={() => setUser(null)}>
-              Cerrar sesión
-            </Button>
+          <div className="mb-4 flex items-center justify-between tracking-widest">
+            Meet participants and know the design routes
           </div>
         )}
         <Accordion type="single" collapsible className="w-full">
           {locationGroups.map((group) => (
             <AccordionItem key={group.id} value={group.id}>
               <AccordionTrigger onClick={() => handleGroupSelect(group)}>
-                {group.title}
-                {group.protected &&
-                  (user ? (
-                    <UnlockIcon className="ml-2 h-4 w-4 text-uigreen" />
-                  ) : (
-                    <LockIcon className="ml-2 h-4 w-4 text-uired" />
-                  ))}
+                <div className="flex justify-between w-full">
+                  <span className="tracking-widest">{group.title}</span>
+                  <p>
+                    {group.protected &&
+                      (user ? (
+                        <UnlockIcon className="ml-2 h-4 w-4 text-uigreen" />
+                      ) : (
+                        <LockIcon className="ml-2 h-4 w-4 text-uired" />
+                      ))}
+                  </p>
+                </div>
               </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-2">
-                  {group.locations.map((location) => (
-                    <Button
+                  {group.locations.map((location, i) => (
+                    <motion.div
+                      initial={{ x: 20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: i / 10 }}
                       key={location.id}
-                      variant="outline"
-                      className={`w-full justify-start ${
-                        selectedLocation === location.id
-                          ? "bg-primary text-primary-foreground"
-                          : ""
-                      }`}
-                      onClick={() => handleLocationSelect(location, group)}
                     >
-                      <MapPin className="mr-2 h-4 w-4" aria-hidden="true" />
-                      <span>{location.title}</span>
-                    </Button>
+                      <Button
+                        variant="outline"
+                        className={`w-full justify-start ${
+                          selectedLocation === location.id
+                            ? "bg-primary text-primary-foreground"
+                            : ""
+                        }`}
+                        onClick={() => handleLocationSelect(location, group)}
+                      >
+                        <MapPin className="mr-2 h-4 w-4" aria-hidden="true" />
+                        <span>{location.title}</span>
+                      </Button>
+                    </motion.div>
                   ))}
                 </div>
               </AccordionContent>
@@ -172,12 +174,12 @@ export default function MapMain({
     <motion.main
       initial={{ opacity: 0, y: 120 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
+      transition={{ delay: 0.8 }}
       className="fixed inset-0 mt-[15vh]"
     >
       <h1 className="sr-only">GLUE MAP</h1>
       {isLargeScreen ? (
-        <div className="flex h-full p-4 gap-4">
+        <div className="flex h-full p-4 gap-4 ">
           <aside
             className="w-1/3 bg-card rounded-lg shadow-lg"
             aria-label="Location categories"
@@ -185,7 +187,7 @@ export default function MapMain({
             <InfoPanel />
           </aside>
           <section
-            className="w-2/3 relative"
+            className="w-2/3 relative bg-uiwhite"
             aria-label="Map and location details"
           >
             <MapPanel />
@@ -205,7 +207,10 @@ export default function MapMain({
                 <MenuIcon className="h-4 w-4" aria-hidden="true" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+            <SheetContent
+              side="left"
+              className="w-[300px] sm:w-[400px] text-uiblack"
+            >
               <nav aria-label="Location categories">
                 <InfoPanel className="mt-8" />
               </nav>
@@ -220,29 +225,11 @@ export default function MapMain({
           </section>
         </>
       )}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="text-uiblack">
-          <DialogHeader>
-            <DialogTitle>Acceso restringido</DialogTitle>
-            <DialogDescription>
-              Necesitas iniciar sesión para acceder a este contenido.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button
-              onClick={() => {
-                setUser(getUser());
-                setIsDialogOpen(false);
-              }}
-            >
-              Iniciar sesión
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <LoginForm
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLogin={handleLogin}
+      />
     </motion.main>
   );
 }

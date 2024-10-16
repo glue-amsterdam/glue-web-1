@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { MdMenuOpen } from "react-icons/md";
-import { CiInstagram, CiLinkedin, CiSearch, CiUser } from "react-icons/ci";
+import { CiInstagram, CiLinkedin, CiSearch } from "react-icons/ci";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,15 +17,8 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import UserMenu from "./user-menu";
+import UserMenuItems from "./user-menu-items";
 
 interface SearchFormProps {
   onSearch: (query: string) => void;
@@ -100,7 +93,7 @@ export default function NavbarBurger() {
             </SheetTrigger>
             <SheetContent
               side="right"
-              className="w-[300px] sm:w-[400px] flex flex-col text-black"
+              className="w-[300px] sm:w-[400px] flex flex-col text-uiblack"
             >
               <nav className="flex flex-col space-y-4">
                 <SheetClose asChild>
@@ -149,7 +142,7 @@ function SearchForm({
         <Input
           type="search"
           placeholder="Search..."
-          className="pl-8 text-black"
+          className="pl-8 text-uiblack"
           value={searchQuery}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setSearchQuery(e.target.value)
@@ -177,49 +170,6 @@ function SocialIcons(): JSX.Element {
         rel="noopener noreferrer"
       >
         <CiLinkedin className="size-6" />
-      </Link>
-    </div>
-  );
-}
-
-function UserMenu(): JSX.Element {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <CiUser className="size-6" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <Link href="/login">Log In</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Link href="/signup">Sign Up</Link>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-function UserMenuItems(): JSX.Element {
-  return (
-    <div className="space-y-2">
-      <Link
-        href="/login"
-        className="block px-2 py-1 hover:bg-accent rounded-md"
-      >
-        Log In
-      </Link>
-      <Link
-        href="/signup"
-        className="block px-2 py-1 hover:bg-accent rounded-md"
-      >
-        Sign Up
       </Link>
     </div>
   );

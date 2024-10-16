@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import NavbarBurguer from "./components/navbar/responsive-navbar-with-hamburger";
+import { AuthProvider } from "./components/login-form/auth-context";
 
 const lausanne = localFont({
   src: [
@@ -55,10 +56,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${lausanne.className} text-uiwhite antialiased`}>
-        <NavbarBurguer />
-        {children}
-      </body>
+      <AuthProvider>
+        <body className={`${lausanne.className} text-uiwhite antialiased`}>
+          <NavbarBurguer />
+          {children}
+        </body>
+      </AuthProvider>
     </html>
   );
 }
