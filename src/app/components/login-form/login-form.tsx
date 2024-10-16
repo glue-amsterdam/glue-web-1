@@ -33,13 +33,13 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export function LoginForm({
-  isOpen,
-  onClose,
-}: {
+interface LoginFormProps {
   isOpen: boolean;
   onClose: () => void;
-}) {
+  onLogin: (email: string, password: string) => Promise<void>;
+}
+
+export function LoginForm({ isOpen, onClose }: LoginFormProps) {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
