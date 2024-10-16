@@ -31,7 +31,6 @@ function ClickAreasClient({ clickAreas }: { clickAreas: MainMenu[] }) {
       setIsLoginModalOpen(false);
     } catch (error) {
       console.error("Login failed:", error);
-      // Handle login error (e.g., show error message)
     }
   };
 
