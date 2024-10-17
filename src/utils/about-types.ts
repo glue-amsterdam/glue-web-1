@@ -11,7 +11,7 @@ export interface MainSectionContent {
 }
 
 type VisitingHours = {
-  [day: string]: string;
+  [day: string]: string[];
 };
 
 type SocialMediaLinks = {
