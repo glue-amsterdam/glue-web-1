@@ -15,9 +15,9 @@ type VisitingHours = {
 };
 
 type SocialMediaLinks = {
-  instagram?: string;
-  facebook?: string;
-  linkedin?: string;
+  instagram?: string[];
+  facebook?: string[];
+  linkedin?: string[];
 };
 
 export type Participant = {
@@ -28,9 +28,9 @@ export type Participant = {
   description: string;
   address: string;
   visitingHours: VisitingHours;
-  phoneNumber: string;
-  email: string;
-  website: string;
+  phoneNumber: string[];
+  visibleEmail: string[];
+  visibleWebsite: string[];
   socialMedia: SocialMediaLinks;
   images: string[];
 };
