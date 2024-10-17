@@ -3,6 +3,11 @@ import BackgroundGrid from "../components/background-grid";
 import LogoMain from "../components/home-page/logo-main";
 import { fetchLocationGroups } from "@/utils/api";
 import MapMain from "../components/map/map-main";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "GLUE - Map",
+};
 
 async function MapPage() {
   const locationGroups = await fetchLocationGroups();

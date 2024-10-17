@@ -7,6 +7,11 @@ import { fetchEvents } from "@/utils/api";
 import EventsList from "../components/events/events-list";
 import EventHeader from "../components/events/event-header";
 import CenteredLoader from "../components/centered-loader";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "GLUE - Events",
+};
 
 export default async function Component({
   searchParams,
