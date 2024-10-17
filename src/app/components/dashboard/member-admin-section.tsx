@@ -9,13 +9,13 @@ import { motion } from "framer-motion";
 function MemberAdminSection() {
   const sectionParams = useSearchParams();
   const section = sectionParams.get("section");
-  console.log(section);
+
   const firstPage = section === "member-data" || !section;
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      initial={{ opacity: 0, x: 150 }}
+      animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 1 }}
     >
       {firstPage && (
