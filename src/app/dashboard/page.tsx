@@ -1,13 +1,16 @@
-import React from "react";
-import BackgroundGrid from "../components/background-grid";
-import LogoMain from "../components/home-page/logo-main";
+import BackgroundGrid from "@/app/components/background-grid";
+import LogoMain from "@/app/components/home-page/logo-main";
+import MemberAdminSection from "../components/dashboard/member-admin-section";
 
 function DashboardPage() {
   return (
-    <div className="fixed inset-0 flex justify-center items-center">
-      <LogoMain />
-      <BackgroundGrid />
-    </div>
+    <>
+      <MemberAdminSection />
+      <div className="fixed inset-0 overflow-x-hidden overflow-y-scroll -z-10">
+        <LogoMain />
+        <BackgroundGrid />
+      </div>
+    </>
   );
 }
 
