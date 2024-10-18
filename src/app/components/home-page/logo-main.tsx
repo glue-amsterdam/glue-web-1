@@ -3,13 +3,17 @@
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
-function LogoMain() {
+interface LogoMainProps {
+  mode: "home" | "member";
+}
+
+function LogoMain({ mode }: LogoMainProps) {
   const pathname = usePathname();
 
   const variables = {
     initial: { scale: 0.2, opacity: 0 },
     animate: {
-      scale: pathname == "/" ? 1 : 0,
+      scale: pathname == "/" || pathname.startsWith("/members") ? 1 : 0,
       opacity: 1,
       transition: { delay: 0.2 },
     },
@@ -21,12 +25,16 @@ function LogoMain() {
       <motion.div
         key={pathname}
         variants={variables}
-        className="mix-blend-lighten z-10 fixed inset-0 flex justify-center items-center pointer-events-none"
+        className={`
+          ${mode === "home" && "fixed"}
+          ${mode === "member" && "absolute"}
+          mix-blend-lighten z-10 inset-0 flex justify-center items-center pointer-events-none
+          `}
         initial="initial"
         animate="animate"
         exit="exit"
       >
-        <LogoLetters />
+        <LogoLetters mode={mode} />
         <Lines />
       </motion.div>
     </AnimatePresence>
@@ -57,29 +65,44 @@ function Lines() {
   );
 }
 
-function LogoLetters() {
+function LogoLetters({ mode }: LogoMainProps) {
   return (
     <div className="absolute z-10 w-[95%] h-[90%]">
       <div className="h-full relative">
         <img
-          src="logos/GLUE_G.svg"
+          src="/logos/glue-g.svg"
           alt="G"
-          className="mainLogoLetter top-0 left-0"
+          className={`
+          ${mode == "home" && "homeLogoLetter "}
+          ${mode == "member" && "memberLogoLetter "}
+            top-0 left-0`}
         />
         <img
-          src="logos/GLUE_L.svg"
+          src="/logos/glue-l.svg"
           alt="L"
-          className="mainLogoLetter top-0 right-0"
+          className={`
+    ${mode == "home" && "homeLogoLetter"}
+    ${mode == "member" && "memberLogoLetter"}
+    top-0 right-0
+  `}
         />
         <img
-          src="logos/GLUE_U.svg"
+          src="/logos/glue-u.svg"
           alt="U"
-          className="mainLogoLetter bottom-0 left-0"
+          className={`
+    ${mode == "home" && "homeLogoLetter"}
+    ${mode == "member" && "memberLogoLetter"}
+    bottom-0 left-0
+  `}
         />
         <img
-          src="logos/GLUE_E.svg"
+          src="/logos/glue-e.svg"
           alt="E"
-          className="mainLogoLetter bottom-0 right-0"
+          className={`
+    ${mode == "home" && "homeLogoLetter"}
+    ${mode == "member" && "memberLogoLetter"}
+    bottom-0 right-0
+  `}
         />
       </div>
     </div>
