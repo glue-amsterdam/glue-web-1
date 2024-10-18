@@ -8,13 +8,13 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { Member } from "@/utils/member-types";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
-import { Participant } from "@/utils/about-types";
 import Link from "next/link";
 
 interface ParticipantsSectionProps {
-  participants: Participant[];
+  participants: Member[];
 }
 
 export default function ParticipantsSection({
