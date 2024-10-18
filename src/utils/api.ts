@@ -1,7 +1,6 @@
 import { cache } from "react";
 import {
   MainSectionContent,
-  Participant,
   Citizen,
   CuratedMember,
   InfoItem,
@@ -12,6 +11,7 @@ import {
 import { MainColors, MainMenu } from "./menu-types";
 import { EventsResponse } from "./event-types";
 import { LocationGroup } from "./map-types";
+import { Member } from "./member-types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -47,7 +47,7 @@ export const fetchMainSectionContent = cache(
   }
 );
 
-export const fetchParticipants = cache(async (): Promise<Participant[]> => {
+export const fetchParticipants = cache(async (): Promise<Member[]> => {
   const res = await fetch(`${BASE_URL}/about/participants`, {
     next: { revalidate: 3600 },
   });
@@ -133,7 +133,7 @@ export const fetchLocationGroups = cache(async (): Promise<LocationGroup[]> => {
 
 /* MEMBERS */
 
-export const fetchMember = cache(async (slug: string): Promise<Participant> => {
+export const fetchMember = cache(async (slug: string): Promise<Member> => {
   console.log(slug);
 
   const res = await fetch(`${BASE_URL}/members/${slug}`, {
