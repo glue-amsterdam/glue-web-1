@@ -1,6 +1,6 @@
-import { participants } from "@/lib/mockusers";
+import { members } from "@/lib/mockMembers";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  return NextResponse.json(participants);
+  return NextResponse.json(members);
 }

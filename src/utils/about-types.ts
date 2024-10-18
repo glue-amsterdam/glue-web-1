@@ -64,9 +64,5 @@ export interface DatabaseContent {
   infoItems: InfoItem[];
   pressItems: PressItem[];
   sponsors: Sponsor[];
-  glueInternational: {
-    title: string;
-    buttonText: string;
-    website: string;
-  };
+  glueInternational: GlueInternationalContent;
 }

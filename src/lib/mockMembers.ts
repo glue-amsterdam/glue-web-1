@@ -104,8 +104,12 @@ export const members: Member[] = [
       Saturday: [{ open: "11:00", close: "19:00" }],
       Sunday: [{ open: "11:00", close: "19:00" }],
     },
-    phoneNumber: ["+31 (0)20 23 01 104"],
-    visibleEmail: ["info@graypants.com"],
+    phoneNumber: [
+      "+31 (0)20 23 01 104",
+      "+31 (0)20 23 01 104",
+      "+31 (0)20 23 01 104",
+    ],
+    visibleEmail: ["info@graypants.com", "info@graypants.com"],
     visibleWebsite: ["/members/graypants"],
     socialMedia: {
       instagram: ["https://www.instagram.com/graypants/"],
