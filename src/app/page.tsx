@@ -19,7 +19,7 @@ export default async function Home() {
 function BackGround() {
   return (
     <>
-      <LogoMain />
+      <LogoMain mode="home" />
       <BackgroundGrid />
     </>
   );
