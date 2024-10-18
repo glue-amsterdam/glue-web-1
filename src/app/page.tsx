@@ -1,7 +1,7 @@
 import { Suspense } from "react";
-import BackgroundGrid from "./components/background-grid";
-import LogoMain from "./components/home-page/logo-main";
-import ClickAreas from "./components/home-page/main-buttons/click-areas";
+import BackgroundGrid from "@/app/components/background-grid";
+import LogoMain from "@/app/components/home-page/logo-main";
+import ClickAreas from "@/app/components/home-page/main-buttons/click-areas";
 import { fetchMainMenu } from "@/utils/api";
 
 export default async function Home() {
