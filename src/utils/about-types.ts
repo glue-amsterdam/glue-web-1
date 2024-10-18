@@ -1,3 +1,5 @@
+import { Member } from "./member-types";
+
 export interface SlideImage {
   id: number;
   src: string;
@@ -9,31 +11,6 @@ export interface MainSectionContent {
   description: string;
   slides: SlideImage[];
 }
-
-type VisitingHours = {
-  [day: string]: string;
-};
-
-type SocialMediaLinks = {
-  instagram?: string;
-  facebook?: string;
-  linkedin?: string;
-};
-
-export type Participant = {
-  id: string;
-  slug: string;
-  name: string;
-  shortDescription: string;
-  description: string;
-  address: string;
-  visitingHours: VisitingHours;
-  phoneNumber: string;
-  email: string;
-  website: string;
-  socialMedia: SocialMediaLinks;
-  images: string[];
-};
 
 export interface Citizen {
   id: number;
@@ -81,15 +58,11 @@ export interface GlueInternationalContent {
 
 export interface DatabaseContent {
   mainSection: MainSectionContent;
-  participants: Participant[];
+  participants: Member[];
   citizens: Citizen[];
   curatedMembers: CuratedMember[];
   infoItems: InfoItem[];
   pressItems: PressItem[];
   sponsors: Sponsor[];
-  glueInternational: {
-    title: string;
-    buttonText: string;
-    website: string;
-  };
+  glueInternational: GlueInternationalContent;
 }

@@ -51,7 +51,7 @@ export default async function Component({
 function Background() {
   return (
     <div className="fixed inset-0 z-0">
-      <LogoMain />
+      <LogoMain mode="home" />
       <BackgroundGrid />
     </div>
   );

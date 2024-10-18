@@ -21,7 +21,7 @@ async function AboutPage({}) {
   return (
     <div className="fixed inset-0 overflow-x-hidden overflow-y-scroll snap-y snap-mandatory">
       <main className="relative z-10">
-        <div className="h-screen snap-start scroll-m-0">
+        <div className="h-screen snap-start">
           <MainSectionSuspense />
           <div className="h-screen relative snap-start bg-uiwhite">
             <div className="absolute z-10 bottom-0 md:bottom-20 right-0 md:right-10">
@@ -121,7 +121,7 @@ async function AboutPage({}) {
 function Background() {
   return (
     <div className="fixed inset-0">
-      <LogoMain />
+      <LogoMain mode="home" />
       <BackgroundGrid />
     </div>
   );

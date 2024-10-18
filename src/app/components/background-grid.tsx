@@ -88,6 +88,16 @@ function BackgroundGrid({}) {
       animate: { scaleY: 0 },
       transition: { duration: 0.5, ease: "easeIn" },
     },
+    extra: {
+      initial: {
+        position: "absolute",
+        inset: 0,
+        backgroundColor: colors.box3,
+        x: "-100vw",
+      },
+      animate: { x: 0 },
+      transition: { delay: 1, duration: 0.6 },
+    },
   };
 
   const aboutAnimation: PathnameConfig = {

@@ -39,11 +39,11 @@ export const metadata: Metadata = {
   },
   icons: [
     {
-      url: "favicons/ligthFavicon.ico",
+      url: "/favicons/ligthFavicon.ico",
       media: "(prefers-color-scheme: light)",
     },
     {
-      url: "favicons/favicon.ico",
+      url: "/favicons/favicon.ico",
       media: "(prefers-color-scheme: dark)",
     },
   ],

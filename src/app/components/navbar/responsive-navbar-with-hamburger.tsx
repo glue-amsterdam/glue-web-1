@@ -63,7 +63,7 @@ export default function NavbarBurger() {
             }
           >
             <Link href="/">
-              <div className="relative size-20 md:size-24 xl:size-32">
+              <div className="relative size-20 md:size-24 xl:size-28">
                 <Image
                   src="/logos/logo-main.png"
                   alt="GLUE logo, connected by design"
