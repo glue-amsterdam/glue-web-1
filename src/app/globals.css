@@ -93,8 +93,11 @@
     position: absolute;
     inset: 0;
   }
-  .mainLogoLetter {
+  .homeLogoLetter {
     @apply size-24 md:size-28 lg:size-36 xl:size-36 absolute bg-black;
+  }
+  .memberLogoLetter {
+    @apply size-10 sm:size-12 md:size-20 xl:size-24 absolute bg-black;
   }
   @keyframes fadeIn {
     0% {
