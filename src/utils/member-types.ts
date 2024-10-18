@@ -27,3 +27,7 @@ export interface Member {
   socialMedia: SocialMediaLinks;
   images: string[];
 }
+
+export interface MembersResponse {
+  members: Member[];
+}
