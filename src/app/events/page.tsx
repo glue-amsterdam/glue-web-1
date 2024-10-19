@@ -1,12 +1,12 @@
 import React, { Suspense } from "react";
-import SearchAndFilter from "../components/events/search-and-filter-events";
-import { EventModal } from "../components/events/event-modal";
+import SearchAndFilter from "@/app/components/events/search-and-filter-events";
+import { EventModal } from "@/app/components/events/event-modal";
 import { fetchEvents } from "@/utils/api";
-import EventsList from "../components/events/events-list";
-import EventHeader from "../components/events/event-header";
-import CenteredLoader from "../components/centered-loader";
+import EventsList from "@/app/components/events/events-list";
+import EventHeader from "@/app/components/events/event-header";
+import CenteredLoader from "@/app/components/centered-loader";
 import { Metadata } from "next";
-import Background from "../components/background";
+import Background from "@/app/components/background";
 
 export const metadata: Metadata = {
   title: "GLUE - Events",

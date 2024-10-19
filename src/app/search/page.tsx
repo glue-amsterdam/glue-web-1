@@ -1,5 +1,5 @@
 import React from "react";
-import Background from "../components/background";
+import Background from "@/app/components/background";
 
 function SearchPage() {
   return <Background />;

@@ -1,8 +1,8 @@
 import React, { Suspense } from "react";
 import { fetchLocationGroups } from "@/utils/api";
-import MapMain from "../components/map/map-main";
+import MapMain from "@/app/components/map/map-main";
 import { Metadata } from "next";
-import Background from "../components/background";
+import Background from "@/app/components/background";
 
 export const metadata: Metadata = {
   title: "GLUE - Map",

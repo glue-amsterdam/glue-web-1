@@ -1,4 +1,4 @@
-import DashboardMenu from "../components/dashboard/dashboard-menu";
+import DashboardMenu from "@/app/components/dashboard/dashboard-menu";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (

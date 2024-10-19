@@ -1,4 +1,4 @@
-import { Member } from "./member-types";
+import { Member } from "@/utils/member-types";
 
 export interface SlideImage {
   id: number;

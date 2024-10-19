@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
-import NavbarBurguer from "./components/navbar/responsive-navbar-with-hamburger";
-import { AuthProvider } from "./context/AuthContext";
-import { ColorsProvider } from "./context/ColorsContext";
+import "@/app/globals.css";
+import NavbarBurguer from "@/app/components/navbar/responsive-navbar-with-hamburger";
+import { AuthProvider } from "@/app/context/AuthContext";
+import { ColorsProvider } from "@/app/context/ColorsContext";
 import { fetchMainColors } from "@/utils/api";
 
 const lausanne = localFont({

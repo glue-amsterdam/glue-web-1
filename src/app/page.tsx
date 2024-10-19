@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import ClickAreas from "@/app/click-areas";
-import Background from "./components/background";
+import Background from "@/app/components/background";
 
 export default function Home() {
   return (

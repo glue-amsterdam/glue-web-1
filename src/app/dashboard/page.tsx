@@ -1,7 +1,7 @@
-import MemberAdminSection from "../components/dashboard/member-admin-section";
+import MemberAdminSection from "@/app/components/dashboard/member-admin-section";
 import { Metadata } from "next";
 import { Suspense } from "react";
-import Background from "../components/background";
+import Background from "@/app/components/background";
 
 export const metadata: Metadata = {
   title: "GLUE - Dashboard",

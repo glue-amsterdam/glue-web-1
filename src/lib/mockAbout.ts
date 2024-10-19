@@ -1,5 +1,5 @@
+import { members } from "@/lib/mockMembers";
 import { DatabaseContent } from "@/utils/about-types";
-import { members } from "./mockMembers";
 
 const getRandomNumber = () => Math.floor(Math.random() * 4) + 1;
 
