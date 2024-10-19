@@ -10,12 +10,12 @@ export const metadata: Metadata = {
 export default function AboutPage({}) {
   return (
     <div className="fixed inset-0 overflow-x-hidden overflow-y-scroll snap-y snap-mandatory">
-      <Suspense>
+      {/*  <Suspense>
         <main className="relative z-10">
           <AboutPageContainer />
         </main>
       </Suspense>
-      <Background />
+      <Background /> */}
     </div>
   );
 }
