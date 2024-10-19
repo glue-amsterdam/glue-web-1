@@ -1,7 +1,7 @@
 "use client";
 
+import LogoMain from "@/app/components/logo-main";
 import BackgroundGrid from "./background-grid";
-import LogoMain from "./home-page/logo-main";
 
 function Background() {
   return (

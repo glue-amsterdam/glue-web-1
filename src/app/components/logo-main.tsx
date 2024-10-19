@@ -2,6 +2,10 @@
 
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import Gletter from "@/app/components/logo-components/g-letter";
+import Lletter from "@/app/components/logo-components/l-letter";
+import Eletter from "@/app/components/logo-components/e-letter";
+import Uletter from "@/app/components/logo-components/u-letter";
 
 interface LogoMainProps {
   mode: "home" | "member";
@@ -69,35 +73,27 @@ function LogoLetters({ mode }: LogoMainProps) {
   return (
     <div className="absolute z-10 w-[95%] h-[90%]">
       <div className="h-full relative">
-        <img
-          src="/logos/glue-g.svg"
-          alt="G"
+        <Gletter
           className={`
           ${mode == "home" && "homeLogoLetter "}
           ${mode == "member" && "memberLogoLetter "}
             top-0 left-0`}
         />
-        <img
-          src="/logos/glue-l.svg"
-          alt="L"
+        <Lletter
           className={`
     ${mode == "home" && "homeLogoLetter"}
     ${mode == "member" && "memberLogoLetter"}
     top-0 right-0
   `}
         />
-        <img
-          src="/logos/glue-u.svg"
-          alt="U"
+        <Uletter
           className={`
     ${mode == "home" && "homeLogoLetter"}
     ${mode == "member" && "memberLogoLetter"}
     bottom-0 left-0
   `}
         />
-        <img
-          src="/logos/glue-e.svg"
-          alt="E"
+        <Eletter
           className={`
     ${mode == "home" && "homeLogoLetter"}
     ${mode == "member" && "memberLogoLetter"}

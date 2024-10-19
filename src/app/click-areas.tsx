@@ -1,6 +1,6 @@
+import ClickAreasClient from "@/app/components/home-page/click-areas";
 import { fetchMainMenu } from "@/utils/api";
 import React from "react";
-import ClickAreasClient from "@/app/components/home-page/main-buttons/click-areas";
 
 async function ClickAreas() {
   const clickAreas = await fetchMainMenu();

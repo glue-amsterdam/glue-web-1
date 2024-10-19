@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -128,12 +127,10 @@ export default function MapMain({
 
   const MapPanel = () => (
     <div className="relative h-full">
-      <Image
+      <img
         src="/placeholders/google-placeholder.png"
         alt="Interactive world map showing various locations"
-        fill
-        className="rounded-lg object-cover"
-        priority
+        className="rounded-lg object-cover absolute inset-0 w-full h-full"
       />
 
       {selectedLocation && (

@@ -4,7 +4,7 @@ import { MainMenu } from "@/utils/menu-types";
 import Link from "next/link";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LoginForm } from "../../login-form/login-form";
+import { LoginForm } from "@/app/components/login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
 
 function ClickAreasClient({ clickAreas }: { clickAreas: MainMenu[] }) {
