@@ -1,5 +1,3 @@
-"use client";
-
 import LogoMain from "@/app/components/logo-main";
 import BackgroundGrid from "./background-grid";
 

@@ -1,11 +1,12 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import Gletter from "@/app/components/logo-components/g-letter";
 import Lletter from "@/app/components/logo-components/l-letter";
 import Eletter from "@/app/components/logo-components/e-letter";
 import Uletter from "@/app/components/logo-components/u-letter";
+import { useEffect, useState } from "react";
 
 interface LogoMainProps {
   mode: "home" | "member";
@@ -13,30 +14,48 @@ interface LogoMainProps {
 
 function LogoMain({ mode }: LogoMainProps) {
   const pathname = usePathname();
+  const [isMainRoute, setIsMainRoute] = useState(true);
 
-  const variables = {
+  useEffect(() => {
+    setIsMainRoute(pathname === "/");
+  }, [pathname]);
+
+  const mainRouteVariants = {
     initial: { scale: 0.2, opacity: 0 },
     animate: {
-      scale: pathname == "/" || pathname.startsWith("/members") ? 1 : 0,
+      scale: 1,
       opacity: 1,
-      transition: { delay: 0.2 },
     },
-    exit: { scale: 1, opacity: 0 },
+    exit: {
+      scale: 0.2,
+      opacity: 0,
+      transition: { duration: 0.3 },
+    },
+  };
+
+  const otherRouteVariants = {
+    initial: { scale: 1, opacity: 1 },
+    animate: {
+      scale: 0.2,
+      opacity: 0,
+      transition: { duration: 0.3 },
+    },
+    exit: {
+      scale: 1,
+      opacity: 1,
+      transition: { duration: 0.3 },
+    },
   };
 
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        key={pathname}
-        variants={variables}
-        className={`
-          ${mode === "home" && "fixed"}
-          ${mode === "member" && "absolute"}
-          mix-blend-lighten z-10 inset-0 flex justify-center items-center pointer-events-none
-          `}
+        key={isMainRoute ? "main" : "other"}
+        variants={isMainRoute ? mainRouteVariants : otherRouteVariants}
         initial="initial"
         animate="animate"
         exit="exit"
+        className="fixed inset-0 flex justify-center items-center z-10 mix-blend-lighten"
       >
         <LogoLetters mode={mode} />
         <Lines />
