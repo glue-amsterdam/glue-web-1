@@ -14,14 +14,16 @@ import { Citizen } from "@/utils/about-types";
 import { motion } from "framer-motion";
 
 interface CitizenOfHonourContentProps {
-  years: number[];
   initialCitizens: Citizen[];
 }
 
-export default function CitizenOfHonour({
-  years,
+export default function CitizenOfHonourSection({
   initialCitizens,
 }: CitizenOfHonourContentProps) {
+  const years = Array.from(
+    new Set(initialCitizens.map((citizen) => citizen.year))
+  ).sort((a, b) => b - a);
+
   const [selectedYear, setSelectedYear] = useState<string>(
     years[0]?.toString() || "all"
   );

@@ -14,14 +14,16 @@ import { CuratedMember } from "@/utils/about-types";
 import { motion } from "framer-motion";
 
 interface CuratedMembersProps {
-  years: number[];
   curatedMembers: CuratedMember[];
 }
 
-export default function CuratedMembers({
-  years,
+export default function CuratedMembersSection({
   curatedMembers,
 }: CuratedMembersProps) {
+  const years = Array.from(
+    new Set(curatedMembers.map((curatedMember) => curatedMember.year))
+  ).sort((a, b) => b - a);
+
   const [selectedYear, setSelectedYear] = useState<string>(
     years.length > 0 ? years[0].toString() : ""
   );

@@ -7,11 +7,12 @@ import {
   PressItem,
   Sponsor,
   GlueInternationalContent,
+  DatabaseContent,
 } from "@/utils/about-types";
-import { MainColors, MainMenu } from "./menu-types";
-import { EventsResponse } from "./event-types";
-import { LocationGroup } from "./map-types";
-import { Member } from "./member-types";
+import { MainColors, MainMenu } from "@/utils/menu-types";
+import { EventsResponse } from "@/utils/event-types";
+import { LocationGroup } from "@/utils/map-types";
+import { Member } from "@/utils/member-types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -36,6 +37,14 @@ export const fetchMainColors = cache(async (): Promise<MainColors> => {
 /*  */
 
 /* ABOUT */
+
+export const fetchAbout = cache(async (): Promise<DatabaseContent> => {
+  const res = await fetch(`${BASE_URL}/about`, {
+    next: { revalidate: 3600 },
+  });
+  if (!res.ok) throw new Error("Failed to fetch About section");
+  return res.json();
+});
 
 export const fetchMainSectionContent = cache(
   async (): Promise<MainSectionContent> => {
