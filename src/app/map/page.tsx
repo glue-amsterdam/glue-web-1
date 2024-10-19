@@ -1,9 +1,8 @@
 import React, { Suspense } from "react";
-import BackgroundGrid from "../components/background-grid";
-import LogoMain from "../components/home-page/logo-main";
 import { fetchLocationGroups } from "@/utils/api";
 import MapMain from "../components/map/map-main";
 import { Metadata } from "next";
+import Background from "../components/background";
 
 export const metadata: Metadata = {
   title: "GLUE - Map",
@@ -20,15 +19,6 @@ async function MapPage() {
         </Suspense>
       </main>
       <Background />
-    </div>
-  );
-}
-
-function Background() {
-  return (
-    <div className="fixed inset-0">
-      <LogoMain mode="home" />
-      <BackgroundGrid />
     </div>
   );
 }
