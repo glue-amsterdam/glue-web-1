@@ -1,5 +1,5 @@
 import CenteredLoader from "@/app/components/centered-loader";
-import LogoMain from "@/app/components/home-page/logo-main";
+import LogoMain from "@/app/components/logo-main";
 import { ImageCarousel } from "@/app/components/members/member-carousel";
 import MemberInfo from "@/app/components/members/member-info";
 import { fetchMember } from "@/utils/api";

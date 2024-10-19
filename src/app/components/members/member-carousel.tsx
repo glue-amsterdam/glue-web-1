@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   Carousel,
   CarouselContent,
@@ -15,11 +14,10 @@ export function ImageCarousel({ images }: { images: string[] }) {
           {images.map((src, index) => (
             <CarouselItem key={index} className="">
               <div className="relative w-full h-[85vh] cursor-pointer transition-transform hover:scale-105">
-                <Image
+                <img
                   src={src}
                   alt={`Member image ${index + 1}`}
-                  fill
-                  className="object-cover -translate-y-[20%] md:translate-y-0"
+                  className="absolute inset-0 object-cover -translate-y-[20%] md:translate-y-0"
                   sizes="(max-width: 768px) 100vw, 50vw"
                 />
               </div>
