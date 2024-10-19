@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -19,6 +18,7 @@ import {
 } from "@/components/ui/sheet";
 import UserMenu from "./user-menu";
 import UserMenuItems from "./user-menu-items";
+import GlueLogoSVG from "@/app/components/glue-logo-svg";
 
 interface SearchFormProps {
   onSearch: (query: string) => void;
@@ -27,6 +27,7 @@ interface SearchFormProps {
 
 export default function NavbarBurger() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -37,37 +38,42 @@ export default function NavbarBurger() {
     }
   };
 
+  useEffect(() => {
+    if (pathname !== "/") {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+    }
+  }, [pathname]);
+
   return (
     <header className="w-full z-50 relative h-[15vh]">
       <motion.div
         className="absolute inset-0 z-0"
         initial={false}
         animate={{
-          backgroundColor: pathname !== "/" ? "#2b2b2b" : "transparent",
-          translateY: pathname !== "/" ? "0%" : "-100%",
+          backgroundColor: isVisible ? "#2b2b2b" : "transparent",
+          translateY: isVisible ? "0%" : "-100%",
         }}
         transition={{ duration: 0.3 }}
       />
 
       <div
         className={`relative h-full z-10 mx-auto  ${
-          pathname === "/"
-            ? "md:max-w-[580px] xl:max-w-[800px]"
-            : "max-w-[1400px]"
+          !isVisible ? "md:max-w-[580px] xl:max-w-[800px]" : "max-w-[1400px]"
         } transition-all duration-500`}
       >
         <nav className="flex items-center h-full justify-between p-4 w-full gap-4">
           <div
             className={
-              pathname === "/" ? "opacity-0 pointer-events-none" : "opacity-100"
+              !isVisible ? "opacity-0 pointer-events-none" : "opacity-100"
             }
           >
             <Link href="/">
-              <div className="relative size-20 md:size-24 xl:size-32">
-                <Image
-                  src="/logos/logo-main.png"
-                  alt="GLUE logo, connected by design"
-                  fill
+              <div className="relative size-20 md:size-24 xl:size-28">
+                <GlueLogoSVG
+                  isVisible={isVisible}
+                  className="absolute inset-0 w-full h-full"
                 />
               </div>
             </Link>

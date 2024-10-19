@@ -1,12 +1,8 @@
 import React from "react";
-import BackgroundGrid from "../components/background-grid";
+import Background from "@/app/components/background";
 
 function SearchPage() {
-  return (
-    <div className="fixed inset-0 flex justify-center items-center">
-      <BackgroundGrid />
-    </div>
-  );
+  return <Background />;
 }
 
 export default SearchPage;

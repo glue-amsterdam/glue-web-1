@@ -6,6 +6,15 @@
   .text-balance {
     text-wrap: balance;
   }
+  .dashboard-input {
+    @apply bg-uiwhite text-uiblack;
+  }
+  .dashboard-label {
+    @apply text-uiwhite text-base tracking-[0.3em];
+  }
+  .dashboard-form-item {
+    @apply bg-uiblack p-2;
+  }
 }
 
 @layer components {
@@ -24,42 +33,36 @@
   .navLabel {
     @apply text-4xl flex-1 sm:text-[3rem] md:text-6xl lg:text-[4.7rem] xl:text-[4.9rem] [line-height:1.3];
   }
-
   .upperbutton {
     clip-path: polygon(50% 50%, 100% 10%, 100% 0, 0 0);
     width: 100%;
     height: 100%;
     position: absolute;
   }
-
   .leftbutton {
     clip-path: polygon(50% 50%, 0 0, 0 100%);
     width: 100%;
     height: 100%;
     position: absolute;
   }
-
   .downbutton {
     clip-path: polygon(50% 50%, 100% 90%, 100% 100%, 0% 100%);
     width: 100%;
     height: 100%;
     position: absolute;
   }
-
   .rightbutton {
     clip-path: polygon(100% 10%, 100% 90%, 50% 50%);
     width: 100%;
     height: 100%;
     position: absolute;
   }
-
   .triangle {
     clip-path: polygon(100% 10%, 100% 90%, 50% 50%);
     width: 100%;
     height: 100%;
     position: absolute;
   }
-
   .citizen-triangle {
     clip-path: polygon(100% 0, 0 100%, 100% 100%);
     position: absolute;
@@ -90,11 +93,12 @@
     position: absolute;
     inset: 0;
   }
-
-  .mainLogoLetter {
+  .homeLogoLetter {
     @apply size-24 md:size-28 lg:size-36 xl:size-36 absolute bg-black;
   }
-
+  .memberLogoLetter {
+    @apply size-10 sm:size-12 md:size-20 xl:size-24 absolute bg-black;
+  }
   @keyframes fadeIn {
     0% {
       opacity: 0;
@@ -103,29 +107,24 @@
       opacity: 1;
     }
   }
-
   .delayed-appearance {
     opacity: 0;
     animation: fadeIn 0.2s ease-in-out 1.2s forwards; /* 1s duración, 2s retraso */
   }
 }
-
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
-
 ::-webkit-scrollbar {
   display: none;
 }
 html {
   scrollbar-width: none;
 }
-
 @font-face {
   font-family: "Lausanne";
   src: url("/fonts/lausanne/lausanne.woff2") format("woff2");
 }
-
 @layer base {
   :root {
     --background: 0 0% 100%;

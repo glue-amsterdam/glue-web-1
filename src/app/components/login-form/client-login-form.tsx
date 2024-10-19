@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "./auth-context";
+import { useAuth } from "@/app/context/AuthContext";
 import { LoginForm } from "./login-form";
 
 export function ClientLoginForm() {

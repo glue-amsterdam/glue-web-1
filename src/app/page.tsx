@@ -1,26 +1,14 @@
 import { Suspense } from "react";
-import BackgroundGrid from "./components/background-grid";
-import LogoMain from "./components/home-page/logo-main";
-import ClickAreas from "./components/home-page/main-buttons/click-areas";
-import { fetchMainMenu } from "@/utils/api";
+import Background from "@/app/components/background";
+import ClickAreas from "@/app/click-areas";
 
-export default async function Home() {
-  const clickAreas = await fetchMainMenu();
+export default function Home() {
   return (
     <Suspense>
       <main className="fixed inset-0">
-        <ClickAreas clickAreas={clickAreas} />
-        <BackGround />
+        <ClickAreas />
+        <Background />
       </main>
     </Suspense>
-  );
-}
-
-function BackGround() {
-  return (
-    <>
-      <LogoMain />
-      <BackgroundGrid />
-    </>
   );
 }

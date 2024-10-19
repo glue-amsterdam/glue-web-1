@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
-import NavbarBurguer from "./components/navbar/responsive-navbar-with-hamburger";
-import { AuthProvider } from "./components/login-form/auth-context";
+import "@/app/globals.css";
+import NavbarBurguer from "@/app/components/navbar/responsive-navbar-with-hamburger";
+import { AuthProvider } from "@/app/context/AuthContext";
+import { ColorsProvider } from "@/app/context/ColorsContext";
+import { fetchMainColors } from "@/utils/api";
 
 const lausanne = localFont({
   src: [
@@ -39,28 +41,31 @@ export const metadata: Metadata = {
   },
   icons: [
     {
-      url: "favicons/ligthFavicon.ico",
+      url: "/favicons/ligthFavicon.ico",
       media: "(prefers-color-scheme: light)",
     },
     {
-      url: "favicons/favicon.ico",
+      url: "/favicons/favicon.ico",
       media: "(prefers-color-scheme: dark)",
     },
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const colors = await fetchMainColors();
   return (
     <html lang="en">
       <AuthProvider>
-        <body className={`${lausanne.className} text-uiwhite antialiased`}>
-          <NavbarBurguer />
-          {children}
-        </body>
+        <ColorsProvider colors={colors}>
+          <body className={`${lausanne.className} text-uiwhite antialiased`}>
+            <NavbarBurguer />
+            {children}
+          </body>
+        </ColorsProvider>
       </AuthProvider>
     </html>
   );

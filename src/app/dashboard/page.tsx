@@ -1,13 +1,22 @@
-import React from "react";
-import BackgroundGrid from "../components/background-grid";
-import LogoMain from "../components/home-page/logo-main";
+import MemberAdminSection from "@/app/components/dashboard/member-admin-section";
+import { Metadata } from "next";
+import { Suspense } from "react";
+import Background from "@/app/components/background";
+
+export const metadata: Metadata = {
+  title: "GLUE - Dashboard",
+};
 
 function DashboardPage() {
   return (
-    <div className="fixed inset-0 flex justify-center items-center">
-      <LogoMain />
-      <BackgroundGrid />
-    </div>
+    <>
+      <Suspense>
+        <MemberAdminSection />
+      </Suspense>
+      <div className="fixed inset-0 overflow-x-hidden overflow-y-scroll -z-10">
+        <Background />
+      </div>
+    </>
   );
 }
 

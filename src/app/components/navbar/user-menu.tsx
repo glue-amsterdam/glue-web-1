@@ -13,10 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CiUser } from "react-icons/ci";
 import Link from "next/link";
-import { useAuth } from "../login-form/auth-context";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LoginForm } from "../login-form/login-form";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function UserMenu(): JSX.Element {
   const router = useRouter();
