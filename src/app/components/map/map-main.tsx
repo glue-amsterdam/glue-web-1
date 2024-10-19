@@ -15,8 +15,8 @@ import {
 import { MenuIcon, MapPin, LockIcon, UnlockIcon } from "lucide-react";
 import { Location, LocationGroup } from "@/utils/map-types";
 import { motion } from "framer-motion";
-import { useAuth } from "../login-form/auth-context";
 import { LoginForm } from "../login-form/login-form";
+import { useAuth } from "@/app/context/AuthContext";
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false);

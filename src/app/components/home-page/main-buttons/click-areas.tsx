@@ -3,9 +3,9 @@
 import { MainMenu } from "@/utils/menu-types";
 import Link from "next/link";
 import React, { useState } from "react";
-import { useAuth } from "../../login-form/auth-context";
 import { useRouter } from "next/navigation";
 import { LoginForm } from "../../login-form/login-form";
+import { useAuth } from "@/app/context/AuthContext";
 
 function ClickAreasClient({ clickAreas }: { clickAreas: MainMenu[] }) {
   const { user, login } = useAuth();

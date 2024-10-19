@@ -21,8 +21,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useAuth } from "./auth-context";
 import { LockIcon } from "lucide-react";
+import { useAuth } from "@/app/context/AuthContext";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
