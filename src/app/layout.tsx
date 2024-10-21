@@ -65,9 +65,11 @@ export default async function RootLayout({
           mainLinks={mainSection.mainLinks}
           mainMenu={mainSection.mainMenu}
         >
-          <body className={`${lausanne.className} text-uiwhite antialiased`}>
+          <body
+            className={`${lausanne.className} text-uiwhite antialiased min-h-screen flex flex-col`}
+          >
             <NavbarBurguer />
-            {children}
+            <div className="flex-grow overflow-x-hidden">{children}</div>
           </body>
         </MainContextProvider>
       </AuthProvider>

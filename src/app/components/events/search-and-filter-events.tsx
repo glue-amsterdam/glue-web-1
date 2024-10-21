@@ -74,7 +74,7 @@ export default function SearchAndFilter() {
   };
 
   return (
-    <div className="mb-8 space-y-4">
+    <div className="mb-8 space-y-4 relative z-10">
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
         <Input
           type="text"
@@ -87,7 +87,7 @@ export default function SearchAndFilter() {
           <SelectTrigger className="w-full sm:w-[180px] text-uiblack bg-uiwhite/80">
             <SelectValue placeholder="Event Type" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="absolute bg-white z-50 max-h-60 overflow-auto">
             {getEventTypes().map((eventType) => (
               <SelectItem key={eventType} value={eventType}>
                 {formatEventType(eventType)}
