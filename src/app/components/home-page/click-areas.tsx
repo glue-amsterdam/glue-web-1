@@ -80,7 +80,6 @@ function Labels({ mainMenu }: { mainMenu: MainSection["mainMenu"] }) {
   if (!mainMenu || mainMenu.length < 4) {
     return <div>Problems with menu items, not enough</div>;
   }
-  console.log(mainMenu);
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
       <div className="relative w-[90%] md:w-[85%] h-[60%]">

@@ -47,8 +47,6 @@ export const fetchLocationGroups = cache(async (): Promise<LocationGroup[]> => {
 
 /* MEMBERS */
 export const fetchMember = cache(async (slug: string): Promise<Member> => {
-  console.log(slug);
-
   const res = await fetch(`${BASE_URL}/members/${slug}`, {
     next: { revalidate: 3600 },
   });
