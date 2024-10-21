@@ -1,5 +1,3 @@
-import { IconType } from "react-icons/lib";
-
 export interface MainSection {
   mainColors: MainColors;
   mainMenu: MenuItem[];
@@ -14,7 +12,7 @@ interface MenuItem {
 
 interface LinkItem {
   link: string;
-  icon?: IconType;
+  icon?: string;
 }
 
 interface MainColors {

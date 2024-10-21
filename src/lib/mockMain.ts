@@ -1,4 +1,6 @@
-export const mainSection = {
+import { MainSection } from "@/utils/menu-types";
+
+export const mainSection: MainSection = {
   mainColors: {
     box1: "#0c0c0c",
     box2: "#072f4a",
@@ -29,7 +31,7 @@ export const mainSection = {
     },
   ],
   mainLinks: {
-    facebook: {
+    linkedin: {
       link: "https://www.facebook.com/",
       icon: "facebook",
     },

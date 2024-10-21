@@ -12,7 +12,12 @@ export const fetchMain = cache(async (): Promise<MainSection> => {
   const res = await fetch(`${BASE_URL}/main`, {
     next: { revalidate: 3600 },
   });
-  if (!res.ok) throw new Error("Failed to fetch Main");
+
+  if (!res.ok) {
+    console.error("Failed to fetch Main, using mock data");
+    return await import("@/lib/mockMain").then((result) => result.mainSection);
+  }
+
   return res.json();
 });
 
