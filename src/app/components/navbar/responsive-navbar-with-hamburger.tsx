@@ -19,6 +19,7 @@ import {
 import UserMenu from "./user-menu";
 import UserMenuItems from "./user-menu-items";
 import GlueLogoSVG from "@/app/components/glue-logo-svg";
+import { useLinks } from "@/app/context/MainContext";
 
 interface SearchFormProps {
   onSearch: (query: string) => void;
@@ -161,20 +162,17 @@ function SearchForm({
 }
 
 function SocialIcons(): JSX.Element {
+  const links = useLinks();
+
+  const instagramLink = links?.instagram?.link || "https://instagram.com";
+  const linkedinLink = links?.linkedin?.link || "https://linkedin.com";
+
   return (
     <div className="flex space-x-4 justify-center">
-      <Link
-        href="https://instagram.com"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+      <Link href={instagramLink} target="_blank" rel="noopener noreferrer">
         <CiInstagram className="size-6" />
       </Link>
-      <Link
-        href="https://linkedin.com"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+      <Link href={linkedinLink} target="_blank" rel="noopener noreferrer">
         <CiLinkedin className="size-6" />
       </Link>
     </div>

@@ -1,15 +1,17 @@
-import React from "react";
+"use client";
 import ParticipantsSection from "@/app/components/about/participants-section";
 import { Member } from "@/utils/member-types";
 import GlueLogo from "@/app/components/glue-logo";
+import { useColors } from "@/app/context/MainContext";
 
 interface Props {
   participants: Member[];
-  box1Color: string;
-  box2Color: string;
 }
 
-function Participants({ box1Color, box2Color, participants }: Props) {
+function Participants({ participants }: Props) {
+  const colors = useColors();
+
+  const { box1: box1Color, box2: box2Color } = colors;
   return (
     <div className="h-screen relative snap-start bg-uiwhite">
       <div className="absolute z-10 bottom-0 md:bottom-20 right-0 md:right-10">

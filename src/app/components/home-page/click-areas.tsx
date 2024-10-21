@@ -1,16 +1,19 @@
 "use client";
 
-import { MainMenu } from "@/utils/menu-types";
 import Link from "next/link";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoginForm } from "@/app/components/login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
+import { useMenu } from "@/app/context/MainContext";
+import CenteredLoader from "@/app/components/centered-loader";
+import { MainSection } from "@/utils/menu-types";
 
-function ClickAreasClient({ clickAreas }: { clickAreas: MainMenu[] }) {
+function ClickAreas() {
   const { user, login } = useAuth();
   const router = useRouter();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const mainMenu = useMenu();
 
   const handleAreaClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -34,29 +37,35 @@ function ClickAreasClient({ clickAreas }: { clickAreas: MainMenu[] }) {
     }
   };
 
+  if (!mainMenu || !Array.isArray(mainMenu)) {
+    return <CenteredLoader />;
+  }
+
   return (
     <>
       <nav className="fixed inset-0 z-30">
         <ul className="h-full w-full">
-          {clickAreas.map((area) => (
-            <li key={area.section} className={`absolute ${area.className}`}>
-              <Link
-                href={`/${area.section}`}
-                onClick={(e) =>
-                  handleAreaClick(
-                    e,
-                    `/${area.section}`,
-                    area.section === "dashboard"
-                  )
-                }
-                className="block w-full h-full"
-                aria-labelledby={`label-${area.section}`}
-              />
-            </li>
-          ))}
+          {mainMenu
+            .filter((area) => area?.section && area.className)
+            .map((area) => (
+              <li key={area.section} className={`absolute ${area.className}`}>
+                <Link
+                  href={`/${area.section}`}
+                  onClick={(e) =>
+                    handleAreaClick(
+                      e,
+                      `/${area.section}`,
+                      area.section === "dashboard"
+                    )
+                  }
+                  className="block w-full h-full"
+                  aria-labelledby={`label-${area?.section}`}
+                />
+              </li>
+            ))}
         </ul>
 
-        <Labels clickAreas={clickAreas} />
+        <Labels mainMenu={mainMenu} />
       </nav>
       <LoginForm
         isOpen={isLoginModalOpen}
@@ -67,38 +76,42 @@ function ClickAreasClient({ clickAreas }: { clickAreas: MainMenu[] }) {
   );
 }
 
-function Labels({ clickAreas }: { clickAreas: MainMenu[] }) {
+function Labels({ mainMenu }: { mainMenu: MainSection["mainMenu"] }) {
+  if (!mainMenu || mainMenu.length < 4) {
+    return <div>Problems with menu items, not enough</div>;
+  }
+  console.log(mainMenu);
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
       <div className="relative w-[90%] md:w-[85%] h-[60%]">
         <div className="absolute flex h-full w-full items-center justify-evenly">
           <div className="w-[12vh] md:w-[30vw]">
             <span
-              id={`label-${clickAreas[0]?.section}`}
+              id={`label-${mainMenu[0]?.section}`}
               className="navLabel break-words"
             >
-              {clickAreas[0]?.label}
+              {mainMenu[0]?.label}
             </span>
           </div>
           <span
-            id={`label-${clickAreas[2]?.section}`}
+            id={`label-${mainMenu[2]?.section}`}
             className="navLabel break-words flex justify-end"
           >
-            {clickAreas[2]?.label}
+            {mainMenu[2]?.label}
           </span>
         </div>
         <div className="absolute flex h-full w-full flex-col items-center">
           <span
-            id={`label-${clickAreas[1]?.section}`}
+            id={`label-${mainMenu[1]?.section}`}
             className="navLabel break-words"
           >
-            {clickAreas[1]?.label}
+            {mainMenu[1]?.label}
           </span>
           <span
-            id={`label-${clickAreas[3]?.section}`}
+            id={`label-${mainMenu[3]?.section}`}
             className="navLabel break-words flex items-end"
           >
-            {clickAreas[3]?.label}
+            {mainMenu[3]?.label}
           </span>
         </div>
       </div>
@@ -106,4 +119,4 @@ function Labels({ clickAreas }: { clickAreas: MainMenu[] }) {
   );
 }
 
-export default ClickAreasClient;
+export default ClickAreas;
