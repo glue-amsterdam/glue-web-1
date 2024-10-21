@@ -1,30 +1,25 @@
 import { cache } from "react";
 import { DatabaseContent } from "@/utils/about-types";
-import { MainColors, MainMenu } from "@/utils/menu-types";
 import { EventsResponse } from "@/utils/event-types";
 import { LocationGroup } from "@/utils/map-types";
 import { Member } from "@/utils/member-types";
+import { MainSection } from "@/utils/menu-types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 /* MAIN */
-export const fetchMainMenu = cache(async (): Promise<MainMenu[]> => {
-  const res = await fetch(`${BASE_URL}/main/main-menu`, {
+export const fetchMain = cache(async (): Promise<MainSection> => {
+  const res = await fetch(`${BASE_URL}/main`, {
     next: { revalidate: 3600 },
   });
-  if (!res.ok) throw new Error("Failed to fetch mainMenu");
+
+  if (!res.ok) {
+    console.error("Failed to fetch Main, using mock data");
+    return await import("@/lib/mockMain").then((result) => result.mainSection);
+  }
+
   return res.json();
 });
-
-export const fetchMainColors = cache(async (): Promise<MainColors> => {
-  const res = await fetch(`${BASE_URL}/main/main-colors`, {
-    next: { revalidate: 3600 },
-  });
-  if (!res.ok) throw new Error("Failed to fetch colors");
-  return res.json();
-});
-
-/*  */
 
 /* ABOUT */
 export const fetchAbout = cache(async (): Promise<DatabaseContent> => {
@@ -57,8 +52,6 @@ export const fetchLocationGroups = cache(async (): Promise<LocationGroup[]> => {
 
 /* MEMBERS */
 export const fetchMember = cache(async (slug: string): Promise<Member> => {
-  console.log(slug);
-
   const res = await fetch(`${BASE_URL}/members/${slug}`, {
     next: { revalidate: 3600 },
   });

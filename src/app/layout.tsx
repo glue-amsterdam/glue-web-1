@@ -3,8 +3,8 @@ import localFont from "next/font/local";
 import "@/app/globals.css";
 import NavbarBurguer from "@/app/components/navbar/responsive-navbar-with-hamburger";
 import { AuthProvider } from "@/app/context/AuthContext";
-import { ColorsProvider } from "@/app/context/ColorsContext";
-import { fetchMainColors } from "@/utils/api";
+import { MainContextProvider } from "@/app/context/MainContext";
+import { fetchMain } from "@/utils/api";
 
 const lausanne = localFont({
   src: [
@@ -56,16 +56,22 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const colors = await fetchMainColors();
+  const mainSection = await fetchMain();
   return (
     <html lang="en">
       <AuthProvider>
-        <ColorsProvider colors={colors}>
-          <body className={`${lausanne.className} text-uiwhite antialiased`}>
+        <MainContextProvider
+          mainColors={mainSection.mainColors}
+          mainLinks={mainSection.mainLinks}
+          mainMenu={mainSection.mainMenu}
+        >
+          <body
+            className={`${lausanne.className} text-uiwhite antialiased min-h-screen flex flex-col`}
+          >
             <NavbarBurguer />
-            {children}
+            <div className="flex-grow overflow-x-hidden">{children}</div>
           </body>
-        </ColorsProvider>
+        </MainContextProvider>
       </AuthProvider>
     </html>
   );

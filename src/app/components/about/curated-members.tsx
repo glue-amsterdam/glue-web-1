@@ -1,15 +1,20 @@
+"use client";
+
 import CuratedMembersSection from "@/app/components/about/curated-members-section";
 import GlueConectedImage from "@/app/components/glue-connected-image";
 import GlueLogo from "@/app/components/glue-logo";
+import { useColors } from "@/app/context/MainContext";
 import { CuratedMember } from "@/utils/about-types";
 import React from "react";
 
 type Props = {
   curatedMembers: CuratedMember[];
-  box3Color: string;
 };
 
-function CuratedMembers({ curatedMembers, box3Color }: Props) {
+function CuratedMembers({ curatedMembers }: Props) {
+  const colors = useColors();
+
+  const { box3: box3Color } = colors;
   return (
     <div
       style={{ backgroundColor: box3Color }}

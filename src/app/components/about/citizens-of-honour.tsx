@@ -1,13 +1,18 @@
+"use client";
+
 import CitizenOfHonourSection from "@/app/components/about/citizens-of-honour-section";
+import { useColors } from "@/app/context/MainContext";
 import { Citizen } from "@/utils/about-types";
 import React from "react";
 
 type Props = {
-  box3Color: string;
   initialCitizens: Citizen[];
 };
 
-function CitizenOfHonour({ initialCitizens, box3Color }: Props) {
+function CitizenOfHonour({ initialCitizens }: Props) {
+  const colors = useColors();
+
+  const { box3: box3Color } = colors;
   return (
     <div
       style={{ backgroundColor: box3Color }}

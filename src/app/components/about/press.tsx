@@ -1,14 +1,19 @@
+"use client";
+
 import PressSection from "@/app/components/about/press-section";
 import GlueConectedImage from "@/app/components/glue-connected-image";
+import { useColors } from "@/app/context/MainContext";
 import { PressItem } from "@/utils/about-types";
 import React from "react";
 
 type Props = {
   pressItems: PressItem[];
-  box2Color: string;
 };
 
-function Press({ pressItems, box2Color }: Props) {
+function Press({ pressItems }: Props) {
+  const colors = useColors();
+
+  const { box2: box2Color } = colors;
   return (
     <div
       style={{ backgroundColor: box2Color }}

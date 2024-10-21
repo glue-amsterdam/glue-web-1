@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { Target, Transition, motion } from "framer-motion";
 
 import BackgrounAnimation from "./background-animation";
-import { useColors } from "../context/ColorsContext";
+import { useColors } from "../context/MainContext";
 
 type Pathnames = "/" | "/dashboard" | "/about" | "/events" | "/map" | "/search";
 
@@ -48,7 +48,7 @@ export interface PathnameConfig {
 
 function BackgroundGrid({}) {
   const pathname = usePathname();
-  const { colors } = useColors();
+  const mainColors = useColors();
 
   const rootAnimations: PathnameConfig = {
     box1: { initial: {}, animate: {}, transition: {} },
@@ -61,7 +61,7 @@ function BackgroundGrid({}) {
   const dashboardAnimation: PathnameConfig = {
     box1: {
       initial: { backgroundColor: "transparent", y: 500 },
-      animate: { backgroundColor: colors?.box3, y: 0 },
+      animate: { backgroundColor: mainColors?.box3, y: 0 },
       transition: { duration: 0.8, ease: "easeInOut" },
     },
     box2: {
@@ -72,7 +72,7 @@ function BackgroundGrid({}) {
     box3: { initial: {}, animate: {}, transition: {} },
     box4: {
       initial: { backgroundColor: "transparent", y: -500 },
-      animate: { backgroundColor: colors?.box2, y: 0 },
+      animate: { backgroundColor: mainColors?.box2, y: 0 },
       transition: { duration: 0.8, delay: 0.3, ease: "easeInOut" },
     },
     triangle: {
@@ -84,7 +84,7 @@ function BackgroundGrid({}) {
       initial: {
         position: "absolute",
         inset: 0,
-        backgroundColor: colors?.box3,
+        backgroundColor: mainColors?.box3,
         x: "-100vw",
       },
       animate: { x: 0 },
@@ -103,7 +103,7 @@ function BackgroundGrid({}) {
         inset: 0,
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
-        background: `linear-gradient(to right, ${colors?.box1} 50%, ${colors?.box2} 50%)`,
+        background: `linear-gradient(to right, ${mainColors?.box1} 50%, ${mainColors?.box2} 50%)`,
         y: "-100vh",
       },
       animate: {
@@ -147,7 +147,7 @@ function BackgroundGrid({}) {
     },
     extra: {
       initial: {
-        backgroundColor: colors?.triangle,
+        backgroundColor: mainColors?.triangle,
         position: "absolute",
         inset: 0,
         x: "98vw",
@@ -170,7 +170,7 @@ function BackgroundGrid({}) {
         inset: 0,
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
-        background: `linear-gradient(to right, ${colors?.box3} 50%, ${colors?.box4} 50%)`,
+        background: `linear-gradient(to right, ${mainColors?.box3} 50%, ${mainColors?.box4} 50%)`,
         y: "100vh",
       },
       animate: {
@@ -214,7 +214,7 @@ function BackgroundGrid({}) {
         initial={triangle?.initial}
         animate={triangle?.animate}
         transition={triangle?.transition}
-        style={{ backgroundColor: colors?.triangle }}
+        style={{ backgroundColor: mainColors?.triangle }}
         className={`triangle`}
       />
       {extra && (
@@ -224,10 +224,10 @@ function BackgroundGrid({}) {
           transition={extra?.transition}
         ></motion.div>
       )}
-      <div style={{ backgroundColor: colors?.box1 }} />
-      <div style={{ backgroundColor: colors?.box2 }} />
-      <div style={{ backgroundColor: colors?.box3 }} />
-      <div style={{ backgroundColor: colors?.box4 }} />
+      <div style={{ backgroundColor: mainColors?.box1 }} />
+      <div style={{ backgroundColor: mainColors?.box2 }} />
+      <div style={{ backgroundColor: mainColors?.box3 }} />
+      <div style={{ backgroundColor: mainColors?.box4 }} />
     </motion.div>
   );
 }
