@@ -25,6 +25,5 @@ interface MainColors {
 
 interface MainLinks {
   linkedin: LinkItem;
-  twitter: LinkItem;
   instagram: LinkItem;
 }
