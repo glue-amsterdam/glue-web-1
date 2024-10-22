@@ -10,7 +10,7 @@ function DashboardMenu() {
       initial={{ opacity: 0, x: -150 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 1, type: "keyframes" }}
-      className="w-64 bg-uiblack shadow-md "
+      className="w-64 bg-uiblack shadow-md"
     >
       <nav className="p-5 space-y-2">
         <Link href="?section=member-data">
@@ -26,6 +26,11 @@ function DashboardMenu() {
         <Link href="?section=your-events">
           <Button variant="ghost" className="w-full justify-start">
             Your Events
+          </Button>
+        </Link>
+        <Link href="?section=admin-panel">
+          <Button variant="ghost" className="w-full justify-start">
+            Admin Panel
           </Button>
         </Link>
       </nav>
