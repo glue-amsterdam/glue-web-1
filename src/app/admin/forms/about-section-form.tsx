@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useFormContext } from "react-hook-form";
+/* import { useFormContext } from "react-hook-form"; */
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DatabaseContent } from "@/utils/about-types";
+/* import { DatabaseContent } from "@/utils/about-types"; */
 import CitizensForm from "@/app/admin/forms/citizens-form";
 import CuratedMembersForm from "@/app/admin/forms/curated-members-form";
 import InfoItemsForm from "@/app/admin/forms/info-items-form";
@@ -12,9 +12,9 @@ import SponsorsForm from "@/app/admin/forms/sponsors-form";
 
 export default function AboutSectionForm() {
   const [activeTab, setActiveTab] = useState("citizens");
-  const { watch } = useFormContext<{ aboutSection: DatabaseContent }>();
+  /*   const { watch } = useFormContext<{ aboutSection: DatabaseContent }>(); */
 
-  const aboutData = watch("aboutSection");
+  /* const aboutData = watch("aboutSection"); */
 
   return (
     <div className="space-y-6">
