@@ -20,6 +20,7 @@ const config: Config = {
       uigreen: "#13dd88",
     },
     extend: {
+      scrollBehavior: ["smooth"],
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -88,6 +89,7 @@ const config: Config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "ping-slow": "ping 3s linear infinite",
       },
     },
   },

@@ -32,7 +32,7 @@ export default function GlueInternational({
             src={"/logos/logo-main.png"}
             className=""
             alt="GLUE logo, connected by design"
-            width={150}
+            width={120}
             height={100}
           />
           <h2 id="glue-international-heading" className="text-3xl font-bold">

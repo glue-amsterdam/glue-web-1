@@ -13,7 +13,7 @@ function Participants({ participants }: Props) {
 
   const { box1: box1Color, box2: box2Color } = colors;
   return (
-    <div className="h-screen relative snap-start bg-uiwhite">
+    <div id="participants" className="h-screen relative snap-start bg-uiwhite">
       <div className="absolute z-10 bottom-0 md:bottom-20 right-0 md:right-10">
         <div className="relative size-32 md:size-40 lg:size-52">
           <GlueLogo fill className="invert opacity-10 md:opacity-30" />
