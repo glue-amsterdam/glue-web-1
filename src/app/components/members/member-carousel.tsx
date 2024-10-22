@@ -1,3 +1,4 @@
+"use client";
 import {
   Carousel,
   CarouselContent,
@@ -24,8 +25,8 @@ export function ImageCarousel({ images }: { images: string[] }) {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="text-uiblack absolute left-2 top-1/2 transform -translate-y-1/2" />
-        <CarouselNext className="text-uiblack absolute right-2 top-1/2 transform -translate-y-1/2" />
+        <CarouselPrevious className="text-uiblack absolute left-2 top-1/2 transform -translate-y-1/2 z-40" />
+        <CarouselNext className="text-uiblack absolute right-2 top-1/2 transform -translate-y-1/2 z-40" />
       </Carousel>
     </div>
   );
