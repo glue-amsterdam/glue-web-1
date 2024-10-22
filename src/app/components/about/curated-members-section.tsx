@@ -12,6 +12,7 @@ import {
 import { CuratedMember } from "@/utils/about-types";
 
 import { motion } from "framer-motion";
+import ScrollDown from "@/app/components/scroll-down";
 
 interface CuratedMembersProps {
   curatedMembers: CuratedMember[];
@@ -54,6 +55,7 @@ export default function CuratedMembersSection({
 
   return (
     <section
+      id="curated"
       aria-labelledby="curated-members-heading"
       className="section-container"
     >
@@ -91,6 +93,11 @@ export default function CuratedMembersSection({
           ))}
         </div>
       </div>
+      <ScrollDown
+        color="uiwhite"
+        href="#info"
+        className="absolute bottom-0 pr-7"
+      />
     </section>
   );
 }

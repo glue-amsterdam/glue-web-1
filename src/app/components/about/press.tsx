@@ -2,6 +2,7 @@
 
 import PressSection from "@/app/components/about/press-section";
 import GlueConectedImage from "@/app/components/glue-connected-image";
+import ScrollDown from "@/app/components/scroll-down";
 import { useColors } from "@/app/context/MainContext";
 import { PressItem } from "@/utils/about-types";
 import React from "react";
@@ -27,6 +28,7 @@ function Press({ pressItems }: Props) {
       />
 
       <PressSection pressItems={pressItems} />
+      <ScrollDown color="uiblack" href="#last" className="absolute bottom-0" />
     </div>
   );
 }

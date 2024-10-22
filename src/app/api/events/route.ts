@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   const type = searchParams.get("type") as EventType | null;
   const date = searchParams.get("date");
   const search = searchParams.get("search");
+  const limitParam = searchParams.get("limit");
 
   let filteredEvents = mockEvents;
 
@@ -34,7 +35,9 @@ export async function GET(request: Request) {
         )
     );
   }
+  const limit = limitParam ? parseInt(limitParam, 10) : undefined;
+  const limitedEvents = limit ? filteredEvents.slice(0, limit) : filteredEvents;
 
-  const response: EventsResponse = { events: filteredEvents };
+  const response: EventsResponse = { events: limitedEvents };
   return NextResponse.json(response);
 }

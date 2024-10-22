@@ -1,5 +1,6 @@
 "use client";
 
+import ScrollDown from "@/app/components/scroll-down";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
@@ -98,6 +99,7 @@ export default function ParticipantsSection({
           Participants
         </motion.h2>
       </div>
+      <ScrollDown href="#citizens" color="uiblack" />
     </section>
   );
 }

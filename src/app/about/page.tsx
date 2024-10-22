@@ -12,7 +12,7 @@ export default function AboutPage({}) {
     <div className="fixed inset-0 overflow-x-hidden overflow-y-scroll snap-y snap-mandatory">
       <Suspense>
         <main className="relative z-10">
-          <AboutPageContainer />
+          <AboutPageContainer />`
         </main>
       </Suspense>
       <Background />

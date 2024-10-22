@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Citizen } from "@/utils/about-types";
 import { motion } from "framer-motion";
+import ScrollDown from "@/app/components/scroll-down";
 
 interface CitizenOfHonourContentProps {
   initialCitizens: Citizen[];
@@ -79,7 +80,11 @@ export default function CitizenOfHonourSection({
   );
 
   return (
-    <section className="section-container" aria-labelledby="citizens-heading">
+    <section
+      id="citizens"
+      className="section-container"
+      aria-labelledby="citizens-heading"
+    >
       <div className="screen-size">
         <div className="flex justify-between md:items-center">
           <motion.h2
@@ -148,6 +153,7 @@ export default function CitizenOfHonourSection({
           </DialogContent>
         </Dialog>
       </div>
+      <ScrollDown color="uiwhite" href="#curated" />
     </section>
   );
 }

@@ -17,6 +17,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import ScrollDown from "@/app/components/scroll-down";
 
 interface MainSectionProps {
   content: MainSectionContent | undefined;
@@ -29,7 +30,7 @@ export default function MainSection({ content }: MainSectionProps) {
   if (!content) return <div className="text-center py-8">No Data</div>;
 
   return (
-    <section className="section-container" aria-label="Main content">
+    <section id="main" className="section-container" aria-label="Main content">
       <div className="screen-size">
         <motion.h1
           initial={{ opacity: 0, y: -60 }}
@@ -126,6 +127,7 @@ export default function MainSection({ content }: MainSectionProps) {
           </DialogContent>
         </Dialog>
       </div>
+      <ScrollDown color="uiwhite" href="#participants" />
     </section>
   );
 }

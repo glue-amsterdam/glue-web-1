@@ -20,6 +20,7 @@ import UserMenu from "./user-menu";
 import UserMenuItems from "./user-menu-items";
 import GlueLogoSVG from "@/app/components/glue-logo-svg";
 import { useLinks } from "@/app/context/MainContext";
+/* import BackButton from "@/app/components/navbar/back-button"; */
 
 interface SearchFormProps {
   onSearch: (query: string) => void;
@@ -66,9 +67,9 @@ export default function NavbarBurger() {
       >
         <nav className="flex items-center h-full justify-between p-4 w-full gap-4">
           <div
-            className={
+            className={`${
               !isVisible ? "opacity-0 pointer-events-none" : "opacity-100"
-            }
+            } flex`}
           >
             <Link href="/">
               <div className="relative size-20 md:size-24 xl:size-28">
@@ -78,6 +79,7 @@ export default function NavbarBurger() {
                 />
               </div>
             </Link>
+            {/*  <BackButton /> */}
           </div>
 
           <div className="hidden md:flex items-center space-x-4 flex-grow justify-center">

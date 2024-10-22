@@ -20,7 +20,8 @@ export default function PressSection({ pressItems }: PressSectionProps) {
     const rotateSide = i === 0 ? -20 : 20;
 
     return (
-      <motion.div
+      <motion.section
+        id="press"
         initial={{
           x: hasAnimatedRef.current ? 0 : xSide,
           y: hasAnimatedRef.current ? 0 : ySide,
@@ -48,7 +49,7 @@ export default function PressSection({ pressItems }: PressSectionProps) {
             </h3>
           </div>
         </Card>
-      </motion.div>
+      </motion.section>
     );
   };
 

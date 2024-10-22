@@ -35,10 +35,6 @@ export const mainSection: MainSection = {
       link: "https://www.facebook.com/",
       icon: "facebook",
     },
-    twitter: {
-      link: "https://www.twitter.com/",
-      icon: "twitter",
-    },
     instagram: {
       link: "https://www.instagram.com/",
       icon: "instagram",

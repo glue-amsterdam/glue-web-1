@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { InfoItem } from "@/utils/about-types";
 import { motion } from "framer-motion";
+import ScrollDown from "@/app/components/scroll-down";
 
 interface InfoSectionProps {
   infoItems: InfoItem[];
@@ -59,7 +60,11 @@ export default function InfoSection({ infoItems }: InfoSectionProps) {
   };
 
   return (
-    <section aria-labelledby="info-heading" className="section-container">
+    <section
+      id="info"
+      aria-labelledby="info-heading"
+      className="section-container"
+    >
       <div className="screen-size">
         <motion.h2
           id="info-heading"
@@ -110,6 +115,7 @@ export default function InfoSection({ infoItems }: InfoSectionProps) {
           </DialogContent>
         </Dialog>
       </div>
+      <ScrollDown color="uiwhite" href="#press" />
     </section>
   );
 }
