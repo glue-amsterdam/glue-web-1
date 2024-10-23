@@ -11,7 +11,7 @@ async function AboutPageContainer() {
   const aboutData = await fetchAbout();
 
   return (
-    <div className="h-screen snap-start">
+    <>
       <MainSection content={aboutData.mainSection} />
       <Participants participants={aboutData.participants} />
       <CitizenOfHonour initialCitizens={aboutData.citizens} />
@@ -22,7 +22,7 @@ async function AboutPageContainer() {
         glueInternational={aboutData.glueInternational}
         sponsors={aboutData.sponsors}
       />
-    </div>
+    </>
   );
 }
 

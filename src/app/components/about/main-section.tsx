@@ -30,39 +30,42 @@ export default function MainSection({ content }: MainSectionProps) {
   if (!content) return <div className="text-center py-8">No Data</div>;
 
   return (
-    <section id="main" className="section-container" aria-label="Main content">
-      <div className="screen-size">
-        <motion.h1
-          initial={{ opacity: 0, y: -60 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: 0.5,
-            delay: 0.8,
-          }}
-          viewport={{ once: true }}
-          className="h1-titles font-bold tracking-widest"
-        >
-          {content.title}
-        </motion.h1>
-
+    <section
+      id="main"
+      aria-label="Main content"
+      className="section-container flex flex-col justify-between"
+    >
+      <motion.h1
+        initial={{ opacity: 0, y: -60 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.5,
+          delay: 0.8,
+        }}
+        viewport={{ once: true }}
+        className="h1-titles font-bold tracking-widest"
+      >
+        {content.title}
+      </motion.h1>
+      <div className="flex-grow">
         <Carousel
-          className="w-full max-w-6xl mx-auto"
+          className="w-full h-full"
           plugins={[
             Autoplay({
               delay: 4000,
             }),
           ]}
         >
-          <CarouselContent>
+          <CarouselContent className="h-full">
             {content.slides.map((slide, index) => (
-              <CarouselItem key={index}>
-                <Card className="border-none bg-transparent">
-                  <CardContent className="p-0">
+              <CarouselItem className="h-full" key={index}>
+                <Card className="border-none bg-transparent h-full">
+                  <CardContent className="p-0 h-full">
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.9 }}
-                      className="relative w-full h-[40vh] lg:h-[550px] cursor-pointer transition-transform hover:scale-105"
+                      className="relative w-full h-full cursor-pointer transition-transform hover:scale-105"
                     >
                       <Image
                         src={slide.src}
@@ -84,49 +87,50 @@ export default function MainSection({ content }: MainSectionProps) {
           <CarouselPrevious className="hidden md:flex text-uiblack" />
           <CarouselNext className="hidden md:flex text-uiblack" />
         </Carousel>
-        <motion.p
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 1.3 }}
-          className="opacity-90 w-[90%] mx-auto mt-4 text-md md:text-lg"
-        >
-          {content.description}
-        </motion.p>
-        <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-          <DialogContent className="w-full p-0 max-w-[90vw] md:max-w-[70vw] ">
-            <div className="relative w-full h-full">
-              <img
-                src={content.slides[selectedImage].src}
-                alt={content.slides[selectedImage].alt}
-                className="object-cover w-full h-full"
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10"
-                onClick={() =>
-                  setSelectedImage(
-                    (prev) =>
-                      (prev - 1 + content.slides.length) % content.slides.length
-                  )
-                }
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10"
-                onClick={() =>
-                  setSelectedImage((prev) => (prev + 1) % content.slides.length)
-                }
-              >
-                <ChevronRight className="h-6 w-6" />
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
+      <motion.p
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 1.3 }}
+        className="opacity-90 mt-4 text-md md:text-lg"
+      >
+        {content.description}
+      </motion.p>
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="w-full p-0 max-w-[90vw] md:max-w-[70vw] ">
+          <div className="relative w-full h-full">
+            <img
+              src={content.slides[selectedImage].src}
+              alt={content.slides[selectedImage].alt}
+              className="object-cover w-full h-full"
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10"
+              onClick={() =>
+                setSelectedImage(
+                  (prev) =>
+                    (prev - 1 + content.slides.length) % content.slides.length
+                )
+              }
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10"
+              onClick={() =>
+                setSelectedImage((prev) => (prev + 1) % content.slides.length)
+              }
+            >
+              <ChevronRight className="h-6 w-6" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <ScrollDown color="uiwhite" href="#participants" />
     </section>
   );

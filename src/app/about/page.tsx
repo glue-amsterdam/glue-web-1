@@ -9,13 +9,13 @@ export const metadata: Metadata = {
 
 export default function AboutPage({}) {
   return (
-    <div className="fixed inset-0 overflow-x-hidden overflow-y-scroll snap-y snap-mandatory">
-      <Suspense>
-        <main className="relative z-10">
+    <>
+      <main className="flex-grow overflow-y-auto snap-y snap-mandatory overflow-x-hidden">
+        <Suspense>
           <AboutPageContainer />`
-        </main>
-      </Suspense>
+        </Suspense>
+      </main>
       <Background />
-    </div>
+    </>
   );
 }
