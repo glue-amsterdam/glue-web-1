@@ -51,10 +51,9 @@ export default function NavbarBurger() {
   return (
     <header className="w-full z-50 relative h-[15vh]">
       <motion.div
-        className="absolute inset-0 z-0"
+        className="absolute inset-0 z-0 bg-transparent"
         initial={false}
         animate={{
-          backgroundColor: isVisible ? "#2b2b2b" : "transparent",
           translateY: isVisible ? "0%" : "-100%",
         }}
         transition={{ duration: 0.3 }}
