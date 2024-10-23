@@ -2,10 +2,10 @@ import { MainSection } from "@/utils/menu-types";
 
 export const mainSection: MainSection = {
   mainColors: {
-    box1: "#0c0c0c",
-    box2: "#072f4a",
-    box3: "#0086cd",
-    box4: "#7dadc7",
+    box1: "#10069f",
+    box2: "#230051",
+    box3: "#000000",
+    box4: "#bfb030",
     triangle: "#e1d237",
   },
   mainMenu: [
