@@ -20,32 +20,32 @@ import Image from "next/image";
 import ScrollDown from "@/app/components/scroll-down";
 
 interface MainSectionProps {
-  content: MainSectionContent | undefined;
+  mainSection: MainSectionContent | undefined;
 }
 
-export default function MainSection({ content }: MainSectionProps) {
+export default function MainSection({ mainSection }: MainSectionProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
 
-  if (!content) return <div className="text-center py-8">No Data</div>;
+  if (!mainSection) return <div className="text-center py-8">No Data</div>;
 
   return (
     <section
       id="main"
       aria-label="Main content"
-      className="section-container flex flex-col justify-between"
+      className="section-container mx-auto container flex flex-col justify-between mb-20"
     >
       <motion.h1
         initial={{ opacity: 0, y: -60 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{
           duration: 0.5,
           delay: 0.8,
         }}
         viewport={{ once: true }}
-        className="h1-titles font-bold tracking-widest"
+        className="h1-titles font-bold tracking-widest my-4"
       >
-        {content.title}
+        {mainSection.title}
       </motion.h1>
       <div className="flex-grow">
         <Carousel
@@ -57,7 +57,7 @@ export default function MainSection({ content }: MainSectionProps) {
           ]}
         >
           <CarouselContent className="h-full">
-            {content.slides.map((slide, index) => (
+            {mainSection.slides.map((slide, index) => (
               <CarouselItem className="h-full" key={index}>
                 <Card className="border-none bg-transparent h-full">
                   <CardContent className="p-0 h-full">
@@ -94,14 +94,14 @@ export default function MainSection({ content }: MainSectionProps) {
         transition={{ delay: 1.3 }}
         className="opacity-90 mt-4 text-md md:text-lg"
       >
-        {content.description}
+        {mainSection.description}
       </motion.p>
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="w-full p-0 max-w-[90vw] md:max-w-[70vw] ">
           <div className="relative w-full h-full">
             <img
-              src={content.slides[selectedImage].src}
-              alt={content.slides[selectedImage].alt}
+              src={mainSection.slides[selectedImage].src}
+              alt={mainSection.slides[selectedImage].alt}
               className="object-cover w-full h-full"
             />
             <Button
@@ -111,7 +111,8 @@ export default function MainSection({ content }: MainSectionProps) {
               onClick={() =>
                 setSelectedImage(
                   (prev) =>
-                    (prev - 1 + content.slides.length) % content.slides.length
+                    (prev - 1 + mainSection.slides.length) %
+                    mainSection.slides.length
                 )
               }
             >
@@ -122,7 +123,9 @@ export default function MainSection({ content }: MainSectionProps) {
               size="icon"
               className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10"
               onClick={() =>
-                setSelectedImage((prev) => (prev + 1) % content.slides.length)
+                setSelectedImage(
+                  (prev) => (prev + 1) % mainSection.slides.length
+                )
               }
             >
               <ChevronRight className="h-6 w-6" />

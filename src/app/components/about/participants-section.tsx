@@ -9,18 +9,16 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Member } from "@/utils/member-types";
+import { ParticipantsSectionContent } from "@/utils/about-types";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-interface ParticipantsSectionProps {
-  participants: Member[];
-}
-
 export default function ParticipantsSection({
   participants,
-}: ParticipantsSectionProps) {
+  description,
+  title,
+}: ParticipantsSectionContent) {
   if (!participants || participants.length === 0) {
     return <div className="text-center py-8">No Participants Data</div>;
   }
@@ -30,75 +28,73 @@ export default function ParticipantsSection({
   }
 
   return (
-    <section
-      className="section-container"
-      aria-labelledby="participants-heading"
-    >
-      <div className="screen-size flex flex-col">
-        <motion.div
-          initial={{ rotate: 25, opacity: 0, marginTop: "15vh" }}
-          whileInView={{ rotate: 0, opacity: 1 }}
-          viewport={{ once: true, margin: "-20%" }}
-          transition={{ duration: 0.5 }}
+    <section className="z-20 mx-auto container h-full flex flex-col pt-20 justify-between relative">
+      <motion.h1
+        initial={{ opacity: 0, y: -60 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.5,
+          delay: 0.8,
+        }}
+        viewport={{ once: true }}
+        className="h1-titles font-bold tracking-widest mb-4"
+      >
+        {title}
+      </motion.h1>
+      <div className="h-[70%] flex items-start">
+        <Carousel
+          className="w-full h-full"
+          plugins={[
+            Autoplay({
+              stopOnMouseEnter: true,
+              delay: 2000,
+            }),
+          ]}
         >
-          <Carousel
-            className="w-full md:w-[80%] mx-auto"
-            plugins={[
-              Autoplay({
-                stopOnMouseEnter: true,
-                delay: 2000,
-              }),
-            ]}
-          >
-            <CarouselContent className="rounded-none">
-              {participants.map((participant, index) => (
-                <CarouselItem
-                  key={index}
-                  className="basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5"
+          <CarouselContent className="h-full">
+            {participants.map((participant, index) => (
+              <CarouselItem
+                key={index}
+                className="h-full basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 traslate-y-1/2"
+              >
+                <Link
+                  className="h-full"
+                  href={`/members/${encodeURIComponent(
+                    generateSlug(participant.name)
+                  )}`}
                 >
-                  <Link
-                    target="_blank"
-                    href={`/members/${encodeURIComponent(
-                      generateSlug(participant.name)
-                    )}`}
-                  >
-                    <div className="p-1">
-                      <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-300">
-                        <CardContent className="flex h-80 items-center justify-center p-0">
-                          <div className="relative w-full h-full group">
-                            <img
-                              src={participant.images[0]}
-                              alt={participant.name}
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                              <p className="text-center font-semibold text-sm">
-                                {participant.name}
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </Link>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden md:flex text-uiblack" />
-            <CarouselNext className="hidden md:flex text-uiblack" />
-          </Carousel>
-        </motion.div>{" "}
-        <motion.h2
-          id="participants-heading"
-          className="h2-titles text-uiblack text-right"
-          initial={{ opacity: 0, x: -70 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-        >
-          Participants
-        </motion.h2>
+                  <Card className="border-none shadow-sm bg-transparent h-full hover:shadow-md transition-shadow duration-300">
+                    <CardContent className="flex items-center justify-center p-0 h-full">
+                      <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
+                        <img
+                          src={participant.images[0]}
+                          alt={participant.name}
+                          className="w-full h-full absolute object-cover"
+                        />
+                        <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                          <p className="text-center font-semibold text-sm">
+                            {participant.name}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="hidden md:flex text-uiblack" />
+          <CarouselNext className="hidden md:flex text-uiblack" />
+        </Carousel>
       </div>
+      <motion.p
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 1.3 }}
+        className="opacity-90 mt-4 text-md md:text-lg text-uiblack flex-grow-[0.3]"
+      >
+        {description}
+      </motion.p>
       <ScrollDown href="#citizens" color="uiblack" />
     </section>
   );

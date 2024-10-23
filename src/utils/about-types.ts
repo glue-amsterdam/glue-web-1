@@ -56,9 +56,15 @@ export interface GlueInternationalContent {
   subtitle: string;
 }
 
+export interface ParticipantsSectionContent {
+  title: string;
+  description: string;
+  participants: Member[];
+}
+
 export interface DatabaseContent {
   mainSection: MainSectionContent;
-  participants: Member[];
+  participantsSection: ParticipantsSectionContent;
   citizens: Citizen[];
   curatedMembers: CuratedMember[];
   infoItems: InfoItem[];

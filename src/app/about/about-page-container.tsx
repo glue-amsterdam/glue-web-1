@@ -12,8 +12,8 @@ async function AboutPageContainer() {
 
   return (
     <>
-      <MainSection content={aboutData.mainSection} />
-      <Participants participants={aboutData.participants} />
+      <MainSection mainSection={aboutData.mainSection} />
+      <Participants participantsSection={aboutData.participantsSection} />
       <CitizenOfHonour initialCitizens={aboutData.citizens} />
       <CuratedMembers curatedMembers={aboutData.curatedMembers} />
       <Info infoItems={aboutData.infoItems} />
