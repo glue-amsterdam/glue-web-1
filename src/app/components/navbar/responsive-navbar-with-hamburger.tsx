@@ -52,7 +52,7 @@ export default function NavbarBurger() {
     <header
       className={`${
         isVisible && "backdrop-blur-lg bg-uiblack/20"
-      } w-full h-20 z-50 sticky top-0 drop-shadow-md`}
+      } w-full h-20 z-50 absolute top-0 drop-shadow-md`}
     >
       <motion.div
         className="absolute inset-0 z-0 bg-transparent"

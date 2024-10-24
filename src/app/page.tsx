@@ -3,9 +3,11 @@ import ClickAreas from "@/app/components/home-page/click-areas";
 
 export default function Home() {
   return (
-    <main className="fixed inset-0">
-      <ClickAreas />
+    <>
+      <main>
+        <ClickAreas />
+      </main>
       <Background />
-    </main>
+    </>
   );
 }

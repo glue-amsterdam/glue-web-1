@@ -28,7 +28,7 @@ export default function ParticipantsSection({
   }
 
   return (
-    <section className="z-20 mx-auto container h-full flex flex-col pt-20 justify-between relative">
+    <article className="z-20 mx-auto container h-full flex flex-col justify-between relative">
       <motion.h1
         initial={{ opacity: 0, y: -60 }}
         animate={{ opacity: 1, y: 0 }}
@@ -58,6 +58,7 @@ export default function ParticipantsSection({
                 className="h-full basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 traslate-y-1/2"
               >
                 <Link
+                  target="_blank"
                   className="h-full"
                   href={`/members/${encodeURIComponent(
                     generateSlug(participant.name)
@@ -95,7 +96,7 @@ export default function ParticipantsSection({
       >
         {description}
       </motion.p>
-      <ScrollDown href="#citizens" color="uiblack" />
-    </section>
+      <ScrollDown href="#citizens" color="uiblack" className="py-2" />
+    </article>
   );
 }

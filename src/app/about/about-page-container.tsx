@@ -14,13 +14,13 @@ async function AboutPageContainer() {
     <>
       <MainSection mainSection={aboutData.mainSection} />
       <Participants participantsSection={aboutData.participantsSection} />
-      <CitizenOfHonour initialCitizens={aboutData.citizens} />
-      <CuratedMembers curatedMembers={aboutData.curatedMembers} />
-      <Info infoItems={aboutData.infoItems} />
-      <Press pressItems={aboutData.pressItems} />
+      <CitizenOfHonour citizensSection={aboutData.citizensSection} />
+      <CuratedMembers curatedMembersSection={aboutData.curatedMembersSection} />
+      <Info infoItemsSection={aboutData.infoItemsSection} />
+      <Press pressItemsSection={aboutData.pressItemsSection} />
       <LastPage
-        glueInternational={aboutData.glueInternational}
-        sponsors={aboutData.sponsors}
+        glueInternationalSection={aboutData.glueInternationalSection}
+        sponsorsSection={aboutData.sponsorsSection}
       />
     </>
   );

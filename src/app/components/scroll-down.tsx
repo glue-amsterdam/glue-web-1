@@ -4,6 +4,7 @@ import React from "react";
 import { FaChevronDown } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { twMerge } from "tailwind-merge";
+import Link from "next/link";
 
 type Props = {
   color: "uiwhite" | "uiblack";
@@ -13,7 +14,7 @@ type Props = {
 
 function ScrollDown({ color, href, className }: Props) {
   return (
-    <a
+    <Link
       href={href}
       className={twMerge(
         `text-${color} w-full z-20 flex justify-center relative flex-col items-center `,
@@ -36,7 +37,7 @@ function ScrollDown({ color, href, className }: Props) {
       <div
         className={`absolute inset-0 bg-gradient-to-b from-transparent blur-md to-${color} z-20 opacity-5`}
       ></div>
-    </a>
+    </Link>
   );
 }
 

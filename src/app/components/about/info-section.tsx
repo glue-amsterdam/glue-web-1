@@ -9,9 +9,15 @@ import ScrollDown from "@/app/components/scroll-down";
 
 interface InfoSectionProps {
   infoItems: InfoItem[];
+  title: string;
+  description: string;
 }
 
-export default function InfoSection({ infoItems }: InfoSectionProps) {
+export default function InfoSection({
+  infoItems,
+  title,
+  description,
+}: InfoSectionProps) {
   const [selectedInfo, setSelectedInfo] = useState<InfoItem | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const hasAnimatedRef = useRef(false);
@@ -37,7 +43,7 @@ export default function InfoSection({ infoItems }: InfoSectionProps) {
         whileInView={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, delay: i * 0.2 }}
         viewport={{ once: true }}
-        className="relative shadow-md overflow-hidden min-h-[20vh]"
+        className="relative shadow-md overflow-hidden h-full"
         onViewportEnter={() => (hasAnimatedRef.current = true)}
       >
         <Card
@@ -60,62 +66,65 @@ export default function InfoSection({ infoItems }: InfoSectionProps) {
   };
 
   return (
-    <section
-      id="info"
-      aria-labelledby="info-heading"
-      className="section-container"
-    >
-      <div className="screen-size">
-        <motion.h2
-          id="info-heading"
-          className="h2-titles font-bold"
-          initial={{ opacity: 0, x: 70 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.7 }}
-        >
-          Information
-        </motion.h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[80%] place-content-center md:place-content-stretch">
-          {infoItems.map((info, index) => (
-            <InfoCard key={info.id} i={index} info={info} />
-          ))}
-        </div>
-
-        <Dialog open={modalOpen} onOpenChange={closeModal}>
-          <DialogContent
-            forceMount
-            className="text-uiblack min-w-[80vw] rounded-none m-0 p-0"
-          >
-            {selectedInfo && (
-              <div className="relative w-full h-[400px] md:h-[70vh] group">
-                <img
-                  src={selectedInfo.image}
-                  alt={selectedInfo.title}
-                  className="absolute inset-0 w-full h-full object-cover rounded-lg mb-4"
-                />
-                <div className="absolute z-20 bottom-0 left-0 right-0 bg-uiwhite p-6 transition-all duration-300 ease-in-out md:opacity-0 md:group-hover:opacity-100">
-                  <DialogTitle>
-                    <motion.h4
-                      initial={{ rotate: 20 }}
-                      animate={modalOpen ? { rotate: 0 } : {}}
-                      transition={{ duration: 0.3 }}
-                      className="text-xl md:text-3xl"
-                    >
-                      {selectedInfo?.title}
-                    </motion.h4>
-                    <p className="text-sm md:text-base mt-2">
-                      {selectedInfo?.description}
-                    </p>
-                  </DialogTitle>
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+    <article className="z-20 mx-auto container h-full flex flex-col justify-between relative">
+      <motion.h1
+        initial={{ opacity: 0, y: -60 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.5,
+          delay: 0.8,
+        }}
+        viewport={{ once: true }}
+        className="h1-titles font-bold tracking-widest "
+      >
+        {title}
+      </motion.h1>
+      <motion.p
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 1.3 }}
+        className="mt-4 text-md md:text-lg text-uiwhite flex-grow-[0.3]"
+      >
+        {description}
+      </motion.p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[80%]">
+        {infoItems.map((info, index) => (
+          <InfoCard key={info.id} i={index} info={info} />
+        ))}
       </div>
-      <ScrollDown color="uiwhite" href="#press" />
-    </section>
+
+      <Dialog open={modalOpen} onOpenChange={closeModal}>
+        <DialogContent
+          forceMount
+          className="text-uiblack min-w-[80vw] rounded-none m-0 p-0"
+        >
+          {selectedInfo && (
+            <div className="relative w-full h-[400px] md:h-[70vh] group">
+              <img
+                src={selectedInfo.image}
+                alt={selectedInfo.title}
+                className="absolute inset-0 w-full h-full object-cover rounded-lg mb-4"
+              />
+              <div className="absolute z-20 bottom-0 left-0 right-0 bg-uiwhite p-6 transition-all duration-300 ease-in-out md:opacity-0 md:group-hover:opacity-100">
+                <DialogTitle>
+                  <motion.h4
+                    initial={{ rotate: 20 }}
+                    animate={modalOpen ? { rotate: 0 } : {}}
+                    transition={{ duration: 0.3 }}
+                    className="text-xl md:text-3xl"
+                  >
+                    {selectedInfo?.title}
+                  </motion.h4>
+                  <p className="text-sm md:text-base mt-2">
+                    {selectedInfo?.description}
+                  </p>
+                </DialogTitle>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      <ScrollDown color="uiwhite" href="#press" className="py-2" />
+    </article>
   );
 }

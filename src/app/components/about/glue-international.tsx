@@ -1,10 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { GlueInternationalContent } from "@/utils/about-types";
 import { GiWorld } from "react-icons/gi";
-import Image from "next/image";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 interface GlueInternationalProps {
   glueInternational: GlueInternationalContent;
@@ -14,49 +13,50 @@ export default function GlueInternational({
   glueInternational,
 }: GlueInternationalProps) {
   return (
-    <div className="relative mt-6 max-h-[80%] mx-auto">
-      <motion.div
-        initial={{ x: 80, y: 20 }}
-        whileInView={{ x: 0 }}
-        transition={{ duration: 0.4 }}
-        className="absolute inset-0 w-[90%] mx-auto bg-glueBlue rounded-lg"
-      />
+    <motion.div
+      initial={{ x: 80, y: 20 }}
+      whileInView={{ x: 0 }}
+      transition={{ duration: 0.4 }}
+      className="w-full md:w-[80%] mx-auto bg-glueBlue rounded-lg"
+    >
       <motion.div
         initial={{ x: -120, opacity: 0 }}
         whileInView={{ x: 0, opacity: 1 }}
         transition={{ delay: 0.4, duration: 0.5 }}
-        className="group bg-uiwhite w-[80%] relative min-h-[30vh] flex flex-wrap rounded-lg shadow-md mx-auto overflow-hidden p-5 border border-uiblack"
+        className="flex py-4 flex-col bg-uiwhite text-uiblack w-[70%] rounded-lg shadow-md mx-auto border border-uiblack"
       >
-        <div className="text-uiblack flex-1 pl-5">
-          <Image
-            src={"/logos/logo-main.png"}
-            className=" invert"
-            alt="GLUE logo, connected by design"
-            width={120}
-            height={100}
-          />
-          <h2 id="glue-international-heading" className="text-3xl font-bold">
-            {glueInternational.title}
-          </h2>
-          <p>{glueInternational.subtitle}</p>
-        </div>
-        <Button
-          asChild
-          className="flex-1 md:py-6 text-lg bg-glueBlue scale-90 hover:scale-100 transition duration-500"
-        >
-          <a
-            href={glueInternational.website}
-            target="_blank"
-            className="text-uiwhite flex gap-2 h-auto"
-            rel="noopener noreferrer"
+        <div className="mx-auto text-center">
+          <motion.h1
+            initial={{ opacity: 0, y: -60 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.5,
+              delay: 0.8,
+            }}
+            viewport={{ once: true }}
+            className="h1-titles font-bold tracking-widest"
           >
-            <GiWorld className="" size={50} />
-            <span className="text-sm lg:text-lg font-bold">
-              {glueInternational.buttonText}
-            </span>
-          </a>
-        </Button>
+            {glueInternational.title}
+          </motion.h1>
+          <motion.p
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 1.3 }}
+            className="opacity-90 mt-4 text-md md:text-lg"
+          >
+            {glueInternational.subtitle}
+          </motion.p>
+        </div>
+
+        <Link
+          href={glueInternational.website}
+          target="_blank"
+          className="hover:scale-110 rounded-md py-2 mx-auto flex items-center justify-center bg-glueBlue text-uiwhite transition duration-500 w-[80%]"
+        >
+          <GiWorld className="size-12 px-2" />
+          <p className="text-center px-2">{glueInternational.buttonText}</p>
+        </Link>
       </motion.div>
-    </div>
+    </motion.div>
   );
 }

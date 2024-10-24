@@ -13,13 +13,18 @@ import { CuratedMember } from "@/utils/about-types";
 
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
+import Link from "next/link";
 
 interface CuratedMembersProps {
   curatedMembers: CuratedMember[];
+  title: string;
+  description: string;
 }
 
 export default function CuratedMembersSection({
   curatedMembers,
+  title,
+  description,
 }: CuratedMembersProps) {
   const years = Array.from(
     new Set(curatedMembers.map((curatedMember) => curatedMember.year))
@@ -40,39 +45,43 @@ export default function CuratedMembersSection({
   };
 
   const MemberCard = ({ member, i }: { member: CuratedMember; i: number }) => (
-    <motion.div
-      initial={{ y: 20, scale: 0, rotate: "10deg" }}
-      animate={{ y: 0, scale: 1, rotate: 0 }}
-      transition={{ delay: i / 6 }}
-      className="flex items-center gap-2 "
+    <Link
+      target="_blank"
+      href={`/members/${member.slug}`}
+      className="hover:scale-110 transition-all hover:rotate-1 mb-2"
     >
-      <FaUserCircle />
-      <h3 className="font-semibold text-base md:text-xl lg:text-2xl">
-        {member.name}
-      </h3>
-    </motion.div>
+      <motion.div
+        initial={{ y: 20, scale: 0, rotate: "10deg" }}
+        animate={{ y: 0, scale: 1, rotate: 0 }}
+        transition={{ delay: i / 6 }}
+        className="flex items-center gap-2"
+      >
+        <FaUserCircle />
+        <h3 className="font-semibold text-base md:text-lg lg:text-xl">
+          {member.name}
+        </h3>
+      </motion.div>
+    </Link>
   );
 
   return (
-    <section
-      id="curated"
-      aria-labelledby="curated-members-heading"
-      className="section-container"
-    >
-      <div className="screen-size">
-        <div className="flex justify-between mb-12">
-          <motion.h2
-            id="curated-members-heading"
-            className="h2-titles font-bold"
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+    <article className="z-20 mx-auto container h-full flex flex-col justify-between relative">
+      <>
+        <div className="flex justify-between md:items-center my-4">
+          <motion.h1
+            initial={{ opacity: 0, y: -60 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.5,
+              delay: 0.8,
+            }}
             viewport={{ once: true }}
-            transition={{ delay: 1 }}
+            className="h1-titles font-bold tracking-widest "
           >
-            Curated Sticky Members
-          </motion.h2>
+            {title}
+          </motion.h1>
           <Select onValueChange={handleYearChange} value={selectedYear}>
-            <SelectTrigger className="w-[180px] mt-4 rounded-none">
+            <SelectTrigger className="w-[180px] rounded-none bg-uiwhite text-uiblack">
               <SelectValue placeholder="Select year" />
             </SelectTrigger>
             <SelectContent>
@@ -84,20 +93,22 @@ export default function CuratedMembersSection({
             </SelectContent>
           </Select>
         </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {filteredMembers.map((member, i) => (
-            <div key={member.id}>
-              <MemberCard member={member} i={i} />
-            </div>
-          ))}
-        </div>
+        <motion.p
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 1.3 }}
+          className="mt-4 text-md md:text-lg text-uiwhite flex-grow-[0.3]"
+        >
+          {description}
+        </motion.p>
+      </>
+      <div className="grid grid-cols-2 md:grid-cols-4 place-content-start flex-grow">
+        {filteredMembers.map((member, i) => (
+          <MemberCard key={member.id} member={member} i={i} />
+        ))}
       </div>
-      <ScrollDown
-        color="uiwhite"
-        href="#info"
-        className="absolute bottom-0 pr-7"
-      />
-    </section>
+
+      <ScrollDown color="uiwhite" href="#info" className="py-2" />
+    </article>
   );
 }

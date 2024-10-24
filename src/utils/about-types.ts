@@ -23,6 +23,7 @@ export interface Citizen {
 export interface CuratedMember {
   id: number;
   name: string;
+  slug: string;
   year: number;
 }
 
@@ -62,13 +63,43 @@ export interface ParticipantsSectionContent {
   participants: Member[];
 }
 
+export interface CuratedMemberSectionContent {
+  title: string;
+  description: string;
+  curatedMembers: CuratedMember[];
+}
+
+export interface CitizensSectionContent {
+  title: string;
+  description: string;
+  citizens: Citizen[];
+}
+
+export interface InfoSectionContent {
+  title: string;
+  description: string;
+  infoItems: InfoItem[];
+}
+
+export interface PressItemsSectionContent {
+  title: string;
+  description: string;
+  pressItems: PressItem[];
+}
+
+export interface SponsorsSectionContent {
+  title: string;
+  description: string;
+  sponsors: Sponsor[];
+}
+
 export interface DatabaseContent {
   mainSection: MainSectionContent;
   participantsSection: ParticipantsSectionContent;
-  citizens: Citizen[];
-  curatedMembers: CuratedMember[];
-  infoItems: InfoItem[];
-  pressItems: PressItem[];
-  sponsors: Sponsor[];
-  glueInternational: GlueInternationalContent;
+  citizensSection: CitizensSectionContent;
+  curatedMembersSection: CuratedMemberSectionContent;
+  infoItemsSection: InfoSectionContent;
+  pressItemsSection: PressItemsSectionContent;
+  sponsorsSection: SponsorsSectionContent;
+  glueInternationalSection: GlueInternationalContent;
 }

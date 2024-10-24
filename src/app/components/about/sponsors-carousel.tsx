@@ -13,51 +13,69 @@ import Link from "next/link";
 
 interface SponsorsCarouselProps {
   sponsors: Sponsor[];
+  title: string;
+  description: string;
 }
 
-export default function SponsorsCarousel({ sponsors }: SponsorsCarouselProps) {
+export default function SponsorsCarousel({
+  sponsors,
+  title,
+  description,
+}: SponsorsCarouselProps) {
   return (
-    <section aria-labelledby="sponsors-heading">
-      <motion.h2
-        id="sponsors-heading"
-        className="h2-titles text-uiblack"
-        initial={{ opacity: 0, x: 70 }}
-        whileInView={{ opacity: 1, x: 0 }}
+    <>
+      <motion.h1
+        initial={{ opacity: 0, y: -60 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.5,
+          delay: 0.8,
+        }}
         viewport={{ once: true }}
-        transition={{ delay: 0.7 }}
+        className="h1-titles font-bold tracking-widest text-uiblack pt-4"
       >
-        Our Sponsors
-      </motion.h2>
-
-      <Carousel
-        className="w-full"
-        plugins={[
-          Autoplay({
-            stopOnMouseEnter: true,
-            delay: 1000,
-          }),
-        ]}
+        {title}
+      </motion.h1>
+      <motion.p
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 1.3 }}
+        className="text-md md:text-lg text-uiblack flex-grow-[0.3]"
       >
-        <CarouselContent>
-          {sponsors.map((sponsor, index) => (
-            <CarouselItem
-              key={index}
-              className="basis-1/3 md:basis-1/4 lg:basis-1/6"
-            >
-              <div className="p-1">
+        {description}
+      </motion.p>
+      <section
+        aria-labelledby="sponsors-heading"
+        className="h-full flex items-start"
+      >
+        <Carousel
+          className="w-full h-full"
+          plugins={[
+            Autoplay({
+              stopOnMouseEnter: true,
+              delay: 1000,
+            }),
+          ]}
+        >
+          <CarouselContent className="h-full">
+            {sponsors.map((sponsor, index) => (
+              <CarouselItem
+                key={index}
+                className="basis-1/4 lg:basis-1/6 h-full"
+              >
                 <Link
                   href={sponsor.website ? sponsor.website : ""}
                   target={sponsor.website && "_blank"}
                 >
-                  <Card className="border-none">
-                    <CardContent className="flex aspect-square items-center justify-center p-0">
-                      <div className="relative w-full h-full group">
+                  <Card className="border-none shadow-none bg-transparent h-full transition-shadow duration-300">
+                    <CardContent className="flex items-center justify-center p-0 h-full">
+                      <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
                         <img
                           src={sponsor.logo}
                           alt={sponsor.name}
-                          className="w-full h-full object-contain"
+                          className="w-full h-full absolute object-cover"
                         />
-                        <div className="absolute inset-0 bg-black bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
                           <div>
                             <p className="text-center font-semibold">
                               {sponsor.name}
@@ -71,11 +89,11 @@ export default function SponsorsCarousel({ sponsors }: SponsorsCarouselProps) {
                     </CardContent>
                   </Card>
                 </Link>
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-      </Carousel>
-    </section>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+      </section>
+    </>
   );
 }
