@@ -89,7 +89,7 @@ export default function AdminPanel({ members }: { members: Member[] }) {
                 <div className="flex items-center space-x-4">
                   <Avatar>
                     <AvatarImage
-                      src={selectedMember.images[0]}
+                      src={selectedMember.images[0].src}
                       alt={selectedMember.name}
                     />
                     <AvatarFallback>
