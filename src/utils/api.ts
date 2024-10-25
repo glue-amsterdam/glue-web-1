@@ -25,7 +25,7 @@ export const fetchMain = cache(async (): Promise<MainSection> => {
 /* ABOUT */
 export const fetchAbout = cache(async (): Promise<DatabaseContent> => {
   const res = await fetch(`${BASE_URL}/about`, {
-    next: { revalidate: 3600 },
+    next: { revalidate: 0 },
   });
   if (!res.ok) {
     console.error("Failed to fetch Main, using mock data");
@@ -67,14 +67,14 @@ export const fetchLocationGroups = cache(async (): Promise<LocationGroup[]> => {
 /* MEMBERS */
 export const fetchMember = cache(async (slug: string): Promise<Member> => {
   const res = await fetch(`${BASE_URL}/members/${slug}`, {
-    next: { revalidate: 3600 },
+    next: { revalidate: 0 },
   });
   if (!res.ok) throw new Error("Failed to fetch Members");
   return res.json();
 });
 export const fetchAllMembers = cache(async (): Promise<MembersResponse> => {
   const res = await fetch(`${BASE_URL}/members`, {
-    next: { revalidate: 3600 },
+    next: { revalidate: 0 },
   });
   if (!res.ok) throw new Error("Failed to fetch All Members");
   return res.json();
