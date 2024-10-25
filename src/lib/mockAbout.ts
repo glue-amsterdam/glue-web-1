@@ -31,7 +31,6 @@ export const mockAbout: DatabaseContent = {
     description:
       "Discover all participating brands, designers, studio's and academies of GLUE amsterdam connected by design",
     participants: members,
-    numberdisplayed: 10,
   },
   citizensSection: {
     title: "Creative Citizens of Honour",

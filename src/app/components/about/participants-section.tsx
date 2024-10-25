@@ -18,14 +18,12 @@ export default function ParticipantsSection({
   participants,
   description,
   title,
-  numberdisplayed,
 }: ParticipantsSectionContent) {
   if (!participants || participants.length === 0) {
     return <div className="text-center py-8">No Participants Data</div>;
   }
 
-  const slicedParticipants =
-    participants.slice(0, numberdisplayed) || participants.slice(0, 15);
+  const slicedParticipants = participants.slice(0, 10);
 
   function generateSlug(name: string) {
     return name.toLowerCase().replace(/\s+/g, "-");

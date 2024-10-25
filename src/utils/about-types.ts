@@ -61,7 +61,6 @@ export interface GlueInternationalContent {
 export interface ParticipantsSectionContent {
   title: string;
   description: string;
-  numberdisplayed: number;
   participants: Member[];
 }
 

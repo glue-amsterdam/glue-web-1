@@ -25,7 +25,6 @@ export default function Participants({
       className="h-screen pt-[5rem] relative w-full flex flex-col justify-center items-center snap-start bg-uiwhite"
     >
       <ParticipantsSection
-        numberdisplayed={participantsSection.numberdisplayed}
         description={participantsSection.description}
         title={participantsSection.title}
         participants={participantsSection.participants}
