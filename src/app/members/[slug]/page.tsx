@@ -13,18 +13,20 @@ export default async function MemberPage({
   const member = await fetchMember(params.slug);
 
   return (
-    <div className="flex flex-col md:flex-row h-[85vh]">
-      <div className="w-full md:w-1/2 h-[50vh] md:h-full relative overflow-hidden">
-        <LogoMain mode="member" />
-        <Suspense fallback={<CenteredLoader />}>
-          <ImageCarousel images={member.images} />
-        </Suspense>
-      </div>
-      <div className="w-full md:w-1/2 h-[50vh] md:h-full overflow-y-auto text-uiblack">
-        <Suspense fallback={<CenteredLoader />}>
-          <MemberInfo member={member} />
-        </Suspense>
-      </div>
-    </div>
+    <main className="relative h-screen">
+      <section className="pt-[5rem] grid grid-cols-1 md:grid-cols-2 h-full grid-rows-2 md:grid-rows-1">
+        <article className="overflow-hidden">
+          <LogoMain mode="member" />
+          <Suspense fallback={<CenteredLoader />}>
+            <ImageCarousel images={member.images} />
+          </Suspense>
+        </article>
+        <article className="h-full overflow-y-scroll text-uiblack">
+          <Suspense fallback={<CenteredLoader />}>
+            <MemberInfo member={member} />
+          </Suspense>
+        </article>
+      </section>
+    </main>
   );
 }
