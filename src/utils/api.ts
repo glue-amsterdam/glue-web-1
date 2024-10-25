@@ -10,7 +10,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 /* MAIN */
 export const fetchMain = cache(async (): Promise<MainSection> => {
   const res = await fetch(`${BASE_URL}/main`, {
-    next: { revalidate: 3600 },
+    next: { revalidate: 0 },
   });
 
   if (!res.ok) {
