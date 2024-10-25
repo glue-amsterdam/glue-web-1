@@ -6,7 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { MdMenuOpen } from "react-icons/md";
-import { CiInstagram, CiLinkedin, CiSearch } from "react-icons/ci";
+import { CiInstagram, CiLinkedin, CiSearch, CiYoutube } from "react-icons/ci";
+import { IoNewspaperOutline } from "react-icons/io5";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,6 @@ import UserMenu from "./user-menu";
 import UserMenuItems from "./user-menu-items";
 import GlueLogoSVG from "@/app/components/glue-logo-svg";
 import { useLinks } from "@/app/context/MainContext";
-/* import BackButton from "@/app/components/navbar/back-button"; */
 
 interface SearchFormProps {
   onSearch: (query: string) => void;
@@ -49,12 +49,15 @@ export default function NavbarBurger() {
   }, [pathname]);
 
   return (
-    <header className="w-full z-50 relative h-[15vh]">
+    <header
+      className={`${
+        isVisible && "backdrop-blur-lg bg-uiblack/20"
+      } w-full h-20 z-50 absolute top-0 drop-shadow-md`}
+    >
       <motion.div
-        className="absolute inset-0 z-0"
+        className="absolute inset-0 z-0 bg-transparent"
         initial={false}
         animate={{
-          backgroundColor: isVisible ? "#2b2b2b" : "transparent",
           translateY: isVisible ? "0%" : "-100%",
         }}
         transition={{ duration: 0.3 }}
@@ -66,32 +69,31 @@ export default function NavbarBurger() {
         } transition-all duration-500`}
       >
         <nav className="flex items-center h-full justify-between p-4 w-full gap-4">
-          <div
-            className={`${
-              !isVisible ? "opacity-0 pointer-events-none" : "opacity-100"
-            } flex`}
-          >
-            <Link href="/">
-              <div className="relative size-20 md:size-24 xl:size-28">
-                <GlueLogoSVG
-                  isVisible={isVisible}
-                  className="absolute inset-0 w-full h-full"
-                />
-              </div>
-            </Link>
-            {/*  <BackButton /> */}
-          </div>
-
-          <div className="hidden md:flex items-center space-x-4 flex-grow justify-center">
+          <div className="flex-1">{/* MENU ENTRE PÁGINAS */}</div>
+          <div className="hidden flex-1 md:flex items-center space-x-4 flex-grow justify-center">
             <SearchForm
               onSearch={handleSearch}
               onSearchComplete={() => setIsOpen(false)}
             />
           </div>
 
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden justify-end flex-1 md:flex items-center space-x-4">
             <SocialIcons />
             <UserMenu />
+            <div
+              className={`${
+                !isVisible ? "opacity-0 pointer-events-none" : "opacity-100"
+              } flex`}
+            >
+              <Link href="/">
+                <div className="relative size-14">
+                  <GlueLogoSVG
+                    isVisible={isVisible}
+                    className="absolute inset-0 w-full h-full"
+                  />
+                </div>
+              </Link>
+            </div>
           </div>
 
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -170,7 +172,9 @@ function SocialIcons(): JSX.Element {
   const linkedinLink = links?.linkedin?.link || "https://linkedin.com";
 
   return (
-    <div className="flex space-x-4 justify-center">
+    <div className="flex items-center space-x-4 justify-center">
+      <IoNewspaperOutline className="size-6" />
+      <CiYoutube className="size-7" />
       <Link href={instagramLink} target="_blank" rel="noopener noreferrer">
         <CiInstagram className="size-6" />
       </Link>

@@ -11,18 +11,18 @@ async function AboutPageContainer() {
   const aboutData = await fetchAbout();
 
   return (
-    <div className="h-screen snap-start">
-      <MainSection content={aboutData.mainSection} />
-      <Participants participants={aboutData.participants} />
-      <CitizenOfHonour initialCitizens={aboutData.citizens} />
-      <CuratedMembers curatedMembers={aboutData.curatedMembers} />
-      <Info infoItems={aboutData.infoItems} />
-      <Press pressItems={aboutData.pressItems} />
+    <>
+      <MainSection mainSection={aboutData.carouselSection} />
+      <Participants participantsSection={aboutData.participantsSection} />
+      <CitizenOfHonour citizensSection={aboutData.citizensSection} />
+      <CuratedMembers curatedMembersSection={aboutData.curatedMembersSection} />
+      <Info infoItemsSection={aboutData.infoItemsSection} />
+      <Press pressItemsSection={aboutData.pressItemsSection} />
       <LastPage
-        glueInternational={aboutData.glueInternational}
-        sponsors={aboutData.sponsors}
+        glueInternationalSection={aboutData.glueInternationalSection}
+        sponsorsSection={aboutData.sponsorsSection}
       />
-    </div>
+    </>
   );
 }
 

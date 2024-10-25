@@ -42,37 +42,34 @@ function ClickAreas() {
   }
 
   return (
-    <>
-      <nav className="fixed inset-0 z-30">
-        <ul className="h-full w-full">
-          {mainMenu
-            .filter((area) => area?.section && area.className)
-            .map((area) => (
-              <li key={area.section} className={`absolute ${area.className}`}>
-                <Link
-                  href={`/${area.section}`}
-                  onClick={(e) =>
-                    handleAreaClick(
-                      e,
-                      `/${area.section}`,
-                      area.section === "dashboard"
-                    )
-                  }
-                  className="block w-full h-full"
-                  aria-labelledby={`label-${area?.section}`}
-                />
-              </li>
-            ))}
-        </ul>
-
-        <Labels mainMenu={mainMenu} />
-      </nav>
+    <nav className="fixed inset-0 z-30">
+      <ul className="h-full w-full">
+        {mainMenu
+          .filter((area) => area?.section && area.className)
+          .map((area) => (
+            <li key={area.section} className={`absolute ${area.className}`}>
+              <Link
+                href={`/${area.section}`}
+                onClick={(e) =>
+                  handleAreaClick(
+                    e,
+                    `/${area.section}`,
+                    area.section === "dashboard"
+                  )
+                }
+                className="block w-full h-full"
+                aria-labelledby={`label-${area?.section}`}
+              />
+            </li>
+          ))}
+      </ul>
+      <Labels mainMenu={mainMenu} />
       <LoginForm
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         onLogin={handleLogin}
       />
-    </>
+    </nav>
   );
 }
 

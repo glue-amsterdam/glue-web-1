@@ -17,7 +17,7 @@ export default function EventsPage({
   });
 
   return (
-    <div className="min-h-screen relative">
+    <div className="h-screen pt-[5rem] relative">
       <Background />
       <Suspense fallback={<CenteredLoader />}>
         <EventsPageContainer params={params} />

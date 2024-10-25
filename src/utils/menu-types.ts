@@ -1,21 +1,15 @@
 export interface MainSection {
   mainColors: MainColors;
-  mainMenu: MenuItem[];
-  mainLinks: MainLinks;
+  mainMenu: MainMenuItem[];
+  mainLinks: Record<string, MainLink>;
 }
-
-interface MenuItem {
+export interface MainMenuItem {
   label: string;
   section: string;
   className: string;
 }
 
-interface LinkItem {
-  link: string;
-  icon?: string;
-}
-
-interface MainColors {
+export interface MainColors {
   box1: string;
   box2: string;
   box3: string;
@@ -23,7 +17,7 @@ interface MainColors {
   triangle: string;
 }
 
-interface MainLinks {
-  linkedin: LinkItem;
-  instagram: LinkItem;
+export interface MainLink {
+  link: string;
+  icon: string;
 }

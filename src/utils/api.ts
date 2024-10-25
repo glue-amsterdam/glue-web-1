@@ -13,6 +13,11 @@ export const fetchMain = cache(async (): Promise<MainSection> => {
     next: { revalidate: 3600 },
   });
 
+  if (!res.ok) {
+    console.error("Failed to fetch Main, using mock data");
+    return await import("@/lib/mockMain").then((result) => result.mainSection);
+  }
+
   if (!res.ok) throw new Error("Failed to fetch Main");
   return res.json();
 });
@@ -22,6 +27,11 @@ export const fetchAbout = cache(async (): Promise<DatabaseContent> => {
   const res = await fetch(`${BASE_URL}/about`, {
     next: { revalidate: 3600 },
   });
+  if (!res.ok) {
+    console.error("Failed to fetch Main, using mock data");
+    return await import("@/lib/mockAbout").then((result) => result.mockAbout);
+  }
+
   if (!res.ok) throw new Error("Failed to fetch About section");
   return res.json();
 });

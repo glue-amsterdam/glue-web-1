@@ -18,6 +18,7 @@ const config: Config = {
       uiwhite: "#faf9f6",
       uired: "#f01e27",
       uigreen: "#13dd88",
+      glueBlue: "#10069f",
       blue: {
         100: "#E6F0FF",
         500: "#3B82F6",

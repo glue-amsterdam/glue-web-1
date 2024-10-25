@@ -1,21 +1,14 @@
-import { Metadata } from "next";
-import { Suspense } from "react";
+/* import { Suspense } from "react";
 import Background from "@/app/components/background";
-import AboutPageContainer from "@/app/about/about-page-container";
-
-export const metadata: Metadata = {
-  title: "GLUE - About",
-};
+import AboutPageContainer from "@/app/about/about-page-container"; */
 
 export default function AboutPage({}) {
   return (
-    <div className="fixed inset-0 overflow-x-hidden overflow-y-scroll snap-y snap-mandatory">
-      <Suspense>
-        <main className="relative z-10">
-          <AboutPageContainer />`
-        </main>
+    <main className="h-screen overflow-y-scroll snap-y snap-mandatory scroll-smooth">
+      {/* <Suspense>
+        <AboutPageContainer />
       </Suspense>
-      <Background />
-    </div>
+      <Background /> */}
+    </main>
   );
 }

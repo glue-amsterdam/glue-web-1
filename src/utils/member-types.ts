@@ -1,3 +1,5 @@
+import { Image } from "@/utils/about-types";
+
 interface TimeRange {
   open: string;
   close: string;
@@ -25,7 +27,7 @@ export interface Member {
   visibleEmail: string[];
   visibleWebsite: string[];
   socialMedia: SocialMediaLinks;
-  images: string[];
+  images: Image[];
 }
 
 export interface MembersResponse {

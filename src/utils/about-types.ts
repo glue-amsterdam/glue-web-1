@@ -1,21 +1,21 @@
 import { Member } from "@/utils/member-types";
 
-export interface SlideImage {
-  id: number;
+export interface Image {
+  id: string;
   src: string;
   alt: string;
 }
 
-export interface MainSectionContent {
+export interface CarouselSectionContent {
   title: string;
   description: string;
-  slides: SlideImage[];
+  slides: Image[];
 }
 
 export interface Citizen {
-  id: number;
+  id: string;
   name: string;
-  image: string;
+  image: Image;
   description: string;
   year: number;
 }
@@ -23,28 +23,29 @@ export interface Citizen {
 export interface CuratedMember {
   id: number;
   name: string;
+  slug: string;
   year: number;
 }
 
 export interface InfoItem {
-  id: number;
+  id: string;
   title: string;
-  image: string;
+  image: Image;
   description: string;
 }
 
 export interface PressItem {
-  id: number;
+  id: string;
   title: string;
-  image: string;
+  image: Image;
   description: string;
   content?: string;
 }
 
 export interface Sponsor {
-  id: number;
+  id: string;
   name: string;
-  logo: string;
+  logo: Image;
   website?: string;
   sponsorT: string;
 }
@@ -54,15 +55,52 @@ export interface GlueInternationalContent {
   buttonText: string;
   website: string;
   subtitle: string;
+  buttonColor: string;
+}
+
+export interface ParticipantsSectionContent {
+  title: string;
+  description: string;
+  participants: Member[];
+}
+
+export interface CuratedMemberSectionContent {
+  title: string;
+  description: string;
+  curatedMembers: CuratedMember[];
+}
+
+export interface CitizensSectionContent {
+  title: string;
+  description: string;
+  citizens: Citizen[];
+}
+
+export interface InfoSectionContent {
+  title: string;
+  description: string;
+  infoItems: InfoItem[];
+}
+
+export interface PressItemsSectionContent {
+  title: string;
+  description: string;
+  pressItems: PressItem[];
+}
+
+export interface SponsorsSectionContent {
+  title: string;
+  description: string;
+  sponsors: Sponsor[];
 }
 
 export interface DatabaseContent {
-  mainSection: MainSectionContent;
-  participants: Member[];
-  citizens: Citizen[];
-  curatedMembers: CuratedMember[];
-  infoItems: InfoItem[];
-  pressItems: PressItem[];
-  sponsors: Sponsor[];
-  glueInternational: GlueInternationalContent;
+  carouselSection: CarouselSectionContent;
+  participantsSection: ParticipantsSectionContent;
+  citizensSection: CitizensSectionContent;
+  curatedMembersSection: CuratedMemberSectionContent;
+  infoItemsSection: InfoSectionContent;
+  pressItemsSection: PressItemsSectionContent;
+  sponsorsSection: SponsorsSectionContent;
+  glueInternationalSection: GlueInternationalContent;
 }
