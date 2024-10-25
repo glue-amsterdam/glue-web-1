@@ -4,8 +4,6 @@ import { EventsResponse } from "@/utils/event-types";
 import { LocationGroup } from "@/utils/map-types";
 import { Member, MembersResponse } from "@/utils/member-types";
 import { MainSection } from "@/utils/menu-types";
-import { mockAbout } from "@/lib/mockAbout";
-import { mainSection } from "@/lib/mockMain";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -14,9 +12,10 @@ export const fetchMain = cache(async (): Promise<MainSection> => {
   const res = await fetch(`${BASE_URL}/main`, {
     next: { revalidate: 3600 },
   });
+
   if (!res.ok) {
-    console.log("Failed to fetch About section, using mock data");
-    return mainSection;
+    console.error("Failed to fetch Main, using mock data");
+    return await import("@/lib/mockMain").then((result) => result.mainSection);
   }
 
   if (!res.ok) throw new Error("Failed to fetch Main");
@@ -28,10 +27,9 @@ export const fetchAbout = cache(async (): Promise<DatabaseContent> => {
   const res = await fetch(`${BASE_URL}/about`, {
     next: { revalidate: 3600 },
   });
-
   if (!res.ok) {
-    console.log("Failed to fetch About section, using mock data");
-    return mockAbout;
+    console.error("Failed to fetch Main, using mock data");
+    return await import("@/lib/mockAbout").then((result) => result.mockAbout);
   }
 
   if (!res.ok) throw new Error("Failed to fetch About section");
@@ -78,7 +76,6 @@ export const fetchAllMembers = cache(async (): Promise<MembersResponse> => {
   const res = await fetch(`${BASE_URL}/members`, {
     next: { revalidate: 3600 },
   });
-
   if (!res.ok) throw new Error("Failed to fetch All Members");
   return res.json();
 });
