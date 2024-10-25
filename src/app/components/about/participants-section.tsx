@@ -18,6 +18,7 @@ export default function ParticipantsSection({
   participants,
   description,
   title,
+  numberdisplayed,
 }: ParticipantsSectionContent) {
   if (!participants || participants.length === 0) {
     return <div className="text-center py-8">No Participants Data</div>;
@@ -52,37 +53,39 @@ export default function ParticipantsSection({
           ]}
         >
           <CarouselContent className="h-full">
-            {participants.map((participant, index) => (
-              <CarouselItem
-                key={index}
-                className="h-full basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 traslate-y-1/2"
-              >
-                <Link
-                  target="_blank"
-                  className="h-full"
-                  href={`/members/${encodeURIComponent(
-                    generateSlug(participant.name)
-                  )}`}
+            {participants
+              .slice(0, numberdisplayed)
+              .map((participant, index) => (
+                <CarouselItem
+                  key={index}
+                  className="h-full basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 traslate-y-1/2"
                 >
-                  <Card className="border-none shadow-sm bg-transparent h-full hover:shadow-md transition-shadow duration-300">
-                    <CardContent className="flex items-center justify-center p-0 h-full">
-                      <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
-                        <img
-                          src={participant.images[0]}
-                          alt={participant.name}
-                          className="w-full h-full absolute object-cover"
-                        />
-                        <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                          <p className="text-center font-semibold text-sm">
-                            {participant.name}
-                          </p>
+                  <Link
+                    target="_blank"
+                    className="h-full"
+                    href={`/members/${encodeURIComponent(
+                      generateSlug(participant.name)
+                    )}`}
+                  >
+                    <Card className="border-none shadow-sm bg-transparent h-full hover:shadow-md transition-shadow duration-300">
+                      <CardContent className="flex items-center justify-center p-0 h-full">
+                        <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
+                          <img
+                            src={participant.images[0].src}
+                            alt={participant.name}
+                            className="w-full h-full absolute object-cover"
+                          />
+                          <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                            <p className="text-center font-semibold text-sm">
+                              {participant.name}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </CarouselItem>
-            ))}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </CarouselItem>
+              ))}
           </CarouselContent>
           <CarouselPrevious className="hidden md:flex text-uiblack" />
           <CarouselNext className="hidden md:flex text-uiblack" />

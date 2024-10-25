@@ -71,7 +71,7 @@ export default function SponsorsCarousel({
                     <CardContent className="flex items-center justify-center p-0 h-full">
                       <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
                         <img
-                          src={sponsor.logo}
+                          src={sponsor.logo.src}
                           alt={sponsor.name}
                           className="w-full h-full absolute object-cover"
                         />

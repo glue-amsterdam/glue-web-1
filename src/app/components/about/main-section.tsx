@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { MainSectionContent } from "@/utils/about-types";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import Autoplay from "embla-carousel-autoplay";
@@ -19,9 +18,10 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import ScrollDown from "@/app/components/scroll-down";
 import { useScroll } from "@/app/hooks/useScroll";
+import { CarouselSectionContent } from "@/utils/about-types";
 
 interface MainSectionProps {
-  mainSection: MainSectionContent | undefined;
+  mainSection: CarouselSectionContent | undefined;
 }
 
 export default function MainSection({ mainSection }: MainSectionProps) {

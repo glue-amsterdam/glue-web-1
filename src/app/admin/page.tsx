@@ -5,19 +5,19 @@ import LoginForm from "./login-form";
 import AdminDashboard from "./admin-dashboard";
 
 export default function AdminPage() {
-  const [isClient, setIsClient] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    setIsAdmin(true);
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100">
+    <div className="min-h-screen pt-[5rem] bg-gradient-to-br from-blue-100 to-purple-100">
       <div className="container mx-auto p-4">
         <h1 className="text-4xl font-bold mb-8 text-center text-blue-800">
           GLUE Admin
         </h1>
-        {isClient ? (
+        {isAdmin ? (
           <>
             <LoginForm />
             <AdminDashboard />

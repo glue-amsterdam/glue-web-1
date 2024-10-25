@@ -39,5 +39,9 @@ export const mainSection: MainSection = {
       link: "https://www.instagram.com/",
       icon: "instagram",
     },
+    youtube: {
+      link: "https://www.youtube.com/",
+      icon: "youtube",
+    },
   },
 };

@@ -1,18 +1,16 @@
-"use client";
-
-import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CuratedMemberSectionContent } from "@/utils/about-types";
 import { Textarea } from "@/components/ui/textarea";
+import { ParticipantsSectionContent } from "@/utils/about-types";
+import { useFormContext } from "react-hook-form";
 
 type FormData = {
   aboutSection: {
-    curatedMembersSection: CuratedMemberSectionContent;
+    participantsSection: ParticipantsSectionContent;
   };
 };
 
-export default function CuratedMembersForm() {
+function ParticipantsForm() {
   const {
     register,
     formState: { errors },
@@ -24,31 +22,33 @@ export default function CuratedMembersForm() {
         <Label htmlFor="title">Title</Label>
         <Input
           id="title"
-          {...register("aboutSection.curatedMembersSection.title", {
+          {...register("aboutSection.participantsSection.title", {
             required: "Title is required",
           })}
           placeholder="Section Title"
         />
-        {errors.aboutSection?.curatedMembersSection?.title && (
+        {errors.aboutSection?.participantsSection?.title && (
           <p className="text-red-500">
-            {errors.aboutSection.curatedMembersSection.title.message}
+            {errors.aboutSection.participantsSection.title.message}
           </p>
         )}
         <Label htmlFor="description">Description</Label>
         <Textarea
           id="description"
-          {...register("aboutSection.curatedMembersSection.description", {
+          {...register("aboutSection.participantsSection.description", {
             required: "Description is required",
           })}
           placeholder="Section Description"
         />
-        {errors.aboutSection?.curatedMembersSection?.description && (
+        {errors.aboutSection?.participantsSection?.description && (
           <p className="text-red-500">
-            {errors.aboutSection.curatedMembersSection.description.message}
+            {errors.aboutSection.participantsSection.description.message}
           </p>
         )}
       </div>
-      <p>{`To add or remove displayed curated, please manage them from the user administration by marking/unmarking them as "curated/sticky."`}</p>
+      <p>{`To add or remove displayed participants, please manage them from the user administration by marking/unmarking them as "participant."`}</p>
     </div>
   );
 }
+
+export default ParticipantsForm;

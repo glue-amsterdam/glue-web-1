@@ -3,10 +3,48 @@
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MainSection } from "@/utils/menu-types";
+import { z } from "zod";
+
+// Definir el esquema Zod
+const mainColorsSchema = z.object({
+  box1: z.string().min(1, "Box 1 color is required"),
+  box2: z.string().min(1, "Box 2 color is required"),
+  box3: z.string().min(1, "Box 3 color is required"),
+  box4: z.string().min(1, "Box 4 color is required"),
+  triangle: z.string().min(1, "Triangle color is required"),
+});
+
+const menuItemSchema = z.object({
+  label: z.string().min(1, "Label is required"),
+  section: z.string(),
+  className: z.string(),
+});
+
+const linkItemSchema = z.object({
+  link: z.string().url("Invalid URL"),
+  icon: z.string().optional(),
+});
+
+const mainLinksSchema = z.object({
+  linkedin: linkItemSchema,
+  instagram: linkItemSchema,
+  youtube: linkItemSchema,
+});
+
+const mainSectionSchema = z.object({
+  mainColors: mainColorsSchema,
+  mainMenu: z.array(menuItemSchema),
+  mainLinks: mainLinksSchema,
+});
+
+type MainSection = z.infer<typeof mainSectionSchema>;
 
 export default function MainSectionForm() {
-  const { register, control } = useFormContext<{ mainSection: MainSection }>();
+  const {
+    register,
+    control,
+    formState: { errors },
+  } = useFormContext<{ mainSection: MainSection }>();
   const { fields: menuFields } = useFieldArray({
     control,
     name: "mainSection.mainMenu",
@@ -17,41 +55,26 @@ export default function MainSectionForm() {
       <div>
         <Label>Main Colors</Label>
         <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label>Box 1 Color</label>
-            <Input
-              {...register("mainSection.mainColors.box1")}
-              placeholder="Box 1 Color"
-            />
-          </div>
-          <div>
-            <label>Box 2 Color</label>
-            <Input
-              {...register("mainSection.mainColors.box2")}
-              placeholder="Box 2 Color"
-            />
-          </div>
-          <div>
-            <label>Box 3 Color</label>
-            <Input
-              {...register("mainSection.mainColors.box3")}
-              placeholder="Box 3 Color"
-            />
-          </div>
-          <div>
-            <label>Box 4 Color</label>
-            <Input
-              {...register("mainSection.mainColors.box4")}
-              placeholder="Box 4 Color"
-            />
-          </div>
-          <div>
-            <label>Triangle</label>
-            <Input
-              {...register("mainSection.mainColors.triangle")}
-              placeholder="Triangle Color"
-            />
-          </div>
+          {(
+            Object.keys(mainColorsSchema.shape) as Array<
+              keyof typeof mainColorsSchema.shape
+            >
+          ).map((key) => (
+            <div key={key}>
+              <label>{key.charAt(0).toUpperCase() + key.slice(1)} Color</label>
+              <Input
+                {...register(`mainSection.mainColors.${key}`)}
+                placeholder={`${
+                  key.charAt(0).toUpperCase() + key.slice(1)
+                } Color`}
+              />
+              {errors.mainSection?.mainColors?.[key] && (
+                <p className="text-red-500">
+                  {errors.mainSection.mainColors[key]?.message}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -63,6 +86,11 @@ export default function MainSectionForm() {
               {...register(`mainSection.mainMenu.${index}.label`)}
               placeholder={`Label ${index + 1}`}
             />
+            {errors.mainSection?.mainMenu?.[index]?.label && (
+              <p className="text-red-500">
+                {errors.mainSection.mainMenu[index]?.label?.message}
+              </p>
+            )}
           </div>
         ))}
       </div>
@@ -70,15 +98,25 @@ export default function MainSectionForm() {
       <div>
         <Label>Main Links</Label>
         <div className="space-y-2">
-          <Input
-            required
-            {...register("mainSection.mainLinks.linkedin.link")}
-            placeholder="LinkedIn Link"
-          />
-          <Input
-            {...register("mainSection.mainLinks.instagram.link")}
-            placeholder="Instagram Link"
-          />
+          {(
+            Object.keys(mainLinksSchema.shape) as Array<
+              keyof typeof mainLinksSchema.shape
+            >
+          ).map((key) => (
+            <div key={key}>
+              <Input
+                {...register(`mainSection.mainLinks.${key}.link`)}
+                placeholder={`${
+                  key.charAt(0).toUpperCase() + key.slice(1)
+                } Link`}
+              />
+              {errors.mainSection?.mainLinks?.[key]?.link && (
+                <p className="text-red-500">
+                  {errors.mainSection.mainLinks[key]?.link?.message}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </div>

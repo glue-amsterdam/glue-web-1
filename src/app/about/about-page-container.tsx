@@ -12,7 +12,7 @@ async function AboutPageContainer() {
 
   return (
     <>
-      <MainSection mainSection={aboutData.mainSection} />
+      <MainSection mainSection={aboutData.carouselSection} />
       <Participants participantsSection={aboutData.participantsSection} />
       <CitizenOfHonour citizensSection={aboutData.citizensSection} />
       <CuratedMembers curatedMembersSection={aboutData.curatedMembersSection} />

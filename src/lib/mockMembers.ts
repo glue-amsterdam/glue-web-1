@@ -30,9 +30,21 @@ export const members: Member[] = [
       linkedin: ["https://www.linkedin.com/company/vanmokum"],
     },
     images: [
-      "/placeholders/user-placeholder-1.jpg",
-      "/placeholders/user-placeholder-2.jpg",
-      "/placeholders/user-placeholder-3.jpg",
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/user-placeholder-1.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/placeholder-2.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/placeholder-3.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
     ],
   },
   {
@@ -58,9 +70,21 @@ export const members: Member[] = [
       linkedin: ["https://www.linkedin.com/company/studiojob"],
     },
     images: [
-      "/placeholders/user-placeholder-2.jpg",
-      "/placeholders/user-placeholder-3.jpg",
-      "/placeholders/user-placeholder-1.jpg",
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/user-placeholder-1.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/placeholder-2.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/placeholder-3.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
     ],
   },
   {
@@ -86,9 +110,21 @@ export const members: Member[] = [
       linkedin: ["https://www.linkedin.com/company/studiorens"],
     },
     images: [
-      "/placeholders/user-placeholder-1.jpg",
-      "/placeholders/user-placeholder-3.jpg",
-      "/placeholders/user-placeholder-2.jpg",
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/user-placeholder-1.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/placeholder-2.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/placeholder-3.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
     ],
   },
   {
@@ -117,9 +153,21 @@ export const members: Member[] = [
       linkedin: ["https://www.linkedin.com/company/graypants"],
     },
     images: [
-      "/placeholders/user-placeholder-1.jpg",
-      "/placeholders/user-placeholder-2.jpg",
-      "/placeholders/user-placeholder-3.jpg",
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/user-placeholder-1.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/placeholder-2.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/placeholder-3.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
     ],
   },
   {
@@ -144,9 +192,21 @@ export const members: Member[] = [
       linkedin: ["https://www.linkedin.com/company/framacph"],
     },
     images: [
-      "/placeholders/user-placeholder-2.jpg",
-      "/placeholders/user-placeholder-1.jpg",
-      "/placeholders/user-placeholder-3.jpg",
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/user-placeholder-1.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/placeholder-2.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/placeholder-3.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
     ],
   },
   {
@@ -171,9 +231,21 @@ export const members: Member[] = [
       linkedin: ["https://www.linkedin.com/company/supadupastudio"],
     },
     images: [
-      "/placeholders/user-placeholder-3.jpg",
-      "/placeholders/user-placeholder-2.jpg",
-      "/placeholders/user-placeholder-1.jpg",
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/user-placeholder-1.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/placeholder-2.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/placeholder-3.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
     ],
   },
   {
@@ -199,9 +271,21 @@ export const members: Member[] = [
       linkedin: ["https://www.linkedin.com/company/artlinez"],
     },
     images: [
-      "/placeholders/user-placeholder-1.jpg",
-      "/placeholders/user-placeholder-3.jpg",
-      "/placeholders/user-placeholder-2.jpg",
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/user-placeholder-1.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/placeholder-2.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
+      {
+        id: "carousel-image-2",
+        src: `/placeholders/placeholder-3.jpg`,
+        alt: "Cutting-edge fashion structure 2",
+      },
     ],
   },
 ];

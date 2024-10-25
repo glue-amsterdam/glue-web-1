@@ -1,21 +1,21 @@
 import { Member } from "@/utils/member-types";
 
-export interface SlideImage {
-  id: number;
+export interface Image {
+  id: string;
   src: string;
   alt: string;
 }
 
-export interface MainSectionContent {
+export interface CarouselSectionContent {
   title: string;
   description: string;
-  slides: SlideImage[];
+  slides: Image[];
 }
 
 export interface Citizen {
-  id: number;
+  id: string;
   name: string;
-  image: string;
+  image: Image;
   description: string;
   year: number;
 }
@@ -28,24 +28,24 @@ export interface CuratedMember {
 }
 
 export interface InfoItem {
-  id: number;
+  id: string;
   title: string;
-  image: string;
+  image: Image;
   description: string;
 }
 
 export interface PressItem {
-  id: number;
+  id: string;
   title: string;
-  image: string;
+  image: Image;
   description: string;
   content?: string;
 }
 
 export interface Sponsor {
-  id: number;
+  id: string;
   name: string;
-  logo: string;
+  logo: Image;
   website?: string;
   sponsorT: string;
 }
@@ -55,11 +55,13 @@ export interface GlueInternationalContent {
   buttonText: string;
   website: string;
   subtitle: string;
+  buttonColor: string;
 }
 
 export interface ParticipantsSectionContent {
   title: string;
   description: string;
+  numberdisplayed: number;
   participants: Member[];
 }
 
@@ -94,7 +96,7 @@ export interface SponsorsSectionContent {
 }
 
 export interface DatabaseContent {
-  mainSection: MainSectionContent;
+  carouselSection: CarouselSectionContent;
   participantsSection: ParticipantsSectionContent;
   citizensSection: CitizensSectionContent;
   curatedMembersSection: CuratedMemberSectionContent;

@@ -12,12 +12,15 @@ interface GlueInternationalProps {
 export default function GlueInternational({
   glueInternational,
 }: GlueInternationalProps) {
+  const { buttonColor, buttonText, subtitle, title, website } =
+    glueInternational;
   return (
     <motion.div
+      style={{ backgroundColor: buttonColor }}
       initial={{ x: 80, y: 20 }}
       whileInView={{ x: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full md:w-[80%] mx-auto bg-glueBlue rounded-lg"
+      className="w-full md:w-[80%] mx-auto rounded-lg"
     >
       <motion.div
         initial={{ x: -120, opacity: 0 }}
@@ -36,7 +39,7 @@ export default function GlueInternational({
             viewport={{ once: true }}
             className="h1-titles font-bold tracking-widest"
           >
-            {glueInternational.title}
+            {title}
           </motion.h1>
           <motion.p
             initial={{ y: 20, opacity: 0 }}
@@ -44,17 +47,18 @@ export default function GlueInternational({
             transition={{ delay: 1.3 }}
             className="opacity-90 mt-4 text-md md:text-lg"
           >
-            {glueInternational.subtitle}
+            {subtitle}
           </motion.p>
         </div>
 
         <Link
-          href={glueInternational.website}
+          style={{ backgroundColor: buttonColor }}
+          href={website}
           target="_blank"
-          className="hover:scale-110 rounded-md py-2 mx-auto flex items-center justify-center bg-glueBlue text-uiwhite transition duration-500 w-[80%]"
+          className="hover:scale-110 rounded-md py-2 mx-auto flex items-center justify-center text-uiwhite transition duration-500 w-[80%]"
         >
           <GiWorld className="size-12 px-2" />
-          <p className="text-center px-2">{glueInternational.buttonText}</p>
+          <p className="text-center px-2">{buttonText}</p>
         </Link>
       </motion.div>
     </motion.div>
