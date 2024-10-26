@@ -7,6 +7,12 @@ export interface MainMenuItem {
   label: string;
   section: string;
   className: string;
+  subItems?: SubMenuItem[];
+}
+
+interface SubMenuItem {
+  title: string;
+  href: string;
 }
 
 export interface MainColors {
@@ -18,6 +24,5 @@ export interface MainColors {
 }
 
 export interface MainLink {
-  link: string;
-  icon: string;
+  link?: string;
 }
