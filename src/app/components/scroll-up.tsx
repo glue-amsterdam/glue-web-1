@@ -5,19 +5,30 @@ import { FaChevronUp } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { twMerge } from "tailwind-merge";
 import Link from "next/link";
+import { useScroll } from "@/app/hooks/useScroll";
 
 type Props = {
   color: "uiwhite" | "uiblack";
   href: string;
   className?: string;
+  delay?: number;
 };
 
-function ScrollUp({ color, href, className }: Props) {
+export default function ScrollDown({ color, href, className, delay }: Props) {
+  const scrollToElement = useScroll(delay);
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const id = href.slice(1); // Remove the '#' from the href
+    scrollToElement(id);
+  };
+
   return (
     <Link
       href={href}
+      onClick={handleClick}
       className={twMerge(
-        `text-${color} w-full z-20 flex justify-center relative flex-col items-center `,
+        `text-${color} w-full z-20 flex justify-center relative flex-col items-center`,
         className
       )}
     >
@@ -32,13 +43,11 @@ function ScrollUp({ color, href, className }: Props) {
         className="z-10"
       >
         <FaChevronUp size={24} className={`text-4xl animate-ping-slow`} />
-      </motion.div>{" "}
-      <p className="text-sm tracking-[0.4rem]">Scroll up</p>
+      </motion.div>
+      <p className="text-sm tracking-[0.4rem]">Scroll down</p>
       <div
         className={`absolute inset-0 bg-gradient-to-b from-transparent blur-md to-${color} z-20 opacity-5`}
       ></div>
     </Link>
   );
 }
-
-export default ScrollUp;

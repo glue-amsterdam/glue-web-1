@@ -5,19 +5,30 @@ import { FaChevronDown } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { twMerge } from "tailwind-merge";
 import Link from "next/link";
+import { useScroll } from "@/app/hooks/useScroll";
 
 type Props = {
   color: "uiwhite" | "uiblack";
   href: string;
   className?: string;
+  delay?: number;
 };
 
-function ScrollDown({ color, href, className }: Props) {
+export default function ScrollDown({ color, href, className, delay }: Props) {
+  const scrollToElement = useScroll(delay);
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const id = href.slice(1); // Remove the '#' from the href
+    scrollToElement(id);
+  };
+
   return (
     <Link
       href={href}
+      onClick={handleClick}
       className={twMerge(
-        `text-${color} w-full z-20 flex justify-center relative flex-col items-center `,
+        `text-${color} w-full z-20 flex justify-center relative flex-col items-center`,
         className
       )}
     >
@@ -40,5 +51,3 @@ function ScrollDown({ color, href, className }: Props) {
     </Link>
   );
 }
-
-export default ScrollDown;

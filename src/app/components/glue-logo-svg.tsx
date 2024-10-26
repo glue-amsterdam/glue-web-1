@@ -10,6 +10,7 @@ export default function GlueLogoSVG({
 }) {
   return (
     <motion.svg
+      transition={{ duration: 0.5, delay: 0.5 }}
       className={twMerge("", className)}
       viewBox="0 0 344 347"
       fill="none"

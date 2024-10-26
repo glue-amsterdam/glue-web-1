@@ -66,7 +66,7 @@ export default async function RootLayout({
           mainMenu={mainSection.mainMenu}
         >
           <body
-            className={`${lausanne.className} text-uiwhite antialiased min-h-screen flex flex-col`}
+            className={`${lausanne.className} text-uiwhite antialiased min-h-dvh`}
           >
             <NavbarBurguer />
             <div className="flex-grow overflow-x-hidden">{children}</div>
