@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { PressItem } from "@/utils/about-types";
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
+import { fadeInConfig } from "@/utils/animations";
 
 interface PressSectionProps {
   pressItems: PressItem[];
@@ -62,7 +63,10 @@ export default function PressSection({
   const hasGlueTV = pressItems.length <= 2;
 
   return (
-    <article className="z-20 mx-auto container h-full flex flex-col justify-between relative">
+    <motion.article
+      {...fadeInConfig}
+      className="z-20 mx-auto container h-full flex flex-col justify-between relative"
+    >
       <motion.h1
         initial={{ opacity: 0, y: -60 }}
         animate={{ opacity: 1, y: 0 }}
@@ -124,6 +128,6 @@ export default function PressSection({
         </DialogContent>
       </Dialog>
       <ScrollDown color="uiblack" href="#last" className="py-2" />
-    </article>
+    </motion.article>
   );
 }

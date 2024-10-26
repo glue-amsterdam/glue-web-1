@@ -37,14 +37,21 @@ function ClickAreas() {
     }
   };
 
+  const orderedSections = ["dashboard", "about", "events", "map"];
+
   if (!mainMenu || !Array.isArray(mainMenu)) {
     return <CenteredLoader />;
   }
 
+  const sortedMenu = mainMenu.sort(
+    (a, b) =>
+      orderedSections.indexOf(a.section) - orderedSections.indexOf(b.section)
+  );
+
   return (
     <nav className="fixed inset-0 z-30">
       <ul className="h-full w-full">
-        {mainMenu
+        {sortedMenu
           .filter((area) => area?.section && area.className)
           .map((area) => (
             <li key={area.section} className={`absolute ${area.className}`}>

@@ -78,7 +78,7 @@ function BackgroundGrid({}) {
     triangle: {
       initial: {},
       animate: { scaleY: 0 },
-      transition: { duration: 0.5, ease: "easeIn" },
+      transition: { duration: 0.8, ease: "easeIn" },
     },
     extra: {
       initial: {
@@ -154,7 +154,9 @@ function BackgroundGrid({}) {
         zIndex: 20,
       },
       animate: {},
-      transition: {},
+      transition: {
+        duration: 0.8,
+      },
     },
   };
 

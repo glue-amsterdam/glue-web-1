@@ -15,7 +15,7 @@ function Info({ infoItemsSection }: Props) {
   const { box2: box2Color } = colors;
 
   const sectionRef = useRef<HTMLElement>(null);
-  useScroll({ id: "info", idRef: sectionRef });
+  useScroll();
   return (
     <section
       ref={sectionRef}

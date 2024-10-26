@@ -13,6 +13,8 @@ import {
 
 import { useDebounce } from "use-debounce";
 import { EventType } from "@/utils/event-types";
+import { motion } from "framer-motion";
+import { fadeInConfig } from "@/utils/animations";
 
 const eventTypes: EventType[] = [
   "Lecture",
@@ -74,7 +76,7 @@ export default function SearchAndFilter() {
   };
 
   return (
-    <div className="mb-8 space-y-4 relative z-10">
+    <motion.div {...fadeInConfig} className="mb-8 space-y-4 relative z-10">
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
         <Input
           type="text"
@@ -102,6 +104,6 @@ export default function SearchAndFilter() {
           className="w-full sm:w-[180px] text-uiblack bg-uiwhite/80"
         />
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -9,6 +9,8 @@ import {
   SponsorsSectionContent,
 } from "@/utils/about-types";
 import React, { useRef } from "react";
+import { motion } from "framer-motion";
+import { fadeInConfig } from "@/utils/animations";
 
 type Props = {
   glueInternationalSection: GlueInternationalContent;
@@ -17,7 +19,7 @@ type Props = {
 
 function LastPage({ glueInternationalSection, sponsorsSection }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
-  useScroll({ id: "last", idRef: sectionRef });
+  useScroll();
 
   return (
     <section
@@ -27,7 +29,10 @@ function LastPage({ glueInternationalSection, sponsorsSection }: Props) {
       aria-labelledby="last-page-heading"
       className="h-screen pt-[5rem] bg-uiwhite snap-start relative"
     >
-      <article className="z-20 space-y-4 mx-auto container h-full flex flex-col justify-between relative">
+      <motion.article
+        {...fadeInConfig}
+        className="z-20 space-y-4 mx-auto container h-full flex flex-col justify-between relative"
+      >
         <GlueInternational glueInternational={glueInternationalSection} />
         <SponsorsCarousel
           sponsors={sponsorsSection.sponsors}
@@ -35,7 +40,7 @@ function LastPage({ glueInternationalSection, sponsorsSection }: Props) {
           description={sponsorsSection.description}
         />
         <ScrollUp color="uiblack" href="#main" />
-      </article>
+      </motion.article>
     </section>
   );
 }

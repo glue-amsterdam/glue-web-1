@@ -14,6 +14,7 @@ import { CuratedMember } from "@/utils/about-types";
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
 import Link from "next/link";
+import { fadeInConfig } from "@/utils/animations";
 
 interface CuratedMembersProps {
   curatedMembers: CuratedMember[];
@@ -65,7 +66,10 @@ export default function CuratedMembersSection({
   );
 
   return (
-    <article className="z-20 mx-auto container h-full flex flex-col justify-between relative">
+    <motion.article
+      {...fadeInConfig}
+      className="z-20 mx-auto container h-full flex flex-col justify-between relative"
+    >
       <>
         <div className="flex justify-between md:items-center my-4">
           <motion.h1
@@ -109,6 +113,6 @@ export default function CuratedMembersSection({
       </div>
 
       <ScrollDown color="uiwhite" href="#info" className="py-2" />
-    </article>
+    </motion.article>
   );
 }

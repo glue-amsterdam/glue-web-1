@@ -15,9 +15,10 @@ function CuratedMembers({ curatedMembersSection }: Props) {
   const { box3: box3Color } = colors;
 
   const sectionRef = useRef<HTMLElement>(null);
-  useScroll({ id: "curated", idRef: sectionRef });
+  useScroll();
   return (
     <section
+      ref={sectionRef}
       id="curated"
       aria-label="curated-members-content"
       aria-labelledby="curated-members-heading"

@@ -10,6 +10,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { ParticipantsSectionContent } from "@/utils/about-types";
+import { fadeInConfig } from "@/utils/animations";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -30,7 +31,10 @@ export default function ParticipantsSection({
   }
 
   return (
-    <article className="z-20 mx-auto container h-full flex flex-col justify-between relative">
+    <motion.article
+      {...fadeInConfig}
+      className="z-20 mx-auto container h-full flex flex-col justify-between relative"
+    >
       <motion.h1
         initial={{ opacity: 0, y: -60 }}
         animate={{ opacity: 1, y: 0 }}
@@ -99,6 +103,6 @@ export default function ParticipantsSection({
         {description}
       </motion.p>
       <ScrollDown href="#citizens" color="uiblack" className="py-2" />
-    </article>
+    </motion.article>
   );
 }

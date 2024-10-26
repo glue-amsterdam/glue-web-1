@@ -15,7 +15,8 @@ export default function Participants({
   participantsSection,
 }: ParticipantsProps) {
   const sectionRef = useRef<HTMLElement>(null);
-  useScroll({ id: "participants", idRef: sectionRef });
+  useScroll();
+
   return (
     <section
       ref={sectionRef}

@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { InfoItem } from "@/utils/about-types";
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
+import { fadeInConfig } from "@/utils/animations";
 
 interface InfoSectionProps {
   infoItems: InfoItem[];
@@ -66,7 +67,10 @@ export default function InfoSection({
   };
 
   return (
-    <article className="z-20 mx-auto container h-full flex flex-col justify-between relative">
+    <motion.article
+      {...fadeInConfig}
+      className="z-20 mx-auto container h-full flex flex-col justify-between relative"
+    >
       <motion.h1
         initial={{ opacity: 0, y: -60 }}
         animate={{ opacity: 1, y: 0 }}
@@ -125,6 +129,6 @@ export default function InfoSection({
         </DialogContent>
       </Dialog>
       <ScrollDown color="uiwhite" href="#press" className="py-2" />
-    </article>
+    </motion.article>
   );
 }

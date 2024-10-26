@@ -14,7 +14,7 @@ function CitizenOfHonour({ citizensSection }: CitizenOfHonourContentProps) {
   const { box3: box3Color } = colors;
 
   const sectionRef = useRef<HTMLElement>(null);
-  useScroll({ id: "citizens", idRef: sectionRef });
+  useScroll();
 
   return (
     <section

@@ -16,7 +16,7 @@ function Press({ pressItemsSection }: Props) {
   const { box2: box2Color } = colors;
 
   const sectionRef = useRef<HTMLElement>(null);
-  useScroll({ id: "press", idRef: sectionRef });
+  useScroll();
 
   return (
     <section

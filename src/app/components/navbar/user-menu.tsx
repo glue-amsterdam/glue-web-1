@@ -1,6 +1,5 @@
 "use client";
 
-// Adjust this import based on your actual auth context location
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -55,10 +54,13 @@ export default function UserMenu(): JSX.Element {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>
-          {user ? `Hello, ${user.email}` : "My Account"}
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+        {user && (
+          <>
+            <DropdownMenuLabel>{`Hello, ${user.email}`}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+          </>
+        )}
+
         <DropdownMenuGroup>
           {user ? (
             <>
