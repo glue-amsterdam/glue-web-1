@@ -3,6 +3,7 @@
 import CuratedMembersSection from "@/app/components/about/curated-members-section";
 import { useColors } from "@/app/context/MainContext";
 import { useScroll } from "@/app/hooks/useScroll";
+import { NAVBAR_HEIGHT } from "@/constants";
 import { CuratedMemberSectionContent } from "@/utils/about-types";
 import React, { useRef } from "react";
 
@@ -23,7 +24,7 @@ function CuratedMembers({ curatedMembersSection }: Props) {
       aria-label="curated-members-content"
       aria-labelledby="curated-members-heading"
       style={{ backgroundColor: box3Color }}
-      className="h-screen pt-[5rem] snap-center relative"
+      className={`h-screen pt-[${NAVBAR_HEIGHT}rem] snap-center relative`}
     >
       <CuratedMembersSection
         title={curatedMembersSection.title}

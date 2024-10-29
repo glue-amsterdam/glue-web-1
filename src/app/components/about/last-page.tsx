@@ -11,6 +11,7 @@ import {
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import { fadeInConfig } from "@/utils/animations";
+import { NAVBAR_HEIGHT } from "@/constants";
 
 type Props = {
   glueInternationalSection: GlueInternationalContent;
@@ -27,7 +28,7 @@ function LastPage({ glueInternationalSection, sponsorsSection }: Props) {
       id="last"
       aria-label="last-page-content"
       aria-labelledby="last-page-heading"
-      className="h-screen pt-[5rem] bg-uiwhite snap-start relative"
+      className={`h-screen pt-[${NAVBAR_HEIGHT}rem] bg-uiwhite snap-start relative`}
     >
       <motion.article
         {...fadeInConfig}

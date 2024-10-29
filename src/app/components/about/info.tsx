@@ -3,6 +3,7 @@
 import InfoSection from "@/app/components/about/info-section";
 import { useColors } from "@/app/context/MainContext";
 import { useScroll } from "@/app/hooks/useScroll";
+import { NAVBAR_HEIGHT } from "@/constants";
 import { InfoSectionContent } from "@/utils/about-types";
 import React, { useRef } from "react";
 
@@ -23,7 +24,7 @@ function Info({ infoItemsSection }: Props) {
       aria-label="info-content"
       aria-labelledby="info-heading"
       style={{ backgroundColor: box2Color }}
-      className="h-screen pt-[5rem] snap-center relative"
+      className={`h-screen pt-[${NAVBAR_HEIGHT}rem] snap-center relative`}
     >
       <InfoSection
         title={infoItemsSection.title}

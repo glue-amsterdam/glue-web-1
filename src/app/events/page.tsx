@@ -1,6 +1,7 @@
 import Background from "@/app/components/background";
 import CenteredLoader from "@/app/components/centered-loader";
 import EventsPageContainer from "@/app/events/events-page-container";
+import { NAVBAR_HEIGHT } from "@/constants";
 import { Suspense } from "react";
 
 export default function EventsPage({
@@ -17,7 +18,7 @@ export default function EventsPage({
   });
 
   return (
-    <div className="h-screen pt-[5rem] relative">
+    <div className={`h-screen pt-[${NAVBAR_HEIGHT}rem] relative`}>
       <Background />
       <Suspense fallback={<CenteredLoader />}>
         <EventsPageContainer params={params} />

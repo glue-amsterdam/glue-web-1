@@ -4,6 +4,7 @@ import ParticipantsSection from "@/app/components/about/participants-section";
 import GlueLogo from "@/app/components/glue-logo";
 import { useColors } from "@/app/context/MainContext";
 import { useScroll } from "@/app/hooks/useScroll";
+import { NAVBAR_HEIGHT } from "@/constants";
 import { ParticipantsSectionContent } from "@/utils/about-types";
 import { useRef } from "react";
 
@@ -23,7 +24,7 @@ export default function Participants({
       id="participants"
       areia-label="participants-content"
       aria-labelledby="participants-heading"
-      className="h-screen pt-[5rem] relative w-full flex flex-col justify-center items-center snap-start bg-uiwhite"
+      className={`h-screen pt-[${NAVBAR_HEIGHT}rem] relative w-full flex flex-col justify-center items-center snap-start bg-uiwhite`}
     >
       <ParticipantsSection
         description={participantsSection.description}

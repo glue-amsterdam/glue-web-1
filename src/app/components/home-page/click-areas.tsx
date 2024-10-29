@@ -56,7 +56,7 @@ function ClickAreas() {
           .map((area) => (
             <li
               key={area.section}
-              className={`absolute hover:bg-black/10 transition-all duration-300 ${area.className}`}
+              className={`absolute hover:bg-white/10 transition-all duration-300 ${area.className}`}
             >
               <Link
                 href={`/${area.section}`}

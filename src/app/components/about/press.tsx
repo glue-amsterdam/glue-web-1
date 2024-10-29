@@ -4,6 +4,7 @@ import PressSection from "@/app/components/about/press-section";
 import GlueConectedImage from "@/app/components/glue-connected-image";
 import { useColors } from "@/app/context/MainContext";
 import { useScroll } from "@/app/hooks/useScroll";
+import { NAVBAR_HEIGHT } from "@/constants";
 import { PressItemsSectionContent } from "@/utils/about-types";
 import React, { useRef } from "react";
 
@@ -25,7 +26,7 @@ function Press({ pressItemsSection }: Props) {
       aria-label="press-content"
       aria-labelledby="press-heading"
       style={{ backgroundColor: box2Color }}
-      className="h-screen pt-[5rem] snap-start relative"
+      className={`h-screen pt-[${NAVBAR_HEIGHT}rem] snap-start relative`}
     >
       <PressSection
         pressItems={pressItemsSection.pressItems}

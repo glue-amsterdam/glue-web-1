@@ -20,6 +20,7 @@ import ScrollDown from "@/app/components/scroll-down";
 import { useScroll } from "@/app/hooks/useScroll";
 import { CarouselSectionContent } from "@/utils/about-types";
 import { fadeInConfig } from "@/utils/animations";
+import { NAVBAR_HEIGHT } from "@/constants";
 
 interface MainSectionProps {
   mainSection: CarouselSectionContent | undefined;
@@ -39,7 +40,7 @@ export default function MainSection({ mainSection }: MainSectionProps) {
       id="main"
       aria-labelledby="press-heading"
       aria-label="main-content"
-      className="h-screen pt-[5rem] snap-start relative "
+      className={`h-screen pt-[${NAVBAR_HEIGHT}rem] snap-start relative `}
     >
       <motion.article
         {...fadeInConfig}
