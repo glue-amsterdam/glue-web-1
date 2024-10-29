@@ -51,16 +51,16 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
 
   return (
     <nav className="flex items-center justify-start gap-4 px-2">
-      <HomePageLogo onClick={() => setIsMenuOpen(true)} />
       <div
         ref={buttonRef}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        className=" md:hover:scale-105 md:transition-all"
       >
         {isMenuOpen ? (
-          <ImMenu3 size={24} />
+          <ImMenu3 className="size-10" />
         ) : (
-          <ImMenu4 size={24} onClick={() => setIsMenuOpen(true)} />
+          <ImMenu4 className="size-10" onClick={() => setIsMenuOpen(true)} />
         )}
       </div>
       <AnimatePresence>
@@ -77,7 +77,7 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
           >
             <ul className="flex relative bg-uiwhite pb-5 pt-2 shadow-lg">
               <div className="flex justify-center gap-4 px-2">
-                <div className="size-36 opacity-20 text-white absolute right-20 bottom-10 z-10">
+                <div className="size-36 opacity-20 text-white absolute right-20 bottom-10 z-10  md:hover:scale-105 md:transition-all">
                   <GlueLogoSVG isVisible className="invert" />
                 </div>
                 {sorteredNavItems.map((item) => (
@@ -88,7 +88,7 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
                     <Link
                       href={`/${item.section}`}
                       onClick={() => setIsMenuOpen(false)}
-                      className="text-uiblack hover:underline text-2xl tracking-wider hover:text-uiblack/50"
+                      className="text-uiblack hover:underline text-2xl tracking-wider hover:text-uiblack/50 md:hover:scale-105 md:transition-all"
                     >
                       {item.label}
                     </Link>
@@ -98,7 +98,7 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
                           onClick={() => setIsMenuOpen(false)}
                           key={(subItem.href + index) as string}
                           href={`/${item.section}#${subItem.href}`}
-                          className="text-uiblack hover:underline text-xs tracking-wider hover:text-uiblack/50"
+                          className="text-uiblack hover:underline text-xs tracking-wider hover:text-uiblack/50 md:hover:scale-105 md:transition-all"
                         >
                           · {subItem.title}
                         </Link>
@@ -110,6 +110,10 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
           </motion.div>
         )}
       </AnimatePresence>
+      <HomePageLogo
+        className=" md:hover:scale-110 md:transition-all"
+        onClick={() => setIsMenuOpen(true)}
+      />
     </nav>
   );
 }

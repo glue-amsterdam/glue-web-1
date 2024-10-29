@@ -28,7 +28,7 @@ export default function ScrollDown({ color, href, className, delay }: Props) {
       href={href}
       onClick={handleClick}
       className={twMerge(
-        `text-${color} w-full z-20 flex justify-center relative flex-col items-center`,
+        `text-${color} w-full z-20 flex justify-center relative flex-col items-center md:hover:scale-105 md:transition-all`,
         className
       )}
     >

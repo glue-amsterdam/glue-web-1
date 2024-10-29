@@ -12,6 +12,7 @@ import AnimatedNavMenu from "@/app/components/navbar/animated-nav-menu";
 import SearchForm from "@/app/components/navbar/search-form";
 import SocialIcons from "@/app/components/navbar/social-icon";
 import MobileSheet from "@/app/components/navbar/mobile-sheet";
+import { NAVBAR_HEIGHT } from "@/constants";
 
 export default function NavbarBurger() {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,7 +41,7 @@ export default function NavbarBurger() {
       <header
         className={`${
           isVisible && "select-none backdrop-blur-lg bg-uiblack/20"
-        } w-full h-20 z-50 absolute top-0 drop-shadow-md`}
+        } h-[${NAVBAR_HEIGHT}] w-full z-50 absolute top-0 drop-shadow-md`}
       >
         <motion.div
           className="absolute inset-0 z-0 bg-transparent"

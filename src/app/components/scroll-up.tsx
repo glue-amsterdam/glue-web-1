@@ -28,7 +28,7 @@ export default function ScrollDown({ color, href, className, delay }: Props) {
       href={href}
       onClick={handleClick}
       className={twMerge(
-        `text-${color} w-full z-20 flex justify-center relative flex-col items-center`,
+        `text-${color} w-full z-20 flex justify-center relative flex-col items-center md:hover:scale-105 md:transition-all`,
         className
       )}
     >
@@ -44,7 +44,7 @@ export default function ScrollDown({ color, href, className, delay }: Props) {
       >
         <FaChevronUp size={24} className={`text-4xl animate-ping-slow`} />
       </motion.div>
-      <p className="text-sm tracking-[0.4rem]">Scroll down</p>
+      <p className="text-sm tracking-[0.4rem]">Scroll Up</p>
       <div
         className={`absolute inset-0 bg-gradient-to-b from-transparent blur-md to-${color} z-20 opacity-5`}
       ></div>

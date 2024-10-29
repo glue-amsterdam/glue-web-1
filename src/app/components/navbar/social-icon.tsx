@@ -38,7 +38,12 @@ function SocialIcon({ link, platform }: Props) {
   if (!link) return null;
   const Icon: IconType = iconMap[platform];
   return (
-    <Link href={link} target="_blank" rel="noopener noreferrer">
+    <Link
+      href={link}
+      target="_blank"
+      rel="noopener noreferrer"
+      className=" md:hover:scale-105 md:transition-all"
+    >
       <Icon className="size-6" />
     </Link>
   );

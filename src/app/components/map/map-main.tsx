@@ -16,6 +16,7 @@ import { Location, LocationGroup } from "@/utils/map-types";
 import { motion } from "framer-motion";
 import { LoginForm } from "../login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
+import { NAVBAR_HEIGHT } from "@/constants";
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false);
@@ -172,7 +173,7 @@ export default function MapMain({
       initial={{ opacity: 0, y: 120 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.8 }}
-      className="fixed inset-0 mt-[15vh]"
+      className={`fixed inset-0 pt-[${NAVBAR_HEIGHT}]`}
     >
       <h1 className="sr-only">GLUE MAP</h1>
       {isLargeScreen ? (
