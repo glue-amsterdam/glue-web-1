@@ -49,12 +49,15 @@ function ClickAreas() {
   );
 
   return (
-    <nav className="fixed inset-0 z-30">
-      <ul className="h-full w-full">
+    <nav className="">
+      <ul className="h-full w-full ">
         {sortedMenu
           .filter((area) => area?.section && area.className)
           .map((area) => (
-            <li key={area.section} className={`absolute ${area.className}`}>
+            <li
+              key={area.section}
+              className={`absolute hover:bg-black/10 transition-all duration-300 ${area.className}`}
+            >
               <Link
                 href={`/${area.section}`}
                 onClick={(e) =>
@@ -64,13 +67,14 @@ function ClickAreas() {
                     area.section === "dashboard"
                   )
                 }
-                className="block w-full h-full"
+                className="block w-full h-full group"
                 aria-labelledby={`label-${area?.section}`}
-              />
+              >
+                <Labels mainMenu={mainMenu} />
+              </Link>
             </li>
           ))}
       </ul>
-      <Labels mainMenu={mainMenu} />
       <LoginForm
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
@@ -88,7 +92,7 @@ function Labels({ mainMenu }: { mainMenu: MainSection["mainMenu"] }) {
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
       <div className="relative w-[90%] md:w-[85%] h-[60%]">
         <div className="absolute flex h-full w-full items-center justify-evenly">
-          <div className="w-[12vh] md:w-[30vw]">
+          <div className="w-[12vh] group-hover:scale-105 md:w-[30vw] transition-all">
             <span
               id={`label-${mainMenu[0]?.section}`}
               className="navLabel break-words"
@@ -98,7 +102,7 @@ function Labels({ mainMenu }: { mainMenu: MainSection["mainMenu"] }) {
           </div>
           <span
             id={`label-${mainMenu[2]?.section}`}
-            className="navLabel break-words flex justify-end"
+            className="navLabel break-words flex justify-end group-hover:scale-105 transition-all"
           >
             {mainMenu[2]?.label}
           </span>
@@ -106,13 +110,13 @@ function Labels({ mainMenu }: { mainMenu: MainSection["mainMenu"] }) {
         <div className="absolute flex h-full w-full flex-col items-center">
           <span
             id={`label-${mainMenu[1]?.section}`}
-            className="navLabel break-words"
+            className="navLabel break-words group-hover:scale-105 transition-all"
           >
             {mainMenu[1]?.label}
           </span>
           <span
             id={`label-${mainMenu[3]?.section}`}
-            className="navLabel break-words flex items-end"
+            className="navLabel break-words flex items-end group-hover:scale-105 transition-all"
           >
             {mainMenu[3]?.label}
           </span>

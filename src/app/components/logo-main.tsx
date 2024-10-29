@@ -55,7 +55,7 @@ function LogoMain({ mode }: LogoMainProps) {
         initial="initial"
         animate="animate"
         exit="exit"
-        className="fixed inset-0 flex justify-center items-center z-10 mix-blend-lighten"
+        className="fixed inset-0 z-20 flex justify-center items-center mix-blend-lighten"
       >
         <LogoLetters mode={mode} />
         <Lines />
@@ -90,7 +90,7 @@ function Lines() {
 
 function LogoLetters({ mode }: LogoMainProps) {
   return (
-    <div className="absolute z-10 w-[95%] h-[90%]">
+    <div className="absolute z-20 w-[95%] h-[90%]">
       <div className="h-full relative">
         <Gletter
           className={`
