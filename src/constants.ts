@@ -1,1 +1,1 @@
-export const NAVBAR_HEIGHT: string = "5rem";
+export const NAVBAR_HEIGHT: string = "5";

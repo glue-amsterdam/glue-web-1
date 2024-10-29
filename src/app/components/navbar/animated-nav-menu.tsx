@@ -5,6 +5,7 @@ import HomePageLogo from "@/app/components/navbar/home-page-logo";
 import { MainMenuItem } from "@/utils/menu-types";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React, { useState, useRef, useEffect } from "react";
 import { ImMenu3, ImMenu4 } from "react-icons/im";
 
@@ -13,6 +14,7 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pathname = usePathname();
 
   const sorteredNavItems = navItems.sort((a, b) =>
     a.section.localeCompare(b.section)
@@ -43,11 +45,15 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
       }
     };
 
+    if (pathname == "/") {
+      setIsMenuOpen(false);
+    }
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <nav className="flex items-center justify-start gap-4 px-2">
@@ -58,9 +64,9 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
         className=" md:hover:scale-105 md:transition-all"
       >
         {isMenuOpen ? (
-          <ImMenu3 className="size-10" />
+          <ImMenu4 className="size-10" />
         ) : (
-          <ImMenu4 className="size-10" onClick={() => setIsMenuOpen(true)} />
+          <ImMenu3 className="size-10" onClick={() => setIsMenuOpen(true)} />
         )}
       </div>
       <AnimatePresence>

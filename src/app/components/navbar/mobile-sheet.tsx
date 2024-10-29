@@ -29,7 +29,7 @@ export default function MobileSheet({
 }: Props) {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger asChild className="md:hidden overflow-y-scroll">
+      <SheetTrigger asChild className="md:hidden">
         <MdMenu
           className="size-10 cursor-pointer"
           onClick={() => setIsOpen(!isOpen)}
@@ -37,7 +37,7 @@ export default function MobileSheet({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[300px] sm:w-[400px] flex flex-col text-uiblack"
+        className="w-[300px] sm:w-[400px] overflow-y-scroll flex flex-col text-uiblack"
       >
         <nav className="flex flex-col space-y-4">
           <SheetClose asChild>
