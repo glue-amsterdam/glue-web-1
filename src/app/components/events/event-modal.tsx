@@ -54,7 +54,7 @@ export function EventModal() {
               className="rounded-md object-cover absolute inset-0 -translate-y-10 lg:translate-y-0"
             />
           </figure>
-          <div className="flex flex-wrap gap-5">
+          <div className="flex flex-wrap gap-2">
             <div className="flex-1">
               <time
                 className="text-sm text-gray-500 mb-2 block italic"
@@ -65,14 +65,14 @@ export function EventModal() {
               </time>
               <p className="mb-4 text-sm">{event.description}</p>
             </div>
-            <div className="flex gap-10">
-              <div>
-                <h3 className=" font-bold text-xl mb-2">Creator</h3>
-                <p>{event.creator.name}</p>
+            <div className="flex gap-4">
+              <div className="text-center">
+                <h3 className="font-bold text-lg mb-1">Organizer</h3>
+                <p className="text-sm">{event.creator.name}</p>
               </div>
-              <div className="flex-1">
-                <h3 className=" font-bold text-xl mb-2">Contributors</h3>
-                <ul className="list-disc list-inside">
+              <div>
+                <h3 className="font-bold text-lg mb-1">Co-organizer</h3>
+                <ul className="text-sm text-center">
                   {event.contributors.map((contributor: Contributor) => (
                     <li key={contributor.id}>{contributor.name}</li>
                   ))}

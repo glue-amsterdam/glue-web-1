@@ -44,7 +44,7 @@ export default function EventCard({ event, i }: EventCardProps) {
             >
               {new Date(event.date).toLocaleDateString("en-GB", {
                 timeZone: "UTC",
-              })}{" "}
+              })}
               | {event.startTime} - {event.endTime}
             </time>
             <div>
@@ -55,7 +55,7 @@ export default function EventCard({ event, i }: EventCardProps) {
               <div className="flex gap-2 items-center">
                 <span className="text-sm md:text-lg font-bold">
                   Contributors:
-                </span>{" "}
+                </span>
                 {event.contributors.map((contributor: Contributor) => (
                   <p className="text-xs md:text-sm" key={contributor.name}>
                     <span>{contributor.name}</span>

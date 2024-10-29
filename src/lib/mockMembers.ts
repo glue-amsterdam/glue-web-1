@@ -8,19 +8,56 @@ export const members: Member[] = [
     shortDescription: "High-end lighting and furniture brands",
     description:
       "At VANMOKUM we take care of the development, manufacturing and distribution of high-end lighting and furniture brands:\n\nGRAYPANTS\nFRAMA\nPIET HEIN EEK LIGHTING\nAY ILLUMINATE\nSELETTI\nJAPTH\n\nAt GLUE'24, our PANDVANMOKUM will also be the place to discover work from external brands and designers:\n\nNLXLxSTUDIO JOB\nARTLINEZ\nJAN WILLEM KALDENBACH\nSUPA DUPA STUDIO\nSTUDIO RENS\nVANJOOSTxKEGEL\nDIRK DUIF\nTEUN ZWETS",
-    address: "VANMOKUM studio\n\nMeeuwenlaan 126 B\n1021 JN",
-    visitingHours: {
-      Thursday: [
-        { open: "09:30", close: "13:00" },
-        { open: "13:00", close: "23:45" },
+    mapInfo: {
+      id: "place.1234",
+      text: "Rijksmuseum",
+      place_name: "Rijksmuseum, Museumstraat 1, 1071 XX Amsterdam, Netherlands",
+      center: [4.8852, 52.3599],
+      context: [
+        {
+          id: "region.678",
+          text: "North Holland",
+        },
+        {
+          id: "country.345",
+          text: "Netherlands",
+          short_code: "NL",
+        },
       ],
-      Friday: [
-        { open: "09:30", close: "13:00" },
-        { open: "13:00", close: "23:45" },
-      ],
-      Saturday: [{ open: "09:30", close: "13:00" }],
-      Sunday: [],
     },
+    visitingHours: {
+      thursday: {
+        label: "Thursday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      friday: {
+        label: "Friday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      saturday: {
+        label: "Saturday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      sunday: {
+        label: "Sunday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+    },
+    rsvp: true,
+    rsvpMessage: "Please RSVP Please",
+    rsvpLink: "https://rsvplink.com.ar",
     phoneNumber: ["+31 (0)20 21 03 101"],
     visibleEmail: ["press@vanmokum.com"],
     visibleWebsite: ["/members/vanmokum"],
@@ -54,13 +91,57 @@ export const members: Member[] = [
     shortDescription: "Artistic design studio",
     description:
       "STUDIO JOB blends fine art and design to create extraordinary pieces. Known for intricate sculptures and limited-edition works.",
-    address: "STUDIO JOB\n\nJobstraat 12\n1050 NL",
-    visitingHours: {
-      Thursday: [{ open: "10:00", close: "18:00" }],
-      Friday: [{ open: "10:00", close: "20:00" }],
-      Saturday: [{ open: "10:00", close: "18:00" }],
-      Sunday: [],
+    mapInfo: {
+      id: "place.5678",
+      text: "Van Gogh Museum",
+      place_name:
+        "Van Gogh Museum, Museumplein 6, 1071 DJ Amsterdam, Netherlands",
+      center: [4.881, 52.3584],
+      context: [
+        {
+          id: "region.678",
+          text: "North Holland",
+        },
+        {
+          id: "country.345",
+          text: "Netherlands",
+          short_code: "NL",
+        },
+      ],
     },
+    visitingHours: {
+      thursday: {
+        label: "Thursday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      friday: {
+        label: "Friday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      saturday: {
+        label: "Saturday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      sunday: {
+        label: "Sunday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+    },
+    rsvp: true,
+    rsvpMessage: "Please RSVP Please",
+    rsvpLink: "https://rsvplink.com.ar",
     phoneNumber: ["+31 (0)20 22 04 102"],
     visibleEmail: ["info@studiojob.com"],
     visibleWebsite: ["/members/studio-job"],
@@ -94,13 +175,57 @@ export const members: Member[] = [
     shortDescription: "Color-focused design studio",
     description:
       "STUDIO RENS explores the essence of color, collaborating with various brands to challenge the perception of material and color.",
-    address: "STUDIO RENS\n\nKleurenstraat 15\n1071 DD",
-    visitingHours: {
-      Thursday: [{ open: "09:00", close: "17:00" }],
-      Friday: [{ open: "09:00", close: "21:00" }],
-      Saturday: [{ open: "09:00", close: "17:00" }],
-      Sunday: [],
+    mapInfo: {
+      id: "place.9101",
+      text: "Anne Frank House",
+      place_name:
+        "Anne Frank House, Westermarkt 20, 1016 GV Amsterdam, Netherlands",
+      center: [4.8839, 52.3752],
+      context: [
+        {
+          id: "region.678",
+          text: "North Holland",
+        },
+        {
+          id: "country.345",
+          text: "Netherlands",
+          short_code: "NL",
+        },
+      ],
     },
+    visitingHours: {
+      thursday: {
+        label: "Thursday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      friday: {
+        label: "Friday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      saturday: {
+        label: "Saturday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      sunday: {
+        label: "Sunday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+    },
+    rsvp: true,
+    rsvpMessage: "Please RSVP Please",
+    rsvpLink: "https://rsvplink.com.ar",
     phoneNumber: ["+31 (0)20 21 01 303"],
     visibleEmail: ["info@studiorens.com"],
     visibleWebsite: ["/members/studio-rens"],
@@ -134,12 +259,57 @@ export const members: Member[] = [
     shortDescription: "Sustainable lighting design",
     description:
       "GRAYPANTS creates lighting solutions using sustainable materials, blending artistry with responsible production.",
-    address: "GRAYPANTS Studio\n\nLichtstraat 5\n2013 TW",
-    visitingHours: {
-      Friday: [{ open: "11:00", close: "22:00" }],
-      Saturday: [{ open: "11:00", close: "19:00" }],
-      Sunday: [{ open: "11:00", close: "19:00" }],
+    mapInfo: {
+      id: "place.2468",
+      text: "Café de Jaren",
+      place_name:
+        "Café de Jaren, Nieuwe Doelenstraat 20, 1012 CP Amsterdam, Netherlands",
+      center: [4.897, 52.3675],
+      context: [
+        {
+          id: "region.678",
+          text: "North Holland",
+        },
+        {
+          id: "country.345",
+          text: "Netherlands",
+          short_code: "NL",
+        },
+      ],
     },
+    visitingHours: {
+      thursday: {
+        label: "Thursday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      friday: {
+        label: "Friday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      saturday: {
+        label: "Saturday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      sunday: {
+        label: "Sunday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+    },
+    rsvp: true,
+    rsvpMessage: "Please RSVP Please",
+    rsvpLink: "https://rsvplink.com.ar",
     phoneNumber: [
       "+31 (0)20 23 01 104",
       "+31 (0)20 23 01 104",
@@ -177,12 +347,56 @@ export const members: Member[] = [
     shortDescription: "Holistic design studio",
     description:
       "FRAMA creates interior products and spaces that embody a sense of timelessness, merging the realms of architecture and design.",
-    address: "FRAMA Studio\n\nDesignweg 18\n3034 HG",
-    visitingHours: {
-      Thursday: [{ open: "10:00", close: "19:00" }],
-      Friday: [{ open: "10:00", close: "23:00" }],
-      Saturday: [{ open: "10:00", close: "19:00" }],
+    mapInfo: {
+      id: "place.1234",
+      text: "Rijksmuseum",
+      place_name: "Rijksmuseum, Museumstraat 1, 1071 XX Amsterdam, Netherlands",
+      center: [4.8852, 52.3599],
+      context: [
+        {
+          id: "region.678",
+          text: "North Holland",
+        },
+        {
+          id: "country.345",
+          text: "Netherlands",
+          short_code: "NL",
+        },
+      ],
     },
+    visitingHours: {
+      thursday: {
+        label: "Thursday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      friday: {
+        label: "Friday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      saturday: {
+        label: "Saturday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      sunday: {
+        label: "Sunday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+    },
+    rsvp: true,
+    rsvpMessage: "Please RSVP Please",
+    rsvpLink: "https://rsvplink.com.ar",
     phoneNumber: ["+31 (0)20 24 01 202"],
     visibleEmail: ["contact@frama.com"],
     visibleWebsite: ["/members/frama"],
@@ -216,12 +430,57 @@ export const members: Member[] = [
     shortDescription: "Creative lighting solutions",
     description:
       "AY ILLUMINATE specializes in creating handmade lighting fixtures that bring warmth and beauty to any space.",
-    address: "AY ILLUMINATE\n\nLichtstraat 45\n2013 TU",
-    visitingHours: {
-      Thursday: [{ open: "10:00", close: "20:00" }],
-      Friday: [{ open: "10:00", close: "20:00" }],
-      Saturday: [{ open: "10:00", close: "20:00" }],
+    mapInfo: {
+      id: "place.1357",
+      text: "Restaurant De Kas",
+      place_name:
+        "Restaurant De Kas, Kamerlingh Onneslaan 3, 1097 DE Amsterdam, Netherlands",
+      center: [4.9276, 52.3512],
+      context: [
+        {
+          id: "region.678",
+          text: "North Holland",
+        },
+        {
+          id: "country.345",
+          text: "Netherlands",
+          short_code: "NL",
+        },
+      ],
     },
+    visitingHours: {
+      thursday: {
+        label: "Thursday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      friday: {
+        label: "Friday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      saturday: {
+        label: "Saturday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      sunday: {
+        label: "Sunday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+    },
+    rsvp: true,
+    rsvpMessage: "Please RSVP Please",
+    rsvpLink: "https://rsvplink.com.ar",
     phoneNumber: ["+31 (0)20 25 01 505"],
     visibleEmail: ["info@ayilluminate.com"],
     visibleWebsite: ["/members/ay-illuminate"],
@@ -255,11 +514,52 @@ export const members: Member[] = [
     shortDescription: "Innovative design products",
     description:
       "SELETTI offers a playful and provocative range of design products, merging art and functionality in unexpected ways.",
-    address: "SELETTI Studio\n\nDesignstraat 78\n1019 KJ",
+    mapInfo: {
+      id: "place.9753",
+      text: "Foodhallen",
+      place_name: "Foodhallen, Bellamyplein 51, 1053 AT Amsterdam, Netherlands",
+      center: [4.8674, 52.3658],
+      context: [
+        {
+          id: "region.678",
+          text: "North Holland",
+        },
+        {
+          id: "country.345",
+          text: "Netherlands",
+          short_code: "NL",
+        },
+      ],
+    },
     visitingHours: {
-      Thursday: [{ open: "11:00", close: "20:00" }],
-      Friday: [{ open: "11:00", close: "20:00" }],
-      Saturday: [{ open: "11:00", close: "20:00" }],
+      thursday: {
+        label: "Thursday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      friday: {
+        label: "Friday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      saturday: {
+        label: "Saturday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
+      sunday: {
+        label: "Sunday",
+        ranges: [
+          { open: "09:30", close: "13:00" },
+          { open: "13:00", close: "23:45" },
+        ],
+      },
     },
     phoneNumber: ["+31 (0)20 22 12 343"],
     visibleEmail: ["info@seletti.com"],
