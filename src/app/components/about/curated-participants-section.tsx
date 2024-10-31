@@ -9,46 +9,50 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CuratedMember } from "@/utils/about-types";
 
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
 import Link from "next/link";
 import { fadeInConfig } from "@/utils/animations";
+import { CuratedParticipantWhitYear } from "@/utils/user-types";
 
-interface CuratedMembersProps {
-  curatedMembers: CuratedMember[];
+interface CuratedMembersSectionProps {
+  curatedParticipants: Record<number, CuratedParticipantWhitYear[]>;
   title: string;
   description: string;
 }
 
 export default function CuratedMembersSection({
-  curatedMembers,
+  curatedParticipants,
   title,
   description,
-}: CuratedMembersProps) {
-  const years = Array.from(
-    new Set(curatedMembers.map((curatedMember) => curatedMember.year))
-  ).sort((a, b) => b - a);
+}: CuratedMembersSectionProps) {
+  const years = Object.keys(curatedParticipants)
+    .map(Number)
+    .sort((a, b) => b - a);
 
-  const [selectedYear, setSelectedYear] = useState<string>(
-    years.length > 0 ? years[0].toString() : ""
+  const [selectedYear, setSelectedYear] = useState<number>(
+    years.length > 0 ? years[0] : 0
   );
 
-  const filteredMembers = useMemo(() => {
-    return curatedMembers.filter(
-      (member) => member.year.toString() === selectedYear
-    );
-  }, [curatedMembers, selectedYear]);
+  const filteredCurated = useMemo(() => {
+    return curatedParticipants[selectedYear] || [];
+  }, [curatedParticipants, selectedYear]);
 
   const handleYearChange = (year: string) => {
-    setSelectedYear(year);
+    setSelectedYear(Number(year));
   };
 
-  const MemberCard = ({ member, i }: { member: CuratedMember; i: number }) => (
+  const ParticipantCard = ({
+    participant,
+    i,
+  }: {
+    participant: CuratedParticipantWhitYear;
+    i: number;
+  }) => (
     <Link
       target="_blank"
-      href={`/members/${member.slug}`}
+      href={`/participants/${participant.slug}`}
       className="hover:scale-110 transition-all hover:rotate-1 mb-2"
     >
       <motion.div
@@ -59,7 +63,7 @@ export default function CuratedMembersSection({
       >
         <FaUserCircle />
         <h3 className="font-semibold text-base md:text-lg lg:text-xl">
-          {member.name}
+          {participant.userName}
         </h3>
       </motion.div>
     </Link>
@@ -80,11 +84,14 @@ export default function CuratedMembersSection({
               delay: 0.8,
             }}
             viewport={{ once: true }}
-            className="h1-titles font-bold tracking-widest "
+            className="h1-titles font-bold tracking-widest my-4"
           >
             {title}
           </motion.h1>
-          <Select onValueChange={handleYearChange} value={selectedYear}>
+          <Select
+            onValueChange={handleYearChange}
+            value={selectedYear.toString()}
+          >
             <SelectTrigger className="w-[180px] rounded-none bg-uiwhite text-uiblack">
               <SelectValue placeholder="Select year" />
             </SelectTrigger>
@@ -107,11 +114,16 @@ export default function CuratedMembersSection({
         </motion.p>
       </>
       <div className="grid grid-cols-2 md:grid-cols-4 place-content-start flex-grow">
-        {filteredMembers.map((member, i) => (
-          <MemberCard key={member.id} member={member} i={i} />
-        ))}
+        {filteredCurated.map(
+          (participant: CuratedParticipantWhitYear, i: number) => (
+            <ParticipantCard
+              key={participant.slug}
+              participant={participant}
+              i={i}
+            />
+          )
+        )}
       </div>
-
       <ScrollDown color="uiwhite" href="#info" className="py-2" />
     </motion.article>
   );

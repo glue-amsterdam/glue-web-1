@@ -1,5 +1,5 @@
 import { mockEvents } from "@/lib/mockevents";
-import { EventsResponse, EventType } from "@/utils/event-types";
+import { Event, EventType } from "@/utils/event-types";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -29,15 +29,15 @@ export async function GET(request: Request) {
       (event) =>
         event.name.toLowerCase().includes(searchLower) ||
         event.description.toLowerCase().includes(searchLower) ||
-        event.creator.name.toLowerCase().includes(searchLower) ||
-        event.contributors.some((contributor) =>
-          contributor.name.toLowerCase().includes(searchLower)
+        event.organizer.name.toLowerCase().includes(searchLower) ||
+        event.coOrganizers.some((coOrganizer) =>
+          coOrganizer.name.toLowerCase().includes(searchLower)
         )
     );
   }
   const limit = limitParam ? parseInt(limitParam, 10) : undefined;
   const limitedEvents = limit ? filteredEvents.slice(0, limit) : filteredEvents;
 
-  const response: EventsResponse = { events: limitedEvents };
+  const response: Event[] = limitedEvents;
   return NextResponse.json(response);
 }

@@ -24,18 +24,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
-
-const eventTypes = [
-  "Lecture",
-  "Workshop",
-  "Drink",
-  "Guided Tour",
-  "Exhibition",
-] as const;
+import { EVENT_TYPES } from "@/constants";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  thumbnail: z.string().min(1, "Please add an thumbnail"),
+  thumbnail: z.string().min(1, "Please add a thumbnail"),
   date: z
     .string()
     .regex(
@@ -48,11 +42,14 @@ const formSchema = z.object({
   endTime: z
     .string()
     .regex(/^\d{2}:\d{2}$/, "Please enter a valid time in HH:MM format"),
-  type: z.enum(eventTypes),
+  type: z.enum(EVENT_TYPES),
   description: z
     .string()
     .min(10, "Description must be at least 10 characters")
     .max(500, "Description must be less than 500 characters"),
+  rsvp: z.boolean().default(false),
+  rsvpMessage: z.string().optional(),
+  rsvpLink: z.string().url("Please enter a valid URL").optional(),
 });
 
 export default function EventCreationForm({
@@ -72,6 +69,9 @@ export default function EventCreationForm({
       endTime: "",
       type: "Lecture",
       description: "",
+      rsvp: false,
+      rsvpMessage: "",
+      rsvpLink: "",
     },
   });
 
@@ -135,9 +135,7 @@ export default function EventCreationForm({
                         )}
                       </div>
                     </FormControl>
-                    <FormDescription>
-                      {`Click "Add thumbnail" to select an thumbnail for your event.`}
-                    </FormDescription>
+                    <FormDescription>{`Click "Add thumbnail" to select a thumbnail for your event.`}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -263,7 +261,7 @@ export default function EventCreationForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {eventTypes.map((type) => (
+                        {EVENT_TYPES.map((type) => (
                           <SelectItem key={type} value={type}>
                             {type}
                           </SelectItem>
@@ -274,6 +272,72 @@ export default function EventCreationForm({
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="rsvp"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>RSVP Required</FormLabel>
+                      <FormDescription>
+                        Check this if attendees need to RSVP for the event.
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {form.watch("rsvp") && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="rsvpMessage"
+                    render={({ field }) => (
+                      <FormItem className="dashboard-form-item">
+                        <FormLabel className="dashboard-label">
+                          RSVP Message
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            className="dashboard-input"
+                            placeholder="Enter RSVP message"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="rsvpLink"
+                    render={({ field }) => (
+                      <FormItem className="dashboard-form-item">
+                        <FormLabel className="dashboard-label">
+                          RSVP Link
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            className="dashboard-input"
+                            type="url"
+                            placeholder="Enter RSVP link"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
             </div>
           </div>
 
@@ -310,6 +374,7 @@ export default function EventCreationForm({
               <p>
                 Time: {event.startTime} - {event.endTime}
               </p>
+              {event.rsvp && <p>RSVP Required</p>}
             </div>
           </div>
         ))}

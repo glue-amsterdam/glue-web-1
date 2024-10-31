@@ -1,17 +1,19 @@
 "use client";
 
-import CuratedMembersSection from "@/app/components/about/curated-members-section";
+import CuratedMembersSection from "@/app/components/about/curated-participants-section";
 import { useColors } from "@/app/context/MainContext";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { CuratedMemberSectionContent } from "@/utils/about-types";
+import { CuratedParticipantWhitYear } from "@/utils/user-types";
 import React, { useRef } from "react";
 
 type Props = {
-  curatedMembersSection: CuratedMemberSectionContent;
+  headerData: CuratedMemberSectionContent;
+  curatedParticipants: Record<number, CuratedParticipantWhitYear[]>;
 };
 
-function CuratedMembers({ curatedMembersSection }: Props) {
+function CuratedMembers({ headerData, curatedParticipants }: Props) {
   const colors = useColors();
   const { box3: box3Color } = colors;
 
@@ -23,13 +25,13 @@ function CuratedMembers({ curatedMembersSection }: Props) {
       id="curated"
       aria-label="curated-members-content"
       aria-labelledby="curated-members-heading"
-      style={{ backgroundColor: box3Color }}
-      className={`h-screen pt-[${NAVBAR_HEIGHT}rem] snap-center relative`}
+      style={{ backgroundColor: box3Color, paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={`h-dvh snap-center relative`}
     >
       <CuratedMembersSection
-        title={curatedMembersSection.title}
-        description={curatedMembersSection.description}
-        curatedMembers={curatedMembersSection.curatedMembers}
+        title={headerData.title}
+        description={headerData.description}
+        curatedParticipants={curatedParticipants}
       />
     </section>
   );

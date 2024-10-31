@@ -9,17 +9,24 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { ParticipantsSectionContent } from "@/utils/about-types";
+import { placeholderImage } from "@/mockConstants";
 import { fadeInConfig } from "@/utils/animations";
+import { ParticipantUser } from "@/utils/user-types";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
 import Link from "next/link";
+
+interface ParticipantsSection {
+  title: string;
+  description: string;
+  participants: ParticipantUser[];
+}
 
 export default function ParticipantsSection({
   participants,
   description,
   title,
-}: ParticipantsSectionContent) {
+}: ParticipantsSection) {
   if (!participants || participants.length === 0) {
     return <div className="text-center py-8">No Participants Data</div>;
   }
@@ -43,7 +50,7 @@ export default function ParticipantsSection({
           delay: 0.8,
         }}
         viewport={{ once: true }}
-        className="h1-titles font-bold tracking-widest mb-4"
+        className="h1-titles font-bold tracking-widest my-4"
       >
         {title}
       </motion.h1>
@@ -66,24 +73,39 @@ export default function ParticipantsSection({
                 <Link
                   target="_blank"
                   className="h-full"
-                  href={`/members/${encodeURIComponent(
-                    generateSlug(participant.name)
+                  href={`/participants/${encodeURIComponent(
+                    generateSlug(participant.userName)
                   )}`}
                 >
                   <Card className="border-none shadow-sm bg-transparent h-full hover:shadow-md transition-shadow duration-300">
                     <CardContent className="flex items-center justify-center p-0 h-full">
-                      <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
-                        <img
-                          src={participant.images[0].src}
-                          alt={participant.name}
-                          className="w-full h-full absolute object-cover"
-                        />
-                        <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                          <p className="text-center font-semibold text-sm">
-                            {participant.name}
-                          </p>
+                      {participant.images ? (
+                        <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
+                          <img
+                            src={participant.images[0].imageUrl}
+                            alt={`${participant.userName} profile image thumbnail`}
+                            className="w-full h-full absolute object-cover"
+                          />
+                          <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                            <p className="text-center font-semibold text-sm">
+                              {participant.userName}
+                            </p>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
+                          <img
+                            src={placeholderImage.imageUrl}
+                            alt={`${participant.userName} profile image thumbnail`}
+                            className="w-full h-full absolute object-cover"
+                          />
+                          <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                            <p className="text-center font-semibold text-sm">
+                              {participant.userName}
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </Link>

@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,19 +32,31 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, ClockIcon, PencilIcon } from "lucide-react";
 import { fetchFiveEvents } from "@/utils/api";
+import { EVENT_TYPES } from "@/constants";
+import { ImageData } from "@/utils/global-types";
+import { Event, EventType, Organizer } from "@/utils/event-types";
 
-const contributorSchema = z.object({
+const organizerSchema: z.ZodType<Organizer> = z.object({
   id: z.string(),
   name: z.string(),
-  avatar: z.string().url(),
+  slug: z.string(),
 });
 
-const eventSchema = z.object({
+const imageDataSchema: z.ZodType<ImageData> = z.object({
   id: z.string(),
+  imageUrl: z.string().url("Please enter a valid URL for the thumbnail"),
+  alt: z.string(),
+  imageName: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+const baseEventSchema = z.object({
+  eventId: z.string(),
   name: z.string().min(2, "Name must be at least 2 characters"),
-  thumbnail: z.string().url("Please enter a valid URL for the thumbnail"),
-  creator: contributorSchema,
-  contributors: z.array(contributorSchema),
+  thumbnail: imageDataSchema,
+  organizer: organizerSchema,
+  coOrganizers: z.array(organizerSchema),
   date: z
     .string()
     .regex(
@@ -59,33 +69,60 @@ const eventSchema = z.object({
   endTime: z
     .string()
     .regex(/^\d{2}:\d{2}$/, "Please enter a valid time in HH:MM format"),
-  type: z.enum(["Lecture", "Workshop", "Drink", "Guided Tour", "Exhibition"]),
+  type: z.enum(EVENT_TYPES),
   description: z.string().min(10, "Description must be at least 10 characters"),
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
 
-type Event = z.infer<typeof eventSchema>;
+const rsvpRequiredEventSchema = baseEventSchema.extend({
+  rsvp: z.literal(true),
+  rsvpMessage: z.string(),
+  rsvpLink: z.string().url(),
+});
+
+const rsvpOptionalEventSchema = baseEventSchema.extend({
+  rsvp: z.literal(false).optional(),
+  rsvpMessage: z.string().optional(),
+  rsvpLink: z.string().url().optional(),
+});
+
+const eventSchema: z.ZodType<Event> = z.discriminatedUnion("rsvp", [
+  rsvpRequiredEventSchema,
+  rsvpOptionalEventSchema,
+]);
 
 export default function YourEventsSection() {
   const [events, setEvents] = useState<Event[]>([]);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
   useEffect(() => {
-    fetchFiveEvents().then((response) => setEvents(response.events));
+    fetchFiveEvents().then((response) => setEvents(response));
   }, []);
 
   const form = useForm<Event>({
     resolver: zodResolver(eventSchema),
     defaultValues: editingEvent || {
-      id: "",
+      eventId: "",
       name: "",
-      thumbnail: "",
-      creator: { id: "", name: "", avatar: "" },
-      contributors: [],
+      thumbnail: {
+        id: "",
+        imageUrl: "",
+        alt: "Image alt text for the Event thumbnail",
+        imageName: "",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      organizer: { id: "", name: "", slug: "" },
+      coOrganizers: [],
       date: "",
       startTime: "",
       endTime: "",
-      type: "Lecture",
+      type: EVENT_TYPES[0] as EventType,
       description: "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      rsvp: false,
     },
   });
 
@@ -96,7 +133,9 @@ export default function YourEventsSection() {
   }, [editingEvent, form]);
 
   const onSubmit: SubmitHandler<Event> = (data) => {
-    setEvents(events.map((event) => (event.id === data.id ? data : event)));
+    setEvents(
+      events.map((event) => (event.eventId === data.eventId ? data : event))
+    );
     setEditingEvent(null);
   };
 
@@ -105,11 +144,14 @@ export default function YourEventsSection() {
       <h2 className="text-2xl font-bold text-uiwhite">Your Events</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {events.map((event) => (
-          <Card key={event.id} className="bg-primary text-primary-foreground">
+          <Card
+            key={event.eventId}
+            className="bg-primary text-primary-foreground"
+          >
             <CardHeader>
               <div className="relative h-40 w-full overflow-hidden rounded-t-lg">
                 <img
-                  src={event.thumbnail}
+                  src={event.thumbnail.imageUrl}
                   alt={event.name}
                   className="absolute inset-0 object-cover w-full h-full"
                 />
@@ -268,7 +310,7 @@ export default function YourEventsSection() {
                                 {field.value ? (
                                   <div className="relative h-40 w-40 overflow-hidden rounded-lg">
                                     <img
-                                      src={field.value}
+                                      src={field.value.imageUrl}
                                       alt="Event thumbnail"
                                       className="absolute inset-0 object-cover w-full h-full"
                                     />
@@ -278,7 +320,14 @@ export default function YourEventsSection() {
                                       size="sm"
                                       className="absolute top-2 right-2"
                                       onClick={() =>
-                                        form.setValue("thumbnail", "")
+                                        form.setValue("thumbnail", {
+                                          id: "",
+                                          imageUrl: "",
+                                          alt: "Image alt text for the Event thumbnail",
+                                          imageName: "",
+                                          createdAt: new Date(),
+                                          updatedAt: new Date(),
+                                        })
                                       }
                                     >
                                       Remove
@@ -288,8 +337,15 @@ export default function YourEventsSection() {
                                   <Button
                                     type="button"
                                     onClick={() => {
-                                      const newthumbnail = `/placeholders/placeholder-1.jpg`;
-                                      form.setValue("thumbnail", newthumbnail);
+                                      form.setValue("thumbnail", {
+                                        id: "image-event-thumbnail-asdfas",
+                                        imageUrl:
+                                          "/placeholders/placeholder-1.jpg",
+                                        alt: "Image alt text for the Event thumbnail",
+                                        imageName: "",
+                                        createdAt: new Date(),
+                                        updatedAt: new Date(),
+                                      });
                                     }}
                                     className="h-40 w-40 flex items-center justify-center"
                                   >
@@ -323,6 +379,79 @@ export default function YourEventsSection() {
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={form.control}
+                        name="rsvp"
+                        render={({ field }) => (
+                          <FormItem className="dashboard-form-item">
+                            <FormLabel className="dashboard-label">
+                              RSVP Required
+                            </FormLabel>
+                            <FormControl>
+                              <input
+                                type="checkbox"
+                                checked={field.value === true}
+                                onChange={(e) => {
+                                  const newValue = e.target.checked;
+                                  field.onChange(newValue);
+                                  if (newValue) {
+                                    form.setValue("rsvpMessage", "");
+                                    form.setValue("rsvpLink", "");
+                                  } else {
+                                    form.setValue("rsvpMessage", undefined);
+                                    form.setValue("rsvpLink", undefined);
+                                  }
+                                }}
+                                onBlur={field.onBlur}
+                                name={field.name}
+                                ref={field.ref}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {form.watch("rsvp") && (
+                        <>
+                          <FormField
+                            control={form.control}
+                            name="rsvpMessage"
+                            render={({ field }) => (
+                              <FormItem className="dashboard-form-item">
+                                <FormLabel className="dashboard-label">
+                                  RSVP Message
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    className="dashboard-input"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="rsvpLink"
+                            render={({ field }) => (
+                              <FormItem className="dashboard-form-item">
+                                <FormLabel className="dashboard-label">
+                                  RSVP Link
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    className="dashboard-input"
+                                    type="url"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
+                      )}
                       <Button type="submit" className="w-full">
                         Save Changes
                       </Button>

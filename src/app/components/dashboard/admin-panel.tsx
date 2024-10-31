@@ -1,221 +1,151 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StatusType, User, UserWithPlanDetails } from "@/utils/user-types";
+import UserCard from "@/app/components/dashboard/moderator/user-card";
+import HeaderUserFullView from "@/app/components/dashboard/moderator/header-user-full-view";
+import UserFullViewContent from "@/app/components/dashboard/moderator/user-full-view-content";
+import UserFullViewFooter from "@/app/components/dashboard/moderator/user-full-view-footer";
 import {
-  Clock,
-  MapPin,
-  Phone,
-  Mail,
-  Globe,
-  Instagram,
-  Facebook,
-  Linkedin,
-} from "lucide-react";
-import { Member } from "@/utils/member-types";
-import { fetchMember } from "@/utils/api";
+  Select,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+  SelectItem,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
-export default function AdminPanel({ members }: { members: Member[] }) {
+export default function AdminPanel({ users }: { users: User[] }) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-  const [memberStatus, setMemberStatus] = useState<
-    "pending" | "accepted" | "declined"
-  >("pending");
-
-  const filteredMembers = members.filter((member) =>
-    member.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const [selectedUser, setSelectedUser] = useState<UserWithPlanDetails | null>(
+    null
   );
+  const [userStatus, setUserStatus] = useState<StatusType | null>(null);
+  const [selectedType, setSelectedType] = useState<string>("all");
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
 
-  const handleMemberClick = async (slug: string) => {
-    try {
-      const member = await fetchMember(slug);
-      setSelectedMember(member);
-    } catch (error) {
-      console.error("Error fetching member:", error);
-    }
-  };
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = selectedType === "all" || user.type === selectedType;
 
-  const handleStatusChange = (status: "pending" | "accepted" | "declined") => {
-    setMemberStatus(status);
+    return matchesSearch && matchesType;
+  });
 
-    console.log(`Member ${selectedMember?.name} status changed to ${status}`);
+  const deleteSelectedUsers = () => {
+    // API to delete the users
+    console.log("Deleting users:", Array.from(selectedUsers));
+    setSelectedUsers(new Set());
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Admin Panel</h1>
+    <div className="container mx-auto ">
+      <h1 className="text-2xl font-bold mb-4">Mod Panel</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-1">
-          <Input
-            type="text"
-            placeholder="Search members..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="mb-4 dashboard-input"
-          />
+          <div className="flex justify-between items-center mb-2">
+            <p className="text-sm ">{selectedUsers.size} users selected</p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  disabled={selectedUsers.size === 0}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-black">
+                    Are you absolutely sure?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    the selected users and remove their data.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="text-white hover:text-white bg-black hover:bg-black/80">
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-uired hover:bg-uired/80"
+                    onClick={deleteSelectedUsers}
+                  >
+                    Yes, delete users
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+          <div className="flex gap-2 mb-4">
+            <Input
+              type="text"
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="dashboard-input"
+            />
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="participant">Participant</SelectItem>
+                <SelectItem value="member">Member</SelectItem>
+                <SelectItem value="visitor">Visitor</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <ScrollArea className="h-[calc(100vh-200px)]">
-            {filteredMembers.map((member) => (
-              <Card
-                key={member.id}
-                className="mb-2 cursor-pointer"
-                onClick={() => handleMemberClick(member.slug)}
-              >
-                <CardHeader>
-                  <CardTitle>{member.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p>{member.shortDescription}</p>
-                </CardContent>
-              </Card>
+            {filteredUsers.map((user) => (
+              <div key={user.userId}>
+                <UserCard
+                  selectedUsers={selectedUsers}
+                  setSelectedUsers={setSelectedUsers}
+                  user={user}
+                  setSelectedUser={setSelectedUser}
+                  setUserStatus={setUserStatus}
+                />
+              </div>
             ))}
           </ScrollArea>
         </div>
         <div className="md:col-span-2">
-          {selectedMember ? (
+          {selectedUser ? (
             <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-4">
-                  <Avatar>
-                    <AvatarImage
-                      src={selectedMember.images[0].src}
-                      alt={selectedMember.name}
-                    />
-                    <AvatarFallback>
-                      {selectedMember.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <CardTitle>{selectedMember.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedMember.shortDescription}
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="info">
-                  <TabsList>
-                    <TabsTrigger value="info">Info</TabsTrigger>
-                    <TabsTrigger value="contact">Contact</TabsTrigger>
-                    <TabsTrigger value="hours">Hours</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="info">
-                    <p>{selectedMember.description}</p>
-                    <div className="mt-4 flex items-center">
-                      <MapPin className="mr-2" size={16} />
-                      <span>{selectedMember.address}</span>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="contact">
-                    <div className="space-y-2">
-                      {selectedMember.phoneNumber.map((phone, index) => (
-                        <div key={index} className="flex items-center">
-                          <Phone className="mr-2" size={16} />
-                          <span>{phone}</span>
-                        </div>
-                      ))}
-                      {selectedMember.visibleEmail.map((email, index) => (
-                        <div key={index} className="flex items-center">
-                          <Mail className="mr-2" size={16} />
-                          <span>{email}</span>
-                        </div>
-                      ))}
-                      {selectedMember.visibleWebsite.map((website, index) => (
-                        <div key={index} className="flex items-center">
-                          <Globe className="mr-2" size={16} />
-                          <span>{website}</span>
-                        </div>
-                      ))}
-                      <div className="flex space-x-2 mt-2">
-                        {selectedMember.socialMedia.instagram?.map(
-                          (instagram, index) => (
-                            <Badge key={index} variant="secondary">
-                              <Instagram className="mr-1" size={14} />
-                              {instagram}
-                            </Badge>
-                          )
-                        )}
-                        {selectedMember.socialMedia.facebook?.map(
-                          (facebook, index) => (
-                            <Badge key={index} variant="secondary">
-                              <Facebook className="mr-1" size={14} />
-                              {facebook}
-                            </Badge>
-                          )
-                        )}
-                        {selectedMember.socialMedia.linkedin?.map(
-                          (linkedin, index) => (
-                            <Badge key={index} variant="secondary">
-                              <Linkedin className="mr-1" size={14} />
-                              {linkedin}
-                            </Badge>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="hours">
-                    <div className="space-y-2">
-                      {Object.entries(selectedMember.visitingHours).map(
-                        ([day, hours]) => (
-                          <div key={day} className="flex items-center">
-                            <Clock className="mr-2" size={16} />
-                            <span className="font-medium">{day}:</span>
-                            <span className="ml-2">
-                              {hours.map((timeRange, index) => (
-                                <span key={index}>
-                                  {timeRange.open} - {timeRange.close}
-                                  {index < hours.length - 1 && ", "}
-                                </span>
-                              ))}
-                            </span>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button
-                  variant={memberStatus === "accepted" ? "default" : "outline"}
-                  onClick={() => handleStatusChange("accepted")}
-                >
-                  Accept
-                </Button>
-                <Button
-                  variant={memberStatus === "pending" ? "default" : "outline"}
-                  onClick={() => handleStatusChange("pending")}
-                >
-                  Pending
-                </Button>
-                <Button
-                  variant={
-                    memberStatus === "declined" ? "destructive" : "outline"
-                  }
-                  onClick={() => handleStatusChange("declined")}
-                >
-                  Decline
-                </Button>
-              </CardFooter>
+              <HeaderUserFullView selectedUser={selectedUser} />
+              <UserFullViewContent selectedUser={selectedUser} />
+              <UserFullViewFooter
+                selectedUser={selectedUser}
+                userStatus={userStatus}
+                setUserStatus={setUserStatus}
+              />
             </Card>
           ) : (
             <Card>
               <CardContent className="flex items-center justify-center h-[calc(100vh-200px)]">
                 <p className="text-muted-foreground">
-                  Select a member to view details
+                  Select a user to view details
                 </p>
               </CardContent>
             </Card>

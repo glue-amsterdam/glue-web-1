@@ -1,9 +1,10 @@
 import CenteredLoader from "@/app/components/centered-loader";
 import LogoMain from "@/app/components/logo-main";
-import { ImageCarousel } from "@/app/components/members/member-carousel";
-import MemberInfo from "@/app/components/members/member-info";
+import { ImageCarousel } from "@/app/components/participants/participant-carousel";
+import ParticipantInfo from "@/app/components/participants/participant-info";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { fetchMember } from "@/utils/api";
+import { placeholderImage } from "@/mockConstants";
+import { fetchParticipant } from "@/utils/api";
 import { Suspense } from "react";
 
 export default async function MemberPage({
@@ -11,22 +12,23 @@ export default async function MemberPage({
 }: {
   params: { slug: string };
 }) {
-  const member = await fetchMember(params.slug);
+  const participant = await fetchParticipant(params.slug);
 
   return (
-    <main className="relative h-screen">
+    <main className="relative h-dvh">
       <section
-        className={`pt-[${NAVBAR_HEIGHT}rem] grid grid-cols-1 md:grid-cols-2 h-full grid-rows-2 md:grid-rows-1`}
+        style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+        className={`grid grid-cols-1 md:grid-cols-2 h-full grid-rows-2 md:grid-rows-1`}
       >
         <article className="overflow-hidden">
           <LogoMain mode="member" />
           <Suspense fallback={<CenteredLoader />}>
-            <ImageCarousel images={member.images} />
+            <ImageCarousel images={participant.images || [placeholderImage]} />
           </Suspense>
         </article>
         <article className="h-full overflow-y-scroll text-uiblack">
           <Suspense fallback={<CenteredLoader />}>
-            <MemberInfo member={member} />
+            <ParticipantInfo participant={participant} />
           </Suspense>
         </article>
       </section>

@@ -12,13 +12,15 @@ import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import { fadeInConfig } from "@/utils/animations";
 import { NAVBAR_HEIGHT } from "@/constants";
+import { Sponsor } from "@/utils/sponsors-types";
 
 type Props = {
   glueInternationalSection: GlueInternationalContent;
-  sponsorsSection: SponsorsSectionContent;
+  headerData: SponsorsSectionContent;
+  sponsors: Sponsor[];
 };
 
-function LastPage({ glueInternationalSection, sponsorsSection }: Props) {
+function LastPage({ glueInternationalSection, headerData, sponsors }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
   useScroll();
 
@@ -28,7 +30,8 @@ function LastPage({ glueInternationalSection, sponsorsSection }: Props) {
       id="last"
       aria-label="last-page-content"
       aria-labelledby="last-page-heading"
-      className={`h-screen pt-[${NAVBAR_HEIGHT}rem] bg-uiwhite snap-start relative`}
+      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={`h-dvh bg-uiwhite snap-start relative`}
     >
       <motion.article
         {...fadeInConfig}
@@ -36,9 +39,9 @@ function LastPage({ glueInternationalSection, sponsorsSection }: Props) {
       >
         <GlueInternational glueInternational={glueInternationalSection} />
         <SponsorsCarousel
-          sponsors={sponsorsSection.sponsors}
-          title={sponsorsSection.title}
-          description={sponsorsSection.description}
+          sponsors={sponsors}
+          title={headerData.title}
+          description={headerData.description}
         />
         <ScrollUp color="uiblack" href="#main" />
       </motion.article>

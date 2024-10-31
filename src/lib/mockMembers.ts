@@ -1,13 +1,34 @@
-import { Member } from "@/utils/member-types";
+import { generateTimestamps, visitingHours } from "@/mockConstants";
+import { User } from "@/utils/user-types";
 
-export const members: Member[] = [
+export const users: User[] = [
   {
-    id: "50654654",
+    userId: "50654654",
     slug: "vanmokum",
-    name: "VANMOKUM",
+    userName: "VANMOKUM",
     shortDescription: "High-end lighting and furniture brands",
+    type: "participant",
+    isCurated: true,
+    year: 1998,
+    isMod: false,
+    status: "accepted",
+    planId: "planId-3",
     description:
       "At VANMOKUM we take care of the development, manufacturing and distribution of high-end lighting and furniture brands:\n\nGRAYPANTS\nFRAMA\nPIET HEIN EEK LIGHTING\nAY ILLUMINATE\nSELETTI\nJAPTH\n\nAt GLUE'24, our PANDVANMOKUM will also be the place to discover work from external brands and designers:\n\nNLXLxSTUDIO JOB\nARTLINEZ\nJAN WILLEM KALDENBACH\nSUPA DUPA STUDIO\nSTUDIO RENS\nVANJOOSTxKEGEL\nDIRK DUIF\nTEUN ZWETS",
+    invoiceData: {
+      ...generateTimestamps(),
+      invoiceId: "invoice-user50654654",
+      userId: "50654654",
+      invoiceData: {
+        invoiceCompanyName: "VANMOKUM",
+        invoiceZipCode: "1071 XX",
+        invoiceAddress: "Museumstraat 1",
+        invoiceCountry: "Netherlands",
+        invoiceCity: "Amsterdam",
+        invoiceExtra: "Extra data",
+      },
+    },
+
     mapInfo: {
       id: "place.1234",
       text: "Rijksmuseum",
@@ -24,40 +45,9 @@ export const members: Member[] = [
           short_code: "NL",
         },
       ],
+      ...generateTimestamps(),
     },
-    visitingHours: {
-      thursday: {
-        label: "Thursday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      friday: {
-        label: "Friday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      saturday: {
-        label: "Saturday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      sunday: {
-        label: "Sunday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-    },
-    rsvp: true,
-    rsvpMessage: "Please RSVP Please",
-    rsvpLink: "https://rsvplink.com.ar",
+    visitingHours: visitingHours,
     phoneNumber: ["+31 (0)20 21 03 101"],
     visibleEmail: ["press@vanmokum.com"],
     visibleWebsite: ["/members/vanmokum"],
@@ -68,29 +58,136 @@ export const members: Member[] = [
     },
     images: [
       {
+        imageName: "vanmokum-carousel-image-1",
         id: "vanmokum-carousel-image-1",
-        src: `/placeholders/user-placeholder-1.jpg`,
+        imageUrl: `/placeholders/user-placeholder-1.jpg`,
         alt: "vanmokum profile image 1",
+        ...generateTimestamps(),
       },
       {
+        imageName: "vanmokum-carousel-image-2",
         id: "vanmokum-carousel-image-2",
-        src: `/placeholders/user-placeholder-2.jpg`,
+        imageUrl: `/placeholders/user-placeholder-2.jpg`,
         alt: "vanmokum profile image 2",
+        ...generateTimestamps(),
       },
       {
+        imageName: "vanmokum-carousel-image-3",
         id: "vanmokum-carousel-image-3",
-        src: `/placeholders/user-placeholder-3.jpg`,
+        imageUrl: `/placeholders/user-placeholder-3.jpg`,
         alt: "vanmokum profile image 3",
+        ...generateTimestamps(),
       },
     ],
+    email: "press@vanmokum.com",
+    password: "password",
+    ...generateTimestamps(),
   },
   {
-    id: "50654655",
+    userId: "50654654654",
+    slug: "vanmokumsdfs",
+    userName: "VANMOKUMere",
+    shortDescription: "High-end lighting and furniture brands",
+    type: "participant",
+    isCurated: true,
+    year: 1998,
+    isMod: false,
+    status: "accepted",
+    planId: "planId-3",
+    description:
+      "At VANMOKUM we take care of the development, manufacturing and distribution of high-end lighting and furniture brands:\n\nGRAYPANTS\nFRAMA\nPIET HEIN EEK LIGHTING\nAY ILLUMINATE\nSELETTI\nJAPTH\n\nAt GLUE'24, our PANDVANMOKUM will also be the place to discover work from external brands and designers:\n\nNLXLxSTUDIO JOB\nARTLINEZ\nJAN WILLEM KALDENBACH\nSUPA DUPA STUDIO\nSTUDIO RENS\nVANJOOSTxKEGEL\nDIRK DUIF\nTEUN ZWETS",
+    invoiceData: {
+      ...generateTimestamps(),
+      invoiceId: "invoice-user50654654",
+      userId: "50654654",
+      invoiceData: {
+        invoiceCompanyName: "VANMOKUM",
+        invoiceZipCode: "1071 XX",
+        invoiceAddress: "Museumstraat 1",
+        invoiceCountry: "Netherlands",
+        invoiceCity: "Amsterdam",
+        invoiceExtra: "Extra data",
+      },
+    },
+
+    mapInfo: {
+      id: "place.1234",
+      text: "Rijksmuseum",
+      place_name: "Rijksmuseum, Museumstraat 1, 1071 XX Amsterdam, Netherlands",
+      center: [4.8852, 52.3599],
+      context: [
+        {
+          id: "region.678",
+          text: "North Holland",
+        },
+        {
+          id: "country.345",
+          text: "Netherlands",
+          short_code: "NL",
+        },
+      ],
+      ...generateTimestamps(),
+    },
+    visitingHours: visitingHours,
+    phoneNumber: ["+31 (0)20 21 03 101"],
+    visibleEmail: ["press@vanmokum.com"],
+    visibleWebsite: ["/members/vanmokum"],
+    socialMedia: {
+      instagram: ["https://www.instagram.com/vanmokum/"],
+      facebook: ["https://www.facebook.com/VANMOKUM/"],
+      linkedin: ["https://www.linkedin.com/company/vanmokum"],
+    },
+    images: [
+      {
+        imageName: "vanmokum-carousel-image-1",
+        id: "vanmokum-carousel-image-1",
+        imageUrl: `/placeholders/user-placeholder-1.jpg`,
+        alt: "vanmokum profile image 1",
+        ...generateTimestamps(),
+      },
+      {
+        imageName: "vanmokum-carousel-image-2",
+        id: "vanmokum-carousel-image-2",
+        imageUrl: `/placeholders/user-placeholder-2.jpg`,
+        alt: "vanmokum profile image 2",
+        ...generateTimestamps(),
+      },
+      {
+        imageName: "vanmokum-carousel-image-3",
+        id: "vanmokum-carousel-image-3",
+        imageUrl: `/placeholders/user-placeholder-3.jpg`,
+        alt: "vanmokum profile image 3",
+        ...generateTimestamps(),
+      },
+    ],
+    email: "press@vanmokum.com",
+    password: "password",
+    ...generateTimestamps(),
+  },
+  {
+    userId: "50654655",
     slug: "studio-job",
-    name: "STUDIO JOB",
+    userName: "STUDIO JOB",
     shortDescription: "Artistic design studio",
+    type: "participant",
+    isCurated: false,
+    isMod: false,
+    status: "accepted",
+    planId: "planId-3",
     description:
       "STUDIO JOB blends fine art and design to create extraordinary pieces. Known for intricate sculptures and limited-edition works.",
+    invoiceData: {
+      ...generateTimestamps(),
+      invoiceId: "invoice-user50654655",
+      userId: "50654655",
+      invoiceData: {
+        invoiceCompanyName: "STUDIO JOB",
+        invoiceZipCode: "1071 DJ",
+        invoiceAddress: "Museumplein 6",
+        invoiceCountry: "Netherlands",
+        invoiceCity: "Amsterdam",
+      },
+    },
     mapInfo: {
       id: "place.5678",
       text: "Van Gogh Museum",
@@ -108,40 +205,9 @@ export const members: Member[] = [
           short_code: "NL",
         },
       ],
+      ...generateTimestamps(),
     },
-    visitingHours: {
-      thursday: {
-        label: "Thursday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      friday: {
-        label: "Friday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      saturday: {
-        label: "Saturday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      sunday: {
-        label: "Sunday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-    },
-    rsvp: true,
-    rsvpMessage: "Please RSVP Please",
-    rsvpLink: "https://rsvplink.com.ar",
+    visitingHours: visitingHours,
     phoneNumber: ["+31 (0)20 22 04 102"],
     visibleEmail: ["info@studiojob.com"],
     visibleWebsite: ["/members/studio-job"],
@@ -152,35 +218,61 @@ export const members: Member[] = [
     },
     images: [
       {
+        imageName: "studio-job-carousel-image-1",
         id: "studio-job-carousel-image-1",
-        src: `/placeholders/user-placeholder-1.jpg`,
-        alt: "studio job profile image 1",
+        imageUrl: `/placeholders/user-placeholder-1.jpg`,
+        alt: "studio-job profile image 1",
+        ...generateTimestamps(),
       },
       {
+        imageName: "studio-job-carousel-image-2",
         id: "studio-job-carousel-image-2",
-        src: `/placeholders/placeholder-2.jpg`,
-        alt: "studio job profile image 2",
+        imageUrl: `/placeholders/user-placeholder-2.jpg`,
+        alt: "studio-job profile image 2",
+        ...generateTimestamps(),
       },
       {
+        imageName: "studio-job-carousel-image-3",
         id: "studio-job-carousel-image-3",
-        src: `/placeholders/placeholder-3.jpg`,
-        alt: "studio job profile image 3",
+        imageUrl: `/placeholders/user-placeholder-3.jpg`,
+        alt: "studio-job profile image 3",
+        ...generateTimestamps(),
       },
     ],
+    email: "info@studiojob.com",
+    password: "password",
+    ...generateTimestamps(),
   },
   {
-    id: "5065465985",
+    userId: "5065465985",
     slug: "studio-rens",
-    name: "STUDIO RENS",
+    userName: "STUDIO RENS",
     shortDescription: "Color-focused design studio",
+    type: "participant",
+    isCurated: false,
+    isMod: false,
+    status: "pending",
+    planId: "planId-3",
     description:
       "STUDIO RENS explores the essence of color, collaborating with various brands to challenge the perception of material and color.",
+    invoiceData: {
+      ...generateTimestamps(),
+      invoiceId: "invoice-user5065465985",
+      userId: "5065465985",
+      invoiceData: {
+        invoiceCompanyName: "STUDIO RENS",
+        invoiceZipCode: "1016 GV",
+        invoiceAddress: "Westermarkt 20",
+        invoiceCountry: "Netherlands",
+        invoiceCity: "Amsterdam",
+      },
+    },
     mapInfo: {
       id: "place.9101",
       text: "Anne Frank House",
       place_name:
         "Anne Frank House, Westermarkt 20, 1016 GV Amsterdam, Netherlands",
-      center: [4.8839, 52.3752],
+      center: [4.8831, 52.3752],
       context: [
         {
           id: "region.678",
@@ -192,250 +284,74 @@ export const members: Member[] = [
           short_code: "NL",
         },
       ],
+      ...generateTimestamps(),
     },
-    visitingHours: {
-      thursday: {
-        label: "Thursday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      friday: {
-        label: "Friday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      saturday: {
-        label: "Saturday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      sunday: {
-        label: "Sunday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-    },
-    rsvp: true,
-    rsvpMessage: "Please RSVP Please",
-    rsvpLink: "https://rsvplink.com.ar",
-    phoneNumber: ["+31 (0)20 21 01 303"],
+    visitingHours: visitingHours,
+    phoneNumber: ["+31 (0)20 22 04 202"],
     visibleEmail: ["info@studiorens.com"],
     visibleWebsite: ["/members/studio-rens"],
     socialMedia: {
       instagram: ["https://www.instagram.com/studiorens/"],
-      facebook: ["https://www.facebook.com/studiorensofficial/"],
+      facebook: ["https://www.facebook.com/studiorens/"],
       linkedin: ["https://www.linkedin.com/company/studiorens"],
     },
     images: [
       {
+        imageName: "studio-rens-carousel-image-1",
         id: "studio-rens-carousel-image-1",
-        src: `/placeholders/user-placeholder-1.jpg`,
+        imageUrl: `/placeholders/user-placeholder-1.jpg`,
         alt: "studio rens profile image 1",
+        ...generateTimestamps(),
       },
       {
+        imageName: "studio-rens-carousel-image-2",
         id: "studio-rens-carousel-image-2",
-        src: `/placeholders/placeholder-2.jpg`,
+        imageUrl: `/placeholders/user-placeholder-2.jpg`,
         alt: "studio rens profile image 2",
+        ...generateTimestamps(),
       },
       {
+        imageName: "studio-rens-carousel-image-3",
         id: "studio-rens-carousel-image-3",
-        src: `/placeholders/placeholder-3.jpg`,
+        imageUrl: `/placeholders/user-placeholder-3.jpg`,
         alt: "studio rens profile image 3",
+        ...generateTimestamps(),
       },
     ],
+    email: "info@studiorens.com",
+    password: "password",
+    ...generateTimestamps(),
   },
   {
-    id: "5065455",
-    slug: "graypants",
-    name: "GRAYPANTS",
-    shortDescription: "Sustainable lighting design",
-    description:
-      "GRAYPANTS creates lighting solutions using sustainable materials, blending artistry with responsible production.",
-    mapInfo: {
-      id: "place.2468",
-      text: "Café de Jaren",
-      place_name:
-        "Café de Jaren, Nieuwe Doelenstraat 20, 1012 CP Amsterdam, Netherlands",
-      center: [4.897, 52.3675],
-      context: [
-        {
-          id: "region.678",
-          text: "North Holland",
-        },
-        {
-          id: "country.345",
-          text: "Netherlands",
-          short_code: "NL",
-        },
-      ],
-    },
-    visitingHours: {
-      thursday: {
-        label: "Thursday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      friday: {
-        label: "Friday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      saturday: {
-        label: "Saturday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      sunday: {
-        label: "Sunday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-    },
-    rsvp: true,
-    rsvpMessage: "Please RSVP Please",
-    rsvpLink: "https://rsvplink.com.ar",
-    phoneNumber: [
-      "+31 (0)20 23 01 104",
-      "+31 (0)20 23 01 104",
-      "+31 (0)20 23 01 104",
-    ],
-    visibleEmail: ["info@graypants.com"],
-    visibleWebsite: ["/members/graypants"],
-    socialMedia: {
-      instagram: ["https://www.instagram.com/graypants/"],
-      facebook: ["https://www.facebook.com/graypantslighting/"],
-      linkedin: ["https://www.linkedin.com/company/graypants"],
-    },
-    images: [
-      {
-        id: "graypants-carousel-image-1",
-        src: `/placeholders/user-placeholder-1.jpg`,
-        alt: "graypants profile image 1",
-      },
-      {
-        id: "graypants-carousel-image-2",
-        src: `/placeholders/placeholder-2.jpg`,
-        alt: "graypants profile image 2",
-      },
-      {
-        id: "graypants-carousel-image-3",
-        src: `/placeholders/placeholder-3.jpg`,
-        alt: "graypants profile image 3",
-      },
-    ],
-  },
-  {
-    id: "50654659",
-    slug: "frama",
-    name: "FRAMA",
-    shortDescription: "Holistic design studio",
-    description:
-      "FRAMA creates interior products and spaces that embody a sense of timelessness, merging the realms of architecture and design.",
-    mapInfo: {
-      id: "place.1234",
-      text: "Rijksmuseum",
-      place_name: "Rijksmuseum, Museumstraat 1, 1071 XX Amsterdam, Netherlands",
-      center: [4.8852, 52.3599],
-      context: [
-        {
-          id: "region.678",
-          text: "North Holland",
-        },
-        {
-          id: "country.345",
-          text: "Netherlands",
-          short_code: "NL",
-        },
-      ],
-    },
-    visitingHours: {
-      thursday: {
-        label: "Thursday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      friday: {
-        label: "Friday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      saturday: {
-        label: "Saturday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      sunday: {
-        label: "Sunday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-    },
-    rsvp: true,
-    rsvpMessage: "Please RSVP Please",
-    rsvpLink: "https://rsvplink.com.ar",
-    phoneNumber: ["+31 (0)20 24 01 202"],
-    visibleEmail: ["contact@frama.com"],
-    visibleWebsite: ["/members/frama"],
-    socialMedia: {
-      instagram: ["https://www.instagram.com/framacph/"],
-      facebook: ["https://www.facebook.com/framadesign/"],
-      linkedin: ["https://www.linkedin.com/company/framacph"],
-    },
-    images: [
-      {
-        id: "frama-carousel-image-1",
-        src: `/placeholders/user-placeholder-1.jpg`,
-        alt: "frama profile image 1",
-      },
-      {
-        id: "frama-carousel-image-2",
-        src: `/placeholders/placeholder-2.jpg`,
-        alt: "frama profile image 2",
-      },
-      {
-        id: "frama-carousel-image-3",
-        src: `/placeholders/placeholder-3.jpg`,
-        alt: "frama profile image 3",
-      },
-    ],
-  },
-  {
-    id: "5065465555",
+    userId: "50654656",
     slug: "ay-illuminate",
-    name: "AY ILLUMINATE",
-    shortDescription: "Creative lighting solutions",
+    userName: "AY ILLUMINATE",
+    shortDescription: "Innovative lighting design",
+    type: "participant",
+    isCurated: false,
+    isMod: false,
+    status: "accepted",
+    planId: "planId-2",
     description:
-      "AY ILLUMINATE specializes in creating handmade lighting fixtures that bring warmth and beauty to any space.",
+      "AY ILLUMINATE is dedicated to crafting unique lighting solutions that enhance the beauty of spaces. Each piece tells a story.",
+    invoiceData: {
+      ...generateTimestamps(),
+      invoiceId: "invoice-user50654656",
+      userId: "50654656",
+      invoiceData: {
+        invoiceCompanyName: "AY ILLUMINATE",
+        invoiceZipCode: "1071 JS",
+        invoiceAddress: "Hobbemastraat 5",
+        invoiceCountry: "Netherlands",
+        invoiceCity: "Amsterdam",
+      },
+    },
     mapInfo: {
-      id: "place.1357",
-      text: "Restaurant De Kas",
+      id: "place.1235",
+      text: "Concertgebouw",
       place_name:
-        "Restaurant De Kas, Kamerlingh Onneslaan 3, 1097 DE Amsterdam, Netherlands",
-      center: [4.9276, 52.3512],
+        "Concertgebouw, Hobbemastraat 5, 1071 JS Amsterdam, Netherlands",
+      center: [4.879, 52.357],
       context: [
         {
           id: "region.678",
@@ -447,78 +363,74 @@ export const members: Member[] = [
           short_code: "NL",
         },
       ],
+      ...generateTimestamps(),
     },
-    visitingHours: {
-      thursday: {
-        label: "Thursday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      friday: {
-        label: "Friday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      saturday: {
-        label: "Saturday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      sunday: {
-        label: "Sunday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-    },
-    rsvp: true,
-    rsvpMessage: "Please RSVP Please",
-    rsvpLink: "https://rsvplink.com.ar",
-    phoneNumber: ["+31 (0)20 25 01 505"],
-    visibleEmail: ["info@ayilluminate.com"],
+    visitingHours: visitingHours,
+    phoneNumber: ["+31 (0)20 22 00 300"],
+    visibleEmail: ["contact@ayilluminate.com"],
     visibleWebsite: ["/members/ay-illuminate"],
     socialMedia: {
       instagram: ["https://www.instagram.com/ayilluminate/"],
-      facebook: ["https://www.facebook.com/ayilluminate"],
-      linkedin: ["https://www.linkedin.com/company/ay-illuminate"],
+      facebook: ["https://www.facebook.com/ayilluminate/"],
+      linkedin: ["https://www.linkedin.com/company/ayilluminate"],
     },
     images: [
       {
+        imageName: "ay-illuminate-carousel-image-1",
         id: "ay-illuminate-carousel-image-1",
-        src: `/placeholders/user-placeholder-1.jpg`,
+        imageUrl: `/placeholders/user-placeholder-1.jpg`,
         alt: "ay illuminate profile image 1",
+        ...generateTimestamps(),
       },
       {
+        imageName: "ay-illuminate-carousel-image-2",
         id: "ay-illuminate-carousel-image-2",
-        src: `/placeholders/placeholder-2.jpg`,
+        imageUrl: `/placeholders/user-placeholder-2.jpg`,
         alt: "ay illuminate profile image 2",
+        ...generateTimestamps(),
       },
       {
+        imageName: "ay-illuminate-carousel-image-3",
         id: "ay-illuminate-carousel-image-3",
-        src: `/placeholders/placeholder-3.jpg`,
+        imageUrl: `/placeholders/user-placeholder-3.jpg`,
         alt: "ay illuminate profile image 3",
+        ...generateTimestamps(),
       },
     ],
+    email: "contact@ayilluminate.com",
+    password: "password",
+    ...generateTimestamps(),
   },
   {
-    id: "5065455115",
-    slug: "seletti",
-    name: "SELETTI",
-    shortDescription: "Innovative design products",
+    userId: "50654657",
+    slug: "nlxl",
+    userName: "NLXL",
+    shortDescription: "Unique wallpaper designs",
+    type: "participant",
+    isCurated: false,
+    isMod: false,
+    status: "accepted",
+    planId: "planId-2",
     description:
-      "SELETTI offers a playful and provocative range of design products, merging art and functionality in unexpected ways.",
+      "NLXL specializes in high-quality wallpaper designs that are both innovative and artistic. Our collections are inspired by various cultures and styles.",
+    invoiceData: {
+      ...generateTimestamps(),
+      invoiceId: "invoice-user50654657",
+      userId: "50654657",
+      invoiceData: {
+        invoiceCompanyName: "NLXL",
+        invoiceZipCode: "1015 BG",
+        invoiceAddress: "Keizersgracht 204",
+        invoiceCountry: "Netherlands",
+        invoiceCity: "Amsterdam",
+      },
+    },
     mapInfo: {
-      id: "place.9753",
-      text: "Foodhallen",
-      place_name: "Foodhallen, Bellamyplein 51, 1053 AT Amsterdam, Netherlands",
-      center: [4.8674, 52.3658],
+      id: "place.1236",
+      text: "Westertoren",
+      place_name:
+        "Westertoren, Keizersgracht 204, 1015 BG Amsterdam, Netherlands",
+      center: [4.8912, 52.3758],
       context: [
         {
           id: "region.678",
@@ -530,61 +442,120 @@ export const members: Member[] = [
           short_code: "NL",
         },
       ],
+      ...generateTimestamps(),
     },
-    visitingHours: {
-      thursday: {
-        label: "Thursday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      friday: {
-        label: "Friday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      saturday: {
-        label: "Saturday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-      sunday: {
-        label: "Sunday",
-        ranges: [
-          { open: "09:30", close: "13:00" },
-          { open: "13:00", close: "23:45" },
-        ],
-      },
-    },
-    phoneNumber: ["+31 (0)20 22 12 343"],
-    visibleEmail: ["info@seletti.com"],
-    visibleWebsite: ["/members/seletti"],
+    visitingHours: visitingHours,
+    phoneNumber: ["+31 (0)20 22 00 400"],
+    visibleEmail: ["info@nlxl.com"],
+    visibleWebsite: ["/members/nlxl"],
     socialMedia: {
-      instagram: ["https://www.instagram.com/seletti/"],
-      facebook: ["https://www.facebook.com/seletti/"],
-      linkedin: ["https://www.linkedin.com/company/seletti"],
+      instagram: ["https://www.instagram.com/nlxl/"],
+      facebook: ["https://www.facebook.com/NLXL/"],
+      linkedin: ["https://www.linkedin.com/company/nlxl"],
     },
     images: [
       {
-        id: "seletti-carousel-image-1",
-        src: `/placeholders/user-placeholder-1.jpg`,
-        alt: "seletti profile image 1",
+        imageName: "nlxl-carousel-image-1",
+        id: "nlxl-carousel-image-1",
+        imageUrl: `/placeholders/user-placeholder-1.jpg`,
+        alt: "nlxl profile image 1",
+        ...generateTimestamps(),
       },
       {
-        id: "seletti-carousel-image-2",
-        src: `/placeholders/placeholder-2.jpg`,
-        alt: "seletti profile image 2",
+        imageName: "nlxl-carousel-image-2",
+        id: "nlxl-carousel-image-2",
+        imageUrl: `/placeholders/user-placeholder-2.jpg`,
+        alt: "nlxl profile image 2",
+        ...generateTimestamps(),
       },
       {
-        id: "seletti-carousel-image-3",
-        src: `/placeholders/placeholder-3.jpg`,
-        alt: "seletti profile image 3",
+        imageName: "nlxl-carousel-image-3",
+        id: "nlxl-carousel-image-3",
+        imageUrl: `/placeholders/user-placeholder-3.jpg`,
+        alt: "nlxl profile image 3",
+        ...generateTimestamps(),
       },
     ],
+    email: "info@nlxl.com",
+    password: "password",
+    ...generateTimestamps(),
+  },
+  {
+    userId: "50654658",
+    slug: "frama",
+    userName: "FRAMA",
+    shortDescription: "Design studio and manufacturer",
+    type: "participant",
+    isCurated: false,
+    isMod: false,
+    status: "accepted",
+    planId: "planId-2",
+    description:
+      "FRAMA is a design studio and manufacturer known for its minimalist approach and craftsmanship in furniture, lighting, and interiors.",
+    invoiceData: {
+      ...generateTimestamps(),
+      invoiceId: "invoice-user50654658",
+      userId: "50654658",
+      invoiceData: {
+        invoiceCompanyName: "FRAMA",
+        invoiceZipCode: "1043 AD",
+        invoiceAddress: "Zaanstraat 11",
+        invoiceCountry: "Netherlands",
+        invoiceCity: "Amsterdam",
+      },
+    },
+    mapInfo: {
+      id: "place.1237",
+      text: "A'DAM Tower",
+      place_name: "A'DAM Tower, Zaanstraat 11, 1043 AD Amsterdam, Netherlands",
+      center: [4.8822, 52.3922],
+      context: [
+        {
+          id: "region.678",
+          text: "North Holland",
+        },
+        {
+          id: "country.345",
+          text: "Netherlands",
+          short_code: "NL",
+        },
+      ],
+      ...generateTimestamps(),
+    },
+    visitingHours: visitingHours,
+    phoneNumber: ["+31 (0)20 22 00 500"],
+    visibleEmail: ["info@frama.com"],
+    visibleWebsite: ["/members/frama"],
+    socialMedia: {
+      instagram: ["https://www.instagram.com/frama/"],
+      facebook: ["https://www.facebook.com/frama/"],
+      linkedin: ["https://www.linkedin.com/company/frama"],
+    },
+    images: [
+      {
+        imageName: "frama-carousel-image-1",
+        id: "frama-carousel-image-1",
+        imageUrl: `/placeholders/user-placeholder-1.jpg`,
+        alt: "frama profile image 1",
+        ...generateTimestamps(),
+      },
+      {
+        imageName: "frama-carousel-image-2",
+        id: "frama-carousel-image-2",
+        imageUrl: `/placeholders/user-placeholder-2.jpg`,
+        alt: "frama profile image 2",
+        ...generateTimestamps(),
+      },
+      {
+        imageName: "frama-carousel-image-3",
+        id: "frama-carousel-image-3",
+        imageUrl: `/placeholders/user-placeholder-3.jpg`,
+        alt: "frama profile image 3",
+        ...generateTimestamps(),
+      },
+    ],
+    email: "info@frama.com",
+    password: "password",
+    ...generateTimestamps(),
   },
 ];

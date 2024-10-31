@@ -14,7 +14,8 @@ export default function AdminPage() {
 
   return (
     <div
-      className={`min-h-screen pt-[${NAVBAR_HEIGHT}rem] bg-gradient-to-br from-blue-100 to-purple-100`}
+      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={`min-h-dvh bg-gradient-to-br from-blue-100 to-purple-100`}
     >
       <div className="container mx-auto p-4">
         <h1 className="text-4xl font-bold mb-8 text-center text-blue-800">

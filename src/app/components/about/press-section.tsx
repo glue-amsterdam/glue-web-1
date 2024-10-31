@@ -46,7 +46,7 @@ export default function PressSection({
           onClick={() => setSelectedItem(item)}
         >
           <img
-            src={item.image.src}
+            src={item.image.imageUrl}
             alt={item.title}
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
           />
@@ -75,7 +75,7 @@ export default function PressSection({
           delay: 0.8,
         }}
         viewport={{ once: true }}
-        className="h1-titles font-bold tracking-widest"
+        className="h1-titles font-bold tracking-widest my-4"
       >
         {title}
       </motion.h1>
@@ -101,7 +101,7 @@ export default function PressSection({
         <DialogContent className="text-uiblack min-w-[80vw] rounded-none m-0 p-0">
           <div className="relative w-full h-[400px] md:h-[70vh] group">
             <img
-              src={selectedItem?.image.src}
+              src={selectedItem?.image.imageUrl}
               alt={selectedItem?.title}
               className="absolute inset-0 w-full h-full object-cover rounded-lg mb-4"
             />

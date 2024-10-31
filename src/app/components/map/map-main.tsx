@@ -173,7 +173,8 @@ export default function MapMain({
       initial={{ opacity: 0, y: 120 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.8 }}
-      className={`pt-[${NAVBAR_HEIGHT}rem] absolute inset-0`}
+      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={` absolute inset-0`}
     >
       <h1 className="sr-only">GLUE MAP</h1>
       {isLargeScreen ? (

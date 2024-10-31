@@ -15,11 +15,6 @@ export interface LocationGroup {
   locations: Location[];
 }
 
-export interface User {
-  id: number;
-  name: string;
-}
-
 interface LocationContext {
   id: string;
   text: string;
@@ -32,6 +27,8 @@ export interface MapBoxPlace {
   place_name: string;
   center: [number, number];
   context: LocationContext[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type MapBoxAutocompleteResponse = MapBoxPlace[];

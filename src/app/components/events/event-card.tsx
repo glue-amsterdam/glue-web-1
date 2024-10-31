@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Contributor, Event } from "@/utils/event-types";
+import { Event, Organizer } from "@/utils/event-types";
 import { fadeInConfig } from "@/utils/animations";
 interface EventCardProps {
   event: Event;
@@ -13,7 +13,7 @@ export default function EventCard({ event, i }: EventCardProps) {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push(`/events?eventId=${event.id}`, { scroll: false });
+    router.push(`/events?eventId=${event.eventId}`, { scroll: false });
   };
 
   return (
@@ -30,7 +30,7 @@ export default function EventCard({ event, i }: EventCardProps) {
         >
           <div className="bg-uiblack opacity-50 group-hover:bg-uiwhite group-hover:opacity-100 transition-all duration-200 absolute inset-0 z-10" />
           <img
-            src={event.thumbnail}
+            src={event.thumbnail.imageUrl}
             alt={event.name}
             className="absolute rounded-md top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0"
           />
@@ -38,6 +38,7 @@ export default function EventCard({ event, i }: EventCardProps) {
             <h3 className="text-xl md:text-4xl tracking-widest ">
               {event.name}
             </h3>
+
             <time
               className="text-sm text-gray-500 mb-2 block"
               dateTime={`${event.date}T${event.startTime}`}
@@ -49,14 +50,14 @@ export default function EventCard({ event, i }: EventCardProps) {
             </time>
             <div>
               <div className="flex gap-2 items-center">
-                <span className="text-sm md:text-lg font-bold">Creator:</span>{" "}
-                <p className="text-xs md:text-sm">{event.creator.name}</p>
+                <span className="text-sm md:text-lg font-bold">Organizer:</span>
+                <p className="text-xs md:text-sm">{event.organizer.name}</p>
               </div>
               <div className="flex gap-2 items-center">
                 <span className="text-sm md:text-lg font-bold">
-                  Contributors:
+                  Co organizers:
                 </span>
-                {event.contributors.map((contributor: Contributor) => (
+                {event.coOrganizers.map((contributor: Organizer) => (
                   <p className="text-xs md:text-sm" key={contributor.name}>
                     <span>{contributor.name}</span>
                   </p>

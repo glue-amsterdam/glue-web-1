@@ -15,17 +15,10 @@ import { useDebounce } from "use-debounce";
 import { EventType } from "@/utils/event-types";
 import { motion } from "framer-motion";
 import { fadeInConfig } from "@/utils/animations";
-
-const eventTypes: EventType[] = [
-  "Lecture",
-  "Workshop",
-  "Drink",
-  "Guided Tour",
-  "Exhibition",
-];
+import { EVENT_TYPES } from "@/constants";
 
 const getEventTypes = (): (EventType | "all")[] => {
-  return ["all", ...eventTypes];
+  return ["all", ...EVENT_TYPES];
 };
 
 const formatEventType = (type: string): string => {

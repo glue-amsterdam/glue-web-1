@@ -18,7 +18,10 @@ export default function EventsPage({
   });
 
   return (
-    <div className={`h-screen pt-[${NAVBAR_HEIGHT}rem] relative`}>
+    <div
+      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={`h-dvh relative`}
+    >
       <Background />
       <Suspense fallback={<CenteredLoader />}>
         <EventsPageContainer params={params} />

@@ -1,53 +1,32 @@
-import { Member } from "@/utils/member-types";
-
-export interface Image {
-  id: string;
-  src: string;
-  alt: string;
-}
+import { ImageData } from "@/utils/global-types";
 
 export interface CarouselSectionContent {
   title: string;
   description: string;
-  slides: Image[];
+  slides: ImageData[];
 }
 
 export interface Citizen {
   id: string;
   name: string;
-  image: Image;
+  image: ImageData;
   description: string;
-  year: number;
-}
-
-export interface CuratedMember {
-  id: number;
-  name: string;
-  slug: string;
   year: number;
 }
 
 export interface InfoItem {
   id: string;
   title: string;
-  image: Image;
+  image: ImageData;
   description: string;
 }
 
 export interface PressItem {
   id: string;
   title: string;
-  image: Image;
+  image: ImageData;
   description: string;
   content?: string;
-}
-
-export interface Sponsor {
-  id: string;
-  name: string;
-  logo: Image;
-  website?: string;
-  sponsorT: string;
 }
 
 export interface GlueInternationalContent {
@@ -61,13 +40,11 @@ export interface GlueInternationalContent {
 export interface ParticipantsSectionContent {
   title: string;
   description: string;
-  participants: Member[];
 }
 
 export interface CuratedMemberSectionContent {
   title: string;
   description: string;
-  curatedMembers: CuratedMember[];
 }
 
 export interface CitizensSectionContent {
@@ -91,7 +68,6 @@ export interface PressItemsSectionContent {
 export interface SponsorsSectionContent {
   title: string;
   description: string;
-  sponsors: Sponsor[];
 }
 
 export interface DatabaseContent {
@@ -103,4 +79,6 @@ export interface DatabaseContent {
   pressItemsSection: PressItemsSectionContent;
   sponsorsSection: SponsorsSectionContent;
   glueInternationalSection: GlueInternationalContent;
+  createdAt: Date;
+  updatedAt: Date;
 }

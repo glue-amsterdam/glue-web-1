@@ -1,52 +1,69 @@
+import { generateTimestamps } from "@/mockConstants";
 import { Event } from "@/utils/event-types";
 
 export const mockEvents: Event[] = [
   {
-    id: "1",
+    eventId: "A1234567890",
     name: "Modern Art Exhibition",
-    thumbnail: "/placeholders/placeholder-1.jpg",
-    creator: {
-      id: "1",
-      name: "Gallery X",
-      avatar: "/placeholders/user-placeholder-1.jpg",
+    thumbnail: {
+      id: "modern-art-exhibition-thumbnail",
+      imageUrl: `/placeholders/placeholder-1.jpg`,
+      alt: "GLUE modern-art-exhibition-thumbnail",
+      imageName: "modern-art-exhibition-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    rsvp: true,
+    rsvpMessage: "Please RSVP",
+    rsvpLink: "https://rsvplink.com.ar",
+    coOrganizers: [
       {
-        id: "2",
-        name: "Anna Clark",
-        avatar: "/placeholders/user-placeholder-2.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "3",
-        name: "Marco Lopez",
-        avatar: "/placeholders/user-placeholder-3.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2024-06-15",
     startTime: "10:00",
     endTime: "18:00",
-    type: "Exhibition",
+    type: "Other",
     description: "A showcase of contemporary works from international artists.",
+    ...generateTimestamps(),
   },
   {
-    id: "2",
+    eventId: "B9876543210",
     name: "Urban Design Workshop",
-    thumbnail: "/placeholders/placeholder-2.jpg",
-    creator: {
-      id: "2",
-      name: "City Design Lab",
-      avatar: "/placeholders/user-placeholder-2.jpg",
+    thumbnail: {
+      id: "urban-design-workshop-thumbnail",
+      imageUrl: `/placeholders/placeholder-2.jpg`,
+      alt: "GLUE urban-design-workshop-thumbnail",
+      imageName: "urban-design-workshop-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    coOrganizers: [
       {
-        id: "4",
-        name: "Ethan Harper",
-        avatar: "/placeholders/user-placeholder-1.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "5",
-        name: "Sophia Turner",
-        avatar: "/placeholders/user-placeholder-4.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2024-07-10",
@@ -55,26 +72,33 @@ export const mockEvents: Event[] = [
     type: "Workshop",
     description:
       "Interactive workshop on sustainable urban planning and design.",
+    ...generateTimestamps(),
   },
   {
-    id: "3",
+    eventId: "C1357924680",
     name: "Architectural Tour: Historic Buildings",
-    thumbnail: "/placeholders/placeholder-3.jpg",
-    creator: {
-      id: "3",
-      name: "Heritage Tours",
-      avatar: "/placeholders/user-placeholder-3.jpg",
+    thumbnail: {
+      id: "architectural-tour-thumbnail",
+      imageUrl: `/placeholders/placeholder-3.jpg`,
+      alt: "GLUE architectural-tour-thumbnail",
+      imageName: "architectural-tour-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    coOrganizers: [
       {
-        id: "6",
-        name: "Lucas Shaw",
-        avatar: "/placeholders/user-placeholder-4.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "7",
-        name: "Mia Williams",
-        avatar: "/placeholders/user-placeholder-1.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2024-08-05",
@@ -83,26 +107,33 @@ export const mockEvents: Event[] = [
     type: "Guided Tour",
     description:
       "A guided tour exploring historic architectural landmarks in the city.",
+    ...generateTimestamps(),
   },
   {
-    id: "4",
+    eventId: "D2468013579",
     name: "Design Principles Lecture",
-    thumbnail: "/placeholders/placeholder-1.jpg",
-    creator: {
-      id: "4",
-      name: "Design Academy",
-      avatar: "/placeholders/user-placeholder-4.jpg",
+    thumbnail: {
+      id: "design-principles-lecture-thumbnail",
+      imageUrl: `/placeholders/placeholder-1.jpg`,
+      alt: "GLUE design-principles-lecture-thumbnail",
+      imageName: "design-principles-lecture-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    coOrganizers: [
       {
-        id: "8",
-        name: "Olivia Brown",
-        avatar: "/placeholders/user-placeholder-2.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "9",
-        name: "James Carter",
-        avatar: "/placeholders/user-placeholder-3.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2024-09-15",
@@ -111,26 +142,33 @@ export const mockEvents: Event[] = [
     type: "Lecture",
     description:
       "A lecture on the core principles of design and their real-world applications.",
+    ...generateTimestamps(),
   },
   {
-    id: "5",
+    eventId: "E3692581470",
     name: "Sculpture Workshop: Materials & Techniques",
-    thumbnail: "/placeholders/placeholder-2.jpg",
-    creator: {
-      id: "5",
-      name: "Artisans Collective",
-      avatar: "/placeholders/user-placeholder-3.jpg",
+    thumbnail: {
+      id: "sculpture-workshop-thumbnail",
+      imageUrl: `/placeholders/placeholder-2.jpg`,
+      alt: "GLUE sculpture-workshop-thumbnail",
+      imageName: "sculpture-workshop-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    coOrganizers: [
       {
-        id: "10",
-        name: "Emily Jones",
-        avatar: "/placeholders/user-placeholder-1.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "11",
-        name: "Daniel Evans",
-        avatar: "/placeholders/user-placeholder-2.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2024-10-20",
@@ -139,26 +177,33 @@ export const mockEvents: Event[] = [
     type: "Workshop",
     description:
       "Learn hands-on sculpting techniques using different materials.",
+    ...generateTimestamps(),
   },
   {
-    id: "6",
+    eventId: "F1597534862",
     name: "Art & Wine Social",
-    thumbnail: "/placeholders/placeholder-3.jpg",
-    creator: {
-      id: "6",
-      name: "Creative Space",
-      avatar: "/placeholders/user-placeholder-2.jpg",
+    thumbnail: {
+      id: "art-wine-social-thumbnail",
+      imageUrl: `/placeholders/placeholder-3.jpg`,
+      alt: "GLUE art-wine-social-thumbnail",
+      imageName: "art-wine-social-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    coOrganizers: [
       {
-        id: "12",
-        name: "Sarah Martin",
-        avatar: "/placeholders/user-placeholder-3.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "13",
-        name: "Robert King",
-        avatar: "/placeholders/user-placeholder-4.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2024-11-10",
@@ -167,26 +212,33 @@ export const mockEvents: Event[] = [
     type: "Drink",
     description:
       "An evening of art appreciation with wine and creative discussions.",
+    ...generateTimestamps(),
   },
   {
-    id: "7",
+    eventId: "G7531594862",
     name: "Interior Design Trends Lecture",
-    thumbnail: "/placeholders/placeholder-1.jpg",
-    creator: {
-      id: "7",
-      name: "Design Insights",
-      avatar: "/placeholders/user-placeholder-4.jpg",
+    thumbnail: {
+      id: "interior-design-trends-thumbnail",
+      imageUrl: `/placeholders/placeholder-1.jpg`,
+      alt: "GLUE interior-design-trends-thumbnail",
+      imageName: "interior-design-trends-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    coOrganizers: [
       {
-        id: "14",
-        name: "Isabella Reed",
-        avatar: "/placeholders/user-placeholder-1.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "15",
-        name: "Tom Wilson",
-        avatar: "/placeholders/user-placeholder-2.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2024-12-01",
@@ -194,26 +246,33 @@ export const mockEvents: Event[] = [
     endTime: "12:00",
     type: "Lecture",
     description: "A deep dive into the latest interior design trends for 2025.",
+    ...generateTimestamps(),
   },
   {
-    id: "8",
+    eventId: "H9513578642",
     name: "Sustainable Architecture Workshop",
-    thumbnail: "/placeholders/placeholder-2.jpg",
-    creator: {
-      id: "8",
-      name: "Eco Architects",
-      avatar: "/placeholders/user-placeholder-3.jpg",
+    thumbnail: {
+      id: "sustainable-architecture-thumbnail",
+      imageUrl: `/placeholders/placeholder-2.jpg`,
+      alt: "GLUE sustainable-architecture-thumbnail",
+      imageName: "sustainable-architecture-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    coOrganizers: [
       {
-        id: "16",
-        name: "Zoe White",
-        avatar: "/placeholders/user-placeholder-4.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "17",
-        name: "Michael Bailey",
-        avatar: "/placeholders/user-placeholder-1.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2024-12-15",
@@ -222,54 +281,68 @@ export const mockEvents: Event[] = [
     type: "Workshop",
     description:
       "Exploring sustainable building practices and eco-friendly materials.",
+    ...generateTimestamps(),
   },
   {
-    id: "9",
+    eventId: "I2469135780",
     name: "Photography Exhibition: Urban Landscapes",
-    thumbnail: "/placeholders/placeholder-3.jpg",
-    creator: {
-      id: "9",
-      name: "Photo World",
-      avatar: "/placeholders/user-placeholder-1.jpg",
+    thumbnail: {
+      id: "photography-exhibition-thumbnail",
+      imageUrl: `/placeholders/placeholder-3.jpg`,
+      alt: "GLUE photography-exhibition-thumbnail",
+      imageName: "photography-exhibition-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    coOrganizers: [
       {
-        id: "18",
-        name: "Jessica Brown",
-        avatar: "/placeholders/user-placeholder-2.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "19",
-        name: "William Garcia",
-        avatar: "/placeholders/user-placeholder-3.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2025-01-05",
     startTime: "10:00",
     endTime: "18:00",
-    type: "Exhibition",
+    type: "Guided Tour",
     description:
       "A photography exhibition showcasing urban landscapes from around the world.",
+    ...generateTimestamps(),
   },
   {
-    id: "10",
+    eventId: "J3571594680",
     name: "Art History Guided Tour",
-    thumbnail: "/placeholders/placeholder-1.jpg",
-    creator: {
-      id: "10",
-      name: "Museum of Art",
-      avatar: "/placeholders/user-placeholder-4.jpg",
+    thumbnail: {
+      id: "art-history-guided-tour-thumbnail",
+      imageUrl: `/placeholders/placeholder-1.jpg`,
+      alt: "GLUE art-history-guided-tour-thumbnail",
+      imageName: "art-history-guided-tour-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    coOrganizers: [
       {
-        id: "20",
-        name: "Nina Lee",
-        avatar: "/placeholders/user-placeholder-1.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "21",
-        name: "Harry Miller",
-        avatar: "/placeholders/user-placeholder-3.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2025-02-20",
@@ -278,54 +351,68 @@ export const mockEvents: Event[] = [
     type: "Guided Tour",
     description:
       "A guided tour through centuries of art history and iconic masterpieces.",
+    ...generateTimestamps(),
   },
   {
-    id: "11",
+    eventId: "K2583691470",
     name: "Contemporary Sculpture Exhibition",
-    thumbnail: "/placeholders/placeholder-2.jpg",
-    creator: {
-      id: "11",
-      name: "Sculpture Now",
-      avatar: "/placeholders/user-placeholder-3.jpg",
+    thumbnail: {
+      id: "contemporary-sculpture-thumbnail",
+      imageUrl: `/placeholders/placeholder-2.jpg`,
+      alt: "GLUE contemporary-sculpture-thumbnail",
+      imageName: "contemporary-sculpture-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    coOrganizers: [
       {
-        id: "22",
-        name: "Chloe Bennett",
-        avatar: "/placeholders/user-placeholder-2.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "23",
-        name: "Ryan Scott",
-        avatar: "/placeholders/user-placeholder-4.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2025-03-10",
     startTime: "11:00",
     endTime: "17:00",
-    type: "Exhibition",
+    type: "Lecture",
     description:
       "An exhibition of cutting-edge contemporary sculpture from emerging artists.",
+    ...generateTimestamps(),
   },
   {
-    id: "12",
+    eventId: "L1597534863",
     name: "Digital Art Workshop: New Techniques",
-    thumbnail: "/placeholders/placeholder-3.jpg",
-    creator: {
-      id: "12",
-      name: "Digital Creatives",
-      avatar: "/placeholders/user-placeholder-1.jpg",
+    thumbnail: {
+      id: "digital-art-workshop-thumbnail",
+      imageUrl: `/placeholders/placeholder-3.jpg`,
+      alt: "GLUE digital-art-workshop-thumbnail",
+      imageName: "digital-art-workshop-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    coOrganizers: [
       {
-        id: "24",
-        name: "Ella Gray",
-        avatar: "/placeholders/user-placeholder-4.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "25",
-        name: "Leo Parker",
-        avatar: "/placeholders/user-placeholder-2.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2025-04-01",
@@ -334,26 +421,33 @@ export const mockEvents: Event[] = [
     type: "Workshop",
     description:
       "A hands-on workshop exploring new techniques in digital art creation.",
+    ...generateTimestamps(),
   },
   {
-    id: "13",
+    eventId: "M7531594864",
     name: "Fashion Design Trends Lecture",
-    thumbnail: "/placeholders/placeholder-1.jpg",
-    creator: {
-      id: "13",
-      name: "Fashion Forward",
-      avatar: "/placeholders/user-placeholder-4.jpg",
+    thumbnail: {
+      id: "fashion-design-trends-thumbnail",
+      imageUrl: `/placeholders/placeholder-1.jpg`,
+      alt: "GLUE fashion-design-trends-thumbnail",
+      imageName: "fashion-design-trends-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    coOrganizers: [
       {
-        id: "26",
-        name: "Lily Adams",
-        avatar: "/placeholders/user-placeholder-3.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "27",
-        name: "Jack Cooper",
-        avatar: "/placeholders/user-placeholder-4.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2025-04-20",
@@ -362,26 +456,33 @@ export const mockEvents: Event[] = [
     type: "Lecture",
     description:
       "Exploring the latest trends in fashion design for the upcoming season.",
+    ...generateTimestamps(),
   },
   {
-    id: "14",
+    eventId: "N2583691471",
     name: "Abstract Painting Workshop",
-    thumbnail: "/placeholders/placeholder-2.jpg",
-    creator: {
-      id: "14",
-      name: "Art Studio",
-      avatar: "/placeholders/user-placeholder-3.jpg",
+    thumbnail: {
+      id: "abstract-painting-workshop-thumbnail",
+      imageUrl: `/placeholders/placeholder-2.jpg`,
+      alt: "GLUE abstract-painting-workshop-thumbnail",
+      imageName: "abstract-painting-workshop-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    coOrganizers: [
       {
-        id: "28",
-        name: "Sophie Brooks",
-        avatar: "/placeholders/user-placeholder-1.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "29",
-        name: "Chris Lee",
-        avatar: "/placeholders/user-placeholder-2.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2025-05-05",
@@ -389,26 +490,33 @@ export const mockEvents: Event[] = [
     endTime: "16:00",
     type: "Workshop",
     description: "Learn techniques for creating stunning abstract paintings.",
+    ...generateTimestamps(),
   },
   {
-    id: "15",
+    eventId: "O3692581472",
     name: "Designers’ Social Evening",
-    thumbnail: "/placeholders/placeholder-3.jpg",
-    creator: {
-      id: "15",
-      name: "Design Circle",
-      avatar: "/placeholders/user-placeholder-4.jpg",
+    thumbnail: {
+      id: "designers-social-evening-thumbnail",
+      imageUrl: `/placeholders/placeholder-3.jpg`,
+      alt: "GLUE designers-social-evening-thumbnail",
+      imageName: "designers-social-evening-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      id: "5065465555",
+      slug: "ay-illuminate",
+      name: "AY ILLUMINATE",
+    },
+    coOrganizers: [
       {
-        id: "30",
-        name: "Max Roberts",
-        avatar: "/placeholders/user-placeholder-3.jpg",
+        id: "5065455115",
+        name: "SELETTI",
+        slug: "seletti",
       },
       {
-        id: "31",
-        name: "Grace Foster",
-        avatar: "/placeholders/user-placeholder-1.jpg",
+        id: "50654659",
+        slug: "frama",
+        name: "FRAMA",
       },
     ],
     date: "2025-05-20",
@@ -417,5 +525,6 @@ export const mockEvents: Event[] = [
     type: "Drink",
     description:
       "A casual social event for designers to network and share ideas.",
+    ...generateTimestamps(),
   },
 ];

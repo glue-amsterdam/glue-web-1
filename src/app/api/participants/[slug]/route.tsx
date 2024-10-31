@@ -1,4 +1,4 @@
-import { members } from "@/lib/mockMembers";
+import { users } from "@/lib/mockMembers";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -14,11 +14,13 @@ export async function GET(
 
   const { slug } = params;
 
-  const filteredEvents = members.filter((member) => member.slug === slug);
+  const participants = users.filter((user) => user.type === "participant");
 
-  if (filteredEvents.length === 0) {
+  const filteredUser = participants.filter((user) => user.slug === slug);
+
+  if (filteredUser.length === 0) {
     return NextResponse.json({ message: "Member not found" }, { status: 404 });
   }
 
-  return NextResponse.json(filteredEvents[0]);
+  return NextResponse.json(filteredUser[0]);
 }

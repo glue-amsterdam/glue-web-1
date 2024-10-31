@@ -65,7 +65,7 @@ export default function CitizenOfHonourSection({
           <div className="relative w-full h-full group">
             <div className="citizen-triangle bg-uiblack z-10 group-hover:opacity-50 opacity-20 transition-all" />
             <img
-              src={citizen.image.src}
+              src={citizen.image.imageUrl}
               alt={citizen.name}
               className="absolute inset-0 w-full h-full object-cover z-0 group-hover:grayscale-[0] md:grayscale-[0.2]"
             />
@@ -94,7 +94,7 @@ export default function CitizenOfHonourSection({
             delay: 0.8,
           }}
           viewport={{ once: true }}
-          className="h1-titles font-bold tracking-widest text-uiblack"
+          className="h1-titles font-bold tracking-widest my-4 text-uiblack"
         >
           {title}
         </motion.h1>
@@ -140,7 +140,7 @@ export default function CitizenOfHonourSection({
               </p>
 
               <img
-                src={selectedCitizen.image.src}
+                src={selectedCitizen.image.imageUrl}
                 alt={selectedCitizen.name}
                 className="absolute inset-0 w-full h-full object-cover mb-4 z-0"
               />

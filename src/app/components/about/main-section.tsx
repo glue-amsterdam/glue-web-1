@@ -40,7 +40,8 @@ export default function MainSection({ mainSection }: MainSectionProps) {
       id="main"
       aria-labelledby="press-heading"
       aria-label="main-content"
-      className={`h-screen pt-[${NAVBAR_HEIGHT}rem] snap-start relative `}
+      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={`h-dvh snap-start relative `}
     >
       <motion.article
         {...fadeInConfig}
@@ -79,8 +80,8 @@ export default function MainSection({ mainSection }: MainSectionProps) {
                         className="relative w-full h-full cursor-pointer transition-transform hover:scale-105"
                       >
                         <Image
-                          src={slide.src}
-                          alt={slide.alt}
+                          src={slide.imageUrl}
+                          alt={slide.alt || "Slide from the GLUE Gallery"}
                           className="object-cover"
                           quality={100}
                           fill
@@ -111,8 +112,11 @@ export default function MainSection({ mainSection }: MainSectionProps) {
           <DialogContent className="w-full p-0 max-w-[90vw] md:max-w-[70vw] ">
             <div className="relative w-full h-full">
               <img
-                src={mainSection.slides[selectedImage].src}
-                alt={mainSection.slides[selectedImage].alt}
+                src={mainSection.slides[selectedImage].imageUrl}
+                alt={
+                  mainSection.slides[selectedImage].alt ||
+                  "Slide from the GLUE Gallery"
+                }
                 className="object-cover w-full h-full"
               />
               <Button

@@ -2,13 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Contributor, Event } from "@/utils/event-types";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Event, Organizer } from "@/utils/event-types";
+import { Button } from "@/components/ui/button";
 
 export function EventModal() {
   const [event, setEvent] = useState<Event | null>(null);
@@ -43,13 +39,23 @@ export function EventModal() {
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-[90%] md:max-w-[60vw] bg-uiwhite text-uiblack">
-        <DialogHeader>
+        <article className="flex justify-between">
           <DialogTitle className="text-3xl">{event.name}</DialogTitle>
-        </DialogHeader>
+          {event.rsvp && (
+            <div className="text-center">
+              <Button>
+                <a target="_blank" href={event.rsvpLink}>
+                  RSVP
+                </a>
+              </Button>
+              <p>{event.rsvpMessage}</p>
+            </div>
+          )}
+        </article>
         <article>
           <figure className="relative w-full h-60 lg:h-[50vh] mb-4 overflow-hidden">
             <img
-              src={event.thumbnail}
+              src={event.thumbnail.imageUrl}
               alt={event.name}
               className="rounded-md object-cover absolute inset-0 -translate-y-10 lg:translate-y-0"
             />
@@ -68,12 +74,12 @@ export function EventModal() {
             <div className="flex gap-4">
               <div className="text-center">
                 <h3 className="font-bold text-lg mb-1">Organizer</h3>
-                <p className="text-sm">{event.creator.name}</p>
+                <p className="text-sm">{event.organizer.name}</p>
               </div>
               <div>
-                <h3 className="font-bold text-lg mb-1">Co-organizer</h3>
+                <h3 className="font-bold text-lg mb-1">Co organizer</h3>
                 <ul className="text-sm text-center">
-                  {event.contributors.map((contributor: Contributor) => (
+                  {event.coOrganizers.map((contributor: Organizer) => (
                     <li key={contributor.id}>{contributor.name}</li>
                   ))}
                 </ul>

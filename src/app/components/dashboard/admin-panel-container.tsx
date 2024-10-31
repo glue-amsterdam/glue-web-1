@@ -1,8 +1,7 @@
 import { Suspense } from "react";
 import AdminPanel from "@/app/components/dashboard/admin-panel";
-import { MembersResponse } from "@/utils/member-types";
 import CenteredLoader from "@/app/components/centered-loader";
-import { fetchAllMembers } from "@/utils/api";
+import { fetchAllUsers } from "@/utils/api";
 
 export default function AdminPanelContainer() {
   return (
@@ -13,6 +12,7 @@ export default function AdminPanelContainer() {
 }
 
 async function AdminPanelCall() {
-  const membersResponse: MembersResponse = await fetchAllMembers();
-  return <AdminPanel members={membersResponse.members} />;
+  const users = await fetchAllUsers();
+
+  return <AdminPanel users={users} />;
 }

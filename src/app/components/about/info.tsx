@@ -23,8 +23,8 @@ function Info({ infoItemsSection }: Props) {
       id="info"
       aria-label="info-content"
       aria-labelledby="info-heading"
-      style={{ backgroundColor: box2Color }}
-      className={`h-screen pt-[${NAVBAR_HEIGHT}rem] snap-center relative`}
+      style={{ backgroundColor: box2Color, paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={`h-dvh snap-center relative`}
     >
       <InfoSection
         title={infoItemsSection.title}

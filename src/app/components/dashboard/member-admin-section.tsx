@@ -20,7 +20,6 @@ function MemberAdminSection() {
       initial={{ opacity: 0, x: 150 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 1 }}
-      className="h-[85vh]"
     >
       {firstPage && (
         <Suspense fallback={<CenteredLoader />}>

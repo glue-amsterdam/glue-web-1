@@ -23,8 +23,8 @@ function CitizenOfHonour({ citizensSection }: CitizenOfHonourContentProps) {
       id="citizens"
       aria-label="citizens-content"
       aria-labelledby="citizens-heading"
-      style={{ backgroundColor: box3Color }}
-      className={`h-screen pt-[${NAVBAR_HEIGHT}rem] mx-auto relative snap-center`}
+      style={{ backgroundColor: box3Color, paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={`h-dvh mx-auto relative snap-center`}
     >
       <div className="citizens-bg bg-uiwhite" />
 

@@ -1,29 +1,39 @@
-export type EventType =
-  | "Lecture"
-  | "Workshop"
-  | "Drink"
-  | "Guided Tour"
-  | "Exhibition";
+import { EVENT_TYPES } from "@/constants";
+import { ImageData } from "@/utils/global-types";
 
-export interface Contributor {
+export type EventType = (typeof EVENT_TYPES)[number];
+
+export interface Organizer {
   id: string;
   name: string;
-  avatar: string;
+  slug: string;
 }
 
-export interface Event {
-  id: string;
+interface BaseEvent {
+  eventId: string;
   name: string;
-  thumbnail: string;
-  creator: Contributor;
-  contributors: Contributor[];
+  thumbnail: ImageData;
+  organizer: Organizer;
+  coOrganizers: Organizer[];
   date: string;
   startTime: string;
   endTime: string;
   type: EventType;
   description: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface EventsResponse {
-  events: Event[];
+interface RSVPRequiredEvent extends BaseEvent {
+  rsvp: true;
+  rsvpMessage: string;
+  rsvpLink: string;
 }
+
+interface RSVPOptionalEvent extends BaseEvent {
+  rsvp?: false | undefined;
+  rsvpMessage?: string;
+  rsvpLink?: string;
+}
+
+export type Event = RSVPRequiredEvent | RSVPOptionalEvent;

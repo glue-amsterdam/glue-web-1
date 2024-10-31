@@ -14,7 +14,9 @@ export async function GET(
 
   const { eventId } = params;
 
-  const filteredEvents = mockEvents.filter((event) => event.id === eventId);
+  const filteredEvents = mockEvents.filter(
+    (event) => event.eventId === eventId
+  );
 
   if (filteredEvents.length === 0) {
     return NextResponse.json({ message: "Event not found" }, { status: 404 });

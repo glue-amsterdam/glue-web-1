@@ -10,7 +10,7 @@ export default function EventsList({ events }: { events: Event[] }) {
   return (
     <ul className="grid grid-cols-1 gap-6">
       {events.map((event, index) => (
-        <li key={event.id}>
+        <li key={event.eventId}>
           <EventCard i={index} event={event} />
         </li>
       ))}

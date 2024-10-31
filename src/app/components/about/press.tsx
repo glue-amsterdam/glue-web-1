@@ -25,8 +25,8 @@ function Press({ pressItemsSection }: Props) {
       id="press"
       aria-label="press-content"
       aria-labelledby="press-heading"
-      style={{ backgroundColor: box2Color }}
-      className={`h-screen pt-[${NAVBAR_HEIGHT}rem] snap-start relative`}
+      style={{ backgroundColor: box2Color, paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={`h-dvh snap-start relative`}
     >
       <PressSection
         pressItems={pressItemsSection.pressItems}
