@@ -38,11 +38,11 @@ export default function PressSection({
         whileInView={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
         transition={{ duration: 0.5 }}
         viewport={{ once: true }}
-        className="shadow-md h-full "
+        className="relative shadow-md overflow-hidden h-full"
         onViewportEnter={() => (hasAnimatedRef.current = true)}
       >
         <Card
-          className="cursor-pointer rounded-none border-none group shadow-md h-full"
+          className="cursor-pointer rounded-none border-none group shadow-md"
           onClick={() => setSelectedItem(item)}
         >
           <img
