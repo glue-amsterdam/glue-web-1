@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { DatabaseContent } from "@/utils/about-types";
-import { Event, IndividualEventResponse } from "@/utils/event-types";
+import { IndividualEventResponse } from "@/utils/event-types";
 import { LocationGroup } from "@/utils/map-types";
 import { MainSection } from "@/utils/menu-types";
 import {
@@ -63,14 +63,16 @@ export const fetchEvents = cache(
     return res.json();
   }
 );
-export const fetchFiveEvents = cache(async (): Promise<Event[]> => {
-  const res = await fetch(`${BASE_URL}/events?limit=5`, {
-    next: { revalidate: 0 },
-  });
+export const fetchFiveEvents = cache(
+  async (): Promise<IndividualEventResponse[]> => {
+    const res = await fetch(`${BASE_URL}/events?limit=5`, {
+      next: { revalidate: 0 },
+    });
 
-  if (!res.ok) throw new Error("Failed to fetch events");
-  return res.json();
-});
+    if (!res.ok) throw new Error("Failed to fetch events");
+    return res.json();
+  }
+);
 
 /* MAP */
 export const fetchLocationGroups = cache(async (): Promise<LocationGroup[]> => {
