@@ -18,24 +18,40 @@ export function getRandomNumber() {
 /* Objects */
 export const visitingHours: VisitingHours = [
   {
-    id: "day-1",
+    dayId: "day-1",
+    date: new Date("2025-01-15T00:00:00Z"),
     label: "Thursday",
+
     ranges: [
       { open: "10:00", close: "15:00" },
       { open: "18:00", close: "21:00" },
     ],
   },
   {
-    id: "day-2",
+    dayId: "day-2",
+    date: new Date("2025-01-16T00:00:00Z"),
     label: "Friday",
+
     ranges: [
       { open: "10:00", close: "15:00" },
       { open: "18:00", close: "21:00" },
     ],
   },
   {
-    id: "day-3",
+    dayId: "day-3",
+    date: new Date("2025-01-17T00:00:00Z"),
     label: "Saturday",
+
+    ranges: [
+      { open: "10:00", close: "15:00" },
+      { open: "18:00", close: "21:00" },
+    ],
+  },
+  {
+    dayId: "day-4",
+    date: new Date("2025-01-18T00:00:00Z"),
+    label: "Sunday",
+
     ranges: [
       { open: "10:00", close: "15:00" },
       { open: "18:00", close: "21:00" },

@@ -1,5 +1,7 @@
 import { EVENT_TYPES } from "@/constants";
 import { ImageData } from "@/utils/global-types";
+import { EventDay } from "@/utils/menu-types";
+import { ParticipantUser } from "@/utils/user-types";
 
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -9,13 +11,13 @@ export interface Organizer {
   slug: string;
 }
 
-interface BaseEvent {
+export interface BaseEvent {
+  organizer: Pick<ParticipantUser, "userId">;
   eventId: string;
   name: string;
   thumbnail: ImageData;
-  organizer: Organizer;
-  coOrganizers: Organizer[];
-  date: string;
+  coOrganizers: Pick<ParticipantUser, "userId">[];
+  date: EventDay;
   startTime: string;
   endTime: string;
   type: EventType;
@@ -24,7 +26,7 @@ interface BaseEvent {
   updatedAt: Date;
 }
 
-interface RSVPRequiredEvent extends BaseEvent {
+export interface RSVPRequiredEvent extends BaseEvent {
   rsvp: true;
   rsvpMessage: string;
   rsvpLink: string;
@@ -37,3 +39,20 @@ interface RSVPOptionalEvent extends BaseEvent {
 }
 
 export type Event = RSVPRequiredEvent | RSVPOptionalEvent;
+
+export interface EnhancedUser {
+  userId: string;
+  userName: string;
+  slug?: string;
+}
+
+interface EnhancedOrganizer extends EnhancedUser {
+  mapId?: string;
+  mapPlaceName?: string;
+}
+
+export interface IndividualEventResponse
+  extends Omit<BaseEvent, "organizer" | "coOrganizers"> {
+  organizer: EnhancedOrganizer;
+  coOrganizers: EnhancedUser[];
+}

@@ -3,91 +3,164 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Event, Organizer } from "@/utils/event-types";
+import { IndividualEventResponse } from "@/utils/event-types";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { MapPin } from "lucide-react";
+import Link from "next/link";
+import { isRSVPRequiredEvent } from "@/constants";
 
 export function EventModal() {
-  const [event, setEvent] = useState<Event | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const [event, setEvent] = useState<IndividualEventResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const eventId = searchParams.get("eventId");
 
   useEffect(() => {
-    const eventId = searchParams.get("eventId");
-    if (eventId) {
-      fetchEvent(eventId);
-      setIsOpen(true);
-    } else {
-      setIsOpen(false);
-    }
-  }, [searchParams]);
+    async function fetchEvent() {
+      if (!eventId) {
+        setEvent(null);
+        return;
+      }
 
-  const fetchEvent = async (eventId: string) => {
-    const res = await fetch(`/api/events/${eventId}`);
-    if (res.ok) {
-      const data = await res.json();
-      setEvent(data);
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/events/${eventId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setEvent(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch event:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
-  };
+
+    fetchEvent();
+  }, [eventId]);
 
   const handleClose = () => {
-    router.push("/events", { scroll: false });
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("eventId");
+    router.push(`${window.location.pathname}?${params.toString()}`, {
+      scroll: false,
+    });
   };
 
-  if (!event) return null;
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[90%] md:max-w-[60vw] bg-uiwhite text-uiblack">
-        <article className="flex justify-between">
-          <DialogTitle className="text-3xl">{event.name}</DialogTitle>
-          {event.rsvp && (
-            <div className="text-center">
-              <Button>
-                <a target="_blank" href={event.rsvpLink}>
-                  RSVP
-                </a>
-              </Button>
-              <p>{event.rsvpMessage}</p>
-            </div>
-          )}
-        </article>
-        <article>
-          <figure className="relative w-full h-60 lg:h-[50vh] mb-4 overflow-hidden">
-            <img
-              src={event.thumbnail.imageUrl}
-              alt={event.name}
-              className="rounded-md object-cover absolute inset-0 -translate-y-10 lg:translate-y-0"
-            />
-          </figure>
-          <div className="flex flex-wrap gap-2">
-            <div className="flex-1">
-              <time
-                className="text-sm text-gray-500 mb-2 block italic"
-                dateTime={`${event.date}T${event.startTime}`}
+    <Dialog open={!!eventId} onOpenChange={() => handleClose()}>
+      <DialogContent className="max-w-[90%] md:max-w-[60vw] bg-background">
+        {isLoading ? (
+          <EventSkeleton />
+        ) : event ? (
+          <EventContent event={event} />
+        ) : (
+          <div className="text-center py-8">No event data available</div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EventSkeleton() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-3/4" />
+      <Skeleton className="h-60 w-full" />
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-1/4" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-full" />
+      </div>
+    </div>
+  );
+}
+
+function EventContent({ event }: { event: IndividualEventResponse }) {
+  return (
+    <>
+      <article className="flex justify-between">
+        <DialogTitle className="text-3xl">{event.name}</DialogTitle>
+        {isRSVPRequiredEvent(event) && (
+          <div className="text-center">
+            <Button asChild>
+              <a
+                href={event.rsvpLink}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                {new Date(event.date).toLocaleDateString()} | {event.startTime}{" "}
-                - {event.endTime}
-              </time>
-              <p className="mb-4 text-sm">{event.description}</p>
-            </div>
-            <div className="flex gap-4">
-              <div className="text-center">
-                <h3 className="font-bold text-lg mb-1">Organizer</h3>
-                <p className="text-sm">{event.organizer.name}</p>
+                RSVP
+              </a>
+            </Button>
+            <p className="text-sm mt-2">{event.rsvpMessage}</p>
+          </div>
+        )}
+      </article>
+      <article>
+        <figure className="relative w-full h-60 lg:h-[50vh] mb-4 overflow-hidden">
+          <img
+            src={event.thumbnail.imageUrl}
+            alt={event.name}
+            className="rounded-md object-cover absolute inset-0 -translate-y-10 lg:translate-y-0"
+          />
+        </figure>
+        <div className="flex flex-wrap gap-4">
+          <div className="flex-1">
+            <time
+              className="text-sm text-muted-foreground mb-2 block italic"
+              dateTime={`${event.date}T${event.startTime}`}
+            >
+              {new Date(event.date.date).toLocaleDateString()} |{" "}
+              {event.startTime} - {event.endTime}
+            </time>
+            <p className="mb-4 text-sm">{event.description}</p>
+            {event.organizer.mapPlaceName && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4" />
+                <span>{event.organizer.mapPlaceName}</span>
               </div>
+            )}
+          </div>
+          <div className="flex gap-8">
+            <div className="text-center">
+              <h3 className="font-bold text-lg mb-1">Organizer</h3>
+              {event.organizer.slug ? (
+                <Link
+                  href={`/participants/${event.organizer.slug}`}
+                  className="text-sm hover:underline"
+                >
+                  {event.organizer.userName}
+                </Link>
+              ) : (
+                <p className="text-sm">{event.organizer.userName}</p>
+              )}
+            </div>
+            {event.coOrganizers.length > 0 && (
               <div>
                 <h3 className="font-bold text-lg mb-1">Co organizer</h3>
                 <ul className="text-sm text-center">
-                  {event.coOrganizers.map((contributor: Organizer) => (
-                    <li key={contributor.id}>{contributor.name}</li>
+                  {event.coOrganizers.map((contributor) => (
+                    <li key={contributor.userId}>
+                      {contributor.slug ? (
+                        <Link
+                          href={`/participants/${contributor.slug}`}
+                          className="hover:underline"
+                        >
+                          {contributor.userName}
+                        </Link>
+                      ) : (
+                        contributor.userName
+                      )}
+                    </li>
                   ))}
                 </ul>
               </div>
-            </div>
+            )}
           </div>
-        </article>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </article>
+    </>
   );
 }

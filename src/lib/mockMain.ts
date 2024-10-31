@@ -53,4 +53,26 @@ export const mainSection: MainSection = {
       link: "https://www.youtube.com/@GLUETV_amsterdam",
     },
   },
+  eventsDays: [
+    {
+      dayId: "day-1",
+      date: new Date("2025-01-16T00:00:00Z"),
+      label: "Thursday",
+    },
+    {
+      dayId: "day-2",
+      date: new Date("2025-01-17T00:00:00Z"),
+      label: "Friday",
+    },
+    {
+      dayId: "day-3",
+      date: new Date("2025-01-18T00:00:00Z"),
+      label: "Saturday",
+    },
+    {
+      dayId: "day-4",
+      date: new Date("2025-01-19T00:00:00Z"),
+      label: "Sunday",
+    },
+  ],
 };

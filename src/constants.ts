@@ -1,3 +1,4 @@
+import { BaseEvent, RSVPRequiredEvent } from "@/utils/event-types";
 import {
   MemberUser,
   ParticipantUser,
@@ -33,4 +34,10 @@ export function isPaidUser(
   user: User
 ): user is (ParticipantUser | MemberUser) & { planDetails: PlanResponseById } {
   return user.type === "participant" || user.type === "member";
+}
+
+export function isRSVPRequiredEvent(
+  event: BaseEvent
+): event is RSVPRequiredEvent {
+  return (event as RSVPRequiredEvent).rsvp === true;
 }

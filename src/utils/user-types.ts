@@ -1,21 +1,15 @@
-import { DAYS } from "@/constants";
 import { Event } from "@/utils/event-types";
 import { ImageData } from "@/utils/global-types";
 import { MapBoxPlace } from "@/utils/map-types";
+import { EventDay } from "@/utils/menu-types";
 import { InvoiceDataCall, PlanType } from "@/utils/sign-in.types";
-
-export type Days = (typeof DAYS)[number];
 
 interface TimeRange {
   open: string;
   close: string;
 }
 
-interface DayRange {
-  id: string;
-  label: Days;
-  ranges: TimeRange[];
-}
+type DayRange = EventDay & { ranges: TimeRange[] };
 
 export type VisitingHours = DayRange[];
 

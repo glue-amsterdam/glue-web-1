@@ -64,6 +64,7 @@ export default async function RootLayout({
           mainColors={mainSection.mainColors}
           mainLinks={mainSection.mainLinks}
           mainMenu={mainSection.mainMenu}
+          eventsDays={mainSection.eventsDays}
         >
           <body
             className={`${lausanne.className} text-uiwhite antialiased min-h-dvh`}

@@ -1,5 +1,54 @@
-import { generateTimestamps } from "@/mockConstants";
-import { Event } from "@/utils/event-types";
+import { Event, EventType } from "@/utils/event-types";
+import { EventDay } from "@/utils/menu-types";
+
+const eventsDays: EventDay[] = [
+  {
+    dayId: "day-1",
+    date: new Date("2025-01-16T00:00:00Z"),
+    label: "Thursday",
+  },
+  {
+    dayId: "day-2",
+    date: new Date("2025-01-17T00:00:00Z"),
+    label: "Friday",
+  },
+  {
+    dayId: "day-3",
+    date: new Date("2025-01-18T00:00:00Z"),
+    label: "Saturday",
+  },
+  {
+    dayId: "day-4",
+    date: new Date("2025-01-19T00:00:00Z"),
+    label: "Sunday",
+  },
+];
+
+const getRandomDay = () =>
+  eventsDays[Math.floor(Math.random() * eventsDays.length)];
+
+const generateTimestamps = () => {
+  const createdAt = new Date(
+    Date.now() - Math.floor(Math.random() * 10000000000)
+  );
+  const updatedAt = new Date(
+    createdAt.getTime() + Math.floor(Math.random() * 1000000000)
+  );
+  return { createdAt, updatedAt };
+};
+
+const userIds = [
+  "50654654",
+  "50654654654",
+  "50654655",
+  "5065465985",
+  "50654656",
+  "50654657",
+  "50654658",
+];
+
+const getRandomUserId = () =>
+  userIds[Math.floor(Math.random() * userIds.length)];
 
 export const mockEvents: Event[] = [
   {
@@ -13,29 +62,23 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
+      userId: getRandomUserId(),
     },
     rsvp: true,
-    rsvpMessage: "Please RSVP",
-    rsvpLink: "https://rsvplink.com.ar",
+    rsvpMessage: "Please RSVP for the Modern Art Exhibition",
+    rsvpLink: "https://rsvp.modernartexhibition.com",
     coOrganizers: [
       {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
+        userId: getRandomUserId(),
       },
       {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
+        userId: getRandomUserId(),
       },
     ],
-    date: "2024-06-15",
+    date: getRandomDay(),
     startTime: "10:00",
     endTime: "18:00",
-    type: "Other",
+    type: "Other" as EventType,
     description: "A showcase of contemporary works from international artists.",
     ...generateTimestamps(),
   },
@@ -50,26 +93,17 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
+      userId: getRandomUserId(),
     },
     coOrganizers: [
       {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
-      },
-      {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
+        userId: getRandomUserId(),
       },
     ],
-    date: "2024-07-10",
+    date: getRandomDay(),
     startTime: "09:00",
     endTime: "17:00",
-    type: "Workshop",
+    type: "Workshop" as EventType,
     description:
       "Interactive workshop on sustainable urban planning and design.",
     ...generateTimestamps(),
@@ -85,26 +119,13 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
+      userId: getRandomUserId(),
     },
-    coOrganizers: [
-      {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
-      },
-      {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
-      },
-    ],
-    date: "2024-08-05",
+    coOrganizers: [],
+    date: getRandomDay(),
     startTime: "14:00",
     endTime: "17:00",
-    type: "Guided Tour",
+    type: "Guided Tour" as EventType,
     description:
       "A guided tour exploring historic architectural landmarks in the city.",
     ...generateTimestamps(),
@@ -120,26 +141,20 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
+      userId: getRandomUserId(),
     },
+    rsvp: true,
+    rsvpMessage: "RSVP required for the Design Principles Lecture",
+    rsvpLink: "https://rsvp.designprinciples.com",
     coOrganizers: [
       {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
-      },
-      {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
+        userId: getRandomUserId(),
       },
     ],
-    date: "2024-09-15",
+    date: getRandomDay(),
     startTime: "11:00",
     endTime: "13:00",
-    type: "Lecture",
+    type: "Lecture" as EventType,
     description:
       "A lecture on the core principles of design and their real-world applications.",
     ...generateTimestamps(),
@@ -155,26 +170,13 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
+      userId: getRandomUserId(),
     },
-    coOrganizers: [
-      {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
-      },
-      {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
-      },
-    ],
-    date: "2024-10-20",
+    coOrganizers: [],
+    date: getRandomDay(),
     startTime: "09:00",
     endTime: "16:00",
-    type: "Workshop",
+    type: "Workshop" as EventType,
     description:
       "Learn hands-on sculpting techniques using different materials.",
     ...generateTimestamps(),
@@ -190,26 +192,20 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
+      userId: getRandomUserId(),
     },
+    rsvp: true,
+    rsvpMessage: "Please RSVP for the Art & Wine Social",
+    rsvpLink: "https://rsvp.artandwine.com",
     coOrganizers: [
       {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
-      },
-      {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
+        userId: getRandomUserId(),
       },
     ],
-    date: "2024-11-10",
+    date: getRandomDay(),
     startTime: "19:00",
     endTime: "22:00",
-    type: "Drink",
+    type: "Drink" as EventType,
     description:
       "An evening of art appreciation with wine and creative discussions.",
     ...generateTimestamps(),
@@ -225,26 +221,13 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
+      userId: getRandomUserId(),
     },
-    coOrganizers: [
-      {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
-      },
-      {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
-      },
-    ],
-    date: "2024-12-01",
+    coOrganizers: [],
+    date: getRandomDay(),
     startTime: "10:00",
     endTime: "12:00",
-    type: "Lecture",
+    type: "Lecture" as EventType,
     description: "A deep dive into the latest interior design trends for 2025.",
     ...generateTimestamps(),
   },
@@ -259,26 +242,20 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
+      userId: getRandomUserId(),
     },
+    rsvp: true,
+    rsvpMessage: "RSVP for the Sustainable Architecture Workshop",
+    rsvpLink: "https://rsvp.sustainablearchitecture.com",
     coOrganizers: [
       {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
-      },
-      {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
+        userId: getRandomUserId(),
       },
     ],
-    date: "2024-12-15",
+    date: getRandomDay(),
     startTime: "09:00",
     endTime: "17:00",
-    type: "Workshop",
+    type: "Workshop" as EventType,
     description:
       "Exploring sustainable building practices and eco-friendly materials.",
     ...generateTimestamps(),
@@ -294,237 +271,41 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
+      userId: getRandomUserId(),
     },
-    coOrganizers: [
-      {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
-      },
-      {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
-      },
-    ],
-    date: "2025-01-05",
+    coOrganizers: [],
+    date: getRandomDay(),
     startTime: "10:00",
     endTime: "18:00",
-    type: "Guided Tour",
+    type: "Exhibition" as EventType,
     description:
-      "A photography exhibition showcasing urban landscapes from around the world.",
+      "Showcasing urban landscape photography from local and international photographers.",
     ...generateTimestamps(),
   },
   {
     eventId: "J3571594680",
     name: "Art History Guided Tour",
     thumbnail: {
-      id: "art-history-guided-tour-thumbnail",
+      id: "art-history-tour-thumbnail",
       imageUrl: `/placeholders/placeholder-1.jpg`,
-      alt: "GLUE art-history-guided-tour-thumbnail",
-      imageName: "art-history-guided-tour-thumbnail",
+      alt: "GLUE art-history-tour-thumbnail",
+      imageName: "art-history-tour-thumbnail",
       ...generateTimestamps(),
     },
     organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
+      userId: getRandomUserId(),
     },
     coOrganizers: [
       {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
-      },
-      {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
+        userId: getRandomUserId(),
       },
     ],
-    date: "2025-02-20",
+    date: getRandomDay(),
     startTime: "13:00",
-    endTime: "16:00",
-    type: "Guided Tour",
-    description:
-      "A guided tour through centuries of art history and iconic masterpieces.",
-    ...generateTimestamps(),
-  },
-  {
-    eventId: "K2583691470",
-    name: "Contemporary Sculpture Exhibition",
-    thumbnail: {
-      id: "contemporary-sculpture-thumbnail",
-      imageUrl: `/placeholders/placeholder-2.jpg`,
-      alt: "GLUE contemporary-sculpture-thumbnail",
-      imageName: "contemporary-sculpture-thumbnail",
-      ...generateTimestamps(),
-    },
-    organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
-    },
-    coOrganizers: [
-      {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
-      },
-      {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
-      },
-    ],
-    date: "2025-03-10",
-    startTime: "11:00",
-    endTime: "17:00",
-    type: "Lecture",
-    description:
-      "An exhibition of cutting-edge contemporary sculpture from emerging artists.",
-    ...generateTimestamps(),
-  },
-  {
-    eventId: "L1597534863",
-    name: "Digital Art Workshop: New Techniques",
-    thumbnail: {
-      id: "digital-art-workshop-thumbnail",
-      imageUrl: `/placeholders/placeholder-3.jpg`,
-      alt: "GLUE digital-art-workshop-thumbnail",
-      imageName: "digital-art-workshop-thumbnail",
-      ...generateTimestamps(),
-    },
-    organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
-    },
-    coOrganizers: [
-      {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
-      },
-      {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
-      },
-    ],
-    date: "2025-04-01",
-    startTime: "09:00",
     endTime: "15:00",
-    type: "Workshop",
+    type: "Guided Tour" as EventType,
     description:
-      "A hands-on workshop exploring new techniques in digital art creation.",
-    ...generateTimestamps(),
-  },
-  {
-    eventId: "M7531594864",
-    name: "Fashion Design Trends Lecture",
-    thumbnail: {
-      id: "fashion-design-trends-thumbnail",
-      imageUrl: `/placeholders/placeholder-1.jpg`,
-      alt: "GLUE fashion-design-trends-thumbnail",
-      imageName: "fashion-design-trends-thumbnail",
-      ...generateTimestamps(),
-    },
-    organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
-    },
-    coOrganizers: [
-      {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
-      },
-      {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
-      },
-    ],
-    date: "2025-04-20",
-    startTime: "11:00",
-    endTime: "13:00",
-    type: "Lecture",
-    description:
-      "Exploring the latest trends in fashion design for the upcoming season.",
-    ...generateTimestamps(),
-  },
-  {
-    eventId: "N2583691471",
-    name: "Abstract Painting Workshop",
-    thumbnail: {
-      id: "abstract-painting-workshop-thumbnail",
-      imageUrl: `/placeholders/placeholder-2.jpg`,
-      alt: "GLUE abstract-painting-workshop-thumbnail",
-      imageName: "abstract-painting-workshop-thumbnail",
-      ...generateTimestamps(),
-    },
-    organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
-    },
-    coOrganizers: [
-      {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
-      },
-      {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
-      },
-    ],
-    date: "2025-05-05",
-    startTime: "10:00",
-    endTime: "16:00",
-    type: "Workshop",
-    description: "Learn techniques for creating stunning abstract paintings.",
-    ...generateTimestamps(),
-  },
-  {
-    eventId: "O3692581472",
-    name: "Designers’ Social Evening",
-    thumbnail: {
-      id: "designers-social-evening-thumbnail",
-      imageUrl: `/placeholders/placeholder-3.jpg`,
-      alt: "GLUE designers-social-evening-thumbnail",
-      imageName: "designers-social-evening-thumbnail",
-      ...generateTimestamps(),
-    },
-    organizer: {
-      id: "5065465555",
-      slug: "ay-illuminate",
-      name: "AY ILLUMINATE",
-    },
-    coOrganizers: [
-      {
-        id: "5065455115",
-        name: "SELETTI",
-        slug: "seletti",
-      },
-      {
-        id: "50654659",
-        slug: "frama",
-        name: "FRAMA",
-      },
-    ],
-    date: "2025-05-20",
-    startTime: "18:00",
-    endTime: "21:00",
-    type: "Drink",
-    description:
-      "A casual social event for designers to network and share ideas.",
+      "Explore the history of art through a guided tour of significant artworks.",
     ...generateTimestamps(),
   },
 ];

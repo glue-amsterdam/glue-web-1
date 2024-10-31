@@ -1,7 +1,10 @@
+import { DAYS } from "@/constants";
+
 export interface MainSection {
   mainColors: MainColors;
   mainMenu: MainMenuItem[];
   mainLinks: Record<string, MainLink>;
+  eventsDays: EventDay[];
 }
 export interface MainMenuItem {
   label: string;
@@ -26,3 +29,12 @@ export interface MainColors {
 export interface MainLink {
   link?: string;
 }
+
+export interface EventDay {
+  dayId: DayID;
+  label: DaysLabels;
+  date: Date;
+}
+
+export type DayID = "day-1" | "day-2" | "day-3" | "day-4" | "extra-day";
+export type DaysLabels = (typeof DAYS)[number];

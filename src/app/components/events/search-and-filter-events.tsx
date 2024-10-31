@@ -14,8 +14,9 @@ import {
 import { useDebounce } from "use-debounce";
 import { EventType } from "@/utils/event-types";
 import { motion } from "framer-motion";
-import { fadeInConfig } from "@/utils/animations";
 import { EVENT_TYPES } from "@/constants";
+import { DayID } from "@/utils/menu-types";
+import { useEventsDays } from "@/app/context/MainContext";
 
 const getEventTypes = (): (EventType | "all")[] => {
   return ["all", ...EVENT_TYPES];
@@ -35,9 +36,12 @@ export default function SearchAndFilter() {
   const [type, setType] = useState<EventType | "all">(
     (searchParams.get("type") as EventType) || "all"
   );
-  const [date, setDate] = useState(searchParams.get("date") || "");
+  const [selectedDay, setSelectedDay] = useState<DayID | "all">(
+    (searchParams.get("day") as DayID) || "all"
+  );
 
   const [debouncedSearch] = useDebounce(search, 300);
+  const eventsDays = useEventsDays();
 
   const updateSearchParams = useCallback(
     (newParams: { [key: string]: string | null }) => {
@@ -63,13 +67,18 @@ export default function SearchAndFilter() {
     updateSearchParams({ type: value === "all" ? null : value });
   };
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDate(e.target.value);
-    updateSearchParams({ date: e.target.value });
+  const handleDayChange = (value: string) => {
+    setSelectedDay(value as DayID | "all");
+    updateSearchParams({ day: value === "all" ? null : value });
   };
 
   return (
-    <motion.div {...fadeInConfig} className="mb-8 space-y-4 relative z-10">
+    <motion.div
+      initial={{ opacity: 0, y: -100 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 1.3 }}
+      className="mb-8 space-y-4 relative z-10"
+    >
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
         <Input
           type="text"
@@ -90,12 +99,19 @@ export default function SearchAndFilter() {
             ))}
           </SelectContent>
         </Select>
-        <Input
-          type="date"
-          value={date}
-          onChange={handleDateChange}
-          className="w-full sm:w-[180px] text-uiblack bg-uiwhite/80"
-        />
+        <Select value={selectedDay} onValueChange={handleDayChange}>
+          <SelectTrigger className="w-full sm:w-[180px] text-uiblack bg-uiwhite/80">
+            <SelectValue placeholder="Select Day" />
+          </SelectTrigger>
+          <SelectContent className="absolute bg-white z-50 max-h-60 overflow-auto">
+            <SelectItem value="all">All Days</SelectItem>
+            {eventsDays.map((day) => (
+              <SelectItem key={day.dayId} value={day.dayId}>
+                {day.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </motion.div>
   );

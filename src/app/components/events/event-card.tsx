@@ -1,19 +1,26 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Event, Organizer } from "@/utils/event-types";
+import { IndividualEventResponse } from "@/utils/event-types";
 import { fadeInConfig } from "@/utils/animations";
+import Link from "next/link";
+
 interface EventCardProps {
-  event: Event;
+  event: IndividualEventResponse;
   i: number;
 }
 
 export default function EventCard({ event, i }: EventCardProps) {
+  const searchParams = useSearchParams();
   const router = useRouter();
 
-  const handleClick = () => {
-    router.push(`/events?eventId=${event.eventId}`, { scroll: false });
+  const handleClick = (clickedEventId: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("eventId", clickedEventId);
+    router.push(`${window.location.pathname}?${params.toString()}`, {
+      scroll: false,
+    });
   };
 
   return (
@@ -26,24 +33,24 @@ export default function EventCard({ event, i }: EventCardProps) {
       >
         <div
           className="cursor-pointer hover:shadow-lg transition-shadow h-full"
-          onClick={handleClick}
+          onClick={() => handleClick(event.eventId)}
         >
-          <div className="bg-uiblack opacity-50 group-hover:bg-uiwhite group-hover:opacity-100 transition-all duration-200 absolute inset-0 z-10" />
+          <div className="bg-background opacity-50 group-hover:bg-foreground group-hover:opacity-100 transition-all duration-200 absolute inset-0 z-10" />
           <img
             src={event.thumbnail.imageUrl}
             alt={event.name}
-            className="absolute rounded-md top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0"
+            className="absolute rounded-md top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 object-cover w-full h-full"
           />
-          <motion.div className="absolute inset-0 flex flex-col justify-center px-2 md:px-10 z-20 group-hover:text-uiblack transition-all duration-200">
-            <h3 className="text-xl md:text-4xl tracking-widest ">
+          <motion.div className="absolute inset-0 flex flex-col justify-center px-2 md:px-10 z-20 group-hover:text-background transition-all duration-200">
+            <h3 className="text-xl md:text-4xl tracking-widest">
               {event.name}
             </h3>
 
             <time
-              className="text-sm text-gray-500 mb-2 block"
-              dateTime={`${event.date}T${event.startTime}`}
+              className="text-sm text-muted-foreground mb-2 block"
+              dateTime={`${event.date.date}T${event.startTime}`}
             >
-              {new Date(event.date).toLocaleDateString("en-GB", {
+              {new Date(event.date.date).toLocaleDateString("en-GB", {
                 timeZone: "UTC",
               })}
               | {event.startTime} - {event.endTime}
@@ -51,18 +58,42 @@ export default function EventCard({ event, i }: EventCardProps) {
             <div>
               <div className="flex gap-2 items-center">
                 <span className="text-sm md:text-lg font-bold">Organizer:</span>
-                <p className="text-xs md:text-sm">{event.organizer.name}</p>
-              </div>
-              <div className="flex gap-2 items-center">
-                <span className="text-sm md:text-lg font-bold">
-                  Co organizers:
-                </span>
-                {event.coOrganizers.map((contributor: Organizer) => (
-                  <p className="text-xs md:text-sm" key={contributor.name}>
-                    <span>{contributor.name}</span>
+                {event.organizer.slug ? (
+                  <Link
+                    href={`/participants/${event.organizer.slug}`}
+                    className="text-xs md:text-sm hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {event.organizer.userName}
+                  </Link>
+                ) : (
+                  <p className="text-xs md:text-sm">
+                    {event.organizer.userName}
                   </p>
-                ))}
+                )}
               </div>
+              {event.coOrganizers.length > 0 && (
+                <div className="flex gap-2 items-center flex-wrap">
+                  <span className="text-sm md:text-lg font-bold">
+                    Co organizers:
+                  </span>
+                  {event.coOrganizers.map((contributor) => (
+                    <p className="text-xs md:text-sm" key={contributor.userId}>
+                      {contributor.slug ? (
+                        <Link
+                          href={`/participants/${contributor.slug}`}
+                          className="hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {contributor.userName}
+                        </Link>
+                      ) : (
+                        <span>{contributor.userName}</span>
+                      )}
+                    </p>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
         </div>
