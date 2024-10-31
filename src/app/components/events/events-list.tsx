@@ -1,9 +1,13 @@
 "use client ";
 
-import { Event } from "@/utils/event-types";
+import { IndividualEventResponse } from "@/utils/event-types";
 import EventCard from "./event-card";
 
-export default function EventsList({ events }: { events: Event[] }) {
+export default function EventsList({
+  events,
+}: {
+  events: IndividualEventResponse[];
+}) {
   if (events.length == 0) {
     return <div>No events Found</div>;
   }

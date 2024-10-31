@@ -51,7 +51,7 @@ export function EventModal() {
 
   return (
     <Dialog open={!!eventId} onOpenChange={() => handleClose()}>
-      <DialogContent className="max-w-[90%] md:max-w-[60vw] bg-background">
+      <DialogContent className="max-w-[90%] md:max-w-[60vw] bg-background text-black">
         {isLoading ? (
           <EventSkeleton />
         ) : event ? (
@@ -81,7 +81,7 @@ function EventSkeleton() {
 function EventContent({ event }: { event: IndividualEventResponse }) {
   return (
     <>
-      <article className="flex justify-between">
+      <article className="flex justify-between text-black overflow-y-scroll">
         <DialogTitle className="text-3xl">{event.name}</DialogTitle>
         {isRSVPRequiredEvent(event) && (
           <div className="text-center">
@@ -106,7 +106,7 @@ function EventContent({ event }: { event: IndividualEventResponse }) {
             className="rounded-md object-cover absolute inset-0 -translate-y-10 lg:translate-y-0"
           />
         </figure>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4 text-black">
           <div className="flex-1">
             <time
               className="text-sm text-muted-foreground mb-2 block italic"
@@ -116,14 +116,8 @@ function EventContent({ event }: { event: IndividualEventResponse }) {
               {event.startTime} - {event.endTime}
             </time>
             <p className="mb-4 text-sm">{event.description}</p>
-            {event.organizer.mapPlaceName && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>{event.organizer.mapPlaceName}</span>
-              </div>
-            )}
           </div>
-          <div className="flex gap-8">
+          <div className="flex gap-8 text-black">
             <div className="text-center">
               <h3 className="font-bold text-lg mb-1">Organizer</h3>
               {event.organizer.slug ? (
@@ -159,6 +153,14 @@ function EventContent({ event }: { event: IndividualEventResponse }) {
               </div>
             )}
           </div>
+          <Link target="_blank" href={`/map/${event.organizer.mapId}`}>
+            {event.organizer.mapPlaceName && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4" />
+                <span>{event.organizer.mapPlaceName}</span>
+              </div>
+            )}
+          </Link>
         </div>
       </article>
     </>

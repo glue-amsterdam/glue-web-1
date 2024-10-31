@@ -4,7 +4,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { IndividualEventResponse } from "@/utils/event-types";
 import { fadeInConfig } from "@/utils/animations";
-import Link from "next/link";
 
 interface EventCardProps {
   event: IndividualEventResponse;
@@ -42,7 +41,7 @@ export default function EventCard({ event, i }: EventCardProps) {
             className="absolute rounded-md top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 object-cover w-full h-full"
           />
           <motion.div className="absolute inset-0 flex flex-col justify-center px-2 md:px-10 z-20 group-hover:text-background transition-all duration-200">
-            <h3 className="text-xl md:text-4xl tracking-widest">
+            <h3 className="text-xl md:text-2xl xl:text-4xl tracking-widest">
               {event.name}
             </h3>
 
@@ -58,19 +57,8 @@ export default function EventCard({ event, i }: EventCardProps) {
             <div>
               <div className="flex gap-2 items-center">
                 <span className="text-sm md:text-lg font-bold">Organizer:</span>
-                {event.organizer.slug ? (
-                  <Link
-                    href={`/participants/${event.organizer.slug}`}
-                    className="text-xs md:text-sm hover:underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {event.organizer.userName}
-                  </Link>
-                ) : (
-                  <p className="text-xs md:text-sm">
-                    {event.organizer.userName}
-                  </p>
-                )}
+
+                {event.organizer.userName}
               </div>
               {event.coOrganizers.length > 0 && (
                 <div className="flex gap-2 items-center flex-wrap">
@@ -79,17 +67,7 @@ export default function EventCard({ event, i }: EventCardProps) {
                   </span>
                   {event.coOrganizers.map((contributor) => (
                     <p className="text-xs md:text-sm" key={contributor.userId}>
-                      {contributor.slug ? (
-                        <Link
-                          href={`/participants/${contributor.slug}`}
-                          className="hover:underline"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {contributor.userName}
-                        </Link>
-                      ) : (
-                        <span>{contributor.userName}</span>
-                      )}
+                      <span>{contributor.userName}</span>
                     </p>
                   ))}
                 </div>

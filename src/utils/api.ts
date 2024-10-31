@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { DatabaseContent } from "@/utils/about-types";
-import { Event } from "@/utils/event-types";
+import { Event, IndividualEventResponse } from "@/utils/event-types";
 import { LocationGroup } from "@/utils/map-types";
 import { MainSection } from "@/utils/menu-types";
 import {
@@ -55,7 +55,7 @@ export const fetchCurated = cache(
 
 /* EVENTS */
 export const fetchEvents = cache(
-  async (searchParams: URLSearchParams): Promise<Event[]> => {
+  async (searchParams: URLSearchParams): Promise<IndividualEventResponse[]> => {
     const res = await fetch(`${BASE_URL}/events?${searchParams.toString()}`, {
       next: { revalidate: 0 },
     });
