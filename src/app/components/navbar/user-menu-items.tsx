@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { SheetClose } from "@/components/ui/sheet";
-import { LoginForm } from "../login-form/login-form";
+import LoginForm from "../login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
 
 export default function UserMenuItems(): JSX.Element {

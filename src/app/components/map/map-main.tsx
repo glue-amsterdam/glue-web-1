@@ -14,7 +14,7 @@ import {
 import { MenuIcon, MapPin, LockIcon, UnlockIcon } from "lucide-react";
 import { Location, LocationGroup } from "@/utils/map-types";
 import { motion } from "framer-motion";
-import { LoginForm } from "../login-form/login-form";
+import LoginForm from "../login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
 import { NAVBAR_HEIGHT } from "@/constants";
 

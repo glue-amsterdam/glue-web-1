@@ -41,8 +41,8 @@ interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<void>;
 }
 
-export function LoginForm({ isOpen, onClose }: LoginFormProps) {
-  const { login } = useAuth();
+export default function LoginForm({ isOpen, onClose }: LoginFormProps) {
+  const { login, loginError } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormData>({
@@ -88,6 +88,11 @@ export function LoginForm({ isOpen, onClose }: LoginFormProps) {
         >
           <GlueLogoSVG isVisible className="w-32 h-32" />
         </motion.div>
+        {loginError && (
+          <div className="text-red-500 text-sm bg-red-100 p-2 rounded">
+            {loginError}
+          </div>
+        )}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField

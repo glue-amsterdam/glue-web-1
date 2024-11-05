@@ -3,16 +3,17 @@
 import Link from "next/link";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LoginForm } from "@/app/components/login-form/login-form";
+import LoginForm from "@/app/components/login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
 import { useMenu } from "@/app/context/MainContext";
 import CenteredLoader from "@/app/components/centered-loader";
 import { MainSection } from "@/utils/menu-types";
 
 function ClickAreas() {
-  const { user, login } = useAuth();
-  const router = useRouter();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const router = useRouter();
+
+  const { user, login } = useAuth();
   const mainMenu = useMenu();
 
   const handleAreaClick = (
@@ -59,7 +60,7 @@ function ClickAreas() {
               className={`absolute hover:bg-white/10 transition-all duration-300 ${area.className}`}
             >
               <Link
-                href={`/${area.section}`}
+                href={``}
                 onClick={(e) =>
                   handleAreaClick(
                     e,
