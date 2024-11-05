@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -25,15 +24,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import GlueLogoSVG from "@/app/components/glue-logo-svg";
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader2 } from "lucide-react";
-
-const formSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters" }),
-});
-
-type FormData = z.infer<typeof formSchema>;
+import { FormDataWithEmail, loginSchemaWithEmail } from "@/schemas/loginSchema";
 
 interface LoginFormProps {
   isOpen: boolean;
@@ -45,15 +36,15 @@ export default function LoginForm({ isOpen, onClose }: LoginFormProps) {
   const { login, loginError } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<FormDataWithEmail>({
+    resolver: zodResolver(loginSchemaWithEmail),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: FormDataWithEmail) => {
     setIsLoading(true);
     try {
       await login(data.email, data.password);

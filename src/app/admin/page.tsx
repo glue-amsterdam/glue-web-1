@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import LoginForm from "./login-form";
 import AdminDashboard from "./admin-dashboard";
 import { NAVBAR_HEIGHT } from "@/constants";
+import AdminLoginForm from "@/app/admin/forms/admin-login-form";
 
 export default function AdminPage() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -23,7 +23,7 @@ export default function AdminPage() {
         </h1>
         {isAdmin ? (
           <>
-            <LoginForm />
+            <AdminLoginForm />
             <AdminDashboard />
           </>
         ) : null}
