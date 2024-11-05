@@ -1,7 +1,7 @@
 import { Suspense } from "react";
-import AdminPanel from "@/app/components/dashboard/admin-panel";
 import CenteredLoader from "@/app/components/centered-loader";
 import { fetchAllUsers } from "@/utils/api";
+import UsersAdminPage from "@/app/dashboard/[userId]/users-admin/admin-panel-content";
 
 export default function AdminPanelContainer() {
   return (
@@ -14,5 +14,5 @@ export default function AdminPanelContainer() {
 async function AdminPanelCall() {
   const users = await fetchAllUsers();
 
-  return <AdminPanel users={users} />;
+  return <UsersAdminPage users={users} />;
 }

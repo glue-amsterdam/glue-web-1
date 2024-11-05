@@ -20,7 +20,6 @@ function ClickAreas() {
     href: string,
     requiresAuth: boolean
   ) => {
-    e.preventDefault();
     if (requiresAuth && !user) {
       setIsLoginModalOpen(true);
     } else {
@@ -32,6 +31,7 @@ function ClickAreas() {
     try {
       await login(email, password);
       setIsLoginModalOpen(false);
+      router.push(`/dashboard/${user?.userId}/member-data`);
     } catch (error) {
       console.error("Login failed:", error);
     }
@@ -49,7 +49,7 @@ function ClickAreas() {
   );
 
   return (
-    <nav className="">
+    <nav>
       <ul className="h-full w-full ">
         {sortedMenu
           .filter((area) => area?.section && area.className)

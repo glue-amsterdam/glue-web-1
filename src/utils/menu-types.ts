@@ -1,4 +1,4 @@
-import { DAYS } from "@/constants";
+import { DAYS, DAYS_IDS } from "@/constants";
 
 export interface MainSection {
   mainColors: MainColors;
@@ -36,5 +36,5 @@ export interface EventDay {
   date: Date;
 }
 
-export type DayID = "day-1" | "day-2" | "day-3" | "day-4" | "extra-day";
+export type DayID = (typeof DAYS_IDS)[number];
 export type DaysLabels = (typeof DAYS)[number];

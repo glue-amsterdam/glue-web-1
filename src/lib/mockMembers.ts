@@ -10,7 +10,7 @@ export const users: User[] = [
     type: "participant",
     isCurated: true,
     year: 1998,
-    isMod: false,
+    isMod: true,
     status: "accepted",
     planId: "planId-3",
     description:

@@ -1,14 +1,12 @@
-import DashboardMenu from "@/app/components/dashboard/dashboard-menu";
-import { NAVBAR_HEIGHT } from "@/constants";
+import Background from "@/app/components/background";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div
-      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
-      className={`flex h-dvh z-10 relative`}
-    >
-      <DashboardMenu />
-      <section className="flex-1 p-10 overflow-auto">{children}</section>
-    </div>
+    <main>
+      {children}
+      <div className="fixed inset-0 overflow-x-hidden overflow-y-scroll -z-10">
+        <Background />
+      </div>
+    </main>
   );
 }

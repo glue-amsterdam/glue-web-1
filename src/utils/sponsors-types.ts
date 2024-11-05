@@ -1,4 +1,4 @@
-import { ImageData } from "@/utils/global-types";
+import { ImageData } from "@/schemas/baseSchema";
 
 export interface Sponsor {
   id: string;

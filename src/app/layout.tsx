@@ -5,6 +5,7 @@ import NavbarBurguer from "@/app/components/navbar/responsive-navbar-with-hambur
 import { AuthProvider } from "@/app/context/AuthContext";
 import { MainContextProvider } from "@/app/context/MainContext";
 import { fetchMain } from "@/utils/api";
+import { Toaster } from "@/components/ui/toaster";
 
 const lausanne = localFont({
   src: [
@@ -71,6 +72,7 @@ export default async function RootLayout({
           >
             <NavbarBurguer />
             <div className="flex-grow overflow-x-hidden">{children}</div>
+            <Toaster />
           </body>
         </MainContextProvider>
       </AuthProvider>

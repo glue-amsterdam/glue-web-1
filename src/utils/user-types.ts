@@ -1,5 +1,5 @@
+import { ImageData } from "@/schemas/baseSchema";
 import { Event } from "@/utils/event-types";
-import { ImageData } from "@/utils/global-types";
 import { MapBoxPlace } from "@/utils/map-types";
 import { EventDay } from "@/utils/menu-types";
 import { InvoiceDataCall, PlanType } from "@/utils/sign-in.types";

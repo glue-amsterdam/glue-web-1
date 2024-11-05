@@ -30,7 +30,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export default function AdminPanel({ users }: { users: User[] }) {
+export default function UsersAdminPage({ users }: { users: User[] }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<UserWithPlanDetails | null>(
     null

@@ -6,7 +6,7 @@ type Props = {
 
 function AboutLayout({ children }: Props) {
   return (
-    <main className="h-dvh overflow-y-scroll snap-y snap-mandatory scroll-smooth">
+    <main className="h-dvh overflow-y-scroll overflow-x-hidden snap-y snap-mandatory scroll-smooth">
       {children}
     </main>
   );

@@ -1,7 +1,9 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,69 +34,22 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, ClockIcon, PencilIcon } from "lucide-react";
 import { fetchFiveEvents } from "@/utils/api";
-import { EVENT_TYPES } from "@/constants";
-import { ImageData } from "@/utils/global-types";
-import { Event, EventType, Organizer } from "@/utils/event-types";
+import { DEFAULT_EMPTY_EVENT, EVENT_TYPES, safeParseDate } from "@/constants";
+import { Event } from "@/utils/event-types";
+import { useEventsDays } from "@/app/context/MainContext";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { eventSchema } from "@/schemas/eventSchemas";
 
-const organizerSchema: z.ZodType<Organizer> = z.object({
-  id: z.string(),
-  name: z.string(),
-  slug: z.string(),
-});
-
-const imageDataSchema: z.ZodType<ImageData> = z.object({
-  id: z.string(),
-  imageUrl: z.string().url("Please enter a valid URL for the thumbnail"),
-  alt: z.string(),
-  imageName: z.string(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
-
-const baseEventSchema = z.object({
-  eventId: z.string(),
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  thumbnail: imageDataSchema,
-  organizer: organizerSchema,
-  coOrganizers: z.array(organizerSchema),
-  date: z
-    .string()
-    .regex(
-      /^\d{4}-\d{2}-\d{2}$/,
-      "Please enter a valid date in YYYY-MM-DD format"
-    ),
-  startTime: z
-    .string()
-    .regex(/^\d{2}:\d{2}$/, "Please enter a valid time in HH:MM format"),
-  endTime: z
-    .string()
-    .regex(/^\d{2}:\d{2}$/, "Please enter a valid time in HH:MM format"),
-  type: z.enum(EVENT_TYPES),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
-
-const rsvpRequiredEventSchema = baseEventSchema.extend({
-  rsvp: z.literal(true),
-  rsvpMessage: z.string(),
-  rsvpLink: z.string().url(),
-});
-
-const rsvpOptionalEventSchema = baseEventSchema.extend({
-  rsvp: z.literal(false).optional(),
-  rsvpMessage: z.string().optional(),
-  rsvpLink: z.string().url().optional(),
-});
-
-const eventSchema: z.ZodType<Event> = z.discriminatedUnion("rsvp", [
-  rsvpRequiredEventSchema,
-  rsvpOptionalEventSchema,
-]);
-
-export default function YourEventsSection() {
+export default function Component() {
   const [events, setEvents] = useState<Event[]>([]);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const eventsDays = useEventsDays();
 
   useEffect(() => {
     fetchFiveEvents().then((response) => setEvents(response));
@@ -102,56 +57,46 @@ export default function YourEventsSection() {
 
   const form = useForm<Event>({
     resolver: zodResolver(eventSchema),
-    defaultValues: editingEvent || {
-      eventId: "",
-      name: "",
-      thumbnail: {
-        id: "",
-        imageUrl: "",
-        alt: "Image alt text for the Event thumbnail",
-        imageName: "",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      organizer: { id: "", name: "", slug: "" },
-      coOrganizers: [],
-      date: "",
-      startTime: "",
-      endTime: "",
-      type: EVENT_TYPES[0] as EventType,
-      description: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      rsvp: false,
+    defaultValues: {
+      ...DEFAULT_EMPTY_EVENT,
+      date: eventsDays[0],
     },
   });
 
   useEffect(() => {
     if (editingEvent) {
-      form.reset(editingEvent);
+      console.log("Setting form values for editing event:", editingEvent);
+      form.reset({
+        ...editingEvent,
+        date: {
+          ...editingEvent.date,
+          date: safeParseDate(editingEvent.date.date),
+        },
+        thumbnail: {
+          ...editingEvent.thumbnail,
+          createdAt: safeParseDate(editingEvent.thumbnail.createdAt),
+          updatedAt: safeParseDate(editingEvent.thumbnail.updatedAt),
+        },
+        createdAt: safeParseDate(editingEvent.createdAt),
+        updatedAt: safeParseDate(editingEvent.updatedAt),
+      });
     }
   }, [editingEvent, form]);
 
   const onSubmit: SubmitHandler<Event> = (data) => {
-    setEvents(
-      events.map((event) => (event.eventId === data.eventId ? data : event))
-    );
-    setEditingEvent(null);
+    console.log("Form submitted with data:", data);
   };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-uiwhite">Your Events</h2>
+      <h2 className="text-2xl font-bold text-white">Your Events</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {events.map((event) => (
-          <Card
-            key={event.eventId}
-            className="bg-primary text-primary-foreground"
-          >
+          <Card key={event.eventId} className="bg-card">
             <CardHeader>
               <div className="relative h-40 w-full overflow-hidden rounded-t-lg">
                 <img
-                  src={event.thumbnail.imageUrl}
+                  src={event.thumbnail.imageUrl || "/placeholder.svg"}
                   alt={event.name}
                   className="absolute inset-0 object-cover w-full h-full"
                 />
@@ -164,7 +109,7 @@ export default function YourEventsSection() {
             <CardContent>
               <div className="flex items-center space-x-2">
                 <CalendarIcon className="h-4 w-4" />
-                <span>{event.date}</span>
+                <span>{event.date.label}</span>
               </div>
               <div className="flex items-center space-x-2 mt-2">
                 <ClockIcon className="h-4 w-4" />
@@ -184,7 +129,7 @@ export default function YourEventsSection() {
                     Edit Event
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="w-[90%] md:w-[70%] lg:w-[80%] text-uiblack">
+                <DialogContent className="w-[90%] md:w-[70%] lg:w-[80%] text-black max-h-[90%] overflow-y-scroll">
                   <DialogHeader>
                     <DialogTitle>Edit Event</DialogTitle>
                   </DialogHeader>
@@ -197,12 +142,10 @@ export default function YourEventsSection() {
                         control={form.control}
                         name="name"
                         render={({ field }) => (
-                          <FormItem className="dashboard-form-item">
-                            <FormLabel className="dashboard-label">
-                              Event Name
-                            </FormLabel>
+                          <FormItem>
+                            <FormLabel>Event Name</FormLabel>
                             <FormControl>
-                              <Input className="dashboard-input" {...field} />
+                              <Input {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -212,22 +155,14 @@ export default function YourEventsSection() {
                         control={form.control}
                         name="type"
                         render={({ field }) => (
-                          <FormItem className="dashboard-form-item">
-                            <FormLabel className="dashboard-label">
-                              Event Type
-                            </FormLabel>
+                          <FormItem>
+                            <FormLabel>Event Type</FormLabel>
                             <FormControl>
                               <select
                                 {...field}
                                 className="w-full p-2 rounded-md"
                               >
-                                {[
-                                  "Lecture",
-                                  "Workshop",
-                                  "Drink",
-                                  "Guided Tour",
-                                  "Exhibition",
-                                ].map((type) => (
+                                {EVENT_TYPES.map((type) => (
                                   <option key={type} value={type}>
                                     {type}
                                   </option>
@@ -242,17 +177,35 @@ export default function YourEventsSection() {
                         control={form.control}
                         name="date"
                         render={({ field }) => (
-                          <FormItem className="dashboard-form-item">
-                            <FormLabel className="dashboard-label">
-                              Date
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                className="dashboard-input"
-                                type="date"
-                                {...field}
-                              />
-                            </FormControl>
+                          <FormItem>
+                            <FormLabel>Event Day</FormLabel>
+                            <Select
+                              onValueChange={(value) => {
+                                const selectedDay = eventsDays.find(
+                                  (day) => day.dayId === value
+                                );
+                                if (selectedDay) {
+                                  field.onChange({
+                                    ...selectedDay,
+                                    date: safeParseDate(selectedDay.date),
+                                  });
+                                }
+                              }}
+                              value={field.value.dayId}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select event day" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {eventsDays.map((day) => (
+                                  <SelectItem key={day.dayId} value={day.dayId}>
+                                    {day.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -262,16 +215,10 @@ export default function YourEventsSection() {
                           control={form.control}
                           name="startTime"
                           render={({ field }) => (
-                            <FormItem className="dashboard-form-item">
-                              <FormLabel className="dashboard-label">
-                                Start Time
-                              </FormLabel>
+                            <FormItem>
+                              <FormLabel>Start Time</FormLabel>
                               <FormControl>
-                                <Input
-                                  className="dashboard-input"
-                                  type="time"
-                                  {...field}
-                                />
+                                <Input type="time" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -281,16 +228,10 @@ export default function YourEventsSection() {
                           control={form.control}
                           name="endTime"
                           render={({ field }) => (
-                            <FormItem className="dashboard-form-item">
-                              <FormLabel className="dashboard-label">
-                                End Time
-                              </FormLabel>
+                            <FormItem>
+                              <FormLabel>End Time</FormLabel>
                               <FormControl>
-                                <Input
-                                  className="dashboard-input"
-                                  type="time"
-                                  {...field}
-                                />
+                                <Input type="time" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -365,15 +306,10 @@ export default function YourEventsSection() {
                         control={form.control}
                         name="description"
                         render={({ field }) => (
-                          <FormItem className="dashboard-form-item">
-                            <FormLabel className="dashboard-label">
-                              Description
-                            </FormLabel>
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
                             <FormControl>
-                              <Textarea
-                                className="dashboard-input"
-                                {...field}
-                              />
+                              <Textarea {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -383,10 +319,8 @@ export default function YourEventsSection() {
                         control={form.control}
                         name="rsvp"
                         render={({ field }) => (
-                          <FormItem className="dashboard-form-item">
-                            <FormLabel className="dashboard-label">
-                              RSVP Required
-                            </FormLabel>
+                          <FormItem>
+                            <FormLabel>RSVP Required</FormLabel>
                             <FormControl>
                               <input
                                 type="checkbox"
@@ -402,9 +336,6 @@ export default function YourEventsSection() {
                                     form.setValue("rsvpLink", undefined);
                                   }
                                 }}
-                                onBlur={field.onBlur}
-                                name={field.name}
-                                ref={field.ref}
                               />
                             </FormControl>
                             <FormMessage />
@@ -417,15 +348,10 @@ export default function YourEventsSection() {
                             control={form.control}
                             name="rsvpMessage"
                             render={({ field }) => (
-                              <FormItem className="dashboard-form-item">
-                                <FormLabel className="dashboard-label">
-                                  RSVP Message
-                                </FormLabel>
+                              <FormItem>
+                                <FormLabel>RSVP Message</FormLabel>
                                 <FormControl>
-                                  <Input
-                                    className="dashboard-input"
-                                    {...field}
-                                  />
+                                  <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -435,16 +361,10 @@ export default function YourEventsSection() {
                             control={form.control}
                             name="rsvpLink"
                             render={({ field }) => (
-                              <FormItem className="dashboard-form-item">
-                                <FormLabel className="dashboard-label">
-                                  RSVP Link
-                                </FormLabel>
+                              <FormItem>
+                                <FormLabel>RSVP Link</FormLabel>
                                 <FormControl>
-                                  <Input
-                                    className="dashboard-input"
-                                    type="url"
-                                    {...field}
-                                  />
+                                  <Input type="url" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -464,7 +384,9 @@ export default function YourEventsSection() {
         ))}
       </div>
       {events.length === 0 && (
-        <p className="text-uiwhite text-center">{`You haven't created any events yet.`}</p>
+        <p className="text-center">
+          <span>{`You haven't created any events yet.`}</span>
+        </p>
       )}
       {events.length < 5 && (
         <Button className="w-full mt-4">Create New Event</Button>

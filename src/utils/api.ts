@@ -93,6 +93,15 @@ export const fetchParticipant = cache(
     return res.json();
   }
 );
+export const fetchParticipantbyId = cache(
+  async (userId: string): Promise<ParticipantUser> => {
+    const res = await fetch(`${BASE_URL}/participants/userId/${userId}`, {
+      next: { revalidate: 0 },
+    });
+    if (!res.ok) throw new Error("Failed to fetch participant by ID");
+    return res.json();
+  }
+);
 export const fetchAllParticipants = cache(
   async (): Promise<ParticipantUser[]> => {
     const res = await fetch(`${BASE_URL}/participants`, {
@@ -109,7 +118,10 @@ export const fetchUser = cache(
     const res = await fetch(`${BASE_URL}/users/${id}`, {
       next: { revalidate: 0 },
     });
-    if (!res.ok) throw new Error("Failed to fetch user");
+    if (!res.ok) {
+      console.error("Failed to fetch user:", await res.text());
+      throw new Error("Failed to fetch user by ID");
+    }
     return res.json();
   }
 );

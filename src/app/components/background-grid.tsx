@@ -201,8 +201,22 @@ function BackgroundGrid({}) {
     "/search": searchAnimation,
   };
 
+  const fallbackAnimation: PathnameConfig = {
+    box1: { initial: {}, animate: {}, transition: {} },
+    box2: { initial: {}, animate: {}, transition: {} },
+    box3: { initial: {}, animate: {}, transition: {} },
+    box4: { initial: {}, animate: {}, transition: {} },
+  };
+
+  const selectAnimation = (path: string): PathnameConfig => {
+    if (path.startsWith("/dashboard")) {
+      return animations["/dashboard"];
+    }
+    return animations[path as Pathnames] || fallbackAnimation;
+  };
+
   const { box1, box2, box3, box4, triangle, extra, father } =
-    animations[pathname as Pathnames];
+    selectAnimation(pathname);
 
   return (
     <motion.div

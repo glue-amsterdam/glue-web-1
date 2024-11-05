@@ -1,15 +1,9 @@
 import { EVENT_TYPES } from "@/constants";
-import { ImageData } from "@/utils/global-types";
+import { ImageData } from "@/schemas/baseSchema";
 import { EventDay } from "@/utils/menu-types";
 import { ParticipantUser } from "@/utils/user-types";
 
 export type EventType = (typeof EVENT_TYPES)[number];
-
-export interface Organizer {
-  id: string;
-  name: string;
-  slug: string;
-}
 
 export interface BaseEvent {
   organizer: Pick<ParticipantUser, "userId">;
@@ -32,7 +26,7 @@ export interface RSVPRequiredEvent extends BaseEvent {
   rsvpLink: string;
 }
 
-interface RSVPOptionalEvent extends BaseEvent {
+export interface RSVPOptionalEvent extends BaseEvent {
   rsvp?: false | undefined;
   rsvpMessage?: string;
   rsvpLink?: string;
@@ -42,11 +36,11 @@ export type Event = RSVPRequiredEvent | RSVPOptionalEvent;
 
 export interface EnhancedUser {
   userId: string;
-  userName: string;
+  userName?: string;
   slug?: string;
 }
 
-interface EnhancedOrganizer extends EnhancedUser {
+export interface EnhancedOrganizer extends EnhancedUser {
   mapId?: string;
   mapPlaceName?: string;
 }

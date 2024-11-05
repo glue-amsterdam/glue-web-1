@@ -17,7 +17,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
-import VisitingHoursForm from "./visiting-hours-form";
+import VisitingHoursForm from "@/app/dashboard/[userId]/visiting-hours-form";
+import { fadeInConfig } from "@/utils/animations";
 
 const daySchema = z.object({
   isOpen: z.boolean(),
@@ -63,7 +64,7 @@ const formSchema = z.object({
   }),
 });
 
-export default function MemberDataForm() {
+export default function MemberDataPage() {
   const [images, setImages] = useState<string[]>([]);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -118,7 +119,7 @@ export default function MemberDataForm() {
     console.log(cleanedValues);
   }
   return (
-    <motion.div>
+    <motion.div {...fadeInConfig}>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,72 +24,85 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
-import { EVENT_TYPES } from "@/constants";
+import { DEFAULT_EMPTY_EVENT, EVENT_TYPES, safeParseDate } from "@/constants";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useEventsDays } from "@/app/context/MainContext";
+import { eventSchema, eventDaySchema } from "@/schemas/eventSchemas";
+import { Event, RSVPOptionalEvent } from "@/utils/event-types";
 
-const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  thumbnail: z.string().min(1, "Please add a thumbnail"),
-  date: z
-    .string()
-    .regex(
-      /^\d{4}-\d{2}-\d{2}$/,
-      "Please enter a valid date in YYYY-MM-DD format"
-    ),
-  startTime: z
-    .string()
-    .regex(/^\d{2}:\d{2}$/, "Please enter a valid time in HH:MM format"),
-  endTime: z
-    .string()
-    .regex(/^\d{2}:\d{2}$/, "Please enter a valid time in HH:MM format"),
-  type: z.enum(EVENT_TYPES),
-  description: z
-    .string()
-    .min(10, "Description must be at least 10 characters")
-    .max(500, "Description must be less than 500 characters"),
-  rsvp: z.boolean().default(false),
-  rsvpMessage: z.string().optional(),
-  rsvpLink: z.string().url("Please enter a valid URL").optional(),
-});
-
-export default function EventCreationForm({
+export default function CreateEventPage({
   existingEvents = 0,
+  organizerId = "default-organizer-id",
 }: {
   existingEvents?: number;
+  organizerId?: string;
 }) {
-  const [events, setEvents] = useState<z.infer<typeof formSchema>[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isDateSelected, setIsDateSelected] = useState(false);
+  const eventsDays = useEventsDays();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<Event>({
+    resolver: zodResolver(eventSchema),
     defaultValues: {
-      name: "",
-      thumbnail: "",
-      date: "",
-      startTime: "",
-      endTime: "",
-      type: "Lecture",
-      description: "",
-      rsvp: false,
-      rsvpMessage: "",
-      rsvpLink: "",
+      ...DEFAULT_EMPTY_EVENT,
+      date: {
+        dayId: undefined,
+        label: undefined,
+        date: new Date(),
+      },
+      organizer: { userId: organizerId },
+      eventId: `event-${Date.now()}-${Math.random().toString(36)}`,
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) =>
+      console.log("Form updated:", name, value)
+    );
+    return () => subscription.unsubscribe();
+  }, [form]);
+
+  const onSubmit: SubmitHandler<Event> = (data) => {
+    console.log("Form submitted with values:", data);
+
     if (events.length + existingEvents >= 5) {
       alert("You can only create up to 5 events.");
       return;
     }
-    setEvents([...events, values]);
-    console.log("New event created:", values);
-    form.reset();
-  }
 
+    const newEvent: Event = {
+      ...data,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      organizer: { userId: organizerId },
+    };
+
+    console.log("New event created:", newEvent);
+    setEvents((prevEvents) => [...prevEvents, newEvent]);
+
+    const resetValues: RSVPOptionalEvent = {
+      ...DEFAULT_EMPTY_EVENT,
+      date: {
+        dayId: "day-1",
+        label: eventsDays[0]?.label || "",
+        date: new Date(),
+      },
+      rsvp: false,
+      organizer: { userId: organizerId },
+    };
+    form.reset(resetValues);
+    setIsDateSelected(false);
+  };
   return (
     <motion.div>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={(e) => {
+            console.log("Form submit event triggered");
+            form.handleSubmit(onSubmit, (errors) => {
+              console.log("Form validation errors:", errors);
+            })(e);
+          }}
           className="space-y-8 text-uiwhite"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -104,10 +117,10 @@ export default function EventCreationForm({
                     </FormLabel>
                     <FormControl>
                       <div className="flex flex-wrap gap-4">
-                        {field.value ? (
+                        {field.value.imageUrl ? (
                           <div className="relative h-40 w-40 overflow-hidden rounded-lg">
                             <img
-                              src={field.value}
+                              src={field.value.imageUrl}
                               alt="Event thumbnail"
                               className="absolute inset-0 object-cover w-full h-full"
                             />
@@ -116,7 +129,16 @@ export default function EventCreationForm({
                               variant="destructive"
                               size="sm"
                               className="absolute top-2 right-2"
-                              onClick={() => form.setValue("thumbnail", "")}
+                              onClick={() => {
+                                form.setValue("thumbnail", {
+                                  id: "",
+                                  imageUrl: "",
+                                  alt: "",
+                                  imageName: "",
+                                  createdAt: new Date(),
+                                  updatedAt: new Date(),
+                                });
+                              }}
                             >
                               Remove
                             </Button>
@@ -125,8 +147,14 @@ export default function EventCreationForm({
                           <Button
                             type="button"
                             onClick={() => {
-                              const newthumbnail = `/placeholders/placeholder-1.jpg`;
-                              form.setValue("thumbnail", newthumbnail);
+                              form.setValue("thumbnail", {
+                                id: "image-event-thumbnail-asdfas",
+                                imageUrl: "/placeholders/placeholder-1.jpg",
+                                alt: "Image alt text for the Event thumbnail",
+                                imageName: "placeholder-1.jpg",
+                                createdAt: new Date(),
+                                updatedAt: new Date(),
+                              });
                             }}
                             className="h-40 w-40 flex items-center justify-center"
                           >
@@ -187,15 +215,46 @@ export default function EventCreationForm({
                 control={form.control}
                 name="date"
                 render={({ field }) => (
-                  <FormItem className="dashboard-form-item">
-                    <FormLabel className="dashboard-label">Date</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        className="dashboard-input"
-                        {...field}
-                      />
-                    </FormControl>
+                  <FormItem>
+                    <FormLabel>Event Day</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        const selectedDay = eventsDays.find(
+                          (day) => day.dayId === value
+                        );
+                        if (selectedDay) {
+                          field.onChange({
+                            dayId: selectedDay.dayId as z.infer<
+                              typeof eventDaySchema
+                            >["dayId"],
+                            label: selectedDay.label as z.infer<
+                              typeof eventDaySchema
+                            >["label"],
+                            date: safeParseDate(selectedDay.date),
+                          });
+                          setIsDateSelected(true);
+                        }
+                      }}
+                      value={field.value.dayId}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select event day" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {!isDateSelected && (
+                          <SelectItem value="0" disabled>
+                            Select day
+                          </SelectItem>
+                        )}
+                        {eventsDays.map((day) => (
+                          <SelectItem key={day.dayId} value={day.dayId}>
+                            {day.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -251,10 +310,7 @@ export default function EventCreationForm({
                     <FormLabel className="dashboard-label">
                       Event Type
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="dashboard-input">
                           <SelectValue placeholder="Select event type" />
@@ -281,7 +337,13 @@ export default function EventCreationForm({
                     <FormControl>
                       <Checkbox
                         checked={field.value}
-                        onCheckedChange={field.onChange}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked);
+                          if (!checked) {
+                            form.setValue("rsvpMessage", undefined);
+                            form.setValue("rsvpLink", undefined);
+                          }
+                        }}
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
@@ -355,24 +417,25 @@ export default function EventCreationForm({
         <h2 className="text-xl font-bold mb-4 text-uiwhite">
           Created Events ({events.length + existingEvents}/5)
         </h2>
-        {events.map((event, index) => (
+        {events.map((event) => (
           <div
-            key={index}
+            key={event.eventId}
             className="bg-primary text-primary-foreground p-4 rounded-lg mb-4 flex items-center gap-4"
           >
             <div className="relative h-20 w-20 overflow-hidden rounded-lg shrink-0">
               <img
-                src={event.thumbnail}
-                alt={event.name}
+                src={event.thumbnail.imageUrl}
+                alt={event.thumbnail.alt}
                 className="absolute inset-0 object-cover w-full h-full"
               />
             </div>
             <div>
               <h3 className="font-bold">{event.name}</h3>
               <p>Type: {event.type}</p>
-              <p>Date: {event.date}</p>
+              <p>Date: {event.date.label}</p>
               <p>
-                Time: {event.startTime} - {event.endTime}
+                Time: <span>{event.startTime}</span> -{" "}
+                <span>{event.endTime}</span>
               </p>
               {event.rsvp && <p>RSVP Required</p>}
             </div>

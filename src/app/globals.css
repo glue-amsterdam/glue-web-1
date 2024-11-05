@@ -77,10 +77,6 @@
   }
 }
 
-::-webkit-scrollbar {
-  display: none;
-}
-
 @font-face {
   font-family: "Lausanne";
   src: url("/fonts/lausanne/lausanne.woff2") format("woff2");
@@ -139,11 +135,6 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-}
-
-html {
-  scrollbar-width: none;
-  scroll-behavior: smooth !important;
 }
 
 @layer base {
