@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { AlertCircle, House, UserPlus } from "lucide-react";
+import { AlertCircle, House, Map, UserPlus } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +46,7 @@ export default function InsufficientAccess({
         }),
       1000
     );
+    router.push("/");
   };
 
   return (
@@ -75,11 +76,24 @@ export default function InsufficientAccess({
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            {`Sorry, you don't have sufficient privileges to access profile modification.`}
+            <p>{`Sorry, you don't have sufficient privileges to access profile modification.`}</p>
+            <p>
+              {" "}
+              {`Visitors and base members can only access the Map to see the routes`}
+            </p>
           </motion.p>
         </CardContent>
         <CardFooter className="flex justify-center">
           <div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                onClick={() => router.push("/map")}
+                className="flex items-center gap-2 w-full mb-2 bg-green-500 hover:bg-green-500/80"
+              >
+                <Map className="mr-2" />
+                <span className="flex-grow text-center">Go to Map</span>
+              </Button>
+            </motion.div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <motion.div
@@ -99,7 +113,7 @@ export default function InsufficientAccess({
                 <AlertDialogHeader>
                   <AlertDialogTitle>{`Become a participant ${userName}`}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    {`Want to Become a Participant? Drop us a message and we'll get in touch!`}
+                    {`Want to Become a Participant? Click on "Continue" and a GLUE team member will get in touch with you.`}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

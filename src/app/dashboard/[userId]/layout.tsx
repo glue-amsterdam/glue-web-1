@@ -1,57 +1,67 @@
+"use client";
+import { useAuth } from "@/app/context/AuthContext";
+import { UserDashboardProvider } from "@/app/context/UserDashboardContext";
 import InsufficientAccess from "@/app/dashboard/insufficient-access";
 import DashboardMenu from "@/app/dashboard/menu";
 import WrongCredentials from "@/app/dashboard/wrong-credentials-acces";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { fetchUser } from "@/utils/api";
 import { ReactNode } from "react";
 
-export default async function UserDashboardLayout({
+export default function UserDashboardLayout({
   children,
   params,
 }: {
   children: ReactNode;
   params: { userId: string };
 }) {
-  const { userId } = params;
+  const { userId: targetUserId } = params;
+  const { user: loggedInUser } = useAuth();
 
-  const user = await fetchUser(userId);
+  if (!loggedInUser) {
+    return <div>Error loading user, no user found for dashboard</div>;
+  }
 
-  const confirmedUser = user.userId === userId;
+  const isLoggedInUserMod = loggedInUser.isMod;
+  const isTargetUserSameAsLoggedInUser = loggedInUser.userId === targetUserId;
+  const isLoggedInUserParticipant = loggedInUser.userType === "participant";
 
-  if (!user) return <div>Error loading user, no user found for dashboard</div>;
-
-  if (!user.isMod || !confirmedUser) {
+  if (!isLoggedInUserMod && !isTargetUserSameAsLoggedInUser) {
     return (
       <div
         className="flex justify-center h-screen z-10 relative"
         style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}
       >
-        <WrongCredentials userId={user.userId} userName={user.userName} />
+        <WrongCredentials
+          userId={loggedInUser.userId}
+          userName={loggedInUser.userName}
+        />
       </div>
     );
   }
 
-  if (user.type !== "participant")
+  if (!isLoggedInUserParticipant) {
     return (
       <div
         className="flex justify-center h-screen z-10 relative"
         style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}
       >
-        <InsufficientAccess userName={user.userName} userId={user.userId} />
+        <InsufficientAccess
+          userName={loggedInUser.userName}
+          userId={loggedInUser.userId}
+        />
       </div>
     );
+  }
 
   return (
-    <div
-      className="flex h-screen z-10 relative"
-      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
-    >
-      <DashboardMenu
-        userId={user.userId}
-        userName={user.userName}
-        isMod={user.isMod}
-      />
-      <section className="flex-1 p-10 overflow-auto">{children}</section>
-    </div>
+    <UserDashboardProvider userId={targetUserId}>
+      <div
+        className="flex h-screen z-10 relative"
+        style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      >
+        <DashboardMenu loggedInUser={loggedInUser} />
+        <section className="flex-1 p-10 overflow-auto">{children}</section>
+      </div>
+    </UserDashboardProvider>
   );
 }

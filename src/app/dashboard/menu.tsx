@@ -11,17 +11,17 @@ import {
   NAVBAR_HEIGHT,
   USER_DASHBOARD_SECTIONS,
 } from "@/constants";
+import { LoggedInUserType } from "@/schemas/usersSchemas";
+import { useDashboardUserContext } from "@/app/context/UserDashboardContext";
 
 export default function DashboardMenu({
-  userId,
-  userName,
-  isMod,
+  loggedInUser,
 }: {
-  userId: string;
-  userName: string;
-  isMod: boolean;
+  loggedInUser: LoggedInUserType;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const { userId: targetUserId } = useDashboardUserContext();
 
   const SidebarContent = () => (
     <nav className="p-5 space-y-2">
@@ -29,7 +29,7 @@ export default function DashboardMenu({
         <Link
           className="cursor-pointer"
           key={index}
-          href={`/dashboard/${userId}/${item.href}`}
+          href={`/dashboard/${targetUserId}/${item.href}`}
         >
           <Button
             variant="ghost"
@@ -41,14 +41,14 @@ export default function DashboardMenu({
           </Button>
         </Link>
       ))}
-      {isMod && (
+      {loggedInUser.isMod && (
         <>
           <h3 className="text-white text-sm pb-2">Mod Section</h3>
           {ADMIN_DASHBOARD_SECTIONS.map((item, index) => (
             <Link
               className="cursor-pointer"
               key={index}
-              href={`/dashboard/${userId}/${item.href}`}
+              href={`/dashboard/${targetUserId}/${item.href}`}
             >
               <Button
                 variant="ghost"
@@ -79,7 +79,9 @@ export default function DashboardMenu({
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0 bg-uiblack">
-          <h2 className="text-white text-center">Hello {userName}</h2>
+          <h2 className="text-white text-center">
+            Hello {loggedInUser.userName}
+          </h2>
           <SidebarContent />
         </SheetContent>
       </Sheet>
@@ -91,7 +93,9 @@ export default function DashboardMenu({
         style={{ paddingTop: `${NAVBAR_HEIGHT / 2}rem` }}
         className="hidden md:block w-64 bg-uiblack shadow-md"
       >
-        <h2 className="text-white text-center">Hello {userName}</h2>
+        <h2 className="text-white text-center">
+          Hello {loggedInUser.userName}
+        </h2>
         <SidebarContent />
       </motion.aside>
     </>

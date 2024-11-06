@@ -10,6 +10,7 @@ import {
   UserWithPlanDetails,
 } from "@/utils/user-types";
 import { Sponsor } from "@/utils/sponsors-types";
+import { ApiParticipantBaseType } from "@/schemas/usersSchemas";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -99,6 +100,16 @@ export const fetchParticipantbyId = cache(
       next: { revalidate: 0 },
     });
     if (!res.ok) throw new Error("Failed to fetch participant by ID");
+    return res.json();
+  }
+);
+
+export const fetchParticipantBaseById = cache(
+  async (userId: string): Promise<ApiParticipantBaseType> => {
+    const res = await fetch(`${BASE_URL}/participants/userId/${userId}/basic`, {
+      next: { revalidate: 0 },
+    });
+    if (!res.ok) throw new Error("Failed to fetch base participant by ID");
     return res.json();
   }
 );

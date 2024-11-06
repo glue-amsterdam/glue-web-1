@@ -19,103 +19,52 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import VisitingHoursForm from "@/app/dashboard/[userId]/visiting-hours-form";
 import { fadeInConfig } from "@/utils/animations";
+import {
+  ApiParticipantBaseType,
+  formParticipantSchema,
+  VisitingHoursType,
+} from "@/schemas/usersSchemas";
 
-const daySchema = z.object({
-  isOpen: z.boolean(),
-  timeRanges: z.array(
-    z.object({
-      open: z.string(),
-      close: z.string(),
-    })
-  ),
-});
-
-const formSchema = z.object({
-  images: z.array(z.string().url()).max(3, "You can upload up to 3 images"),
-  slug: z
-    .string()
-    .regex(
-      /^[a-zA-Z0-9-]+$/,
-      "Slug can only contain letters, numbers, and hyphens"
-    ),
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  shortDescription: z
-    .string()
-    .max(200, "Short description must be less than 200 characters"),
-  description: z.string(),
-  address: z.string(),
-  visitingHours: z.object({
-    Thursday: daySchema,
-    Friday: daySchema,
-    Saturday: daySchema,
-    Sunday: daySchema,
-  }),
-  phoneNumber: z.array(z.string().min(0)),
-  visibleEmail: z
-    .array(z.string().email().or(z.string().length(0)))
-    .max(3, "You can add up to 3 email addresses"),
-  visibleWebsite: z
-    .array(z.string().url().or(z.string().length(0)))
-    .max(3, "You can add up to 3 websites"),
-  socialMedia: z.object({
-    instagramLink: z.string().url().optional(),
-    facebookLink: z.string().url().optional(),
-    linkedinLink: z.string().url().optional(),
-  }),
-});
-
-export default function MemberDataPage() {
-  const [images, setImages] = useState<string[]>([]);
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+export default function ParticipantBaseDashboardForm({
+  participantBaseData,
+}: {
+  participantBaseData: ApiParticipantBaseType;
+}) {
+  console.log(participantBaseData);
+  const [images, setImages] = useState<string[]>(
+    participantBaseData.images.map((img) => img.imageUrl)
+  );
+  const form = useForm({
+    resolver: zodResolver(formParticipantSchema),
     defaultValues: {
-      images: [],
-      slug: "",
-      name: "",
-      shortDescription: "",
-      description: "",
-      address: "",
-      visitingHours: {
-        Thursday: {
-          isOpen: false,
-          timeRanges: [{ open: "09:00", close: "17:00" }],
-        },
-        Friday: {
-          isOpen: false,
-          timeRanges: [{ open: "09:00", close: "17:00" }],
-        },
-        Saturday: {
-          isOpen: false,
-          timeRanges: [{ open: "09:00", close: "17:00" }],
-        },
-        Sunday: {
-          isOpen: false,
-          timeRanges: [{ open: "09:00", close: "17:00" }],
-        },
+      ...participantBaseData,
+      userId: participantBaseData.userId || "",
+      images: participantBaseData.images || [],
+      slug: participantBaseData.slug || "",
+      shortDescription: participantBaseData.shortDescription || "",
+      description: participantBaseData.description || "",
+      mapPlaceName: participantBaseData.mapPlaceName || "",
+      mapId: participantBaseData.mapId || "",
+      visitingHours: participantBaseData.visitingHours || [],
+      phoneNumber: participantBaseData.phoneNumber || [],
+      visibleWebsite: participantBaseData.visibleWebsite || [],
+      socialMedia: participantBaseData.socialMedia || {
+        facebookLink: "",
+        instagramLink: "",
+        linkedinLink: "",
       },
-      phoneNumber: [""],
-      visibleEmail: [""],
-      visibleWebsite: [""],
-      socialMedia: {},
+      visibleEmail: participantBaseData.visibleEmail || [],
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: z.infer<typeof formParticipantSchema>) {
     const cleanedValues = {
       ...values,
       phoneNumber: values.phoneNumber.filter((phone) => phone.trim() !== ""),
       visibleEmail: values.visibleEmail.filter((email) => email.trim() !== ""),
       visibleWebsite: values.visibleWebsite.filter((web) => web.trim() !== ""),
-      visitingHours: Object.fromEntries(
-        Object.entries(values.visitingHours).map(([day, hours]) => {
-          if (!hours.isOpen) return [day, "Closed"];
-          return [
-            day,
-            hours.timeRanges.map((range) => `${range.open}-${range.close}`),
-          ];
-        })
-      ),
     };
+
     console.log(cleanedValues);
   }
   return (
@@ -192,16 +141,12 @@ export default function MemberDataPage() {
 
               <FormField
                 control={form.control}
-                name="name"
+                name="userName"
                 render={({ field }) => (
-                  <FormItem className="dashboard-form-item">
-                    <FormLabel className="dashboard-label">Name</FormLabel>
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input
-                        className="dashboard-input"
-                        placeholder="Your Name"
-                        {...field}
-                      />
+                      <Input placeholder="Your Name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -252,16 +197,12 @@ export default function MemberDataPage() {
 
               <FormField
                 control={form.control}
-                name="address"
+                name="mapPlaceName"
                 render={({ field }) => (
-                  <FormItem className="dashboard-form-item">
-                    <FormLabel className="dashboard-label">Address</FormLabel>
+                  <FormItem>
+                    <FormLabel>Map Place Name</FormLabel>
                     <FormControl>
-                      <Input
-                        className="dashboard-input"
-                        placeholder="Your Address"
-                        {...field}
-                      />
+                      <Input placeholder="Location Name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -277,9 +218,12 @@ export default function MemberDataPage() {
                     <FormControl>
                       <VisitingHoursForm
                         value={field.value}
-                        onChange={field.onChange}
+                        onChange={(newValue: VisitingHoursType) =>
+                          field.onChange(newValue)
+                        }
                       />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />

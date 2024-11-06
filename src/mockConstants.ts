@@ -1,7 +1,7 @@
-import { ImageData } from "@/utils/global-types";
-import { VisitingHours } from "@/utils/user-types";
-
 /* Functions */
+
+import { ImageData } from "@/schemas/baseSchema";
+import { VisitingHoursType } from "@/schemas/usersSchemas";
 
 export function generateTimestamps() {
   const randomMinutes = Math.floor(Math.random() * 60);
@@ -16,12 +16,11 @@ export function getRandomNumber() {
 }
 
 /* Objects */
-export const visitingHours: VisitingHours = [
+export const visitingHours: VisitingHoursType = [
   {
     dayId: "day-1",
     date: new Date("2025-01-15T00:00:00Z"),
     label: "Thursday",
-
     ranges: [
       { open: "10:00", close: "15:00" },
       { open: "18:00", close: "21:00" },
@@ -41,16 +40,6 @@ export const visitingHours: VisitingHours = [
     dayId: "day-3",
     date: new Date("2025-01-17T00:00:00Z"),
     label: "Saturday",
-
-    ranges: [
-      { open: "10:00", close: "15:00" },
-      { open: "18:00", close: "21:00" },
-    ],
-  },
-  {
-    dayId: "day-4",
-    date: new Date("2025-01-18T00:00:00Z"),
-    label: "Sunday",
 
     ranges: [
       { open: "10:00", close: "15:00" },

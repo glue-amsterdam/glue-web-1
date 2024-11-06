@@ -56,7 +56,7 @@ export default function UserMenu(): JSX.Element {
       <DropdownMenuContent align="end">
         {user && (
           <>
-            <DropdownMenuLabel>{`Hello, ${user.email}`}</DropdownMenuLabel>
+            <DropdownMenuLabel>{`Hello, ${user.userName}`}</DropdownMenuLabel>
             <DropdownMenuSeparator />
           </>
         )}

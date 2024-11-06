@@ -28,7 +28,6 @@ export const users: User[] = [
         invoiceExtra: "Extra data",
       },
     },
-
     mapInfo: {
       id: "place.1234",
       text: "Rijksmuseum",
@@ -52,9 +51,9 @@ export const users: User[] = [
     visibleEmail: ["press@vanmokum.com"],
     visibleWebsite: ["/members/vanmokum"],
     socialMedia: {
-      instagram: ["https://www.instagram.com/vanmokum/"],
-      facebook: ["https://www.facebook.com/VANMOKUM/"],
-      linkedin: ["https://www.linkedin.com/company/vanmokum"],
+      instagramLink: "https://www.instagramLink.com/vanmokum/",
+      facebookLink: "https://www.facebookLink.com/VANMOKUM/",
+      linkedinLink: "https://www.linkedinLink.com/company/vanmokum",
     },
     images: [
       {
@@ -133,9 +132,9 @@ export const users: User[] = [
     visibleEmail: ["press@vanmokum.com"],
     visibleWebsite: ["/members/vanmokum"],
     socialMedia: {
-      instagram: ["https://www.instagram.com/vanmokum/"],
-      facebook: ["https://www.facebook.com/VANMOKUM/"],
-      linkedin: ["https://www.linkedin.com/company/vanmokum"],
+      instagramLink: "https://www.instagramLink.com/vanmokum/",
+      facebookLink: "https://www.facebookLink.com/VANMOKUM/",
+      linkedinLink: "https://www.linkedinLink.com/company/vanmokum",
     },
     images: [
       {
@@ -212,9 +211,9 @@ export const users: User[] = [
     visibleEmail: ["info@studiojob.com"],
     visibleWebsite: ["/members/studio-job"],
     socialMedia: {
-      instagram: ["https://www.instagram.com/studiojob/"],
-      facebook: ["https://www.facebook.com/studiojobdesign/"],
-      linkedin: ["https://www.linkedin.com/company/studiojob"],
+      instagramLink: "https://www.instagramLink.com/studiojob/",
+      facebookLink: "https://www.facebookLink.com/studiojobdesign/",
+      linkedinLink: "https://www.linkedinLink.com/company/studiojob",
     },
     images: [
       {
@@ -291,9 +290,9 @@ export const users: User[] = [
     visibleEmail: ["info@studiorens.com"],
     visibleWebsite: ["/members/studio-rens"],
     socialMedia: {
-      instagram: ["https://www.instagram.com/studiorens/"],
-      facebook: ["https://www.facebook.com/studiorens/"],
-      linkedin: ["https://www.linkedin.com/company/studiorens"],
+      instagramLink: "https://www.instagramLink.com/studiorens/",
+      facebookLink: "https://www.facebookLink.com/studiorens/",
+      linkedinLink: "https://www.linkedinLink.com/company/studiorens",
     },
     images: [
       {
@@ -370,9 +369,9 @@ export const users: User[] = [
     visibleEmail: ["contact@ayilluminate.com"],
     visibleWebsite: ["/members/ay-illuminate"],
     socialMedia: {
-      instagram: ["https://www.instagram.com/ayilluminate/"],
-      facebook: ["https://www.facebook.com/ayilluminate/"],
-      linkedin: ["https://www.linkedin.com/company/ayilluminate"],
+      instagramLink: "https://www.instagramLink.com/ayilluminate/",
+      facebookLink: "https://www.facebookLink.com/ayilluminate/",
+      linkedinLink: "https://www.linkedinLink.com/company/ayilluminate",
     },
     images: [
       {
@@ -449,9 +448,9 @@ export const users: User[] = [
     visibleEmail: ["info@nlxl.com"],
     visibleWebsite: ["/members/nlxl"],
     socialMedia: {
-      instagram: ["https://www.instagram.com/nlxl/"],
-      facebook: ["https://www.facebook.com/NLXL/"],
-      linkedin: ["https://www.linkedin.com/company/nlxl"],
+      instagramLink: "https://www.instagramLink.com/nlxl/",
+      facebookLink: "https://www.facebookLink.com/NLXL/",
+      linkedinLink: "https://www.linkedinLink.com/company/nlxl",
     },
     images: [
       {
@@ -527,9 +526,9 @@ export const users: User[] = [
     visibleEmail: ["info@frama.com"],
     visibleWebsite: ["/members/frama"],
     socialMedia: {
-      instagram: ["https://www.instagram.com/frama/"],
-      facebook: ["https://www.facebook.com/frama/"],
-      linkedin: ["https://www.linkedin.com/company/frama"],
+      instagramLink: "https://www.instagramLink.com/frama/",
+      facebookLink: "https://www.facebookLink.com/frama/",
+      linkedinLink: "https://www.linkedinLink.com/company/frama",
     },
     images: [
       {

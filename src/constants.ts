@@ -163,9 +163,9 @@ export const MOCKUSER_ADMIN_PARTICIPANT: User = {
   visibleEmail: ["press@vanmokum.com"],
   visibleWebsite: ["/members/vanmokum"],
   socialMedia: {
-    instagram: ["https://www.instagram.com/vanmokum/"],
-    facebook: ["https://www.facebook.com/VANMOKUM/"],
-    linkedin: ["https://www.linkedin.com/company/vanmokum"],
+    instagramLink: "https://www.instagram.com/vanmokum/",
+    facebookLink: "https://www.facebook.com/VANMOKUM/",
+    linkedinLink: "https://www.linkedin.com/company/vanmokum",
   },
   images: [
     {

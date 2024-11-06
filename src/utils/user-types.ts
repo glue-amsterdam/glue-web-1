@@ -1,22 +1,13 @@
 import { ImageData } from "@/schemas/baseSchema";
+import { VisitingHoursType } from "@/schemas/usersSchemas";
 import { Event } from "@/utils/event-types";
 import { MapBoxPlace } from "@/utils/map-types";
-import { EventDay } from "@/utils/menu-types";
 import { InvoiceDataCall, PlanType } from "@/utils/sign-in.types";
 
-interface TimeRange {
-  open: string;
-  close: string;
-}
-
-type DayRange = EventDay & { ranges: TimeRange[] };
-
-export type VisitingHours = DayRange[];
-
-interface SocialMediaLinks {
-  instagram?: string[];
-  facebook?: string[];
-  linkedin?: string[];
+export interface SocialMediaLinks {
+  instagramLink?: string;
+  facebookLink?: string;
+  linkedinLink?: string;
 }
 
 type CuratedParticipantUser = {
@@ -72,7 +63,7 @@ export type ParticipantUser = {
   events?: Event[];
   description?: string;
   mapInfo: MapBoxPlace;
-  visitingHours?: VisitingHours;
+  visitingHours?: VisitingHoursType;
   phoneNumber?: string[];
   visibleEmail?: string[];
   visibleWebsite?: string[];

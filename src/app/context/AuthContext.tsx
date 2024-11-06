@@ -1,12 +1,17 @@
 "use client";
-
 import { MOCKUSER_ADMIN_PARTICIPANT } from "@/constants";
-import { User } from "@/utils/user-types";
 import { useRouter } from "next/navigation";
-import React, { createContext, useContext, useState, useCallback } from "react";
+import { LoggedInUserType } from "@/schemas/usersSchemas";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 
 type AuthContextType = {
-  user: User | null;
+  user: LoggedInUserType | null;
   isLoginModalOpen: boolean;
   loginError: string | null;
   login: (email: string, password: string) => Promise<void>;
@@ -20,22 +25,39 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<null | LoggedInUserType>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+
+  // Function to check if the user is already logged in
+  const checkLoggedInUser = () => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  };
+
+  useEffect(() => {
+    checkLoggedInUser();
+  }, []);
+
   const openLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
   const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
   const clearLoginError = useCallback(() => setLoginError(null), []);
+
+  const logout = useCallback(() => {
+    setUser(null);
+    localStorage.removeItem("user"); // Clear user data from localStorage
+    router.push("/");
+  }, [router]);
 
   const login = useCallback(
     async (email: string, password: string) => {
       try {
         setLoginError(null);
-        // Simulate an API call
         await new Promise((resolve) => setTimeout(resolve, 1000));
         console.log("Login attempt:", email, password);
 
-        // Check credentials against environment variables
         if (
           email === process.env.NEXT_PUBLIC_ADMIN_USERNAME &&
           password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD
@@ -44,9 +66,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!loggedInUser || !loggedInUser.userId) {
             throw new Error("Invalid user data");
           }
-          setUser(loggedInUser);
+          const { userId, userName, isMod, type } = loggedInUser;
+          const userData = { userId, userName, isMod, userType: type };
+
+          // Store user data in localStorage
+          localStorage.setItem("user", JSON.stringify(userData));
+          setUser(userData);
           closeLoginModal();
-          router.push(`/dashboard/${loggedInUser.userId}/member-data`);
+          router.push(`/dashboard/${userId}/member-data`);
+          // Set a timeout to log out the user after a certain period (e.g., 1 hour)
+          setTimeout(() => {
+            logout();
+          }, 3600000);
         } else {
           throw new Error("Invalid credentials");
         }
@@ -57,13 +88,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
     },
-    [router, closeLoginModal]
+    [router, closeLoginModal, logout]
   );
-
-  const logout = useCallback(() => {
-    setUser(null);
-    router.push("/");
-  }, [router]);
 
   return (
     <AuthContext.Provider
