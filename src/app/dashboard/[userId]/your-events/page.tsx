@@ -23,7 +23,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +44,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { eventSchema } from "@/schemas/eventSchemas";
+import { RichTextEditor } from "@/app/components/editor";
 
 export default function Component() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -160,7 +160,7 @@ export default function Component() {
                             <FormControl>
                               <select
                                 {...field}
-                                className="w-full p-2 rounded-md"
+                                className="w-full p-2 rounded-md border"
                               >
                                 {EVENT_TYPES.map((type) => (
                                   <option key={type} value={type}>
@@ -306,11 +306,14 @@ export default function Component() {
                         control={form.control}
                         name="description"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Description</FormLabel>
-                            <FormControl>
-                              <Textarea {...field} />
-                            </FormControl>
+                          <FormItem className="dashboard-form-item">
+                            <FormLabel className="dashboard-label">
+                              Description
+                            </FormLabel>
+                            <RichTextEditor
+                              value={field.value}
+                              onChange={field.onChange}
+                            />
                             <FormMessage />
                           </FormItem>
                         )}

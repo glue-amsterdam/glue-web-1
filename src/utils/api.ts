@@ -152,3 +152,14 @@ export const fetchSponsors = cache(async (): Promise<Sponsor[]> => {
   if (!res.ok) throw new Error("Failed to fetch sponsors");
   return res.json();
 });
+
+/* SLUG-CHECK */
+export const fetchSlugCheck = async (
+  slug: string
+): Promise<{ isUnique: boolean }> => {
+  const res = await fetch(
+    `${BASE_URL}/checkslug?slug=${encodeURIComponent(slug)}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch slug check");
+  return res.json();
+};

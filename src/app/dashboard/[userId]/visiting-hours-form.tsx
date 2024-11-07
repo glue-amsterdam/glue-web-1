@@ -7,6 +7,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { visitingHoursSchema } from "@/schemas/usersSchemas";
 import { useEventsDays } from "@/app/context/MainContext";
+import { XIcon } from "lucide-react";
 
 export type VisitingHoursType = z.infer<typeof visitingHoursSchema>;
 
@@ -34,7 +35,6 @@ export default function VisitingHoursForm({
     reset({ visitingHours: value });
   }, [value, reset]);
 
-  // Watch for changes and update the parent form
   const watchingVisitingHours = watch("visitingHours");
   useEffect(() => {
     if (isDirty) {
@@ -71,10 +71,22 @@ function DayField({
   });
 
   return (
-    <div className="border p-4 rounded-md">
+    <div className="border p-4 rounded-md text-center">
       <h3 className="font-semibold mb-2">{day.label}</h3>
       {fields.map((field, index) => (
-        <div key={field.id} className="flex items-center space-x-4 mt-2">
+        <div
+          key={field.id}
+          className="flex items-center justify-center flex-wrap space-x-4 mt-2"
+        >
+          <Button
+            type="button"
+            onClick={() => remove(index)}
+            variant="destructive"
+            size="sm"
+            className="mt-6"
+          >
+            <XIcon className="size-4" />
+          </Button>
           <Controller
             name={`visitingHours.${dayIndex}.ranges.${index}.open` as const}
             control={control}
@@ -85,13 +97,13 @@ function DayField({
                   htmlFor={`start-time-${dayIndex}-${index}`}
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Open Time
+                  Open
                 </label>
                 <input
                   {...field}
                   type="time"
                   id={`start-time-${dayIndex}-${index}`}
-                  className="mt-1 text-black block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                  className="mt-1 text-black block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 />
               </div>
             )}
@@ -107,7 +119,7 @@ function DayField({
                   htmlFor={`end-time-${dayIndex}-${index}`}
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Close Time
+                  Close
                 </label>
                 <input
                   {...field}
@@ -118,16 +130,6 @@ function DayField({
               </div>
             )}
           />
-
-          <Button
-            type="button"
-            onClick={() => remove(index)}
-            variant="destructive"
-            size="sm"
-            className="mt-6"
-          >
-            Remove
-          </Button>
         </div>
       ))}
       <Button
@@ -136,6 +138,7 @@ function DayField({
         variant="outline"
         size="sm"
         className="mt-2 text-black"
+        disabled={fields.length >= 2}
       >
         Add Time Range
       </Button>

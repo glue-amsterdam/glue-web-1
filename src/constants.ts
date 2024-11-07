@@ -24,8 +24,8 @@ import {
 
 export const USER_DASHBOARD_SECTIONS = [
   {
-    href: `member-data`,
-    label: "Member Data",
+    href: `user-data`,
+    label: "User Data",
     icon: UserRoundPen,
   },
   {

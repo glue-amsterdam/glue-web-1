@@ -44,10 +44,11 @@ export type VisitingHoursType = z.infer<typeof visitingHoursSchema>;
 
 export const apiParticipantSchema = z.object({
   userId: z.string(),
+  planId: z.string(),
   updatedAd: z.string().datetime(),
   createdAt: z.string().datetime(),
   mapId: z.string(),
-  images: z.array(imageDataSchema),
+  images: z.array(imageDataSchema).max(3, "You can add up to 3 images"),
   slug: z
     .string()
     .regex(

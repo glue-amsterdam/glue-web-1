@@ -51,7 +51,7 @@ export default function MobileSheet({
           />
           <MobileNavMenu navItems={navItems} />
 
-          <UserMenuItems />
+          <UserMenuItems setIsOpen={setIsOpen} />
           <div className="pt-4 border-t">
             <SocialIcons />
           </div>

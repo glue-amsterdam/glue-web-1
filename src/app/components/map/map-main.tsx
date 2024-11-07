@@ -17,6 +17,7 @@ import { motion } from "framer-motion";
 import LoginForm from "../login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
 import { NAVBAR_HEIGHT } from "@/constants";
+import { useRouter } from "next/navigation";
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false);
@@ -42,21 +43,19 @@ export default function MapMain({
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
   const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
+  const router = useRouter();
 
-  const { user, login } = useAuth();
+  const { user } = useAuth();
 
   const handleGroupSelect = (group: LocationGroup) => {
     if (group.protected && !user) {
       setIsLoginModalOpen(true);
     }
   };
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      await login(email, password);
-      setIsLoginModalOpen(false);
-    } catch (error) {
-      console.error("Login failed:", error);
-    }
+
+  const handleLoginSuccess = () => {
+    setIsLoginModalOpen(false);
+    router.refresh();
   };
 
   const handleLocationSelect = (
@@ -167,7 +166,6 @@ export default function MapMain({
       </div>
     ) : null;
   };
-
   return (
     <motion.main
       initial={{ opacity: 0, y: 120 }}
@@ -227,7 +225,7 @@ export default function MapMain({
       <LoginForm
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
-        onLogin={handleLogin}
+        onLoginSuccess={handleLoginSuccess}
       />
     </motion.main>
   );

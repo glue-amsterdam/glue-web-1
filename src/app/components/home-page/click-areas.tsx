@@ -8,12 +8,13 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useMenu } from "@/app/context/MainContext";
 import CenteredLoader from "@/app/components/centered-loader";
 import { MainSection } from "@/utils/menu-types";
+import { LoggedInUserType } from "@/schemas/usersSchemas";
 
 function ClickAreas() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const router = useRouter();
 
-  const { user, login } = useAuth();
+  const { user } = useAuth();
   const mainMenu = useMenu();
 
   const handleAreaClick = (
@@ -21,21 +22,18 @@ function ClickAreas() {
     href: string,
     requiresAuth: boolean
   ) => {
+    e.preventDefault();
     if (requiresAuth && !user) {
       setIsLoginModalOpen(true);
+    } else if (requiresAuth && user?.userId) {
+      router.push(`/dashboard/${user.userId}/user-data`);
     } else {
       router.push(href);
     }
   };
 
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      await login(email, password);
-      setIsLoginModalOpen(false);
-      router.push(`/dashboard/${user?.userId}/member-data`);
-    } catch (error) {
-      console.error("Login failed:", error);
-    }
+  const handleLoginSuccess = (user: LoggedInUserType) => {
+    router.push(`/dashboard/${user.userId}/user-data`);
   };
 
   const orderedSections = ["dashboard", "about", "events", "map"];
@@ -60,7 +58,7 @@ function ClickAreas() {
               className={`absolute hover:bg-white/10 transition-all duration-300 ${area.className}`}
             >
               <Link
-                href={``}
+                href={`#`}
                 onClick={(e) =>
                   handleAreaClick(
                     e,
@@ -79,7 +77,7 @@ function ClickAreas() {
       <LoginForm
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
-        onLogin={handleLogin}
+        onLoginSuccess={handleLoginSuccess}
       />
     </nav>
   );

@@ -14,7 +14,7 @@ type AuthContextType = {
   user: LoggedInUserType | null;
   isLoginModalOpen: boolean;
   loginError: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<LoggedInUserType>;
   logout: () => void;
   openLoginModal: () => void;
   closeLoginModal: () => void;
@@ -29,17 +29,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  // Function to check if the user is already logged in
-  const checkLoggedInUser = () => {
+  const checkLoggedInUser = useCallback(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-  };
+  }, []);
 
   useEffect(() => {
     checkLoggedInUser();
-  }, []);
+  }, [checkLoggedInUser]);
 
   const openLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
   const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
@@ -47,12 +46,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(() => {
     setUser(null);
-    localStorage.removeItem("user"); // Clear user data from localStorage
+    localStorage.removeItem("user");
     router.push("/");
   }, [router]);
 
   const login = useCallback(
-    async (email: string, password: string) => {
+    async (email: string, password: string): Promise<LoggedInUserType> => {
       try {
         setLoginError(null);
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -69,15 +68,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const { userId, userName, isMod, type } = loggedInUser;
           const userData = { userId, userName, isMod, userType: type };
 
-          // Store user data in localStorage
           localStorage.setItem("user", JSON.stringify(userData));
           setUser(userData);
           closeLoginModal();
-          router.push(`/dashboard/${userId}/member-data`);
-          // Set a timeout to log out the user after a certain period (e.g., 1 hour)
           setTimeout(() => {
             logout();
           }, 3600000);
+          return userData;
         } else {
           throw new Error("Invalid credentials");
         }
@@ -88,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
     },
-    [router, closeLoginModal, logout]
+    [closeLoginModal, logout]
   );
 
   return (

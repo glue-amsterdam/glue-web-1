@@ -12,15 +12,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CiUser } from "react-icons/ci";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import LoginForm from "../login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
+import { LoggedInUserType } from "@/schemas/usersSchemas";
 
 export default function UserMenu(): JSX.Element {
   const router = useRouter();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const { user, logout, login } = useAuth();
+  const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -31,18 +33,18 @@ export default function UserMenu(): JSX.Element {
     }
   };
 
-  const handleLoginModal = () => {
-    if (!user) {
-      setIsLoginModalOpen(true);
-    }
+  const handleLoginModal = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsLoginModalOpen(true);
   };
 
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      await login(email, password);
-      setIsLoginModalOpen(false);
-    } catch (error) {
-      console.error("Login failed:", error);
+  const handleLoginSuccess = (user: LoggedInUserType) => {
+    setIsLoginModalOpen(false);
+    if (pathname === "/") {
+      router.push(`/dashboard/${user.userId}/user-data`);
+    } else {
+      router.refresh();
     }
   };
 
@@ -65,10 +67,9 @@ export default function UserMenu(): JSX.Element {
           {user ? (
             <>
               <DropdownMenuItem>
-                <Link href="/profile">Profile</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href="/settings">Settings</Link>
+                <Link href={`/dashboard/${user.userId}/user-data`}>
+                  Dashboard
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={handleLogout}>
                 Log Out
@@ -89,7 +90,7 @@ export default function UserMenu(): JSX.Element {
       <LoginForm
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
-        onLogin={handleLogin}
+        onLoginSuccess={handleLoginSuccess}
       />
     </DropdownMenu>
   );

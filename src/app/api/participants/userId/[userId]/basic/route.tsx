@@ -32,6 +32,7 @@ export async function GET(
     visibleWebsite,
     socialMedia,
     updatedAt,
+    planId,
   } = filteredUser[0];
 
   const { id, place_name } = mapInfo;
@@ -48,6 +49,7 @@ export async function GET(
     createdAt,
     images,
     slug,
+    planId,
     userName,
     shortDescription,
     description,

@@ -2,15 +2,20 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { SheetClose } from "@/components/ui/sheet";
 import LoginForm from "../login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
+import { LoggedInUserType } from "@/schemas/usersSchemas";
 
-export default function UserMenuItems(): JSX.Element {
+export default function UserMenuItems({
+  setIsOpen,
+}: {
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+}): JSX.Element {
   const router = useRouter();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const { user, logout, login } = useAuth();
+  const { user, logout } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -21,33 +26,25 @@ export default function UserMenuItems(): JSX.Element {
     }
   };
 
-  const handleLoginModal = () => {
-    if (!user) {
-      setIsLoginModalOpen(true);
-    }
+  const handleLoginModal = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsLoginModalOpen(true);
   };
 
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      await login(email, password);
-      setIsLoginModalOpen(false);
-    } catch (error) {
-      console.error("Login failed:", error);
-    }
+  const handleLoginSuccess = (user: LoggedInUserType) => {
+    setIsLoginModalOpen(false);
+    setIsOpen(false);
+    router.push(`/dashboard/${user.userId}/user-data`);
+  };
+
+  const handleCloseLoginModal = () => {
+    setIsLoginModalOpen(false);
   };
 
   if (user) {
     return (
       <div className="space-y-2">
-        <SheetClose asChild>
-          <Link
-            href="/dashboard"
-            className="block px-2 py-1 hover:bg-accent rounded-md"
-          >
-            Dashboard
-          </Link>
-        </SheetClose>
-
         <SheetClose asChild>
           <button
             onClick={handleLogout}
@@ -62,12 +59,12 @@ export default function UserMenuItems(): JSX.Element {
 
   return (
     <div className="space-y-2">
-      <div
+      <button
         onClick={handleLoginModal}
-        className="block px-2 py-1 hover:bg-accent rounded-md"
+        className="block w-full text-left px-2 py-1 hover:bg-accent rounded-md"
       >
         Log In
-      </div>
+      </button>
 
       <SheetClose asChild>
         <Link
@@ -79,8 +76,8 @@ export default function UserMenuItems(): JSX.Element {
       </SheetClose>
       <LoginForm
         isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onLogin={handleLogin}
+        onClose={handleCloseLoginModal}
+        onLoginSuccess={handleLoginSuccess}
       />
     </div>
   );

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -24,16 +23,20 @@ import {
   formParticipantSchema,
   VisitingHoursType,
 } from "@/schemas/usersSchemas";
+import { ImageData } from "@/schemas/baseSchema";
+import { useDebounce } from "use-debounce";
+import { useEffect, useState, useCallback } from "react";
+import { fetchSlugCheck } from "@/utils/api";
+import { RichTextEditor } from "@/app/components/editor";
 
 export default function ParticipantBaseDashboardForm({
   participantBaseData,
 }: {
   participantBaseData: ApiParticipantBaseType;
 }) {
-  console.log(participantBaseData);
-  const [images, setImages] = useState<string[]>(
-    participantBaseData.images.map((img) => img.imageUrl)
-  );
+  const [isChecking, setIsChecking] = useState(false);
+  const [isUnique, setIsUnique] = useState(true);
+
   const form = useForm({
     resolver: zodResolver(formParticipantSchema),
     defaultValues: {
@@ -48,25 +51,71 @@ export default function ParticipantBaseDashboardForm({
       visitingHours: participantBaseData.visitingHours || [],
       phoneNumber: participantBaseData.phoneNumber || [],
       visibleWebsite: participantBaseData.visibleWebsite || [],
+      visibleEmail: participantBaseData.visibleEmail || [],
       socialMedia: participantBaseData.socialMedia || {
         facebookLink: "",
         instagramLink: "",
         linkedinLink: "",
       },
-      visibleEmail: participantBaseData.visibleEmail || [],
     },
   });
 
-  function onSubmit(values: z.infer<typeof formParticipantSchema>) {
-    const cleanedValues = {
-      ...values,
-      phoneNumber: values.phoneNumber.filter((phone) => phone.trim() !== ""),
-      visibleEmail: values.visibleEmail.filter((email) => email.trim() !== ""),
-      visibleWebsite: values.visibleWebsite.filter((web) => web.trim() !== ""),
-    };
+  const onSubmit = (values: z.infer<typeof formParticipantSchema>) => {
+    if (isUnique) {
+      const cleanedValues = {
+        ...values,
+        phoneNumber: values.phoneNumber.filter((phone) => phone.trim() !== ""),
+        visibleEmail: values.visibleEmail.filter(
+          (email) => email.trim() !== ""
+        ),
+        visibleWebsite: values.visibleWebsite.filter(
+          (web) => web.trim() !== ""
+        ),
+      };
 
-    console.log(cleanedValues);
-  }
+      console.log(cleanedValues);
+    }
+  };
+
+  const [debouncedSlug] = useDebounce(form.watch("slug"), 500);
+
+  const checkSlug = useCallback(
+    async (slug: string) => {
+      if (typeof slug !== "string" || slug.trim() === "") {
+        console.error("Invalid slug provided:", slug);
+        return;
+      }
+      if (slug !== participantBaseData.slug) {
+        setIsChecking(true);
+        try {
+          const data = await fetchSlugCheck(slug);
+          setIsUnique(data.isUnique);
+          if (!data.isUnique) {
+            form.setError("slug", {
+              type: "manual",
+              message: "This slug is not unique, please choose another one.",
+            });
+          } else {
+            form.clearErrors("slug");
+          }
+        } catch (error) {
+          console.error("Error checking slug uniqueness:", error);
+          form.setError("slug", {
+            type: "manual",
+            message: "Error checking slug uniqueness, please try again.",
+          });
+        } finally {
+          setIsChecking(false);
+        }
+      }
+    },
+    [form, participantBaseData.slug]
+  );
+
+  useEffect(() => {
+    checkSlug(debouncedSlug);
+  }, [debouncedSlug, checkSlug]);
+
   return (
     <motion.div {...fadeInConfig}>
       <Form {...form}>
@@ -82,42 +131,74 @@ export default function ParticipantBaseDashboardForm({
                 render={({ field }) => (
                   <FormItem className="dashboard-form-item">
                     <FormLabel className="dashboard-label">
-                      Images (Max 3)
+                      Images
+                      <span className="text-xs tracking-normal">
+                        (Depending on your plan type, up to a maximum of 3.)
+                      </span>
                     </FormLabel>
                     <FormControl>
-                      <div className="flex flex-wrap gap-4">
-                        {images.map((image, index) => (
+                      <div className="flex flex-wrap gap-4 justify-center">
+                        {field.value.slice(0, 3).map((image, index) => (
                           <div
-                            key={index + image}
+                            key={image.id}
                             className="relative h-40 w-40 overflow-hidden rounded-lg"
                           >
                             <img
-                              src={image}
-                              alt={`Uploaded ${index + 1}`}
+                              src={image.imageUrl}
+                              alt={image.alt}
                               className="absolute inset-0 object-cover w-full h-full"
                             />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-2 right-2"
+                              onClick={() => {
+                                const newImages = field.value.filter(
+                                  (_, i) => i !== index
+                                );
+                                form.setValue("images", newImages);
+                              }}
+                            >
+                              Remove
+                            </Button>
                           </div>
                         ))}
-                        {images.length < 3 && (
+                        {field.value.length < 3 && (
                           <Button
                             type="button"
                             onClick={() => {
-                              const newImage = `/placeholders/user-placeholder-1.jpg`;
-                              setImages([...images, newImage]);
-                              field.onChange([...images, newImage]);
+                              if (field.value.length < 3) {
+                                const newImage: ImageData = {
+                                  id: `image-${Date.now()}`,
+                                  imageUrl: `/placeholders/placeholder-${
+                                    field.value.length + 1
+                                  }.jpg`,
+                                  alt: `Imagen ${field.value.length + 1}`,
+                                  imageName: `placeholder-${
+                                    field.value.length + 1
+                                  }.jpg`,
+                                  createdAt: new Date(),
+                                  updatedAt: new Date(),
+                                };
+                                form.setValue("images", [
+                                  ...field.value,
+                                  newImage,
+                                ]);
+                              }
                             }}
                             className="h-40 w-40 flex items-center justify-center"
                           >
-                            Add Image
+                            Add image
                           </Button>
                         )}
                       </div>
                     </FormControl>
+                    <FormDescription>{`Click "Add Image" to select up to 3 images for your event.`}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="slug"
@@ -125,14 +206,39 @@ export default function ParticipantBaseDashboardForm({
                   <FormItem className="dashboard-form-item">
                     <FormLabel className="dashboard-label">Slug</FormLabel>
                     <FormControl>
-                      <Input
-                        className="dashboard-input"
-                        placeholder="your-slug"
-                        {...field}
-                      />
+                      <div className="relative">
+                        <Input
+                          className="dashboard-input pr-10"
+                          placeholder="your-slug"
+                          {...field}
+                        />
+                        {isChecking && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-gray-900"></div>
+                          </div>
+                        )}
+                        {!isChecking && isUnique && field.value && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                            <svg
+                              className="h-5 w-5 text-green-500"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
                     </FormControl>
                     <FormDescription className="text-uiwhite text-xs">
-                      Only letters, numbers, and hyphens are allowed
+                      Only letters, numbers, and hyphens are allowed.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -152,7 +258,6 @@ export default function ParticipantBaseDashboardForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="shortDescription"
@@ -172,9 +277,6 @@ export default function ParticipantBaseDashboardForm({
                   </FormItem>
                 )}
               />
-            </div>
-
-            <div className="space-y-8">
               <FormField
                 control={form.control}
                 name="description"
@@ -183,18 +285,17 @@ export default function ParticipantBaseDashboardForm({
                     <FormLabel className="dashboard-label">
                       Description
                     </FormLabel>
-                    <FormControl>
-                      <Textarea
-                        className="dashboard-input"
-                        placeholder="The description"
-                        {...field}
-                      />
-                    </FormControl>
+                    <RichTextEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
               />
+            </div>
 
+            <div className="space-y-8">
               <FormField
                 control={form.control}
                 name="mapPlaceName"
@@ -413,7 +514,10 @@ export default function ParticipantBaseDashboardForm({
             </div>
           </div>
 
-          <Button type="submit" className="w-full md:w-auto">
+          <Button
+            type="submit"
+            className="w-full hover:tracking-widest md:w-auto py-10 md:py-7 md:px-14 bg-uiwhite text-black font-bold hover:scale-110 hover:bg-uiwhite/80 transition-all"
+          >
             Save Changes
           </Button>
         </form>

@@ -15,7 +15,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -30,6 +29,7 @@ import { useEventsDays } from "@/app/context/MainContext";
 import { eventSchema, eventDaySchema } from "@/schemas/eventSchemas";
 import { Event, RSVPOptionalEvent } from "@/utils/event-types";
 import useLoggedTargetUsers from "@/app/hooks/useLoggedTargetUsers";
+import { RichTextEditor } from "@/app/components/editor";
 
 export default function CreateEventClientPage() {
   const { loggedInUser, targetUserId } = useLoggedTargetUsers();
@@ -200,13 +200,10 @@ export default function CreateEventClientPage() {
                     <FormLabel className="dashboard-label">
                       Description
                     </FormLabel>
-                    <FormControl>
-                      <Textarea
-                        className="dashboard-input"
-                        placeholder="Enter event description"
-                        {...field}
-                      />
-                    </FormControl>
+                    <RichTextEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}

@@ -47,8 +47,8 @@ export const users: User[] = [
       ...generateTimestamps(),
     },
     visitingHours: visitingHours,
-    phoneNumber: ["+31 (0)20 21 03 101"],
-    visibleEmail: ["press@vanmokum.com"],
+    phoneNumber: ["+31 (0)20 21 03 101", "+31 (0)20 21 03 101"],
+    visibleEmail: ["press@vanmokum.com", "press@vanmokum.com"],
     visibleWebsite: ["/members/vanmokum"],
     socialMedia: {
       instagramLink: "https://www.instagramLink.com/vanmokum/",
