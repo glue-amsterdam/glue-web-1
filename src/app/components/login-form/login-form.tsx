@@ -26,6 +26,7 @@ import { motion } from "framer-motion";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import { FormDataWithEmail, loginSchemaWithEmail } from "@/schemas/loginSchema";
 import { LoggedInUserType } from "@/schemas/usersSchemas";
+import Link from "next/link";
 
 interface LoginFormProps {
   isOpen: boolean;
@@ -149,7 +150,7 @@ export default function LoginForm({
                 variant="outline"
                 className="w-full text-black"
               >
-                Sign up
+                <Link href="signup/?step=1">Sign up</Link>
               </Button>
             </div>
             <div className="text-center">

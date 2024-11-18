@@ -81,7 +81,7 @@ export default function UserMenu(): JSX.Element {
                 Log In
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Link href="/signup">Sign Up</Link>
+                <Link href="/signup?step=1">Sign Up</Link>
               </DropdownMenuItem>
             </>
           )}

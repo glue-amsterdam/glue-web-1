@@ -68,7 +68,7 @@ export default function UserMenuItems({
 
       <SheetClose asChild>
         <Link
-          href="/signup"
+          href="/signup?step=1"
           className="block px-2 py-1 hover:bg-accent rounded-md"
         >
           Sign Up
