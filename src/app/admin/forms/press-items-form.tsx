@@ -1,157 +1,179 @@
 "use client";
 
-import { useFormContext, useFieldArray } from "react-hook-form";
+import { useEffect } from "react";
+import { useForm, useFieldArray, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PressItem, PressItemsSectionContent } from "@/utils/about-types";
 import { PlusCircle, X } from "lucide-react";
+import { z } from "zod";
+import { placeholderImage } from "@/mockConstants";
+import { EMPTY_IMAGE } from "@/constants";
+import { pressItemsSectionSchema } from "@/schemas/baseSchema";
 
-type FormData = {
-  aboutSection: {
-    pressItemsSection: PressItemsSectionContent;
-  };
-};
+type PressItemsSection = z.infer<typeof pressItemsSectionSchema>;
 
 export default function PressItemsForm() {
+  const methods = useForm<PressItemsSection>({
+    resolver: zodResolver(pressItemsSectionSchema),
+  });
+
   const {
     register,
     control,
+    handleSubmit,
+    setValue,
     watch,
     formState: { errors },
-  } = useFormContext<FormData>();
+  } = methods;
 
   const { fields, update } = useFieldArray({
     control,
-    name: "aboutSection.pressItemsSection.pressItems",
+    name: "pressItems",
   });
 
-  const addImage = (index: number) => {
-    const newImage = {
-      id: `${Date.now()}-${index}`,
-      src: `/placeholders/placeholder-${index + 1}.jpg`,
-      alt: "Image from GLUE design route",
-    };
+  useEffect(() => {
+    // Fetch press items section content
+    fetch("/api/about")
+      .then((res) => res.json())
+      .then((data) => {
+        setValue("title", data.pressItemsSection.title);
+        setValue("description", data.pressItemsSection.description);
+        setValue("pressItems", data.pressItemsSection.pressItems);
+      });
+  }, [setValue]);
 
-    const currentField = fields[index] as PressItem;
+  const onSubmit = async (data: PressItemsSection) => {
+    console.log(data);
+    // Uncomment when ready to submit to API
+    /* await fetch("/api/press-items-section", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }); */
+  };
+
+  const addImage = (index: number) => {
+    const currentField = fields[index];
     update(index, {
       ...currentField,
-      image: newImage,
+      image: placeholderImage,
     });
   };
 
   const removeImage = (index: number) => {
-    const currentField = fields[index] as PressItem;
+    const currentField = fields[index];
     update(index, {
       ...currentField,
-      image: {
-        id: "",
-        src: "",
-        alt: "",
-      },
+      image: EMPTY_IMAGE,
     });
   };
 
-  const watchedFields = watch(`aboutSection.pressItemsSection.pressItems`);
+  const watchedFields = watch("pressItems");
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        <Label htmlFor="title">Title</Label>
-        <Input
-          id="title"
-          {...register("aboutSection.pressItemsSection.title", {
-            required: "Title is required",
-          })}
-          placeholder="Section Title"
-        />
-        {errors.aboutSection?.pressItemsSection?.title && (
-          <p className="text-red-500">
-            {errors.aboutSection.pressItemsSection.title.message}
-          </p>
-        )}
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          {...register("aboutSection.pressItemsSection.description", {
-            required: "Description is required",
-          })}
-          placeholder="Section Description"
-        />
-        {errors.aboutSection?.pressItemsSection?.description && (
-          <p className="text-red-500">
-            {errors.aboutSection.pressItemsSection.description.message}
-          </p>
-        )}
-      </div>
-      <div className="space-y-4">
-        {fields.map((field, index) => {
-          const currentImage = watchedFields?.[index]?.image;
-          const hasValidImage = currentImage?.src && currentImage.src !== "";
+    <FormProvider {...methods}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              {...register("title")}
+              placeholder="Section Title"
+            />
+            {errors.title && (
+              <p className="text-red-500">{errors.title.message}</p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              {...register("description")}
+              placeholder="Section Description"
+            />
+            {errors.description && (
+              <p className="text-red-500">{errors.description.message}</p>
+            )}
+          </div>
+        </div>
+        <div className="space-y-4">
+          {fields.map((field, index) => {
+            const currentImage = watchedFields[index]?.image;
+            const hasValidImage =
+              currentImage?.imageUrl && currentImage.imageUrl !== "";
 
-          return (
-            <div
-              key={field.id}
-              className="flex flex-col space-y-2 p-4 bg-green-50 rounded-lg"
-            >
-              <Label>Title</Label>
-              <Input
-                {...register(
-                  `aboutSection.pressItemsSection.pressItems.${index}.title`
+            return (
+              <div
+                key={field.id}
+                className="flex flex-col space-y-2 p-4 bg-green-50 rounded-lg"
+              >
+                <Label>Title</Label>
+                <Input
+                  {...register(`pressItems.${index}.title`)}
+                  placeholder="Title"
+                />
+                {errors.pressItems?.[index]?.title && (
+                  <p className="text-red-500">
+                    {errors.pressItems[index]?.title?.message}
+                  </p>
                 )}
-                placeholder="Title"
-              />
 
-              <div>
-                <Label>Image</Label>
-                <div className="relative">
-                  {hasValidImage ? (
-                    <>
-                      <img
-                        src={currentImage.src}
-                        alt={currentImage.alt}
-                        className="w-full h-40 object-cover rounded-md"
-                      />
-                      <Input
-                        {...register(
-                          `aboutSection.pressItemsSection.pressItems.${index}.image.alt`
-                        )}
-                        placeholder="Image alt text"
-                        className="mt-1"
-                      />
+                <div>
+                  <Label>Image</Label>
+                  <div className="relative">
+                    {hasValidImage ? (
+                      <>
+                        <img
+                          src={currentImage.imageUrl}
+                          alt={currentImage.alt}
+                          className="w-full h-40 object-cover rounded-md"
+                        />
+                        <Input
+                          {...register(`pressItems.${index}.image.alt`)}
+                          placeholder="Image alt text"
+                          className="mt-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2"
+                          onClick={() => removeImage(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </>
+                    ) : (
                       <Button
                         type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-2 right-2"
-                        onClick={() => removeImage(index)}
+                        onClick={() => addImage(index)}
+                        className="w-full h-40 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md hover:border-gray-400 transition-colors"
                       >
-                        <X className="h-4 w-4" />
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Image
                       </Button>
-                    </>
-                  ) : (
-                    <Button
-                      type="button"
-                      onClick={() => addImage(index)}
-                      className="w-full h-40 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md hover:border-gray-400 transition-colors"
-                    >
-                      <PlusCircle className="mr-2 h-4 w-4" /> Add Image
-                    </Button>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-              <Label>Description</Label>
-              <Textarea
-                {...register(
-                  `aboutSection.pressItemsSection.pressItems.${index}.description`
+                <Label>Description</Label>
+                <Textarea
+                  {...register(`pressItems.${index}.description`)}
+                  placeholder="Description"
+                />
+                {errors.pressItems?.[index]?.description && (
+                  <p className="text-red-500">
+                    {errors.pressItems[index]?.description?.message}
+                  </p>
                 )}
-                placeholder="Description"
-              />
-            </div>
-          );
-        })}
-      </div>
-    </div>
+              </div>
+            );
+          })}
+        </div>
+        <Button type="submit">Save Changes</Button>
+      </form>
+    </FormProvider>
   );
 }

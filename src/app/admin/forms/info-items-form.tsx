@@ -1,158 +1,179 @@
 "use client";
 
-import { useFormContext, useFieldArray } from "react-hook-form";
+import { useEffect } from "react";
+import { useForm, useFieldArray, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { InfoSectionContent, InfoItem } from "@/utils/about-types";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, X } from "lucide-react";
+import { z } from "zod";
+import { EMPTY_IMAGE } from "@/constants";
+import { placeholderImage } from "@/mockConstants";
+import { infoItemsSectionSchema } from "@/schemas/baseSchema";
 
-type FormData = {
-  aboutSection: {
-    infoItemsSection: InfoSectionContent;
-  };
-};
+type InfoSection = z.infer<typeof infoItemsSectionSchema>;
 
 export default function InfoItemsForm() {
+  const methods = useForm<InfoSection>({
+    resolver: zodResolver(infoItemsSectionSchema),
+  });
+
   const {
     register,
     control,
+    handleSubmit,
+    setValue,
     watch,
     formState: { errors },
-  } = useFormContext<FormData>();
+  } = methods;
 
   const { fields, update } = useFieldArray({
     control,
-    name: "aboutSection.infoItemsSection.infoItems",
+    name: "infoItems",
   });
 
-  const addImage = (index: number) => {
-    const newImage = {
-      id: `${Date.now()}-${index}`,
-      src: `/placeholders/placeholder-${index + 1}.jpg`,
-      alt: "Image from GLUE design route",
-    };
+  useEffect(() => {
+    // Fetch info items section content
+    fetch("/api/about")
+      .then((res) => res.json())
+      .then((data) => {
+        setValue("title", data.infoItemsSection.title);
+        setValue("description", data.infoItemsSection.description);
+        setValue("infoItems", data.infoItemsSection.infoItems);
+      });
+  }, [setValue]);
 
-    const currentField = fields[index] as InfoItem;
+  const onSubmit = async (data: InfoSection) => {
+    console.log(data);
+    // Uncomment when ready to submit to API
+    /* await fetch("/api/info-items-section", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }); */
+  };
+
+  const addImage = (index: number) => {
+    const currentField = fields[index];
     update(index, {
       ...currentField,
-      image: newImage,
+      image: placeholderImage,
     });
   };
 
   const removeImage = (index: number) => {
-    const currentField = fields[index] as InfoItem;
+    const currentField = fields[index];
     update(index, {
       ...currentField,
-      image: {
-        id: "",
-        src: "",
-        alt: "",
-      },
+      image: EMPTY_IMAGE,
     });
   };
 
-  /* Watch the fields to ensure reactive updates */
-  const watchedFields = watch(`aboutSection.infoItemsSection.infoItems`);
+  const watchedFields = watch("infoItems");
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        <Label htmlFor="title">Title</Label>
-        <Input
-          id="title"
-          {...register("aboutSection.infoItemsSection.title", {
-            required: "Title is required",
-          })}
-          placeholder="Section Title"
-        />
-        {errors.aboutSection?.infoItemsSection?.title && (
-          <p className="text-red-500">
-            {errors.aboutSection.infoItemsSection.title.message}
-          </p>
-        )}
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          {...register("aboutSection.infoItemsSection.description", {
-            required: "Description is required",
-          })}
-          placeholder="Section Description"
-        />
-        {errors.aboutSection?.infoItemsSection?.description && (
-          <p className="text-red-500">
-            {errors.aboutSection.infoItemsSection.description.message}
-          </p>
-        )}
-      </div>
-      <div className="space-y-4">
-        {fields.map((field, index) => {
-          const currentImage = watchedFields?.[index]?.image;
-          const hasValidImage = currentImage?.src && currentImage.src !== "";
+    <FormProvider {...methods}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              {...register("title")}
+              placeholder="Section Title"
+            />
+            {errors.title && (
+              <p className="text-red-500">{errors.title.message}</p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              {...register("description")}
+              placeholder="Section Description"
+            />
+            {errors.description && (
+              <p className="text-red-500">{errors.description.message}</p>
+            )}
+          </div>
+        </div>
+        <div className="space-y-4">
+          {fields.map((field, index) => {
+            const currentImage = watchedFields[index]?.image;
+            const hasValidImage =
+              currentImage?.imageUrl && currentImage.imageUrl !== "";
 
-          return (
-            <div
-              key={field.id}
-              className="flex flex-col space-y-2 p-4 bg-green-50 rounded-lg"
-            >
-              <Label>Title</Label>
-              <Input
-                {...register(
-                  `aboutSection.infoItemsSection.infoItems.${index}.title`
+            return (
+              <div
+                key={field.id}
+                className="flex flex-col space-y-2 p-4 bg-green-50 rounded-lg"
+              >
+                <Label>Title</Label>
+                <Input
+                  {...register(`infoItems.${index}.title`)}
+                  placeholder="Title"
+                />
+                {errors.infoItems?.[index]?.title && (
+                  <p className="text-red-500">
+                    {errors.infoItems[index]?.title?.message}
+                  </p>
                 )}
-                placeholder="Title"
-              />
 
-              <div>
-                <Label>Image</Label>
-                <div className="relative">
-                  {hasValidImage ? (
-                    <>
-                      <img
-                        src={currentImage.src}
-                        alt={currentImage.alt}
-                        className="w-full h-40 object-cover rounded-md"
-                      />
-                      <Input
-                        {...register(
-                          `aboutSection.infoItemsSection.infoItems.${index}.image.alt`
-                        )}
-                        placeholder="Image alt text"
-                        className="mt-1"
-                      />
+                <div>
+                  <Label>Image</Label>
+                  <div className="relative">
+                    {hasValidImage ? (
+                      <>
+                        <img
+                          src={currentImage.imageUrl}
+                          alt={currentImage.alt}
+                          className="w-full h-40 object-cover rounded-md"
+                        />
+                        <Input
+                          {...register(`infoItems.${index}.image.alt`)}
+                          placeholder="Image alt text"
+                          className="mt-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2"
+                          onClick={() => removeImage(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </>
+                    ) : (
                       <Button
                         type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-2 right-2"
-                        onClick={() => removeImage(index)}
+                        onClick={() => addImage(index)}
+                        className="w-full h-40 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md hover:border-gray-400 transition-colors"
                       >
-                        <X className="h-4 w-4" />
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Image
                       </Button>
-                    </>
-                  ) : (
-                    <Button
-                      type="button"
-                      onClick={() => addImage(index)}
-                      className="w-full h-40 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md hover:border-gray-400 transition-colors"
-                    >
-                      <PlusCircle className="mr-2 h-4 w-4" /> Add Image
-                    </Button>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-              <Label>Description</Label>
-              <Textarea
-                {...register(
-                  `aboutSection.infoItemsSection.infoItems.${index}.description`
+                <Label>Description</Label>
+                <Textarea
+                  {...register(`infoItems.${index}.description`)}
+                  placeholder="Description"
+                />
+                {errors.infoItems?.[index]?.description && (
+                  <p className="text-red-500">
+                    {errors.infoItems[index]?.description?.message}
+                  </p>
                 )}
-                placeholder="Description"
-              />
-            </div>
-          );
-        })}
-      </div>
-    </div>
+              </div>
+            );
+          })}
+        </div>
+        <Button type="submit">Save Changes</Button>
+      </form>
+    </FormProvider>
   );
 }

@@ -23,10 +23,11 @@ export default function AdminPage() {
         </h1>
         {isAdmin ? (
           <>
-            <AdminLoginForm />
             <AdminDashboard />
           </>
-        ) : null}
+        ) : (
+          <AdminLoginForm />
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { generateTimestamps, visitingHours } from "@/mockConstants";
+import { ImageData } from "@/schemas/baseSchema";
 import {
   BaseEvent,
   Event,
@@ -88,6 +89,15 @@ export const EVENT_TYPES = [
   "Guided Tour",
   "Other",
 ] as const;
+
+export const EMPTY_IMAGE: ImageData = {
+  id: "",
+  imageName: "",
+  imageUrl: "",
+  alt: "",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
 
 export const DEFAULT_EMPTY_EVENT: Omit<Event, "date"> = {
   eventId: "",

@@ -1,53 +1,82 @@
+"use client";
+
+import { useEffect } from "react";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ParticipantsSectionContent } from "@/utils/about-types";
-import { useFormContext } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { z } from "zod";
+import { participantsSectionSchema } from "@/schemas/baseSchema";
 
-type FormData = {
-  aboutSection: {
-    participantsSection: ParticipantsSectionContent;
-  };
-};
+type ParticipantsSection = z.infer<typeof participantsSectionSchema>;
 
 function ParticipantsForm() {
+  const methods = useForm<ParticipantsSection>({
+    resolver: zodResolver(participantsSectionSchema),
+  });
+
   const {
     register,
+    handleSubmit,
+    setValue,
     formState: { errors },
-  } = useFormContext<FormData>();
+  } = methods;
+
+  useEffect(() => {
+    // Fetch participants section content
+    fetch("/api/about")
+      .then((res) => res.json())
+      .then((data) => {
+        setValue("title", data.participantsSection.title);
+        setValue("description", data.participantsSection.description);
+      });
+  }, [setValue]);
+
+  const onSubmit = async (data: ParticipantsSection) => {
+    console.log(data);
+    // Uncomment when ready to submit to API
+    /* await fetch("/api/participants-section", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }); */
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        <Label htmlFor="title">Title</Label>
-        <Input
-          id="title"
-          {...register("aboutSection.participantsSection.title", {
-            required: "Title is required",
-          })}
-          placeholder="Section Title"
-        />
-        {errors.aboutSection?.participantsSection?.title && (
-          <p className="text-red-500">
-            {errors.aboutSection.participantsSection.title.message}
-          </p>
-        )}
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          {...register("aboutSection.participantsSection.description", {
-            required: "Description is required",
-          })}
-          placeholder="Section Description"
-        />
-        {errors.aboutSection?.participantsSection?.description && (
-          <p className="text-red-500">
-            {errors.aboutSection.participantsSection.description.message}
-          </p>
-        )}
-      </div>
-      <p>{`To add or remove displayed participants, please manage them from the user administration by marking/unmarking them as "participant."`}</p>
-    </div>
+    <FormProvider {...methods}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              {...register("title")}
+              placeholder="Section Title"
+            />
+            {errors.title && (
+              <p className="text-red-500">{errors.title.message}</p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              {...register("description")}
+              placeholder="Section Description"
+            />
+            {errors.description && (
+              <p className="text-red-500">{errors.description.message}</p>
+            )}
+          </div>
+        </div>
+        <p className="text-sm text-gray-500">
+          {`To add or remove displayed participants, please manage them from the user administration by marking/unmarking them as "participant."`}
+        </p>
+        <Button type="submit">Save Changes</Button>
+      </form>
+    </FormProvider>
   );
 }
 
