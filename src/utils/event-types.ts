@@ -36,7 +36,7 @@ export type Event = RSVPRequiredEvent | RSVPOptionalEvent;
 
 export interface EnhancedUser {
   userId: string;
-  userName?: string;
+  userName: string;
   slug?: string;
 }
 
@@ -47,6 +47,6 @@ export interface EnhancedOrganizer extends EnhancedUser {
 
 export interface IndividualEventResponse
   extends Omit<BaseEvent, "organizer" | "coOrganizers"> {
-  organizer: EnhancedOrganizer;
-  coOrganizers: EnhancedUser[];
+  organizer: EnhancedOrganizer | null;
+  coOrganizers: EnhancedUser[] | null;
 }

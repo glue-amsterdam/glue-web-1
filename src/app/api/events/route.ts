@@ -4,7 +4,7 @@ import {
   EnhancedUser,
   EventType,
   IndividualEventResponse,
-} from "@/utils/event-types";
+} from "@/schemas/eventSchemas";
 import { DayID } from "@/utils/menu-types";
 import { getOrganizerDetails, getUserDetails } from "@/utils/userHelpers";
 import { NextResponse } from "next/server";

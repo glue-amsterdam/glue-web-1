@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { IndividualEventResponse } from "@/utils/event-types";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin } from "lucide-react";
 import Link from "next/link";
 import { isRSVPRequiredEvent } from "@/constants";
+import { IndividualEventResponse } from "@/schemas/eventSchemas";
 
 export function EventModal() {
   const [event, setEvent] = useState<IndividualEventResponse | null>(null);
@@ -131,7 +131,7 @@ function EventContent({ event }: { event: IndividualEventResponse }) {
                 <p className="text-sm">{event.organizer.userName}</p>
               )}
             </div>
-            {event.coOrganizers.length > 0 && (
+            {event.coOrganizers && (
               <div>
                 <h3 className="font-bold text-lg mb-1">Co organizer</h3>
                 <ul className="text-sm text-center">

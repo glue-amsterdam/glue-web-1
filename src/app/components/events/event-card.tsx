@@ -2,8 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { IndividualEventResponse } from "@/utils/event-types";
 import { fadeInConfig } from "@/utils/animations";
+import { IndividualEventResponse } from "@/schemas/eventSchemas";
 
 interface EventCardProps {
   event: IndividualEventResponse;
@@ -60,7 +60,7 @@ export default function EventCard({ event, i }: EventCardProps) {
 
                 {event.organizer.userName}
               </div>
-              {event.coOrganizers.length > 0 && (
+              {event.coOrganizers && (
                 <div className="flex gap-2 items-center flex-wrap">
                   <span className="text-sm md:text-lg font-bold">
                     Co organizers:

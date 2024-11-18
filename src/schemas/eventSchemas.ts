@@ -1,10 +1,10 @@
 import { DAYS, DAYS_IDS, EVENT_TYPES } from "@/constants";
-import { imageDataSchema } from "@/schemas/baseSchema";
+import { ImageData, imageDataSchema } from "@/schemas/baseSchema";
 import {
   enhancedOrganizerSchema,
   enhancedUserSchema,
+  ParticipantUser,
 } from "@/schemas/usersSchemas";
-import { Event } from "@/utils/event-types";
 import { EventDay } from "@/utils/menu-types";
 import * as z from "zod";
 
@@ -48,3 +48,53 @@ export const eventSchema: z.ZodType<Event> = z.discriminatedUnion("rsvp", [
   rsvpRequiredEventSchema,
   rsvpOptionalEventSchema,
 ]);
+
+/* EVENT TYPES => */
+export type EventType = (typeof EVENT_TYPES)[number];
+
+export interface BaseEvent {
+  organizer: Pick<ParticipantUser, "userId">;
+  eventId: string;
+  name: string;
+  thumbnail: ImageData;
+  coOrganizers: Pick<ParticipantUser, "userId">[];
+  date: EventDay;
+  startTime: string;
+  endTime: string;
+  type: EventType;
+  description: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface RSVPRequiredEvent extends BaseEvent {
+  rsvp: true;
+  rsvpMessage: string;
+  rsvpLink: string;
+}
+
+export interface RSVPOptionalEvent extends BaseEvent {
+  rsvp?: false | undefined;
+  rsvpMessage?: string;
+  rsvpLink?: string;
+}
+
+export type Event = RSVPRequiredEvent | RSVPOptionalEvent;
+
+export interface EnhancedUser {
+  userId: string;
+  userName: string;
+  slug?: string;
+}
+
+export interface EnhancedOrganizer extends EnhancedUser {
+  mapId?: string;
+  mapPlaceName?: string;
+}
+
+export interface IndividualEventResponse
+  extends Omit<BaseEvent, "organizer" | "coOrganizers"> {
+  organizer: EnhancedOrganizer;
+  coOrganizers: EnhancedUser[] | null;
+}
+/* <= EVENT TYPES */

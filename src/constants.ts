@@ -5,7 +5,8 @@ import {
   Event,
   EventType,
   RSVPRequiredEvent,
-} from "@/utils/event-types";
+} from "@/schemas/eventSchemas";
+
 import {
   MemberUser,
   ParticipantUser,
