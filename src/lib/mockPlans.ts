@@ -7,8 +7,10 @@ const plans: PlansResponse = {
       planId: "planId-0",
       planLabel: "FREE PLAN",
       planPrice: "0",
+      planType: "free",
       planCurrency: "EUR",
       currencyLogo: "€",
+      planDescription: "Free plan to get started",
       planItems: [
         {
           id: "plan-0-item-0",
@@ -22,8 +24,10 @@ const plans: PlansResponse = {
       planId: "planId-1",
       planLabel: "MEMBERSHIP ONLY",
       planPrice: "250",
+      planType: "member",
       planCurrency: "EUR",
       currencyLogo: "€",
+      planDescription: "Membership only plan",
       planItems: [
         {
           id: "plan-1-item-0",
@@ -52,8 +56,11 @@ const plans: PlansResponse = {
       planId: "planId-2",
       planLabel: "STICKY",
       planPrice: "450",
+      planType: "participant",
       planCurrency: "EUR",
       currencyLogo: "€",
+      planDescription:
+        "For individual designers, architects, makers & artists only. Branding during GLUE will be based on your personal name (not a studio/label name).",
       planItems: [
         {
           id: "plan-2-item-0",
@@ -102,8 +109,11 @@ const plans: PlansResponse = {
       planId: "planId-3",
       planLabel: "BINDER",
       planPrice: "950",
+      planType: "participant",
       planCurrency: "EUR",
       currencyLogo: "€",
+      planDescription:
+        "For studios, design brands/labels, architectural firms, and showrooms with one to nine FTE's",
       planItems: [
         {
           id: "plan-3-item-0",
@@ -152,8 +162,11 @@ const plans: PlansResponse = {
       planId: "planId-4",
       planLabel: "CEMENT",
       planPrice: "1950",
+      planType: "participant",
       planCurrency: "EUR",
       currencyLogo: "€",
+      planDescription:
+        "For studios, design brands/labels, architectural firms, and showrooms with ten or more FTE's, and firms with two or more brands/labels",
       planItems: [
         {
           id: "plan-4-item-0",
@@ -207,8 +220,11 @@ const plans: PlansResponse = {
       planId: "planId-5",
       planLabel: "SUPER GLUE",
       planPrice: "4000",
+      planType: "participant",
       planCurrency: "EUR",
       currencyLogo: "€",
+      planDescription:
+        "For design labels and collective showrooms, who want more exposure and awareness during GLUE. As a SUPER GLUE participant you have the opportunity to put something extraordinary on the map.",
       planItems: [
         {
           id: "plan-5-item-0",

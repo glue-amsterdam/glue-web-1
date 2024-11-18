@@ -13,7 +13,9 @@ export interface PlanType {
   planLabel: string;
   planPrice: string;
   planCurrency: string;
+  planDescription: string;
   currencyLogo: string;
+  planType: "free" | "member" | "participant";
   planItems: PlanItemType[];
   createdAt: Date;
   updatedAt: Date;

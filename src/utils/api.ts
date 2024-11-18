@@ -11,6 +11,7 @@ import {
 } from "@/utils/user-types";
 import { Sponsor } from "@/utils/sponsors-types";
 import { ApiParticipantBaseType } from "@/schemas/usersSchemas";
+import { PlansResponse } from "@/utils/sign-in.types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -150,6 +151,15 @@ export const fetchSponsors = cache(async (): Promise<Sponsor[]> => {
     next: { revalidate: 0 },
   });
   if (!res.ok) throw new Error("Failed to fetch sponsors");
+  return res.json();
+});
+
+/* SIGNUP - GETPLANS */
+export const fetchPlans = cache(async (): Promise<PlansResponse> => {
+  const res = await fetch(`${BASE_URL}/plans`, {
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) throw new Error("Failed to fetch plans");
   return res.json();
 });
 
