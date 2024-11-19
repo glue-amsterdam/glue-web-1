@@ -94,6 +94,7 @@ export interface EnhancedOrganizer extends EnhancedUser {
 
 export interface IndividualEventResponse
   extends Omit<BaseEvent, "organizer" | "coOrganizers"> {
+  rsvp: boolean;
   organizer: EnhancedOrganizer;
   coOrganizers: EnhancedUser[] | null;
 }

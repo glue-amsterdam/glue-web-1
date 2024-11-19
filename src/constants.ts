@@ -1,9 +1,9 @@
 import { generateTimestamps, visitingHours } from "@/mockConstants";
 import { ImageData } from "@/schemas/baseSchema";
 import {
-  BaseEvent,
   Event,
   EventType,
+  IndividualEventResponse,
   RSVPRequiredEvent,
 } from "@/schemas/eventSchemas";
 
@@ -219,9 +219,16 @@ export function isPaidUser(
 }
 
 export function isRSVPRequiredEvent(
-  event: BaseEvent
-): event is RSVPRequiredEvent {
-  return (event as RSVPRequiredEvent).rsvp === true;
+  event: IndividualEventResponse
+): event is RSVPRequiredEvent & IndividualEventResponse {
+  return (
+    event.rsvp === true &&
+    "rsvpLink" in event &&
+    typeof event.rsvpLink === "string" &&
+    event.rsvpLink.length > 0 &&
+    "rsvpMessage" in event &&
+    typeof event.rsvpMessage === "string"
+  );
 }
 
 export const safeParseDate = (date: string | Date): Date => {

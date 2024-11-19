@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin } from "lucide-react";
 import Link from "next/link";
 import { isRSVPRequiredEvent } from "@/constants";
-import { IndividualEventResponse } from "@/schemas/eventSchemas";
+import { IndividualEventResponse, EnhancedUser } from "@/schemas/eventSchemas";
 
 export function EventModal() {
   const [event, setEvent] = useState<IndividualEventResponse | null>(null);
@@ -51,7 +51,7 @@ export function EventModal() {
 
   return (
     <Dialog open={!!eventId} onOpenChange={() => handleClose()}>
-      <DialogContent className="max-w-[90%] md:max-w-[60vw] bg-background text-black">
+      <DialogContent className="max-w-[90%] md:max-w-[60vw] max-h-[90vh] bg-background text-black overflow-y-auto">
         {isLoading ? (
           <EventSkeleton />
         ) : event ? (
@@ -80,8 +80,8 @@ function EventSkeleton() {
 
 function EventContent({ event }: { event: IndividualEventResponse }) {
   return (
-    <>
-      <article className="flex justify-between text-black overflow-y-scroll">
+    <div className="flex flex-col space-y-4">
+      <article className="flex justify-between text-black">
         <DialogTitle className="text-3xl">{event.name}</DialogTitle>
         {isRSVPRequiredEvent(event) && (
           <div className="text-center">
@@ -98,15 +98,15 @@ function EventContent({ event }: { event: IndividualEventResponse }) {
           </div>
         )}
       </article>
-      <article>
-        <figure className="relative w-full h-60 lg:h-[50vh] mb-4 overflow-hidden">
+      <article className="flex flex-col space-y-4">
+        <figure className="relative w-full h-60 lg:h-[40vh] overflow-hidden">
           <img
             src={event.thumbnail.imageUrl}
             alt={event.name}
-            className="rounded-md object-cover absolute inset-0 -translate-y-10 lg:translate-y-0"
+            className="rounded-md object-cover w-full h-full"
           />
         </figure>
-        <div className="flex flex-wrap gap-4 text-black">
+        <div className="flex flex-col lg:flex-row gap-4 text-black">
           <div className="flex-1">
             <time
               className="text-sm text-muted-foreground mb-2 block italic"
@@ -122,6 +122,7 @@ function EventContent({ event }: { event: IndividualEventResponse }) {
               <h3 className="font-bold text-lg mb-1">Organizer</h3>
               {event.organizer.slug ? (
                 <Link
+                  target="_blank"
                   href={`/participants/${event.organizer.slug}`}
                   className="text-sm hover:underline"
                 >
@@ -131,14 +132,15 @@ function EventContent({ event }: { event: IndividualEventResponse }) {
                 <p className="text-sm">{event.organizer.userName}</p>
               )}
             </div>
-            {event.coOrganizers && (
+            {event.coOrganizers && event.coOrganizers.length > 0 && (
               <div>
                 <h3 className="font-bold text-lg mb-1">Co organizer</h3>
                 <ul className="text-sm text-center">
-                  {event.coOrganizers.map((contributor) => (
+                  {event.coOrganizers.map((contributor: EnhancedUser) => (
                     <li key={contributor.userId}>
                       {contributor.slug ? (
                         <Link
+                          target="_blank"
                           href={`/participants/${contributor.slug}`}
                           className="hover:underline"
                         >
@@ -153,16 +155,16 @@ function EventContent({ event }: { event: IndividualEventResponse }) {
               </div>
             )}
           </div>
-          <Link target="_blank" href={`/map/${event.organizer.mapId}`}>
-            {event.organizer.mapPlaceName && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>{event.organizer.mapPlaceName}</span>
-              </div>
-            )}
-          </Link>
         </div>
+        <Link target="_blank" href={`/map/${event.organizer.mapId}`}>
+          {event.organizer.mapPlaceName && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4" />
+              <span>{event.organizer.mapPlaceName}</span>
+            </div>
+          )}
+        </Link>
       </article>
-    </>
+    </div>
   );
 }
