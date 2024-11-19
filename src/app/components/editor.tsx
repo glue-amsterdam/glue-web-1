@@ -13,6 +13,7 @@ function MenuBar({ editor }: { editor: Editor | null }) {
   return (
     <div className="flex gap-2 pb-2 bg-uiblack h-full">
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
         className={cn(
@@ -23,6 +24,7 @@ function MenuBar({ editor }: { editor: Editor | null }) {
         <BoldIcon className="size-4" />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleItalic().run()}
         disabled={!editor.can().chain().focus().toggleItalic().run()}
         className={cn(
@@ -33,6 +35,7 @@ function MenuBar({ editor }: { editor: Editor | null }) {
         <ItalicIcon className="size-4" />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleStrike().run()}
         disabled={!editor.can().chain().focus().toggleStrike().run()}
         className={cn(
@@ -43,6 +46,7 @@ function MenuBar({ editor }: { editor: Editor | null }) {
         <StrikethroughIcon className="size-4" />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
         className={cn(
           "flex gap-2 border-gray bg-white/50 text-black border items-center justify-center rounded-lg px-1 py-1"
