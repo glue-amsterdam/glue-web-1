@@ -20,7 +20,7 @@ export default function EventsPage({
   return (
     <div
       style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
-      className={`h-dvh relative`}
+      className={`min-h-dvh relative overflow-hidden`}
     >
       <Background />
       <Suspense fallback={<CenteredLoader />}>

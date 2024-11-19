@@ -10,7 +10,7 @@ interface EventCardProps {
   i: number;
 }
 
-export default function EventCard({ event, i }: EventCardProps) {
+export default function EventCard({ event }: EventCardProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -27,20 +27,19 @@ export default function EventCard({ event, i }: EventCardProps) {
       <motion.article
         initial={{ x: 100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        transition={{ delay: i / 6 }}
-        className="relative min-h-[20vh] overflow-hidden group"
+        className="relative min-h-[20vh] overflow-hidden group "
       >
         <div
           className="cursor-pointer hover:shadow-lg transition-shadow h-full"
           onClick={() => handleClick(event.eventId)}
         >
-          <div className="bg-background opacity-50 group-hover:bg-foreground group-hover:opacity-100 transition-all duration-200 absolute inset-0 z-10" />
+          <div className="bg-black/20 group-hover:bg-background/80 transition-all duration-200 absolute inset-0 z-10" />
           <img
             src={event.thumbnail.imageUrl}
             alt={event.name}
             className="absolute rounded-md top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 object-cover w-full h-full"
           />
-          <motion.div className="absolute inset-0 flex flex-col justify-center px-2 md:px-10 z-20 group-hover:text-background transition-all duration-200">
+          <div className="absolute inset-0 flex flex-col justify-center px-2 md:px-10 z-20 group-hover:text-black text-background transition-all duration-200">
             <h3 className="text-xl md:text-2xl xl:text-4xl tracking-widest">
               {event.name}
             </h3>
@@ -73,7 +72,7 @@ export default function EventCard({ event, i }: EventCardProps) {
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
         </div>
       </motion.article>
     </motion.div>

@@ -17,7 +17,7 @@ export default async function EventsPageContainer({
   params: URLSearchParams;
 }) {
   return (
-    <main className="relative z-10pb-16">
+    <main className="relative z-10 pb-16">
       <div className="container mx-auto px-4">
         <EventHeader />
         <section aria-label="Event search and filters">

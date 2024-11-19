@@ -1,5 +1,3 @@
-"use client ";
-
 import { IndividualEventResponse } from "@/schemas/eventSchemas";
 import EventCard from "./event-card";
 
@@ -8,8 +6,8 @@ export default function EventsList({
 }: {
   events: IndividualEventResponse[];
 }) {
-  if (events.length == 0) {
-    return <div>No events Found</div>;
+  if (events.length === 0) {
+    return <div>No events found</div>;
   }
   return (
     <ul className="grid grid-cols-1 gap-6">

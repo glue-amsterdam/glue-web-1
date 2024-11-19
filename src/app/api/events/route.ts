@@ -54,6 +54,7 @@ export async function GET(request: Request) {
         ...event,
         organizer: organizer || { userId: "", userName: "Unknown" },
         coOrganizers,
+        rsvp: event.rsvp ?? false,
       };
     }
   );
