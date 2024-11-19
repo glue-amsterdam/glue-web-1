@@ -42,12 +42,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Event, eventSchema } from "@/schemas/eventSchemas";
+import {
+  Event,
+  eventSchema,
+  IndividualEventResponse,
+} from "@/schemas/eventSchemas";
 import { RichTextEditor } from "@/app/components/editor";
 
 export default function Component() {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [events, setEvents] = useState<IndividualEventResponse[]>([]);
+  const [editingEvent, setEditingEvent] =
+    useState<IndividualEventResponse | null>(null);
   const eventsDays = useEventsDays();
 
   useEffect(() => {
@@ -67,6 +72,8 @@ export default function Component() {
       console.log("Setting form values for editing event:", editingEvent);
       form.reset({
         ...editingEvent,
+        rsvp: undefined,
+        coOrganizers: editingEvent.coOrganizers || undefined,
         date: {
           ...editingEvent.date,
           date: safeParseDate(editingEvent.date.date),
