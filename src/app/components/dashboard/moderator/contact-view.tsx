@@ -40,24 +40,30 @@ function ContactView({ selectedUser }: Props) {
             </div>
           ))}
           <div className="flex flex-wrap gap-1 mt-2">
-            {selectedUser.socialMedia?.instagram?.map((instagram, index) => (
-              <Badge key={index} variant="secondary">
-                <Instagram className="mr-1" size={14} />
-                {instagram}
-              </Badge>
-            ))}
-            {selectedUser.socialMedia?.facebook?.map((facebook, index) => (
-              <Badge key={index} variant="secondary">
-                <Facebook className="mr-1" size={14} />
-                {facebook}
-              </Badge>
-            ))}
-            {selectedUser.socialMedia?.linkedin?.map((linkedin, index) => (
-              <Badge key={index} variant="secondary">
-                <Linkedin className="mr-1" size={14} />
-                {linkedin}
-              </Badge>
-            ))}
+            {selectedUser.socialMedia?.instagramLink && (
+              <a href={selectedUser.socialMedia.instagramLink} target="_blank">
+                <Badge variant="secondary">
+                  <Instagram className="mr-1" size={14} />
+                  {selectedUser.socialMedia.instagramLink}
+                </Badge>
+              </a>
+            )}
+            {selectedUser.socialMedia?.facebookLink && (
+              <a href={selectedUser.socialMedia.facebookLink} target="_blank">
+                <Badge variant="secondary">
+                  <Facebook className="mr-1" size={14} />
+                  {selectedUser.socialMedia.facebookLink}
+                </Badge>
+              </a>
+            )}
+            {selectedUser.socialMedia?.linkedinLink && (
+              <a href={selectedUser.socialMedia.linkedinLink} target="_blank">
+                <Badge variant="secondary">
+                  <Linkedin className="mr-1" size={14} />
+                  {selectedUser.socialMedia.linkedinLink}
+                </Badge>
+              </a>
+            )}
           </div>
         </div>
       )}

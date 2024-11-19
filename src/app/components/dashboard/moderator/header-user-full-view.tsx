@@ -6,7 +6,7 @@ import { CardHeader, CardTitle } from "@/components/ui/card";
 import { isParticipantUser } from "@/constants";
 import { UserWithPlanDetails } from "@/utils/user-types";
 import { Edit } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import React from "react";
 
 type Props = {
@@ -14,12 +14,6 @@ type Props = {
 };
 
 function HeaderUserFullView({ selectedUser }: Props) {
-  const router = useRouter();
-  const handleEditUser = () => {
-    if (selectedUser) {
-      router.push(`/admin/user/${selectedUser.userId}`);
-    }
-  };
   return (
     <CardHeader>
       <div className="flex items-center justify-between">
@@ -44,9 +38,14 @@ function HeaderUserFullView({ selectedUser }: Props) {
             </p>
           </div>
         </div>
-        <Button variant="outline" onClick={handleEditUser}>
-          <Edit className="mr-2 h-4 w-4" /> Edit User
-        </Button>
+        <Link
+          target="_blank"
+          href={`/dashboard/${selectedUser.userId}/user-data`}
+        >
+          <Button variant="outline">
+            <Edit className="mr-2 h-4 w-4" /> Edit User
+          </Button>
+        </Link>
       </div>
     </CardHeader>
   );

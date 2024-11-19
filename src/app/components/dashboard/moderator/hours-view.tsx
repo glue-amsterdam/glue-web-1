@@ -14,16 +14,28 @@ function HoursView({ selectedUser }: Props) {
         selectedUser.visitingHours &&
         selectedUser.visitingHours.length > 0 ? (
           selectedUser.visitingHours.map((day) => (
-            <div key={day.id} className="flex items-center">
-              <Clock className="mr-2" size={16} />
-              <span className="font-medium">{day.label}:</span>
+            <div
+              key={day.dayId}
+              className="flex flex-wrap sm:w-[200px] justify-between"
+            >
+              <div className="flex items-center">
+                <Clock className="mr-2" size={16} />
+                <span className="font-medium">{day.label}:</span>
+              </div>
+
               <span className="ml-2">
-                {day.ranges.map((timeRange, index) => (
-                  <span key={index}>
-                    {timeRange.open} - {timeRange.close}
-                    {index < day.ranges.length - 1 && ", "}
-                  </span>
-                ))}
+                {day.ranges &&
+                  day.ranges?.map((timeRange, index) => (
+                    <span key={index}>
+                      {timeRange.open} - {timeRange.close}
+                      {index < (day.ranges?.length || 0) - 1 && (
+                        <>
+                          {","}
+                          <br />
+                        </>
+                      )}
+                    </span>
+                  ))}
               </span>
             </div>
           ))
