@@ -1,4 +1,5 @@
 "use client";
+
 import {
   Carousel,
   CarouselContent,
@@ -6,7 +7,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { ImageData } from "@/utils/global-types";
+import { ImageData } from "@/schemas/baseSchema";
 
 export function ImageCarousel({ images }: { images: ImageData[] }) {
   return (
@@ -21,7 +22,7 @@ export function ImageCarousel({ images }: { images: ImageData[] }) {
                   image.alt ||
                   `GLUE participant image,  image number ${index + 1}`
                 }
-                className="object-cover"
+                className="object-cover absolute inset-0 w-full h-full"
               />
             </div>
           </CarouselItem>
