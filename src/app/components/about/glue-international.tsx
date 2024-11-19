@@ -1,9 +1,9 @@
 "use client";
 
-import { GlueInternationalContent } from "@/utils/about-types";
 import { GiWorld } from "react-icons/gi";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { GlueInternationalContent } from "@/schemas/baseSchema";
 
 interface GlueInternationalProps {
   glueInternational: GlueInternationalContent;
@@ -14,9 +14,11 @@ export default function GlueInternational({
 }: GlueInternationalProps) {
   const { buttonColor, buttonText, subtitle, title, website } =
     glueInternational;
+
+  console.log(typeof buttonColor);
   return (
     <motion.div
-      style={{ backgroundColor: buttonColor }}
+      style={{ backgroundColor: buttonColor.buttonColor }}
       initial={{ x: 80, y: 20 }}
       whileInView={{ x: 0 }}
       transition={{ duration: 0.4 }}
@@ -52,7 +54,7 @@ export default function GlueInternational({
         </div>
 
         <Link
-          style={{ backgroundColor: buttonColor }}
+          style={{ backgroundColor: buttonColor.buttonColor }}
           href={website}
           target="_blank"
           className="hover:scale-110 rounded-md py-2 mx-auto flex items-center justify-center text-uiwhite transition duration-500 w-[80%]"

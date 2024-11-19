@@ -17,7 +17,7 @@ import {
   GlueInternationalContent,
   ParticipantsSectionContent,
   SponsorsSectionContent,
-} from "@/utils/about-types";
+} from "@/schemas/baseSchema";
 
 async function AboutPageContainer() {
   const aboutData = await fetchAbout();

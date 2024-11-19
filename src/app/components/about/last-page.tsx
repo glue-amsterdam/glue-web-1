@@ -4,15 +4,16 @@ import GlueInternational from "@/app/components/about/glue-international";
 import SponsorsCarousel from "@/app/components/about/sponsors-carousel";
 import ScrollUp from "@/app/components/scroll-up";
 import { useScroll } from "@/app/hooks/useScroll";
-import {
-  GlueInternationalContent,
-  SponsorsSectionContent,
-} from "@/utils/about-types";
+
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import { fadeInConfig } from "@/utils/animations";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { Sponsor } from "@/utils/sponsors-types";
+import {
+  GlueInternationalContent,
+  SponsorsSectionContent,
+} from "@/schemas/baseSchema";
 
 type Props = {
   glueInternationalSection: GlueInternationalContent;

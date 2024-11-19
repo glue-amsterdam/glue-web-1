@@ -3,10 +3,10 @@
 import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { PressItem } from "@/utils/about-types";
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
 import { fadeInConfig } from "@/utils/animations";
+import { PressItem } from "@/schemas/baseSchema";
 
 interface PressSectionProps {
   pressItems: PressItem[];

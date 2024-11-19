@@ -5,7 +5,7 @@ import GlueConectedImage from "@/app/components/glue-connected-image";
 import { useColors } from "@/app/context/MainContext";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { PressItemsSectionContent } from "@/utils/about-types";
+import { PressItemsSectionContent } from "@/schemas/baseSchema";
 import React, { useRef } from "react";
 
 type Props = {

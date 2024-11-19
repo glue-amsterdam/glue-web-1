@@ -4,7 +4,7 @@ import InfoSection from "@/app/components/about/info-section";
 import { useColors } from "@/app/context/MainContext";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { InfoSectionContent } from "@/utils/about-types";
+import { InfoSectionContent } from "@/schemas/baseSchema";
 import React, { useRef } from "react";
 
 type Props = {

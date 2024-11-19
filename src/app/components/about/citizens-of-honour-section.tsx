@@ -10,10 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Citizen, CitizensSectionContent } from "@/utils/about-types";
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
 import { fadeInConfig } from "@/utils/animations";
+import { Citizen, CitizensSectionContent } from "@/schemas/baseSchema";
 
 export default function CitizenOfHonourSection({
   citizens,

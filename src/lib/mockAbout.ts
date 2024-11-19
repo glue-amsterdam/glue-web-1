@@ -1,7 +1,7 @@
 import { generateTimestamps, getRandomNumber } from "@/mockConstants";
-import { DatabaseContent } from "@/utils/about-types";
+import { DatabaseAboutContent } from "@/schemas/baseSchema";
 
-export const mockAbout: DatabaseContent = {
+export const mockAbout: DatabaseAboutContent = {
   carouselSection: {
     title: "GLUE connected by design",
     description:
@@ -275,7 +275,7 @@ export const mockAbout: DatabaseContent = {
     subtitle: "GLUE arround the world",
     buttonText: "Visit GLUE International",
     website: "http://glue-international.com",
-    buttonColor: "#10069f",
+    buttonColor: { buttonColor: "#10069F" },
   },
   ...generateTimestamps(),
 };

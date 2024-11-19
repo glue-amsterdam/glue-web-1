@@ -18,9 +18,9 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import ScrollDown from "@/app/components/scroll-down";
 import { useScroll } from "@/app/hooks/useScroll";
-import { CarouselSectionContent } from "@/utils/about-types";
 import { fadeInConfig } from "@/utils/animations";
 import { NAVBAR_HEIGHT } from "@/constants";
+import { CarouselSectionContent } from "@/schemas/baseSchema";
 
 interface MainSectionProps {
   mainSection: CarouselSectionContent | undefined;

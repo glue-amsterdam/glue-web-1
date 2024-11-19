@@ -53,6 +53,26 @@ export const mainSectionSchema = z.object({
 /* <= MAIN SECTION ADMIN FORM SCHEMAS */
 
 /* ABOUT SECTION ADMIN FORM SCHEMAS => */
+
+export type CarouselSectionContent = z.infer<typeof carouselSectionSchema>;
+export type ParticipantsSectionContent = z.infer<
+  typeof participantsSectionSchema
+>;
+export type CitizensSectionContent = z.infer<typeof citizensSectionSchema>;
+export type CuratedMemberSectionContent = z.infer<
+  typeof curatedMembersSectionSchema
+>;
+export type InfoSectionContent = z.infer<typeof infoItemsSectionSchema>;
+export type PressItemsSectionContent = z.infer<typeof pressItemsSectionSchema>;
+export type SponsorsSectionContent = z.infer<typeof sponsorsSectionSchema>;
+export type GlueInternationalContent = z.infer<
+  typeof glueInternationalSectionSchema
+>;
+
+export type Citizen = z.infer<typeof citizenSchema>;
+export type InfoItem = z.infer<typeof infoItemSchema>;
+export type PressItem = z.infer<typeof pressItemSchema>;
+
 export const carouselSectionSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
@@ -85,43 +105,43 @@ export const curatedMembersSectionSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters"),
 });
 
+export const infoItemSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1, "Title is required"),
+  image: imageDataSchema,
+  description: z.string().min(10, "Description must be at least 10 characters"),
+});
+
 export const infoItemsSectionSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   infoItems: z
-    .array(
-      z.object({
-        id: z.string(),
-        title: z.string().min(1, "Title is required"),
-        image: imageDataSchema,
-        description: z
-          .string()
-          .min(10, "Description must be at least 10 characters"),
-      })
-    )
+    .array(infoItemSchema)
     .min(3, "At least 1 info item is required")
     .max(3, "Maximum 2 info items allowed"),
 });
+
+export const pressItemSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1, "Title is required"),
+  image: imageDataSchema,
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  content: z
+    .string()
+    .min(10, "Content must be at least 10 characters")
+    .optional(),
+});
+
 export const pressItemsSectionSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   pressItems: z
-    .array(
-      z.object({
-        id: z.string(),
-        title: z.string().min(1, "Title is required"),
-        image: imageDataSchema,
-        description: z
-          .string()
-          .min(10, "Description must be at least 10 characters"),
-        content: z.string().min(10, "Content must be at least 10 characters"),
-      })
-    )
+    .array(pressItemSchema)
     .min(1, "At least 1 press item is required")
     .max(2, "Maximum 2 press items allowed"),
 });
 
-export const glueInternationalSectionSchema = z.object({
+export const glueInternationalButtonColorSchema = z.object({
   buttonColor: z
     .string()
     .min(1, "Button color is required")
@@ -129,6 +149,14 @@ export const glueInternationalSectionSchema = z.object({
       /^#(?:[0-9a-fA-F]{3}){1,2}$/,
       "Button color must be a valid hex code"
     ),
+});
+
+export const glueInternationalSectionSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  subtitle: z.string().min(1, "Subtitle is required"),
+  buttonText: z.string().min(1, "Button text is required"),
+  website: z.string().url("Invalid website URL"),
+  buttonColor: glueInternationalButtonColorSchema,
 });
 
 export const sponsorSchema = z.object({
@@ -144,3 +172,20 @@ export const sponsorsSectionSchema = z.object({
   description: z.string().min(1, "Description is required"),
 });
 /* <= ABOUT SECTION ADMIN FORM SCHEMAS */
+
+/* API CALLS TYPES => */
+
+export type DatabaseAboutContent = {
+  carouselSection: CarouselSectionContent;
+  participantsSection: ParticipantsSectionContent;
+  citizensSection: CitizensSectionContent;
+  curatedMembersSection: CuratedMemberSectionContent;
+  infoItemsSection: InfoSectionContent;
+  pressItemsSection: PressItemsSectionContent;
+  sponsorsSection: SponsorsSectionContent;
+  glueInternationalSection: GlueInternationalContent;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+/* <= API CALLS TYPES */

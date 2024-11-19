@@ -28,7 +28,10 @@ export default function InternationalForm() {
     fetch("/api/about")
       .then((res) => res.json())
       .then((data) => {
-        setValue("buttonColor", data.glueInternationalSection.buttonColor);
+        setValue(
+          "buttonColor",
+          data.glueInternationalSection.buttonColor.buttonColor
+        );
       });
   }, [setValue]);
 
@@ -56,7 +59,7 @@ export default function InternationalForm() {
             <p className="text-red-500">{errors.buttonColor.message}</p>
           )}
           <p className="text-sm text-gray-500">
-            Use a hexadecimal color code, for example: #10069f.
+            Use a hexadecimal color code, for example: #10069f
           </p>
         </div>
         <Button type="submit">Save Changes</Button>

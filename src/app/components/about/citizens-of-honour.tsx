@@ -4,7 +4,7 @@ import CitizenOfHonourSection from "@/app/components/about/citizens-of-honour-se
 import { useColors } from "@/app/context/MainContext";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { CitizensSectionContent } from "@/utils/about-types";
+import { CitizensSectionContent } from "@/schemas/baseSchema";
 import { useRef } from "react";
 
 interface CitizenOfHonourContentProps {

@@ -1,5 +1,4 @@
 import { cache } from "react";
-import { DatabaseContent } from "@/utils/about-types";
 import { LocationGroup } from "@/utils/map-types";
 import { MainSection } from "@/utils/menu-types";
 
@@ -13,6 +12,7 @@ import {
 } from "@/schemas/usersSchemas";
 import { PlansResponse } from "@/utils/sign-in.types";
 import { IndividualEventResponse } from "@/schemas/eventSchemas";
+import { DatabaseAboutContent } from "@/schemas/baseSchema";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -32,7 +32,7 @@ export const fetchMain = cache(async (): Promise<MainSection> => {
 });
 
 /* ABOUT */
-export const fetchAbout = cache(async (): Promise<DatabaseContent> => {
+export const fetchAbout = cache(async (): Promise<DatabaseAboutContent> => {
   const res = await fetch(`${BASE_URL}/about`, {
     next: { revalidate: 0 },
   });

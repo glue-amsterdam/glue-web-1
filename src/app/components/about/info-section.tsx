@@ -3,10 +3,10 @@
 import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { InfoItem } from "@/utils/about-types";
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
 import { fadeInConfig } from "@/utils/animations";
+import { InfoItem } from "@/schemas/baseSchema";
 
 interface InfoSectionProps {
   infoItems: InfoItem[];
