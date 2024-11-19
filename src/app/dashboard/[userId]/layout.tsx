@@ -3,7 +3,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { UserDashboardProvider } from "@/app/context/UserDashboardContext";
 import InsufficientAccess from "@/app/dashboard/insufficient-access";
 import DashboardMenu from "@/app/dashboard/menu";
-import WrongCredentials from "@/app/dashboard/wrong-credentials-acces";
+import WrongCredentials from "@/app/dashboard/wrong-credentials-access";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { ReactNode } from "react";
 
