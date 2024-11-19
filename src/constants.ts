@@ -6,13 +6,12 @@ import {
   IndividualEventResponse,
   RSVPRequiredEvent,
 } from "@/schemas/eventSchemas";
-
 import {
   MemberUser,
   ParticipantUser,
   PlanResponseById,
   User,
-} from "@/utils/user-types";
+} from "@/schemas/usersSchemas";
 
 import {
   UserCircle,

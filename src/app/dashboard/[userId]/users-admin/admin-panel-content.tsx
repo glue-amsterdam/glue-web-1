@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { StatusType, User, UserWithPlanDetails } from "@/utils/user-types";
 import UserCard from "@/app/components/dashboard/moderator/user-card";
 import HeaderUserFullView from "@/app/components/dashboard/moderator/header-user-full-view";
 import UserFullViewContent from "@/app/components/dashboard/moderator/user-full-view-content";
@@ -29,6 +28,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { StatusType, User, UserWithPlanDetails } from "@/schemas/usersSchemas";
 
 export default function UsersAdminPage({ users }: { users: User[] }) {
   const [searchTerm, setSearchTerm] = useState("");

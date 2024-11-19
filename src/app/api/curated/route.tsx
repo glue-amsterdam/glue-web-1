@@ -2,7 +2,8 @@ import { users } from "@/lib/mockMembers";
 import {
   CuratedParticipantWhitYear,
   ParticipantUser,
-} from "@/utils/user-types";
+} from "@/schemas/usersSchemas";
+
 import { NextResponse } from "next/server";
 
 export async function GET() {

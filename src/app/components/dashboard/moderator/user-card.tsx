@@ -2,8 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { isPaidUser } from "@/constants";
+import { StatusType, User, UserWithPlanDetails } from "@/schemas/usersSchemas";
 import { fetchUser } from "@/utils/api";
-import { StatusType, User, UserWithPlanDetails } from "@/utils/user-types";
 import React, { Dispatch, SetStateAction } from "react";
 
 type Props = {

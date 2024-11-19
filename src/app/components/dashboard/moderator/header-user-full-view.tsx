@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { isParticipantUser } from "@/constants";
-import { UserWithPlanDetails } from "@/utils/user-types";
+import { UserWithPlanDetails } from "@/schemas/usersSchemas";
 import { Edit } from "lucide-react";
 import Link from "next/link";
 import React from "react";

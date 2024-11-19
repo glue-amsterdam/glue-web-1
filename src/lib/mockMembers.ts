@@ -1,5 +1,5 @@
 import { generateTimestamps, visitingHours } from "@/mockConstants";
-import { User } from "@/utils/user-types";
+import { User } from "@/schemas/usersSchemas";
 
 export const users: User[] = [
   {

@@ -1,6 +1,6 @@
 "use client";
 
-import { ParticipantUser } from "@/utils/user-types";
+import { ParticipantUser } from "@/schemas/usersSchemas";
 import { motion, Variants } from "framer-motion";
 import { MapPinCheckIcon } from "lucide-react";
 import {

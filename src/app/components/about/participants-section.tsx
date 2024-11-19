@@ -10,8 +10,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { placeholderImage } from "@/mockConstants";
+import { ParticipantUser } from "@/schemas/usersSchemas";
 import { fadeInConfig } from "@/utils/animations";
-import { ParticipantUser } from "@/utils/user-types";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
 import Link from "next/link";

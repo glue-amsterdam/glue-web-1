@@ -14,7 +14,7 @@ import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
 import Link from "next/link";
 import { fadeInConfig } from "@/utils/animations";
-import { CuratedParticipantWhitYear } from "@/utils/user-types";
+import { CuratedParticipantWhitYear } from "@/schemas/usersSchemas";
 
 interface CuratedMembersSectionProps {
   curatedParticipants: Record<number, CuratedParticipantWhitYear[]>;

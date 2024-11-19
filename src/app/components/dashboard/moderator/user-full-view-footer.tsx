@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { CardFooter } from "@/components/ui/card";
 import { isPaidUser } from "@/constants";
-import { StatusType, UserWithPlanDetails } from "@/utils/user-types";
+import { StatusType, UserWithPlanDetails } from "@/schemas/usersSchemas";
 import React, { Dispatch, SetStateAction } from "react";
 
 type Props = {

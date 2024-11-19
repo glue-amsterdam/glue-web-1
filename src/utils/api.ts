@@ -2,14 +2,15 @@ import { cache } from "react";
 import { DatabaseContent } from "@/utils/about-types";
 import { LocationGroup } from "@/utils/map-types";
 import { MainSection } from "@/utils/menu-types";
+
+import { Sponsor } from "@/utils/sponsors-types";
 import {
+  ApiParticipantBaseType,
   CuratedParticipantWhitYear,
   ParticipantUser,
   User,
   UserWithPlanDetails,
-} from "@/utils/user-types";
-import { Sponsor } from "@/utils/sponsors-types";
-import { ApiParticipantBaseType } from "@/schemas/usersSchemas";
+} from "@/schemas/usersSchemas";
 import { PlansResponse } from "@/utils/sign-in.types";
 import { IndividualEventResponse } from "@/schemas/eventSchemas";
 

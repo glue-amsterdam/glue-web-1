@@ -4,8 +4,8 @@ import CuratedMembersSection from "@/app/components/about/curated-participants-s
 import { useColors } from "@/app/context/MainContext";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
+import { CuratedParticipantWhitYear } from "@/schemas/usersSchemas";
 import { CuratedMemberSectionContent } from "@/utils/about-types";
-import { CuratedParticipantWhitYear } from "@/utils/user-types";
 import React, { useRef } from "react";
 
 type Props = {

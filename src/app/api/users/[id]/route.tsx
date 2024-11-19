@@ -1,6 +1,6 @@
 import { users } from "@/lib/mockMembers";
 import plans from "@/lib/mockPlans";
-import { UserWithPlanDetails } from "@/utils/user-types";
+import { UserWithPlanDetails } from "@/schemas/usersSchemas";
 import { NextResponse } from "next/server";
 
 export async function GET(

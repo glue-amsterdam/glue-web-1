@@ -5,8 +5,8 @@ import GlueLogo from "@/app/components/glue-logo";
 import { useColors } from "@/app/context/MainContext";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
+import { ParticipantUser } from "@/schemas/usersSchemas";
 import { ParticipantsSectionContent } from "@/utils/about-types";
-import { ParticipantUser } from "@/utils/user-types";
 import { useRef } from "react";
 
 interface ParticipantsProps {

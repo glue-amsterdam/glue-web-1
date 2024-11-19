@@ -1,4 +1,4 @@
-import { ParticipantUser, User } from "@/utils/user-types";
+import { ParticipantUser, User } from "@/schemas/usersSchemas";
 
 export function getUserDetails(user: User | undefined) {
   if (!user) return null;

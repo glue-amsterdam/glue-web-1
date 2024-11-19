@@ -1,6 +1,6 @@
 import { TabsContent } from "@/components/ui/tabs";
 import { isParticipantUser } from "@/constants";
-import { UserWithPlanDetails } from "@/utils/user-types";
+import { UserWithPlanDetails } from "@/schemas/usersSchemas";
 import { MapPin } from "lucide-react";
 import React from "react";
 

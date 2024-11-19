@@ -1,5 +1,5 @@
 import { users } from "@/lib/mockMembers";
-import { ParticipantUser } from "@/utils/user-types";
+import { ParticipantUser } from "@/schemas/usersSchemas";
 import { NextResponse } from "next/server";
 
 export async function GET() {

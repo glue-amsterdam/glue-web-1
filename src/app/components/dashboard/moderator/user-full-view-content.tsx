@@ -5,7 +5,7 @@ import InvoiceView from "@/app/components/dashboard/moderator/invoice-view";
 import { CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { isPaidUser, isParticipantUser } from "@/constants";
-import { UserWithPlanDetails } from "@/utils/user-types";
+import { UserWithPlanDetails } from "@/schemas/usersSchemas";
 import React from "react";
 
 type Props = {
