@@ -1,4 +1,4 @@
-import { Event, EventType } from "@/utils/event-types";
+import { Event, EventType } from "@/schemas/eventSchemas";
 import { EventDay } from "@/utils/menu-types";
 
 const eventsDays: EventDay[] = [

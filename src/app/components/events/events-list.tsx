@@ -1,6 +1,6 @@
 "use client ";
 
-import { IndividualEventResponse } from "@/utils/event-types";
+import { IndividualEventResponse } from "@/schemas/eventSchemas";
 import EventCard from "./event-card";
 
 export default function EventsList({

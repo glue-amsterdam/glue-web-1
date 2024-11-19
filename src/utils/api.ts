@@ -1,6 +1,5 @@
 import { cache } from "react";
 import { DatabaseContent } from "@/utils/about-types";
-import { IndividualEventResponse } from "@/utils/event-types";
 import { LocationGroup } from "@/utils/map-types";
 import { MainSection } from "@/utils/menu-types";
 import {
@@ -12,6 +11,7 @@ import {
 import { Sponsor } from "@/utils/sponsors-types";
 import { ApiParticipantBaseType } from "@/schemas/usersSchemas";
 import { PlansResponse } from "@/utils/sign-in.types";
+import { IndividualEventResponse } from "@/schemas/eventSchemas";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 

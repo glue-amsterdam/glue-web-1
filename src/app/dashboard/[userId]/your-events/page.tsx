@@ -34,7 +34,6 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, ClockIcon, PencilIcon } from "lucide-react";
 import { fetchFiveEvents } from "@/utils/api";
 import { DEFAULT_EMPTY_EVENT, EVENT_TYPES, safeParseDate } from "@/constants";
-import { Event } from "@/utils/event-types";
 import { useEventsDays } from "@/app/context/MainContext";
 import {
   Select,
@@ -43,7 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { eventSchema } from "@/schemas/eventSchemas";
+import { Event, eventSchema } from "@/schemas/eventSchemas";
 import { RichTextEditor } from "@/app/components/editor";
 
 export default function Component() {

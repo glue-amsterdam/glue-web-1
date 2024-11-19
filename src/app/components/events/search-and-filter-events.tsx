@@ -12,11 +12,11 @@ import {
 } from "@/components/ui/select";
 
 import { useDebounce } from "use-debounce";
-import { EventType } from "@/utils/event-types";
 import { motion } from "framer-motion";
 import { EVENT_TYPES } from "@/constants";
 import { DayID } from "@/utils/menu-types";
 import { useEventsDays } from "@/app/context/MainContext";
+import { EventType } from "@/schemas/eventSchemas";
 
 const getEventTypes = (): (EventType | "all")[] => {
   return ["all", ...EVENT_TYPES];

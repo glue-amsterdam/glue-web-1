@@ -26,8 +26,12 @@ import { motion } from "framer-motion";
 import { DEFAULT_EMPTY_EVENT, EVENT_TYPES, safeParseDate } from "@/constants";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useEventsDays } from "@/app/context/MainContext";
-import { eventSchema, eventDaySchema } from "@/schemas/eventSchemas";
-import { Event, RSVPOptionalEvent } from "@/utils/event-types";
+import {
+  eventSchema,
+  eventDaySchema,
+  RSVPOptionalEvent,
+  Event,
+} from "@/schemas/eventSchemas";
 import useLoggedTargetUsers from "@/app/hooks/useLoggedTargetUsers";
 import { RichTextEditor } from "@/app/components/editor";
 
