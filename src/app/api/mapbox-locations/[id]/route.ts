@@ -2,10 +2,8 @@ import { hyphenToDot } from "@/constants";
 import { mapInfo } from "@/lib/mockMapboxPlaces";
 import { NextResponse } from "next/server";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   if (!params || !params.id) {
     return NextResponse.json(
       { message: "Map ID is required" },

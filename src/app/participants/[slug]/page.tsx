@@ -3,11 +3,12 @@ import ParticipantClientPage from "@/app/participants/[slug]/participants-client
 import { fetchParticipant } from "@/utils/api";
 import { Suspense, use } from "react";
 
-export default async function ParticipantPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function ParticipantPage(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   const { slug } = params;
   const participant = use(fetchParticipant(slug));
 

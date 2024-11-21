@@ -4,11 +4,12 @@ import EventsPageContainer from "@/app/events/events-page-container";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { Suspense } from "react";
 
-export default function EventsPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
+export default async function EventsPage(
+  props: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const params = new URLSearchParams();
 
   Object.entries(searchParams).forEach(([key, value]) => {
