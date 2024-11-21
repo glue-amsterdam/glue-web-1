@@ -31,7 +31,7 @@ export async function GET(
     );
   }
 
-  const coOrganizers = event.coOrganizers
+  const coOrganizers = (event.coOrganizers || [])
     .map((co) => getUserDetails(users.find((u) => u.userId === co.userId)))
     .filter((co) => co !== null);
 
