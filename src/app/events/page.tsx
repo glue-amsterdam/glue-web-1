@@ -1,4 +1,4 @@
-/* import Background from "@/app/components/background";
+import Background from "@/app/components/background";
 import CenteredLoader from "@/app/components/centered-loader";
 import EventsPageContainer from "@/app/events/events-page-container";
 import { NAVBAR_HEIGHT } from "@/constants";
@@ -28,9 +28,4 @@ export default function EventsPage({
       </Suspense>
     </div>
   );
-}
- */
-
-export default function EventsPage() {
-  return <div>Events Page</div>;
 }
