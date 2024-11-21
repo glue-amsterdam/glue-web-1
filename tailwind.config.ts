@@ -61,6 +61,10 @@ const config: Config = {
       },
     },
     extend: {
+      fontFamily: {
+        lausanne: ["lausanne", "sans-serif"],
+        overpass: ["overpass, Times New Roman, serif"],
+      },
       scrollBehavior: ["smooth"],
       colors: {
         background: "hsl(var(--background))",

@@ -1,7 +1,6 @@
 "use client";
 
 import CenteredLoader from "@/app/components/centered-loader";
-import ErrorBoundary from "@/app/components/error-boundary";
 import { useColors } from "@/app/context/MainContext";
 import { Suspense } from "react";
 
@@ -19,9 +18,7 @@ export default function ParticipantLayout({
       }}
       className="relative h-[100dvh] overflow-hidden"
     >
-      <ErrorBoundary error={new Error("Participant page error")}>
-        <Suspense fallback={<CenteredLoader />}>{children}</Suspense>
-      </ErrorBoundary>
+      <Suspense fallback={<CenteredLoader />}>{children}</Suspense>
     </main>
   );
 }

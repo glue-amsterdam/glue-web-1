@@ -79,6 +79,16 @@ export const fetchFiveEvents = cache(
   }
 );
 
+export const fetchEventById = cache(
+  async (eventId: string): Promise<IndividualEventResponse> => {
+    const res = await fetch(`${BASE_URL}/events/${eventId}`, {
+      next: { revalidate: 0 },
+    });
+    if (!res.ok) throw new Error("Failed to fetch event by ID");
+    return res.json();
+  }
+);
+
 /* MAP =>*/
 export const fetchLocationGroups = cache(async (): Promise<LocationGroup[]> => {
   const res = await fetch(`${BASE_URL}/locations`, {

@@ -4,6 +4,7 @@ import { MapInfo } from "@/app/components/map-info";
 import { ParticipantUser } from "@/schemas/usersSchemas";
 import { motion, Variants } from "framer-motion";
 import { MapPinOff } from "lucide-react";
+import { Suspense } from "react";
 import {
   FaFacebookF,
   FaInstagram,
@@ -89,9 +90,11 @@ export default function ParticipantInfo({
             Address
           </h2>
           {"mapId" in participant ? (
-            <a target="_blank" href={`/map/${participant.mapId.id}`}>
-              <MapInfo mapId={participant.mapId.id} />
-            </a>
+            <Suspense fallback={<div>Loading map info...</div>}>
+              <a target="_blank" href={`/map/${participant.mapId.id}`}>
+                <MapInfo mapId={participant.mapId.id} />
+              </a>
+            </Suspense>
           ) : "noAddress" in participant && participant.noAddress ? (
             <div className="inline-flex gap-2 items-center text-gray-500">
               <MapPinOff className="w-5 h-5" />

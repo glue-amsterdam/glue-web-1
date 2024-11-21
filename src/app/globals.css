@@ -1,3 +1,5 @@
+@import "@fontsource-variable/overpass";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -78,9 +80,10 @@
 }
 
 @font-face {
-  font-family: "Lausanne";
-  src: url("/fonts/lausanne/lausanne.woff2") format("woff2");
+  font-family: "lausanne";
+  src: url("/lausanne.woff2") format("woff2");
 }
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -135,15 +138,9 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
-  }
-  body {
-    font-family: Arial, Helvetica, sans-serif;
-    @apply bg-background text-foreground;
   }
 }
 
