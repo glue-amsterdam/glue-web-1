@@ -1,4 +1,4 @@
-import {
+/* import {
   fetchAbout,
   fetchAllParticipants,
   fetchCurated,
@@ -17,14 +17,14 @@ import {
   GlueInternationalContent,
   ParticipantsSectionContent,
   SponsorsSectionContent,
-} from "@/schemas/baseSchema";
+} from "@/schemas/baseSchema"; */
 
 async function AboutPageContainer() {
-  const aboutData = await fetchAbout();
+  /*   const aboutData = await fetchAbout(); */
 
   return (
     <>
-      <MainSection mainSection={aboutData.carouselSection} />
+      {/*       <MainSection mainSection={aboutData.carouselSection} />
       <Suspense>
         <ParticipantsPageSection headerData={aboutData.participantsSection} />
       </Suspense>
@@ -39,14 +39,14 @@ async function AboutPageContainer() {
           headerData={aboutData.sponsorsSection}
           glueInternationalSection={aboutData.glueInternationalSection}
         />
-      </Suspense>
+      </Suspense> */}
     </>
   );
 }
 
 export default AboutPageContainer;
 
-async function ParticipantsPageSection({
+/* async function ParticipantsPageSection({
   headerData,
 }: {
   headerData: ParticipantsSectionContent;
@@ -91,3 +91,4 @@ async function CuratedSection({
     />
   );
 }
+ */
