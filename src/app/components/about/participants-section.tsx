@@ -35,10 +35,6 @@ export default function ParticipantsSection({
 
   const slicedParticipants = participants.slice(0, 10);
 
-  function generateSlug(name: string) {
-    return name.toLowerCase().replace(/\s+/g, "-");
-  }
-
   return (
     <motion.article
       {...fadeInConfig}
@@ -83,9 +79,7 @@ export default function ParticipantsSection({
                 <Link
                   target="_blank"
                   className="h-full"
-                  href={`/participants/${encodeURIComponent(
-                    generateSlug(participant.userName)
-                  )}`}
+                  href={`/participants/${encodeURIComponent(participant.slug)}`}
                 >
                   <Card className="border-none shadow-sm bg-transparent h-full hover:shadow-md transition-shadow duration-300">
                     <CardContent className="flex items-center justify-center p-0 h-full">

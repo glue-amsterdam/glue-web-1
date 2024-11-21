@@ -123,11 +123,16 @@ export const fetchMapsIdandName = cache(
 /* PARTICIPANTS */
 export const fetchParticipant = cache(
   async (slug: string): Promise<ParticipantUser> => {
-    const res = await fetch(`${BASE_URL}/participants/${slug}`, {
-      next: { revalidate: 0 },
-    });
-    if (!res.ok) throw new Error("Failed to fetch participant");
-    return res.json();
+    try {
+      const res = await fetch(`${BASE_URL}/participants/${slug}`, {
+        next: { revalidate: 0 },
+      });
+      if (!res.ok) throw new Error("Failed to fetch participant by slug");
+      return res.json();
+    } catch (error) {
+      console.error("Failed to fetch participant by slug:", error);
+      throw new Error("Failed to fetch participant by slug");
+    }
   }
 );
 export const fetchParticipantbyId = cache(

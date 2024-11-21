@@ -12,7 +12,7 @@ export async function GET(
     );
   }
 
-  const { slug } = params;
+  const { slug } = await params;
 
   const participants = users.filter((user) => user.type === "participant");
 
