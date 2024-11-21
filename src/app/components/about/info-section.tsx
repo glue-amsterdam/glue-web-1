@@ -3,9 +3,10 @@
 import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { InfoItem } from "@/utils/about-types";
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
+import { fadeInConfig } from "@/utils/animations";
+import { InfoItem } from "@/schemas/baseSchema";
 
 interface InfoSectionProps {
   infoItems: InfoItem[];
@@ -51,7 +52,7 @@ export default function InfoSection({
           onClick={() => openModal(info)}
         >
           <img
-            src={info.image.src}
+            src={info.image.imageUrl}
             alt={info.title}
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
           />
@@ -66,7 +67,10 @@ export default function InfoSection({
   };
 
   return (
-    <article className="z-20 mx-auto container h-full flex flex-col justify-between relative">
+    <motion.article
+      {...fadeInConfig}
+      className="z-20 mx-auto container h-full flex flex-col justify-between relative"
+    >
       <motion.h1
         initial={{ opacity: 0, y: -60 }}
         animate={{ opacity: 1, y: 0 }}
@@ -75,7 +79,7 @@ export default function InfoSection({
           delay: 0.8,
         }}
         viewport={{ once: true }}
-        className="h1-titles font-bold tracking-widest "
+        className="h1-titles font-bold tracking-widest my-4"
       >
         {title}
       </motion.h1>
@@ -101,7 +105,7 @@ export default function InfoSection({
           {selectedInfo && (
             <div className="relative w-full h-[400px] md:h-[70vh] group">
               <img
-                src={selectedInfo.image.src}
+                src={selectedInfo.image.imageUrl}
                 alt={selectedInfo.title}
                 className="absolute inset-0 w-full h-full object-cover rounded-lg mb-4"
               />
@@ -125,6 +129,6 @@ export default function InfoSection({
         </DialogContent>
       </Dialog>
       <ScrollDown color="uiwhite" href="#press" className="py-2" />
-    </article>
+    </motion.article>
   );
 }

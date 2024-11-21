@@ -1,17 +1,26 @@
-import { useEffect } from "react";
+"use client";
 
-export function useScroll({
-  id,
-  idRef,
-}: {
-  id: string;
-  idRef: React.RefObject<HTMLElement>;
-}) {
+import { useEffect, useCallback } from "react";
+
+export function useScroll(delay: number = 500) {
+  const scrollToElement = useCallback(
+    (id: string) => {
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth" });
+        }, delay);
+      }
+    },
+    [delay]
+  );
+
   useEffect(() => {
-    if (typeof window !== "undefined" && window.location.hash === `#${id}`) {
-      setTimeout(() => {
-        idRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+    if (typeof window !== "undefined" && window.location.hash) {
+      const id = window.location.hash.slice(1);
+      scrollToElement(id);
     }
-  }, [id, idRef]);
+  }, [scrollToElement]);
+
+  return scrollToElement;
 }

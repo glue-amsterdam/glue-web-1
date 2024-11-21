@@ -1,11 +1,12 @@
 "use client";
+import { fadeInConfig } from "@/utils/animations";
 import { motion } from "framer-motion";
 
 function EventHeader() {
   return (
-    <header>
+    <motion.header {...fadeInConfig}>
       <motion.h1
-        className="h2-titles text-uiblack"
+        className="h1-titles uppercase text-uiblack py-4"
         initial={{ opacity: 0, x: -70 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
@@ -13,7 +14,7 @@ function EventHeader() {
       >
         Events
       </motion.h1>
-    </header>
+    </motion.header>
   );
 }
 

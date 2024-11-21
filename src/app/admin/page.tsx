@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import LoginForm from "./login-form";
 import AdminDashboard from "./admin-dashboard";
+import { NAVBAR_HEIGHT } from "@/constants";
+import AdminLoginForm from "@/app/admin/forms/admin-login-form";
 
 export default function AdminPage() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -12,17 +13,21 @@ export default function AdminPage() {
   }, []);
 
   return (
-    <div className="min-h-screen pt-[5rem] bg-gradient-to-br from-blue-100 to-purple-100">
+    <div
+      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={`min-h-dvh bg-gradient-to-br from-blue-100 to-purple-100`}
+    >
       <div className="container mx-auto p-4">
         <h1 className="text-4xl font-bold mb-8 text-center text-blue-800">
           GLUE Admin
         </h1>
         {isAdmin ? (
           <>
-            <LoginForm />
             <AdminDashboard />
           </>
-        ) : null}
+        ) : (
+          <AdminLoginForm />
+        )}
       </div>
     </div>
   );

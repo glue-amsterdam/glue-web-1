@@ -10,9 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Citizen, CitizensSectionContent } from "@/utils/about-types";
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
+import { fadeInConfig } from "@/utils/animations";
+import { Citizen, CitizensSectionContent } from "@/schemas/baseSchema";
 
 export default function CitizenOfHonourSection({
   citizens,
@@ -64,7 +65,7 @@ export default function CitizenOfHonourSection({
           <div className="relative w-full h-full group">
             <div className="citizen-triangle bg-uiblack z-10 group-hover:opacity-50 opacity-20 transition-all" />
             <img
-              src={citizen.image.src}
+              src={citizen.image.imageUrl}
               alt={citizen.name}
               className="absolute inset-0 w-full h-full object-cover z-0 group-hover:grayscale-[0] md:grayscale-[0.2]"
             />
@@ -80,7 +81,10 @@ export default function CitizenOfHonourSection({
   );
 
   return (
-    <article className="z-20 mx-auto container h-full flex flex-col justify-between relative">
+    <motion.article
+      {...fadeInConfig}
+      className="z-20 mx-auto container h-full flex flex-col justify-between relative"
+    >
       <div className="flex justify-between md:items-center my-4">
         <motion.h1
           initial={{ opacity: 0, y: -60 }}
@@ -90,7 +94,7 @@ export default function CitizenOfHonourSection({
             delay: 0.8,
           }}
           viewport={{ once: true }}
-          className="h1-titles font-bold tracking-widest text-uiblack"
+          className="h1-titles font-bold tracking-widest my-4 text-uiblack"
         >
           {title}
         </motion.h1>
@@ -136,7 +140,7 @@ export default function CitizenOfHonourSection({
               </p>
 
               <img
-                src={selectedCitizen.image.src}
+                src={selectedCitizen.image.imageUrl}
                 alt={selectedCitizen.name}
                 className="absolute inset-0 w-full h-full object-cover mb-4 z-0"
               />
@@ -153,6 +157,6 @@ export default function CitizenOfHonourSection({
         {description}
       </motion.p>
       <ScrollDown color="uiwhite" href="#curated" className="py-2" />
-    </article>
+    </motion.article>
   );
 }

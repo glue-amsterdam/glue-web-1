@@ -18,7 +18,9 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import ScrollDown from "@/app/components/scroll-down";
 import { useScroll } from "@/app/hooks/useScroll";
-import { CarouselSectionContent } from "@/utils/about-types";
+import { fadeInConfig } from "@/utils/animations";
+import { NAVBAR_HEIGHT } from "@/constants";
+import { CarouselSectionContent } from "@/schemas/baseSchema";
 
 interface MainSectionProps {
   mainSection: CarouselSectionContent | undefined;
@@ -28,7 +30,7 @@ export default function MainSection({ mainSection }: MainSectionProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
-  useScroll({ id: "main", idRef: sectionRef });
+  useScroll();
 
   if (!mainSection) return <div className="text-center py-8">No Data</div>;
 
@@ -38,9 +40,13 @@ export default function MainSection({ mainSection }: MainSectionProps) {
       id="main"
       aria-labelledby="press-heading"
       aria-label="main-content"
-      className="h-screen pt-[5rem] snap-start relative "
+      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={`h-dvh snap-start relative `}
     >
-      <article className="z-20 mx-auto container h-full flex flex-col justify-between relative ">
+      <motion.article
+        {...fadeInConfig}
+        className="z-20 mx-auto container h-full flex flex-col justify-between relative "
+      >
         <motion.h1
           initial={{ opacity: 0, y: -60 }}
           animate={{ opacity: 1, y: 0 }}
@@ -74,8 +80,8 @@ export default function MainSection({ mainSection }: MainSectionProps) {
                         className="relative w-full h-full cursor-pointer transition-transform hover:scale-105"
                       >
                         <Image
-                          src={slide.src}
-                          alt={slide.alt}
+                          src={slide.imageUrl}
+                          alt={slide.alt || "Slide from the GLUE Gallery"}
                           className="object-cover"
                           quality={100}
                           fill
@@ -106,8 +112,11 @@ export default function MainSection({ mainSection }: MainSectionProps) {
           <DialogContent className="w-full p-0 max-w-[90vw] md:max-w-[70vw] ">
             <div className="relative w-full h-full">
               <img
-                src={mainSection.slides[selectedImage].src}
-                alt={mainSection.slides[selectedImage].alt}
+                src={mainSection.slides[selectedImage].imageUrl}
+                alt={
+                  mainSection.slides[selectedImage].alt ||
+                  "Slide from the GLUE Gallery"
+                }
                 className="object-cover w-full h-full"
               />
               <Button
@@ -141,7 +150,7 @@ export default function MainSection({ mainSection }: MainSectionProps) {
         </Dialog>
 
         <ScrollDown color="uiwhite" href="#participants" className="py-2" />
-      </article>
+      </motion.article>
     </section>
   );
 }

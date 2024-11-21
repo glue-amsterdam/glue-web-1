@@ -14,8 +14,10 @@ import {
 import { MenuIcon, MapPin, LockIcon, UnlockIcon } from "lucide-react";
 import { Location, LocationGroup } from "@/utils/map-types";
 import { motion } from "framer-motion";
-import { LoginForm } from "../login-form/login-form";
+import LoginForm from "../login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
+import { NAVBAR_HEIGHT } from "@/constants";
+import { useRouter } from "next/navigation";
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false);
@@ -41,21 +43,19 @@ export default function MapMain({
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
   const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
+  const router = useRouter();
 
-  const { user, login } = useAuth();
+  const { user } = useAuth();
 
   const handleGroupSelect = (group: LocationGroup) => {
     if (group.protected && !user) {
       setIsLoginModalOpen(true);
     }
   };
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      await login(email, password);
-      setIsLoginModalOpen(false);
-    } catch (error) {
-      console.error("Login failed:", error);
-    }
+
+  const handleLoginSuccess = () => {
+    setIsLoginModalOpen(false);
+    router.refresh();
   };
 
   const handleLocationSelect = (
@@ -69,7 +69,7 @@ export default function MapMain({
     }
   };
 
-  const InfoPanel = ({ className = "" }: { className?: string }) => (
+  const InfoPanel = ({ className }: { className?: string }) => (
     <ScrollArea className={`h-full text-uiblack ${className}`}>
       <div className="p-4">
         {user && (
@@ -126,7 +126,7 @@ export default function MapMain({
   );
 
   const MapPanel = () => (
-    <div className="relative h-full">
+    <>
       <img
         src="/placeholders/google-placeholder.png"
         alt="Interactive world map showing various locations"
@@ -152,7 +152,7 @@ export default function MapMain({
           aria-hidden="true"
         />
       )}
-    </div>
+    </>
   );
 
   const LocationInfo = () => {
@@ -166,17 +166,17 @@ export default function MapMain({
       </div>
     ) : null;
   };
-
   return (
     <motion.main
       initial={{ opacity: 0, y: 120 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.8 }}
-      className="fixed inset-0 mt-[15vh]"
+      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={` absolute inset-0`}
     >
       <h1 className="sr-only">GLUE MAP</h1>
       {isLargeScreen ? (
-        <div className="flex h-full p-4 gap-4 ">
+        <div className="flex h-full p-4 gap-4">
           <aside
             className="w-1/3 bg-card rounded-lg shadow-lg"
             aria-label="Location categories"
@@ -198,7 +198,7 @@ export default function MapMain({
               <Button
                 variant="outline"
                 size="icon"
-                className="absolute top-4 left-4 z-50 text-uiblack"
+                className="absolute mt-[1rem] left-[1rem] z-50 text-uiblack"
                 aria-label="Open location menu"
               >
                 <MenuIcon className="h-4 w-4" aria-hidden="true" />
@@ -214,7 +214,7 @@ export default function MapMain({
             </SheetContent>
           </Sheet>
           <section
-            className="h-full relative"
+            className={`h-full relative`}
             aria-label="Map and location details"
           >
             <MapPanel />
@@ -225,7 +225,7 @@ export default function MapMain({
       <LoginForm
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
-        onLogin={handleLogin}
+        onLoginSuccess={handleLoginSuccess}
       />
     </motion.main>
   );

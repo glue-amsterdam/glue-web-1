@@ -1,19 +1,21 @@
-import { Event } from "@/utils/event-types";
+import { IndividualEventResponse } from "@/schemas/eventSchemas";
 import EventCard from "./event-card";
 
-function EventsList({ events }: { events: Event[] }) {
-  if (events.length == 0) {
-    return <div>No events Found</div>;
+export default function EventsList({
+  events,
+}: {
+  events: IndividualEventResponse[];
+}) {
+  if (events.length === 0) {
+    return <div>No events found</div>;
   }
   return (
-    <ul className="grid grid-cols-1 gap-6" role="list">
+    <ul className="grid grid-cols-1 gap-6">
       {events.map((event, index) => (
-        <li key={event.id}>
+        <li key={event.eventId}>
           <EventCard i={index} event={event} />
         </li>
       ))}
     </ul>
   );
 }
-
-export default EventsList;

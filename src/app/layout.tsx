@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+/* import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "@/app/globals.css";
 import NavbarBurguer from "@/app/components/navbar/responsive-navbar-with-hamburger";
 import { AuthProvider } from "@/app/context/AuthContext";
 import { MainContextProvider } from "@/app/context/MainContext";
 import { fetchMain } from "@/utils/api";
+import { Toaster } from "@/components/ui/toaster";
 
 const lausanne = localFont({
   src: [
@@ -64,15 +65,32 @@ export default async function RootLayout({
           mainColors={mainSection.mainColors}
           mainLinks={mainSection.mainLinks}
           mainMenu={mainSection.mainMenu}
+          eventsDays={mainSection.eventsDays}
         >
           <body
-            className={`${lausanne.className} text-uiwhite antialiased min-h-screen flex flex-col`}
+            className={`${lausanne.className} text-uiwhite antialiased min-h-dvh`}
           >
             <NavbarBurguer />
             <div className="flex-grow overflow-x-hidden">{children}</div>
+            <Toaster />
           </body>
         </MainContextProvider>
       </AuthProvider>
     </html>
   );
 }
+ */
+
+import React from "react";
+
+function Layout() {
+  return (
+    <html>
+      <body>
+        <div>Layout</div>
+      </body>
+    </html>
+  );
+}
+
+export default Layout;

@@ -6,7 +6,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { Sponsor } from "@/utils/about-types";
+import { Sponsor } from "@/utils/sponsors-types";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -71,7 +71,7 @@ export default function SponsorsCarousel({
                     <CardContent className="flex items-center justify-center p-0 h-full">
                       <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
                         <img
-                          src={sponsor.logo.src}
+                          src={sponsor.logo.imageUrl}
                           alt={sponsor.name}
                           className="w-full h-full absolute object-cover"
                         />

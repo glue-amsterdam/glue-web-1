@@ -1,421 +1,311 @@
-import { Event } from "@/utils/event-types";
+import { Event, EventType } from "@/schemas/eventSchemas";
+import { EventDay } from "@/utils/menu-types";
+
+const eventsDays: EventDay[] = [
+  {
+    dayId: "day-1",
+    date: new Date("2025-01-16T00:00:00Z"),
+    label: "Thursday",
+  },
+  {
+    dayId: "day-2",
+    date: new Date("2025-01-17T00:00:00Z"),
+    label: "Friday",
+  },
+  {
+    dayId: "day-3",
+    date: new Date("2025-01-18T00:00:00Z"),
+    label: "Saturday",
+  },
+  {
+    dayId: "day-4",
+    date: new Date("2025-01-19T00:00:00Z"),
+    label: "Sunday",
+  },
+];
+
+const getRandomDay = () =>
+  eventsDays[Math.floor(Math.random() * eventsDays.length)];
+
+const generateTimestamps = () => {
+  const createdAt = new Date(
+    Date.now() - Math.floor(Math.random() * 10000000000)
+  );
+  const updatedAt = new Date(
+    createdAt.getTime() + Math.floor(Math.random() * 1000000000)
+  );
+  return { createdAt, updatedAt };
+};
+
+const userIds = [
+  "50654654",
+  "50654654654",
+  "50654655",
+  "5065465985",
+  "50654656",
+  "50654657",
+  "50654658",
+];
+
+const getRandomUserId = () =>
+  userIds[Math.floor(Math.random() * userIds.length)];
 
 export const mockEvents: Event[] = [
   {
-    id: "1",
+    eventId: "A1234567890",
     name: "Modern Art Exhibition",
-    thumbnail: "/placeholders/placeholder-1.jpg",
-    creator: {
-      id: "1",
-      name: "Gallery X",
-      avatar: "/placeholders/user-placeholder-1.jpg",
+    thumbnail: {
+      id: "modern-art-exhibition-thumbnail",
+      imageUrl: `/placeholders/placeholder-1.jpg`,
+      alt: "GLUE modern-art-exhibition-thumbnail",
+      imageName: "modern-art-exhibition-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      userId: getRandomUserId(),
+    },
+    rsvp: true,
+    rsvpMessage: "Please RSVP for the Modern Art Exhibition",
+    rsvpLink: "https://rsvp.modernartexhibition.com",
+    coOrganizers: [
       {
-        id: "2",
-        name: "Anna Clark",
-        avatar: "/placeholders/user-placeholder-2.jpg",
+        userId: getRandomUserId(),
       },
       {
-        id: "3",
-        name: "Marco Lopez",
-        avatar: "/placeholders/user-placeholder-3.jpg",
+        userId: getRandomUserId(),
       },
     ],
-    date: "2024-06-15",
+    date: getRandomDay(),
     startTime: "10:00",
     endTime: "18:00",
-    type: "Exhibition",
+    type: "Other" as EventType,
     description: "A showcase of contemporary works from international artists.",
+    ...generateTimestamps(),
   },
   {
-    id: "2",
+    eventId: "B9876543210",
     name: "Urban Design Workshop",
-    thumbnail: "/placeholders/placeholder-2.jpg",
-    creator: {
-      id: "2",
-      name: "City Design Lab",
-      avatar: "/placeholders/user-placeholder-2.jpg",
+    thumbnail: {
+      id: "urban-design-workshop-thumbnail",
+      imageUrl: `/placeholders/placeholder-2.jpg`,
+      alt: "GLUE urban-design-workshop-thumbnail",
+      imageName: "urban-design-workshop-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      userId: getRandomUserId(),
+    },
+    coOrganizers: [
       {
-        id: "4",
-        name: "Ethan Harper",
-        avatar: "/placeholders/user-placeholder-1.jpg",
-      },
-      {
-        id: "5",
-        name: "Sophia Turner",
-        avatar: "/placeholders/user-placeholder-4.jpg",
+        userId: getRandomUserId(),
       },
     ],
-    date: "2024-07-10",
+    date: getRandomDay(),
     startTime: "09:00",
     endTime: "17:00",
-    type: "Workshop",
+    type: "Workshop" as EventType,
     description:
       "Interactive workshop on sustainable urban planning and design.",
+    ...generateTimestamps(),
   },
   {
-    id: "3",
+    eventId: "C1357924680",
     name: "Architectural Tour: Historic Buildings",
-    thumbnail: "/placeholders/placeholder-3.jpg",
-    creator: {
-      id: "3",
-      name: "Heritage Tours",
-      avatar: "/placeholders/user-placeholder-3.jpg",
+    thumbnail: {
+      id: "architectural-tour-thumbnail",
+      imageUrl: `/placeholders/placeholder-3.jpg`,
+      alt: "GLUE architectural-tour-thumbnail",
+      imageName: "architectural-tour-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
-      {
-        id: "6",
-        name: "Lucas Shaw",
-        avatar: "/placeholders/user-placeholder-4.jpg",
-      },
-      {
-        id: "7",
-        name: "Mia Williams",
-        avatar: "/placeholders/user-placeholder-1.jpg",
-      },
-    ],
-    date: "2024-08-05",
+    organizer: {
+      userId: getRandomUserId(),
+    },
+    coOrganizers: [],
+    date: getRandomDay(),
     startTime: "14:00",
     endTime: "17:00",
-    type: "Guided Tour",
+    type: "Guided Tour" as EventType,
     description:
       "A guided tour exploring historic architectural landmarks in the city.",
+    ...generateTimestamps(),
   },
   {
-    id: "4",
+    eventId: "D2468013579",
     name: "Design Principles Lecture",
-    thumbnail: "/placeholders/placeholder-1.jpg",
-    creator: {
-      id: "4",
-      name: "Design Academy",
-      avatar: "/placeholders/user-placeholder-4.jpg",
+    thumbnail: {
+      id: "design-principles-lecture-thumbnail",
+      imageUrl: `/placeholders/placeholder-1.jpg`,
+      alt: "GLUE design-principles-lecture-thumbnail",
+      imageName: "design-principles-lecture-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      userId: getRandomUserId(),
+    },
+    rsvp: true,
+    rsvpMessage: "RSVP required for the Design Principles Lecture",
+    rsvpLink: "https://rsvp.designprinciples.com",
+    coOrganizers: [
       {
-        id: "8",
-        name: "Olivia Brown",
-        avatar: "/placeholders/user-placeholder-2.jpg",
-      },
-      {
-        id: "9",
-        name: "James Carter",
-        avatar: "/placeholders/user-placeholder-3.jpg",
+        userId: getRandomUserId(),
       },
     ],
-    date: "2024-09-15",
+    date: getRandomDay(),
     startTime: "11:00",
     endTime: "13:00",
-    type: "Lecture",
+    type: "Lecture" as EventType,
     description:
       "A lecture on the core principles of design and their real-world applications.",
+    ...generateTimestamps(),
   },
   {
-    id: "5",
+    eventId: "E3692581470",
     name: "Sculpture Workshop: Materials & Techniques",
-    thumbnail: "/placeholders/placeholder-2.jpg",
-    creator: {
-      id: "5",
-      name: "Artisans Collective",
-      avatar: "/placeholders/user-placeholder-3.jpg",
+    thumbnail: {
+      id: "sculpture-workshop-thumbnail",
+      imageUrl: `/placeholders/placeholder-2.jpg`,
+      alt: "GLUE sculpture-workshop-thumbnail",
+      imageName: "sculpture-workshop-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
-      {
-        id: "10",
-        name: "Emily Jones",
-        avatar: "/placeholders/user-placeholder-1.jpg",
-      },
-      {
-        id: "11",
-        name: "Daniel Evans",
-        avatar: "/placeholders/user-placeholder-2.jpg",
-      },
-    ],
-    date: "2024-10-20",
+    organizer: {
+      userId: getRandomUserId(),
+    },
+    coOrganizers: [],
+    date: getRandomDay(),
     startTime: "09:00",
     endTime: "16:00",
-    type: "Workshop",
+    type: "Workshop" as EventType,
     description:
       "Learn hands-on sculpting techniques using different materials.",
+    ...generateTimestamps(),
   },
   {
-    id: "6",
+    eventId: "F1597534862",
     name: "Art & Wine Social",
-    thumbnail: "/placeholders/placeholder-3.jpg",
-    creator: {
-      id: "6",
-      name: "Creative Space",
-      avatar: "/placeholders/user-placeholder-2.jpg",
+    thumbnail: {
+      id: "art-wine-social-thumbnail",
+      imageUrl: `/placeholders/placeholder-3.jpg`,
+      alt: "GLUE art-wine-social-thumbnail",
+      imageName: "art-wine-social-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      userId: getRandomUserId(),
+    },
+    rsvp: true,
+    rsvpMessage: "Please RSVP for the Art & Wine Social",
+    rsvpLink: "https://rsvp.artandwine.com",
+    coOrganizers: [
       {
-        id: "12",
-        name: "Sarah Martin",
-        avatar: "/placeholders/user-placeholder-3.jpg",
-      },
-      {
-        id: "13",
-        name: "Robert King",
-        avatar: "/placeholders/user-placeholder-4.jpg",
+        userId: getRandomUserId(),
       },
     ],
-    date: "2024-11-10",
+    date: getRandomDay(),
     startTime: "19:00",
     endTime: "22:00",
-    type: "Drink",
+    type: "Drink" as EventType,
     description:
       "An evening of art appreciation with wine and creative discussions.",
+    ...generateTimestamps(),
   },
   {
-    id: "7",
+    eventId: "G7531594862",
     name: "Interior Design Trends Lecture",
-    thumbnail: "/placeholders/placeholder-1.jpg",
-    creator: {
-      id: "7",
-      name: "Design Insights",
-      avatar: "/placeholders/user-placeholder-4.jpg",
+    thumbnail: {
+      id: "interior-design-trends-thumbnail",
+      imageUrl: `/placeholders/placeholder-1.jpg`,
+      alt: "GLUE interior-design-trends-thumbnail",
+      imageName: "interior-design-trends-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
-      {
-        id: "14",
-        name: "Isabella Reed",
-        avatar: "/placeholders/user-placeholder-1.jpg",
-      },
-      {
-        id: "15",
-        name: "Tom Wilson",
-        avatar: "/placeholders/user-placeholder-2.jpg",
-      },
-    ],
-    date: "2024-12-01",
+    organizer: {
+      userId: getRandomUserId(),
+    },
+    coOrganizers: [],
+    date: getRandomDay(),
     startTime: "10:00",
     endTime: "12:00",
-    type: "Lecture",
+    type: "Lecture" as EventType,
     description: "A deep dive into the latest interior design trends for 2025.",
+    ...generateTimestamps(),
   },
   {
-    id: "8",
+    eventId: "H9513578642",
     name: "Sustainable Architecture Workshop",
-    thumbnail: "/placeholders/placeholder-2.jpg",
-    creator: {
-      id: "8",
-      name: "Eco Architects",
-      avatar: "/placeholders/user-placeholder-3.jpg",
+    thumbnail: {
+      id: "sustainable-architecture-thumbnail",
+      imageUrl: `/placeholders/placeholder-2.jpg`,
+      alt: "GLUE sustainable-architecture-thumbnail",
+      imageName: "sustainable-architecture-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      userId: getRandomUserId(),
+    },
+    rsvp: true,
+    rsvpMessage: "RSVP for the Sustainable Architecture Workshop",
+    rsvpLink: "https://rsvp.sustainablearchitecture.com",
+    coOrganizers: [
       {
-        id: "16",
-        name: "Zoe White",
-        avatar: "/placeholders/user-placeholder-4.jpg",
-      },
-      {
-        id: "17",
-        name: "Michael Bailey",
-        avatar: "/placeholders/user-placeholder-1.jpg",
+        userId: getRandomUserId(),
       },
     ],
-    date: "2024-12-15",
+    date: getRandomDay(),
     startTime: "09:00",
     endTime: "17:00",
-    type: "Workshop",
+    type: "Workshop" as EventType,
     description:
       "Exploring sustainable building practices and eco-friendly materials.",
+    ...generateTimestamps(),
   },
   {
-    id: "9",
+    eventId: "I2469135780",
     name: "Photography Exhibition: Urban Landscapes",
-    thumbnail: "/placeholders/placeholder-3.jpg",
-    creator: {
-      id: "9",
-      name: "Photo World",
-      avatar: "/placeholders/user-placeholder-1.jpg",
+    thumbnail: {
+      id: "photography-exhibition-thumbnail",
+      imageUrl: `/placeholders/placeholder-3.jpg`,
+      alt: "GLUE photography-exhibition-thumbnail",
+      imageName: "photography-exhibition-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
-      {
-        id: "18",
-        name: "Jessica Brown",
-        avatar: "/placeholders/user-placeholder-2.jpg",
-      },
-      {
-        id: "19",
-        name: "William Garcia",
-        avatar: "/placeholders/user-placeholder-3.jpg",
-      },
-    ],
-    date: "2025-01-05",
+    organizer: {
+      userId: getRandomUserId(),
+    },
+    coOrganizers: [],
+    date: getRandomDay(),
     startTime: "10:00",
     endTime: "18:00",
-    type: "Exhibition",
+    type: "Exhibition" as EventType,
     description:
-      "A photography exhibition showcasing urban landscapes from around the world.",
+      "Showcasing urban landscape photography from local and international photographers.",
+    ...generateTimestamps(),
   },
   {
-    id: "10",
+    eventId: "J3571594680",
     name: "Art History Guided Tour",
-    thumbnail: "/placeholders/placeholder-1.jpg",
-    creator: {
-      id: "10",
-      name: "Museum of Art",
-      avatar: "/placeholders/user-placeholder-4.jpg",
+    thumbnail: {
+      id: "art-history-tour-thumbnail",
+      imageUrl: `/placeholders/placeholder-1.jpg`,
+      alt: "GLUE art-history-tour-thumbnail",
+      imageName: "art-history-tour-thumbnail",
+      ...generateTimestamps(),
     },
-    contributors: [
+    organizer: {
+      userId: getRandomUserId(),
+    },
+    coOrganizers: [
       {
-        id: "20",
-        name: "Nina Lee",
-        avatar: "/placeholders/user-placeholder-1.jpg",
-      },
-      {
-        id: "21",
-        name: "Harry Miller",
-        avatar: "/placeholders/user-placeholder-3.jpg",
+        userId: getRandomUserId(),
       },
     ],
-    date: "2025-02-20",
+    date: getRandomDay(),
     startTime: "13:00",
-    endTime: "16:00",
-    type: "Guided Tour",
-    description:
-      "A guided tour through centuries of art history and iconic masterpieces.",
-  },
-  {
-    id: "11",
-    name: "Contemporary Sculpture Exhibition",
-    thumbnail: "/placeholders/placeholder-2.jpg",
-    creator: {
-      id: "11",
-      name: "Sculpture Now",
-      avatar: "/placeholders/user-placeholder-3.jpg",
-    },
-    contributors: [
-      {
-        id: "22",
-        name: "Chloe Bennett",
-        avatar: "/placeholders/user-placeholder-2.jpg",
-      },
-      {
-        id: "23",
-        name: "Ryan Scott",
-        avatar: "/placeholders/user-placeholder-4.jpg",
-      },
-    ],
-    date: "2025-03-10",
-    startTime: "11:00",
-    endTime: "17:00",
-    type: "Exhibition",
-    description:
-      "An exhibition of cutting-edge contemporary sculpture from emerging artists.",
-  },
-  {
-    id: "12",
-    name: "Digital Art Workshop: New Techniques",
-    thumbnail: "/placeholders/placeholder-3.jpg",
-    creator: {
-      id: "12",
-      name: "Digital Creatives",
-      avatar: "/placeholders/user-placeholder-1.jpg",
-    },
-    contributors: [
-      {
-        id: "24",
-        name: "Ella Gray",
-        avatar: "/placeholders/user-placeholder-4.jpg",
-      },
-      {
-        id: "25",
-        name: "Leo Parker",
-        avatar: "/placeholders/user-placeholder-2.jpg",
-      },
-    ],
-    date: "2025-04-01",
-    startTime: "09:00",
     endTime: "15:00",
-    type: "Workshop",
+    type: "Guided Tour" as EventType,
     description:
-      "A hands-on workshop exploring new techniques in digital art creation.",
-  },
-  {
-    id: "13",
-    name: "Fashion Design Trends Lecture",
-    thumbnail: "/placeholders/placeholder-1.jpg",
-    creator: {
-      id: "13",
-      name: "Fashion Forward",
-      avatar: "/placeholders/user-placeholder-4.jpg",
-    },
-    contributors: [
-      {
-        id: "26",
-        name: "Lily Adams",
-        avatar: "/placeholders/user-placeholder-3.jpg",
-      },
-      {
-        id: "27",
-        name: "Jack Cooper",
-        avatar: "/placeholders/user-placeholder-4.jpg",
-      },
-    ],
-    date: "2025-04-20",
-    startTime: "11:00",
-    endTime: "13:00",
-    type: "Lecture",
-    description:
-      "Exploring the latest trends in fashion design for the upcoming season.",
-  },
-  {
-    id: "14",
-    name: "Abstract Painting Workshop",
-    thumbnail: "/placeholders/placeholder-2.jpg",
-    creator: {
-      id: "14",
-      name: "Art Studio",
-      avatar: "/placeholders/user-placeholder-3.jpg",
-    },
-    contributors: [
-      {
-        id: "28",
-        name: "Sophie Brooks",
-        avatar: "/placeholders/user-placeholder-1.jpg",
-      },
-      {
-        id: "29",
-        name: "Chris Lee",
-        avatar: "/placeholders/user-placeholder-2.jpg",
-      },
-    ],
-    date: "2025-05-05",
-    startTime: "10:00",
-    endTime: "16:00",
-    type: "Workshop",
-    description: "Learn techniques for creating stunning abstract paintings.",
-  },
-  {
-    id: "15",
-    name: "Designers’ Social Evening",
-    thumbnail: "/placeholders/placeholder-3.jpg",
-    creator: {
-      id: "15",
-      name: "Design Circle",
-      avatar: "/placeholders/user-placeholder-4.jpg",
-    },
-    contributors: [
-      {
-        id: "30",
-        name: "Max Roberts",
-        avatar: "/placeholders/user-placeholder-3.jpg",
-      },
-      {
-        id: "31",
-        name: "Grace Foster",
-        avatar: "/placeholders/user-placeholder-1.jpg",
-      },
-    ],
-    date: "2025-05-20",
-    startTime: "18:00",
-    endTime: "21:00",
-    type: "Drink",
-    description:
-      "A casual social event for designers to network and share ideas.",
+      "Explore the history of art through a guided tour of significant artworks.",
+    ...generateTimestamps(),
   },
 ];

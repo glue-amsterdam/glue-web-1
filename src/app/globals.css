@@ -75,14 +75,6 @@
       opacity: 1;
     }
   }
-  .delayed-appearance {
-    opacity: 0;
-    animation: fadeIn 0.2s ease-in-out 1.2s forwards; /* 1s duración, 2s retraso */
-  }
-}
-
-::-webkit-scrollbar {
-  display: none;
 }
 
 @font-face {
@@ -145,11 +137,6 @@
   }
 }
 
-html {
-  scrollbar-width: none;
-  scroll-behavior: smooth !important;
-}
-
 @layer base {
   * {
     @apply border-border;
@@ -161,19 +148,19 @@ html {
 }
 
 .upperbutton {
-  clip-path: polygon(50% 50%, 100% 10%, 100% 0, 0 0);
+  clip-path: polygon(100% 0, 100% 10%, 50% 50%, 0 10%, 0 0);
   width: 100%;
   height: 100%;
   position: absolute;
 }
 .leftbutton {
-  clip-path: polygon(50% 50%, 0 0, 0 100%);
+  clip-path: polygon(0 10%, 0 90%, 50% 50%);
   width: 100%;
   height: 100%;
   position: absolute;
 }
 .downbutton {
-  clip-path: polygon(50% 50%, 100% 90%, 100% 100%, 0% 100%);
+  clip-path: polygon(50% 50%, 100% 90%, 100% 100%, 0 100%, 0 90%);
   width: 100%;
   height: 100%;
   position: absolute;
@@ -189,4 +176,24 @@ html {
   width: 100%;
   height: 100%;
   position: absolute;
+}
+
+.scrollbar-visible {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
+}
+
+.scrollbar-visible::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-visible::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-visible::-webkit-scrollbar-thumb {
+  background-color: rgba(155, 155, 155, 0.5);
+  border-radius: 20px;
+  border: transparent;
 }

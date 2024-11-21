@@ -1,6 +1,7 @@
 "use client";
 
 import ScrollDown from "@/app/components/scroll-down";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
@@ -9,16 +10,25 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { ParticipantsSectionContent } from "@/utils/about-types";
+import { placeholderImage } from "@/mockConstants";
+import { ParticipantUser } from "@/schemas/usersSchemas";
+import { fadeInConfig } from "@/utils/animations";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
+import { UserPlusIcon } from "lucide-react";
 import Link from "next/link";
+
+interface ParticipantsSection {
+  title: string;
+  description: string;
+  participants: ParticipantUser[];
+}
 
 export default function ParticipantsSection({
   participants,
   description,
   title,
-}: ParticipantsSectionContent) {
+}: ParticipantsSection) {
   if (!participants || participants.length === 0) {
     return <div className="text-center py-8">No Participants Data</div>;
   }
@@ -30,19 +40,30 @@ export default function ParticipantsSection({
   }
 
   return (
-    <article className="z-20 mx-auto container h-full flex flex-col justify-between relative">
-      <motion.h1
-        initial={{ opacity: 0, y: -60 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{
-          duration: 0.5,
-          delay: 0.8,
-        }}
-        viewport={{ once: true }}
-        className="h1-titles font-bold tracking-widest mb-4"
-      >
-        {title}
-      </motion.h1>
+    <motion.article
+      {...fadeInConfig}
+      className="z-20 mx-auto container h-full flex flex-col justify-between relative"
+    >
+      <div className="flex items-center justify-between">
+        <motion.h1
+          initial={{ opacity: 0, y: -60 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.5,
+            delay: 0.8,
+          }}
+          viewport={{ once: true }}
+          className="h1-titles font-bold tracking-widest my-4"
+        >
+          {title}
+        </motion.h1>
+        <Link href={"/participants"}>
+          <Button type="button" variant="ghost">
+            <UserPlusIcon />
+            <span className="text-lg">View All</span>
+          </Button>
+        </Link>
+      </div>
       <div className="h-[70%] flex items-start">
         <Carousel
           className="w-full h-full"
@@ -62,24 +83,39 @@ export default function ParticipantsSection({
                 <Link
                   target="_blank"
                   className="h-full"
-                  href={`/members/${encodeURIComponent(
-                    generateSlug(participant.name)
+                  href={`/participants/${encodeURIComponent(
+                    generateSlug(participant.userName)
                   )}`}
                 >
                   <Card className="border-none shadow-sm bg-transparent h-full hover:shadow-md transition-shadow duration-300">
                     <CardContent className="flex items-center justify-center p-0 h-full">
-                      <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
-                        <img
-                          src={participant.images[0].src}
-                          alt={participant.name}
-                          className="w-full h-full absolute object-cover"
-                        />
-                        <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                          <p className="text-center font-semibold text-sm">
-                            {participant.name}
-                          </p>
+                      {participant.images ? (
+                        <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
+                          <img
+                            src={participant.images[0].imageUrl}
+                            alt={`${participant.userName} profile image thumbnail`}
+                            className="w-full h-full absolute object-cover"
+                          />
+                          <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                            <p className="text-center font-semibold text-sm">
+                              {participant.userName}
+                            </p>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
+                          <img
+                            src={placeholderImage.imageUrl}
+                            alt={`${participant.userName} profile image thumbnail`}
+                            className="w-full h-full absolute object-cover"
+                          />
+                          <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                            <p className="text-center font-semibold text-sm">
+                              {participant.userName}
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </Link>
@@ -99,6 +135,6 @@ export default function ParticipantsSection({
         {description}
       </motion.p>
       <ScrollDown href="#citizens" color="uiblack" className="py-2" />
-    </article>
+    </motion.article>
   );
 }

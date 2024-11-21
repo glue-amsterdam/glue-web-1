@@ -18,6 +18,15 @@ export const mainSection: MainSection = {
       label: "about",
       section: "about",
       className: "upperbutton",
+      subItems: [
+        { title: "Carousel", href: "main" },
+        { title: "Participants", href: "participants" },
+        { title: "Citizens of Honour", href: "citizens" },
+        { title: "Curated Members", href: "curated" },
+        { title: "Information", href: "info" },
+        { title: "GLUE international", href: "last" },
+        { title: "Sponsors", href: "last" },
+      ],
     },
     {
       label: "events",
@@ -31,17 +40,39 @@ export const mainSection: MainSection = {
     },
   ],
   mainLinks: {
+    newsletter: {
+      link: "https://amsterdam.us5.list-manage.com/subscribe?u=b588bd4354fa4df94fbd3803c&id=9cda67fd4c",
+    },
     linkedin: {
-      link: "https://www.facebook.com/",
-      icon: "facebook",
+      link: "https://www.linkedin.com/company/glue-amsterdam-connected-by-design/",
     },
     instagram: {
-      link: "https://www.instagram.com/",
-      icon: "instagram",
+      link: "https://www.instagram.com/glue.amsterdam",
     },
     youtube: {
-      link: "https://www.youtube.com/",
-      icon: "youtube",
+      link: "https://www.youtube.com/@GLUETV_amsterdam",
     },
   },
+  eventsDays: [
+    {
+      dayId: "day-1",
+      date: new Date("2025-01-16T00:00:00Z"),
+      label: "Thursday",
+    },
+    {
+      dayId: "day-2",
+      date: new Date("2025-01-17T00:00:00Z"),
+      label: "Friday",
+    },
+    {
+      dayId: "day-3",
+      date: new Date("2025-01-18T00:00:00Z"),
+      label: "Saturday",
+    },
+    {
+      dayId: "day-4",
+      date: new Date("2025-01-19T00:00:00Z"),
+      label: "Sunday",
+    },
+  ],
 };

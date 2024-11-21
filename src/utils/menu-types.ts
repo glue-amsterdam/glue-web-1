@@ -1,12 +1,21 @@
+import { DAYS, DAYS_IDS } from "@/constants";
+
 export interface MainSection {
   mainColors: MainColors;
   mainMenu: MainMenuItem[];
   mainLinks: Record<string, MainLink>;
+  eventsDays: EventDay[];
 }
 export interface MainMenuItem {
   label: string;
   section: string;
   className: string;
+  subItems?: SubMenuItem[];
+}
+
+interface SubMenuItem {
+  title: string;
+  href: string;
 }
 
 export interface MainColors {
@@ -18,6 +27,14 @@ export interface MainColors {
 }
 
 export interface MainLink {
-  link: string;
-  icon: string;
+  link?: string;
 }
+
+export interface EventDay {
+  dayId: DayID;
+  label: DaysLabels;
+  date: Date;
+}
+
+export type DayID = (typeof DAYS_IDS)[number];
+export type DaysLabels = (typeof DAYS)[number];

@@ -4,30 +4,36 @@ import ParticipantsSection from "@/app/components/about/participants-section";
 import GlueLogo from "@/app/components/glue-logo";
 import { useColors } from "@/app/context/MainContext";
 import { useScroll } from "@/app/hooks/useScroll";
-import { ParticipantsSectionContent } from "@/utils/about-types";
+import { NAVBAR_HEIGHT } from "@/constants";
+import { ParticipantsSectionContent } from "@/schemas/baseSchema";
+import { ParticipantUser } from "@/schemas/usersSchemas";
 import { useRef } from "react";
 
 interface ParticipantsProps {
-  participantsSection: ParticipantsSectionContent;
+  headerData: ParticipantsSectionContent;
+  participants: ParticipantUser[];
 }
 
 export default function Participants({
-  participantsSection,
+  headerData,
+  participants,
 }: ParticipantsProps) {
   const sectionRef = useRef<HTMLElement>(null);
-  useScroll({ id: "participants", idRef: sectionRef });
+  useScroll();
+
   return (
     <section
       ref={sectionRef}
       id="participants"
       areia-label="participants-content"
       aria-labelledby="participants-heading"
-      className="h-screen pt-[5rem] relative w-full flex flex-col justify-center items-center snap-start bg-uiwhite"
+      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={`h-dvh relative w-full flex flex-col justify-center items-center snap-start bg-uiwhite`}
     >
       <ParticipantsSection
-        description={participantsSection.description}
-        title={participantsSection.title}
-        participants={participantsSection.participants}
+        description={headerData.description}
+        title={headerData.title}
+        participants={participants}
       />
       <ParticipantsBackground />
     </section>

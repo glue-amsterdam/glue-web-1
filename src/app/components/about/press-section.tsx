@@ -3,9 +3,10 @@
 import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { PressItem } from "@/utils/about-types";
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
+import { fadeInConfig } from "@/utils/animations";
+import { PressItem } from "@/schemas/baseSchema";
 
 interface PressSectionProps {
   pressItems: PressItem[];
@@ -37,15 +38,15 @@ export default function PressSection({
         whileInView={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
         transition={{ duration: 0.5 }}
         viewport={{ once: true }}
-        className="shadow-md h-full "
+        className="relative shadow-md overflow-hidden h-full"
         onViewportEnter={() => (hasAnimatedRef.current = true)}
       >
         <Card
-          className="cursor-pointer rounded-none border-none group shadow-md h-full"
+          className="cursor-pointer rounded-none border-none group shadow-md"
           onClick={() => setSelectedItem(item)}
         >
           <img
-            src={item.image.src}
+            src={item.image.imageUrl}
             alt={item.title}
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
           />
@@ -62,7 +63,10 @@ export default function PressSection({
   const hasGlueTV = pressItems.length <= 2;
 
   return (
-    <article className="z-20 mx-auto container h-full flex flex-col justify-between relative">
+    <motion.article
+      {...fadeInConfig}
+      className="z-20 mx-auto container h-full flex flex-col justify-between relative"
+    >
       <motion.h1
         initial={{ opacity: 0, y: -60 }}
         animate={{ opacity: 1, y: 0 }}
@@ -71,7 +75,7 @@ export default function PressSection({
           delay: 0.8,
         }}
         viewport={{ once: true }}
-        className="h1-titles font-bold tracking-widest"
+        className="h1-titles font-bold tracking-widest my-4"
       >
         {title}
       </motion.h1>
@@ -97,7 +101,7 @@ export default function PressSection({
         <DialogContent className="text-uiblack min-w-[80vw] rounded-none m-0 p-0">
           <div className="relative w-full h-[400px] md:h-[70vh] group">
             <img
-              src={selectedItem?.image.src}
+              src={selectedItem?.image.imageUrl}
               alt={selectedItem?.title}
               className="absolute inset-0 w-full h-full object-cover rounded-lg mb-4"
             />
@@ -124,6 +128,6 @@ export default function PressSection({
         </DialogContent>
       </Dialog>
       <ScrollDown color="uiblack" href="#last" className="py-2" />
-    </article>
+    </motion.article>
   );
 }

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -21,73 +20,94 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { LockIcon } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
-
-const formSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters" }),
-});
-
-type FormData = z.infer<typeof formSchema>;
+import GlueLogoSVG from "@/app/components/glue-logo-svg";
+import { motion } from "framer-motion";
+import { Mail, Lock, Loader2 } from "lucide-react";
+import { FormDataWithEmail, loginSchemaWithEmail } from "@/schemas/loginSchema";
+import { LoggedInUserType } from "@/schemas/usersSchemas";
+import Link from "next/link";
 
 interface LoginFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (email: string, password: string) => Promise<void>;
+  onLoginSuccess: (user: LoggedInUserType) => void;
 }
 
-export function LoginForm({ isOpen, onClose }: LoginFormProps) {
-  const { login } = useAuth();
+export default function LoginForm({
+  isOpen,
+  onClose,
+  onLoginSuccess,
+}: LoginFormProps) {
+  const { login, loginError } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<FormDataWithEmail>({
+    resolver: zodResolver(loginSchemaWithEmail),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: FormDataWithEmail) => {
     setIsLoading(true);
     try {
-      await login(data.email, data.password);
+      const user = await login(data.email, data.password);
       onClose();
+      onLoginSuccess(user);
     } catch (error) {
       console.error("Failed to log in:", error);
-      // Handle error (e.g., show error message to user)
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handlePasswordForgot = () => {
+    /* API CALL TO FORGOT PASSWORD */
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-gradient-to-br from-primary/10 to-secondary/10 backdrop-blur-sm border border-primary/20 rounded-lg shadow-xl p-6 text-black">
         <DialogHeader>
-          <DialogTitle>Log In</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-3xl font-bold text-center text-primary">
+            Log In
+          </DialogTitle>
+          <DialogDescription className="text-center text-muted-foreground">
             Enter your credentials to access your account.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex justify-center my-6">
-          <div className="bg-gray-200 p-6 rounded-full">
-            <LockIcon className="w-12 h-12 text-gray-600" />
+        <motion.div
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="flex justify-center w-full mb-6 text-black"
+        >
+          <GlueLogoSVG isVisible className="w-32 h-32" />
+        </motion.div>
+        {loginError && (
+          <div className="text-red-500 text-sm bg-red-100 p-2 rounded">
+            {loginError}
           </div>
-        </div>
+        )}
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className="text-primary">Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your email" {...field} />
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        placeholder="Enter your email"
+                        {...field}
+                        className="pl-10"
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -98,21 +118,49 @@ export function LoginForm({ isOpen, onClose }: LoginFormProps) {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel className="text-primary">Password</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Enter your password"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        type="password"
+                        placeholder="Enter your password"
+                        {...field}
+                        className="pl-10"
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Log In"}
-            </Button>
+            <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Logging in...
+                  </>
+                ) : (
+                  "Log In"
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full text-black"
+              >
+                <Link href="signup/?step=1">Sign up</Link>
+              </Button>
+            </div>
+            <div className="text-center">
+              <a
+                onClick={handlePasswordForgot}
+                className="text-sm text-primary hover:underline"
+              >
+                Forgot your password?
+              </a>
+            </div>
           </form>
         </Form>
       </DialogContent>
