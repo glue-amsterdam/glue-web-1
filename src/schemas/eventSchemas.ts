@@ -57,7 +57,7 @@ export interface BaseEvent {
   eventId: string;
   name: string;
   thumbnail: ImageData;
-  coOrganizers: Pick<ParticipantUser, "userId">[];
+  coOrganizers?: Pick<ParticipantUser, "userId">[];
   date: EventDay;
   startTime: string;
   endTime: string;

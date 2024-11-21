@@ -11,7 +11,7 @@ import {
   UserWithPlanDetails,
 } from "@/schemas/usersSchemas";
 import { PlansResponse } from "@/utils/sign-in.types";
-import { IndividualEventResponse } from "@/schemas/eventSchemas";
+import { EnhancedUser, IndividualEventResponse } from "@/schemas/eventSchemas";
 import { DatabaseAboutContent } from "@/schemas/baseSchema";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -124,6 +124,18 @@ export const fetchAllParticipants = cache(
     return res.json();
   }
 );
+
+export async function fetchParticipantsIdandName(
+  searchTerm: string
+): Promise<EnhancedUser[]> {
+  const response = await fetch(
+    `/api/participants/search?term=${encodeURIComponent(searchTerm)}`
+  );
+  if (!response.ok) {
+    throw new Error("Failed to search participants");
+  }
+  return response.json();
+}
 
 /* USERS */
 export const fetchUser = cache(

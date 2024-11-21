@@ -14,7 +14,6 @@ export const enhancedUserSchema: z.ZodType<EnhancedUser> = z.object({
   userName: z.string(),
   slug: z.string().optional(),
 });
-
 export const enhancedOrganizerSchema: z.ZodType<EnhancedOrganizer> =
   enhancedUserSchema.and(
     z.object({
@@ -29,7 +28,6 @@ const timeRangeSchema = z.object({
     .string()
     .regex(/^\d{2}:\d{2}$/, "Close time must be in HH:MM format"),
 });
-
 const daySchema = z.object({
   dayId: z.string(),
   label: z.string(),

@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SubmitHandler, useForm } from "react-hook-form";
-import * as z from "zod";
+import { useFieldArray, useForm, useFormState } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -22,106 +21,178 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { motion } from "framer-motion";
-import { DEFAULT_EMPTY_EVENT, EVENT_TYPES, safeParseDate } from "@/constants";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useEventsDays } from "@/app/context/MainContext";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
+import { motion } from "framer-motion";
 import {
-  eventSchema,
-  eventDaySchema,
-  RSVPOptionalEvent,
-  Event,
-} from "@/schemas/eventSchemas";
+  DEFAULT_EMPTY_EVENT,
+  EMPTY_IMAGE,
+  EVENT_TYPES,
+  safeParseDate,
+} from "@/constants";
+import { useEventsDays } from "@/app/context/MainContext";
+import { eventSchema, Event, EnhancedUser } from "@/schemas/eventSchemas";
 import useLoggedTargetUsers from "@/app/hooks/useLoggedTargetUsers";
 import { RichTextEditor } from "@/app/components/editor";
+import { placeholderImage } from "@/mockConstants";
+import { fetchParticipantsIdandName } from "@/utils/api";
 
 export default function CreateEventClientPage() {
-  const { loggedInUser, targetUserId } = useLoggedTargetUsers();
-
-  console.log("targetUserId:", targetUserId);
-  console.log("loggedUserId:", loggedInUser?.userId);
-
+  const { targetUserId } = useLoggedTargetUsers();
+  const [coOrganizerInput, setCoOrganizerInput] = useState("");
+  const [suggestions, setSuggestions] = useState<EnhancedUser[]>([]);
+  const [selectedCoOrganizers, setSelectedCoOrganizers] = useState<
+    EnhancedUser[]
+  >([]);
   const [events, setEvents] = useState<Event[]>([]);
-  const [isDateSelected, setIsDateSelected] = useState(false);
   const eventsDays = useEventsDays();
-
-  const existingEvents = events.length;
 
   const form = useForm<Event>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
       ...DEFAULT_EMPTY_EVENT,
-      date: {
-        dayId: undefined,
-        label: undefined,
-        date: new Date(),
-      },
+      type: undefined,
       organizer: { userId: targetUserId as string },
       eventId: `event-${Date.now()}-${Math.random().toString(36)}`,
+      coOrganizers: [],
+      date: { dayId: undefined, label: undefined, date: new Date() }, // Initialize with empty values
     },
   });
 
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) =>
-      console.log("Form updated:", name, value)
-    );
-    return () => subscription.unsubscribe();
-  }, [form]);
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "coOrganizers",
+  });
 
-  const onSubmit: SubmitHandler<Event> = (data) => {
-    console.log("Form submitted with values:", data);
+  const { control } = form;
+  const { errors } = useFormState({ control });
 
-    if (events.length + existingEvents >= 5) {
-      alert("You can only create up to 5 events.");
-      return;
+  const watchRSVP = form.watch("rsvp");
+
+  const handleCoOrganizerInputChange = useCallback(async (value: string) => {
+    setCoOrganizerInput(value);
+    if (value.length >= 2) {
+      try {
+        const results = await fetchParticipantsIdandName(value);
+        setSuggestions(results);
+      } catch (error) {
+        console.error("Error searching participants:", error);
+        setSuggestions([]);
+      }
+    } else {
+      setSuggestions([]);
     }
+  }, []);
 
-    const newEvent: Event = {
-      ...data,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      organizer: { userId: targetUserId as string },
-    };
+  const addCoOrganizer = useCallback(() => {
+    const selectedUser = suggestions.find(
+      (user) => user.userName.toLowerCase() === coOrganizerInput.toLowerCase()
+    );
+    if (
+      selectedUser &&
+      fields.length < 4 &&
+      !fields.some((field) => field.userId === selectedUser.userId)
+    ) {
+      append({ userId: selectedUser.userId });
+      setSelectedCoOrganizers((prev) => [...prev, selectedUser]);
+      setCoOrganizerInput("");
+      setSuggestions([]);
+    }
+  }, [coOrganizerInput, suggestions, fields, append]);
 
-    console.log("New event created:", newEvent);
-    setEvents((prevEvents) => [...prevEvents, newEvent]);
+  const removeCoOrganizer = useCallback(
+    (index: number) => {
+      remove(index);
+      setSelectedCoOrganizers((prev) => prev.filter((_, i) => i !== index));
+    },
+    [remove]
+  );
 
-    const resetValues: RSVPOptionalEvent = {
-      ...DEFAULT_EMPTY_EVENT,
-      date: {
-        dayId: "day-1",
-        label: eventsDays[0]?.label || "",
-        date: new Date(),
-      },
-      rsvp: false,
-      organizer: { userId: targetUserId as string },
-    };
-    form.reset(resetValues);
-    setIsDateSelected(false);
-  };
+  const onSubmit = useCallback(
+    (data: Event) => {
+      if (events.length >= 5) {
+        alert("You can only create up to 5 events.");
+        return;
+      }
+
+      const newEvent: Event = {
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        organizer: { userId: targetUserId as string },
+      };
+
+      console.log("New event data:", newEvent);
+
+      setEvents((prev) => [...prev, newEvent]);
+      form.reset({
+        ...DEFAULT_EMPTY_EVENT,
+        organizer: { userId: targetUserId },
+        eventId: `event-${Date.now()}-${Math.random().toString(36)}`,
+        coOrganizers: [],
+        date: { dayId: undefined, label: undefined, date: new Date() },
+        rsvp: false,
+      });
+    },
+    [events.length, targetUserId, form]
+  );
+  /*   useEffect(() => {
+    // This effect will run after the component has mounted
+    if (eventsDays.length > 0 && !form.getValues("date.dayId")) {
+      form.setValue("date", {
+        dayId: eventsDays[0].dayId,
+        label: eventsDays[0].label,
+        date: safeParseDate(eventsDays[0].date),
+      });
+    }
+  }, [eventsDays, form]); */
+
+  const memoizedEventsList = useMemo(() => {
+    return events.map((event) => (
+      <div
+        key={event.eventId}
+        className="bg-primary text-primary-foreground p-4 rounded-lg mb-4"
+      >
+        <h3 className="font-bold">{event.name}</h3>
+        <p>Type: {event.type}</p>
+        <p>Date: {event.date.label}</p>
+        <p>
+          Time: {event.startTime} - {event.endTime}
+        </p>
+        {event.rsvp && <p>RSVP Required</p>}
+        {event.coOrganizers && event.coOrganizers.length > 0 && (
+          <p>
+            Co-organizers:{" "}
+            {event.coOrganizers
+              .map(
+                (co) =>
+                  selectedCoOrganizers.find(
+                    (selected) => selected.userId === co.userId
+                  )?.userName || co.userId
+              )
+              .join(", ")}
+          </p>
+        )}
+      </div>
+    ));
+  }, [events, selectedCoOrganizers]);
+
   return (
-    <motion.div>
-      <h1>Create Event for {targetUserId}</h1>
+    <motion.div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-6">
+        Create Event for {targetUserId}
+      </h1>
       <Form {...form}>
-        <form
-          onSubmit={(e) => {
-            console.log("Form submit event triggered");
-            form.handleSubmit(onSubmit, (errors) => {
-              console.log("Form validation errors:", errors);
-            })(e);
-          }}
-          className="space-y-8 text-uiwhite"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-8">
               <FormField
                 control={form.control}
                 name="thumbnail"
                 render={({ field }) => (
-                  <FormItem className="dashboard-form-item">
-                    <FormLabel className="dashboard-label">
-                      Event thumbnail
-                    </FormLabel>
+                  <FormItem>
+                    <FormLabel>Event thumbnail</FormLabel>
                     <FormControl>
                       <div className="flex flex-wrap gap-4">
                         {field.value.imageUrl ? (
@@ -137,14 +208,7 @@ export default function CreateEventClientPage() {
                               size="sm"
                               className="absolute top-2 right-2"
                               onClick={() => {
-                                form.setValue("thumbnail", {
-                                  id: "",
-                                  imageUrl: "",
-                                  alt: "",
-                                  imageName: "",
-                                  createdAt: new Date(),
-                                  updatedAt: new Date(),
-                                });
+                                form.setValue("thumbnail", EMPTY_IMAGE);
                               }}
                             >
                               Remove
@@ -154,14 +218,7 @@ export default function CreateEventClientPage() {
                           <Button
                             type="button"
                             onClick={() => {
-                              form.setValue("thumbnail", {
-                                id: "image-event-thumbnail-asdfas",
-                                imageUrl: "/placeholders/placeholder-1.jpg",
-                                alt: "Image alt text for the Event thumbnail",
-                                imageName: "placeholder-1.jpg",
-                                createdAt: new Date(),
-                                updatedAt: new Date(),
-                              });
+                              form.setValue("thumbnail", placeholderImage);
                             }}
                             className="h-40 w-40 flex items-center justify-center"
                           >
@@ -180,16 +237,10 @@ export default function CreateEventClientPage() {
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItem className="dashboard-form-item">
-                    <FormLabel className="dashboard-label">
-                      Event Name
-                    </FormLabel>
+                  <FormItem>
+                    <FormLabel>Event Name</FormLabel>
                     <FormControl>
-                      <Input
-                        className="dashboard-input"
-                        placeholder="Enter event name"
-                        {...field}
-                      />
+                      <Input placeholder="Enter event name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -200,10 +251,8 @@ export default function CreateEventClientPage() {
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <FormItem className="dashboard-form-item">
-                    <FormLabel className="dashboard-label">
-                      Description
-                    </FormLabel>
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
                     <RichTextEditor
                       value={field.value}
                       onChange={field.onChange}
@@ -216,7 +265,7 @@ export default function CreateEventClientPage() {
 
             <div className="space-y-8">
               <FormField
-                control={form.control}
+                control={control}
                 name="date"
                 render={({ field }) => (
                   <FormItem>
@@ -228,15 +277,10 @@ export default function CreateEventClientPage() {
                         );
                         if (selectedDay) {
                           field.onChange({
-                            dayId: selectedDay.dayId as z.infer<
-                              typeof eventDaySchema
-                            >["dayId"],
-                            label: selectedDay.label as z.infer<
-                              typeof eventDaySchema
-                            >["label"],
+                            dayId: selectedDay.dayId,
+                            label: selectedDay.label,
                             date: safeParseDate(selectedDay.date),
                           });
-                          setIsDateSelected(true);
                         }
                       }}
                       value={field.value.dayId}
@@ -247,11 +291,6 @@ export default function CreateEventClientPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {!isDateSelected && (
-                          <SelectItem value="0" disabled>
-                            Select day
-                          </SelectItem>
-                        )}
                         {eventsDays.map((day) => (
                           <SelectItem key={day.dayId} value={day.dayId}>
                             {day.label}
@@ -259,26 +298,19 @@ export default function CreateEventClientPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage>{errors.date?.message}</FormMessage>
                   </FormItem>
                 )}
               />
-
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="startTime"
                   render={({ field }) => (
-                    <FormItem className="dashboard-form-item">
-                      <FormLabel className="dashboard-label">
-                        Start Time
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="time"
-                          className="dashboard-input"
-                          {...field}
-                        />
+                    <FormItem>
+                      <FormLabel>Start Time</FormLabel>
+                      <FormControl className="bg-white text-black">
+                        <Input type="time" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -289,16 +321,10 @@ export default function CreateEventClientPage() {
                   control={form.control}
                   name="endTime"
                   render={({ field }) => (
-                    <FormItem className="dashboard-form-item">
-                      <FormLabel className="dashboard-label">
-                        End Time
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="time"
-                          className="dashboard-input"
-                          {...field}
-                        />
+                    <FormItem>
+                      <FormLabel>End Time</FormLabel>
+                      <FormControl className="bg-white text-black">
+                        <Input type="time" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -310,17 +336,18 @@ export default function CreateEventClientPage() {
                 control={form.control}
                 name="type"
                 render={({ field }) => (
-                  <FormItem className="dashboard-form-item">
-                    <FormLabel className="dashboard-label">
-                      Event Type
-                    </FormLabel>
+                  <FormItem>
+                    <FormLabel>Event Type</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="dashboard-input">
+                        <SelectTrigger>
                           <SelectValue placeholder="Select event type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="0" disabled>
+                          Select event type
+                        </SelectItem>
                         {EVENT_TYPES.map((type) => (
                           <SelectItem key={type} value={type}>
                             {type}
@@ -360,22 +387,16 @@ export default function CreateEventClientPage() {
                 )}
               />
 
-              {form.watch("rsvp") && (
+              {watchRSVP && (
                 <>
                   <FormField
                     control={form.control}
                     name="rsvpMessage"
                     render={({ field }) => (
-                      <FormItem className="dashboard-form-item">
-                        <FormLabel className="dashboard-label">
-                          RSVP Message
-                        </FormLabel>
+                      <FormItem>
+                        <FormLabel>RSVP Message</FormLabel>
                         <FormControl>
-                          <Input
-                            className="dashboard-input"
-                            placeholder="Enter RSVP message"
-                            {...field}
-                          />
+                          <Input placeholder="Enter RSVP message" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -386,13 +407,10 @@ export default function CreateEventClientPage() {
                     control={form.control}
                     name="rsvpLink"
                     render={({ field }) => (
-                      <FormItem className="dashboard-form-item">
-                        <FormLabel className="dashboard-label">
-                          RSVP Link
-                        </FormLabel>
+                      <FormItem>
+                        <FormLabel>RSVP Link</FormLabel>
                         <FormControl>
                           <Input
-                            className="dashboard-input"
                             type="url"
                             placeholder="Enter RSVP link"
                             {...field}
@@ -407,45 +425,73 @@ export default function CreateEventClientPage() {
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full md:w-auto"
-            disabled={events.length + existingEvents >= 5}
-          >
+          <FormField
+            control={form.control}
+            name="coOrganizers"
+            render={() => (
+              <FormItem>
+                <FormLabel>Co-organizers</FormLabel>
+                <FormControl>
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex space-x-2">
+                      <Input
+                        value={coOrganizerInput}
+                        onChange={(e) =>
+                          handleCoOrganizerInputChange(e.target.value)
+                        }
+                        placeholder="Search co-organizers by name or id"
+                        list="co-organizer-suggestions"
+                      />
+                      <Button
+                        type="button"
+                        onClick={addCoOrganizer}
+                        disabled={
+                          fields.length >= 4 ||
+                          !suggestions.some(
+                            (s) =>
+                              s.userName.toLowerCase() ===
+                              coOrganizerInput.toLowerCase()
+                          )
+                        }
+                      >
+                        Add
+                      </Button>
+                    </div>
+                    <datalist id="co-organizer-suggestions">
+                      {suggestions.map((suggestion) => (
+                        <option
+                          key={suggestion.userId}
+                          value={suggestion.userName}
+                        />
+                      ))}
+                    </datalist>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedCoOrganizers.map((coOrganizer, index) => (
+                        <Badge key={coOrganizer.userId} variant="secondary">
+                          {coOrganizer.userName}
+                          <X
+                            className="ml-1 h-3 w-3 cursor-pointer"
+                            onClick={() => removeCoOrganizer(index)}
+                          />
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </FormControl>
+                <FormDescription>
+                  Add up to 4 co-organizers for this event.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" className="w-full md:w-auto">
             Create Event
           </Button>
         </form>
       </Form>
-
-      <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4 text-uiwhite">
-          Created Events ({events.length + existingEvents}/5)
-        </h2>
-        {events.map((event) => (
-          <div
-            key={event.eventId}
-            className="bg-primary text-primary-foreground p-4 rounded-lg mb-4 flex items-center gap-4"
-          >
-            <div className="relative h-20 w-20 overflow-hidden rounded-lg shrink-0">
-              <img
-                src={event.thumbnail.imageUrl}
-                alt={event.thumbnail.alt}
-                className="absolute inset-0 object-cover w-full h-full"
-              />
-            </div>
-            <div>
-              <h3 className="font-bold">{event.name}</h3>
-              <p>Type: {event.type}</p>
-              <p>Date: {event.date.label}</p>
-              <p>
-                Time: <span>{event.startTime}</span> -{" "}
-                <span>{event.endTime}</span>
-              </p>
-              {event.rsvp && <p>RSVP Required</p>}
-            </div>
-          </div>
-        ))}
-      </div>
+      <div className="mt-8">{memoizedEventsList}</div>
     </motion.div>
   );
 }
