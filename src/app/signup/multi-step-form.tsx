@@ -109,7 +109,6 @@ export default function MultiStepForm() {
   const [step, setStep] = useState(1);
   const [attemptedNextStep, setAttemptedNextStep] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { toast } = useToast();
 
   const methods = useForm<FormData>({
@@ -120,6 +119,7 @@ export default function MultiStepForm() {
 
   const { handleSubmit, trigger, setValue, getValues, watch, reset } = methods;
   const planType = watch("planType");
+  const searchParams = useSearchParams();
 
   // Handle initial form state and step navigation
   useEffect(() => {
@@ -292,7 +292,9 @@ export default function MultiStepForm() {
           onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col flex-grow"
         >
-          <div className="flex-grow">{renderStep()}</div>
+          <Suspense fallback={<CenteredLoader />}>
+            <div className="flex-grow">{renderStep()}</div>
+          </Suspense>
           <div className="mt-6 flex justify-between">
             {step > 1 && (
               <Button
