@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, useFormState } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -137,16 +137,6 @@ export default function CreateEventClientPage() {
     },
     [events.length, targetUserId, form]
   );
-  /*   useEffect(() => {
-    // This effect will run after the component has mounted
-    if (eventsDays.length > 0 && !form.getValues("date.dayId")) {
-      form.setValue("date", {
-        dayId: eventsDays[0].dayId,
-        label: eventsDays[0].label,
-        date: safeParseDate(eventsDays[0].date),
-      });
-    }
-  }, [eventsDays, form]); */
 
   const memoizedEventsList = useMemo(() => {
     return events.map((event) => (
@@ -191,8 +181,10 @@ export default function CreateEventClientPage() {
                 control={form.control}
                 name="thumbnail"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Event thumbnail</FormLabel>
+                  <FormItem className="dashboard-form-item">
+                    <FormLabel className="dashboard-label">
+                      Event thumbnail
+                    </FormLabel>
                     <FormControl>
                       <div className="flex flex-wrap gap-4">
                         {field.value.imageUrl ? (
@@ -237,9 +229,11 @@ export default function CreateEventClientPage() {
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Event Name</FormLabel>
-                    <FormControl>
+                  <FormItem className="dashboard-form-item">
+                    <FormLabel className="dashboard-label">
+                      Event Name
+                    </FormLabel>
+                    <FormControl className="bg-white text-black">
                       <Input placeholder="Enter event name" {...field} />
                     </FormControl>
                     <FormMessage />
@@ -251,8 +245,10 @@ export default function CreateEventClientPage() {
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
+                  <FormItem className="dashboard-form-item">
+                    <FormLabel className="dashboard-label">
+                      Description
+                    </FormLabel>
                     <RichTextEditor
                       value={field.value}
                       onChange={field.onChange}
@@ -268,8 +264,8 @@ export default function CreateEventClientPage() {
                 control={control}
                 name="date"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Event Day</FormLabel>
+                  <FormItem className="dashboard-form-item">
+                    <FormLabel className="dashboard-label">Event Day</FormLabel>
                     <Select
                       onValueChange={(value) => {
                         const selectedDay = eventsDays.find(
@@ -285,7 +281,7 @@ export default function CreateEventClientPage() {
                       }}
                       value={field.value.dayId}
                     >
-                      <FormControl>
+                      <FormControl className="bg-white text-black">
                         <SelectTrigger>
                           <SelectValue placeholder="Select event day" />
                         </SelectTrigger>
@@ -307,8 +303,10 @@ export default function CreateEventClientPage() {
                   control={form.control}
                   name="startTime"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Time</FormLabel>
+                    <FormItem className="dashboard-form-item">
+                      <FormLabel className="dashboard-label">
+                        Start Time
+                      </FormLabel>
                       <FormControl className="bg-white text-black">
                         <Input type="time" {...field} />
                       </FormControl>
@@ -321,8 +319,10 @@ export default function CreateEventClientPage() {
                   control={form.control}
                   name="endTime"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>End Time</FormLabel>
+                    <FormItem className="dashboard-form-item">
+                      <FormLabel className="dashboard-label">
+                        End Time
+                      </FormLabel>
                       <FormControl className="bg-white text-black">
                         <Input type="time" {...field} />
                       </FormControl>
@@ -336,10 +336,12 @@ export default function CreateEventClientPage() {
                 control={form.control}
                 name="type"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Event Type</FormLabel>
+                  <FormItem className="dashboard-form-item">
+                    <FormLabel className="dashboard-label">
+                      Event Type
+                    </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
+                      <FormControl className="bg-white text-black">
                         <SelectTrigger>
                           <SelectValue placeholder="Select event type" />
                         </SelectTrigger>
@@ -364,8 +366,8 @@ export default function CreateEventClientPage() {
                 control={form.control}
                 name="rsvp"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                    <FormControl>
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 dashboard-form-item">
+                    <FormControl className="bg-white text-black">
                       <Checkbox
                         checked={field.value}
                         onCheckedChange={(checked) => {
@@ -378,7 +380,9 @@ export default function CreateEventClientPage() {
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>RSVP Required</FormLabel>
+                      <FormLabel className="dashboard-label">
+                        RSVP Required
+                      </FormLabel>
                       <FormDescription>
                         Check this if attendees need to RSVP for the event.
                       </FormDescription>
@@ -393,9 +397,11 @@ export default function CreateEventClientPage() {
                     control={form.control}
                     name="rsvpMessage"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>RSVP Message</FormLabel>
-                        <FormControl>
+                      <FormItem className="dashboard-form-item">
+                        <FormLabel className="dashboard-label">
+                          RSVP Message
+                        </FormLabel>
+                        <FormControl className="bg-white text-black">
                           <Input placeholder="Enter RSVP message" {...field} />
                         </FormControl>
                         <FormMessage />
@@ -407,9 +413,11 @@ export default function CreateEventClientPage() {
                     control={form.control}
                     name="rsvpLink"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>RSVP Link</FormLabel>
-                        <FormControl>
+                      <FormItem className="dashboard-form-item">
+                        <FormLabel className="dashboard-label">
+                          RSVP Link
+                        </FormLabel>
+                        <FormControl className="bg-white text-black">
                           <Input
                             type="url"
                             placeholder="Enter RSVP link"
@@ -429,8 +437,8 @@ export default function CreateEventClientPage() {
             control={form.control}
             name="coOrganizers"
             render={() => (
-              <FormItem>
-                <FormLabel>Co-organizers</FormLabel>
+              <FormItem className="dashboard-form-item">
+                <FormLabel className="dashboard-label">Co-organizers</FormLabel>
                 <FormControl>
                   <div className="flex flex-col space-y-2">
                     <div className="flex space-x-2">
@@ -439,6 +447,7 @@ export default function CreateEventClientPage() {
                         onChange={(e) =>
                           handleCoOrganizerInputChange(e.target.value)
                         }
+                        className="bg-white text-black"
                         placeholder="Search co-organizers by name or id"
                         list="co-organizer-suggestions"
                       />

@@ -27,6 +27,7 @@ export interface MapBoxPlace {
   place_name: string;
   center: [number, number];
   context: LocationContext[];
+  userName: string;
   createdAt: Date;
   updatedAt: Date;
 }

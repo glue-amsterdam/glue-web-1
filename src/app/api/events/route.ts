@@ -28,36 +28,43 @@ export async function GET(request: Request) {
     filteredEvents = filteredEvents.filter((event) => event.date.dayId === day);
   }
 
-  const enhancedEvents: IndividualEventResponse[] = filteredEvents.map(
-    (event) => {
+  const enhancedEvents: IndividualEventResponse[] = filteredEvents
+    .map((event) => {
       const organizer = getOrganizerDetails(
         users.find((u) => u.userId === event.organizer.userId)
-      );
-      const coOrganizers = event.coOrganizers
+      ) || { userId: "", userName: "Unknown", mapId: "" };
+      const coOrganizers = (event.coOrganizers ?? [])
         .map((co) => getUserDetails(users.find((u) => u.userId === co.userId)))
         .filter((co): co is EnhancedUser => co !== null);
 
-      if (search) {
-        const searchLower = search.toLowerCase();
-        filteredEvents = filteredEvents.filter(
-          (event) =>
-            event.name.toLowerCase().includes(searchLower) ||
-            event.description.toLowerCase().includes(searchLower) ||
-            organizer?.userName.toLowerCase().includes(searchLower) ||
-            coOrganizers.some((coOrganizer) =>
-              coOrganizer.userName.toLowerCase().includes(searchLower)
-            )
-        );
-      }
-
-      return {
+      const enhancedEvent: IndividualEventResponse = {
         ...event,
-        organizer: organizer || { userId: "", userName: "Unknown" },
+        organizer,
         coOrganizers,
         rsvp: event.rsvp ?? false,
       };
-    }
-  );
+
+      if (search) {
+        const searchLower = search.toLowerCase();
+        if (
+          enhancedEvent.name.toLowerCase().includes(searchLower) ||
+          enhancedEvent.description.toLowerCase().includes(searchLower) ||
+          enhancedEvent.organizer.userName
+            .toLowerCase()
+            .includes(searchLower) ||
+          (enhancedEvent.coOrganizers?.some((coOrganizer) =>
+            coOrganizer.userName.toLowerCase().includes(searchLower)
+          ) ??
+            false)
+        ) {
+          return enhancedEvent;
+        }
+        return null;
+      }
+
+      return enhancedEvent;
+    })
+    .filter((event): event is IndividualEventResponse => event !== null);
 
   const limit = limitParam ? parseInt(limitParam, 10) : undefined;
 

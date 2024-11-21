@@ -82,14 +82,14 @@ export interface RSVPOptionalEvent extends BaseEvent {
 export type Event = RSVPRequiredEvent | RSVPOptionalEvent;
 
 export interface EnhancedUser {
+  mapId?: string;
   userId: string;
   userName: string;
   slug?: string;
 }
 
 export interface EnhancedOrganizer extends EnhancedUser {
-  mapId?: string;
-  mapPlaceName?: string;
+  mapId: string;
 }
 
 export interface IndividualEventResponse

@@ -21,7 +21,6 @@ import { fadeInConfig } from "@/utils/animations";
 import {
   ApiParticipantBaseType,
   formParticipantSchema,
-  VisitingHoursType,
 } from "@/schemas/usersSchemas";
 import { ImageData } from "@/schemas/baseSchema";
 import { useDebounce } from "use-debounce";
@@ -64,16 +63,23 @@ export default function ParticipantBaseDashboardForm({
     if (isUnique) {
       const cleanedValues = {
         ...values,
-        phoneNumber: values.phoneNumber.filter((phone) => phone.trim() !== ""),
+        phoneNumber: values.phoneNumber.filter(
+          (phone) => phone && phone.trim() !== ""
+        ),
         visibleEmail: values.visibleEmail.filter(
-          (email) => email.trim() !== ""
+          (email) => email && email.trim() !== ""
         ),
         visibleWebsite: values.visibleWebsite.filter(
-          (web) => web.trim() !== ""
+          (web) => web && web.trim() !== ""
         ),
+        visitingHours: values.visitingHours.filter(
+          (hours) => hours.date && hours.ranges && hours.label
+        ),
+        images: values.images.filter((image) => image && image.imageUrl),
       };
 
       console.log(cleanedValues);
+      // Here you would typically send the data to your API
     }
   };
 
@@ -140,14 +146,20 @@ export default function ParticipantBaseDashboardForm({
                       <div className="flex flex-wrap gap-4 justify-center">
                         {field.value.slice(0, 3).map((image, index) => (
                           <div
-                            key={image.id}
+                            key={image.id || index}
                             className="relative h-40 w-40 overflow-hidden rounded-lg"
                           >
-                            <img
-                              src={image.imageUrl}
-                              alt={image.alt}
-                              className="absolute inset-0 object-cover w-full h-full"
-                            />
+                            {image && image.imageUrl ? (
+                              <img
+                                src={image.imageUrl}
+                                alt={image.alt || `Image ${index + 1}`}
+                                className="absolute inset-0 object-cover w-full h-full"
+                              />
+                            ) : (
+                              <div className="absolute inset-0 flex items-center justify-center bg-gray-200 text-gray-500">
+                                No Image
+                              </div>
+                            )}
                             <Button
                               type="button"
                               variant="destructive"
@@ -174,7 +186,7 @@ export default function ParticipantBaseDashboardForm({
                                   imageUrl: `/placeholders/placeholder-${
                                     field.value.length + 1
                                   }.jpg`,
-                                  alt: `Imagen ${field.value.length + 1}`,
+                                  alt: `Image ${field.value.length + 1}`,
                                   imageName: `placeholder-${
                                     field.value.length + 1
                                   }.jpg`,
@@ -194,7 +206,7 @@ export default function ParticipantBaseDashboardForm({
                         )}
                       </div>
                     </FormControl>
-                    <FormDescription>{`Click "Add Image" to select up to 3 images for your event.`}</FormDescription>
+                    <FormDescription>{`Click "Add Image" to select up to 3 images for your profile.`}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -318,10 +330,17 @@ export default function ParticipantBaseDashboardForm({
                     <FormLabel>Visiting Hours</FormLabel>
                     <FormControl>
                       <VisitingHoursForm
-                        value={field.value}
-                        onChange={(newValue: VisitingHoursType) =>
-                          field.onChange(newValue)
-                        }
+                        value={field.value || []}
+                        onChange={(
+                          newValue: {
+                            dayId: string;
+                            label: string;
+                            date: Date;
+                            ranges?:
+                              | { open: string; close: string }[]
+                              | undefined;
+                          }[]
+                        ) => field.onChange(newValue)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -423,23 +442,25 @@ export default function ParticipantBaseDashboardForm({
                     </FormLabel>
                     <FormControl>
                       <div className="space-y-2">
-                        {field.value.map((web, index) => (
+                        {(field.value || []).map((web, index) => (
                           <Input
-                            className="dashboard-input"
                             key={index}
+                            className="dashboard-input"
                             placeholder="https://example.com"
-                            value={web}
+                            value={web || ""}
                             onChange={(e) => {
-                              const newWebs = [...field.value];
+                              const newWebs = [...(field.value || [])];
                               newWebs[index] = e.target.value;
                               field.onChange(newWebs);
                             }}
                           />
                         ))}
-                        {field.value.length < 3 && (
+                        {(field.value || []).length < 3 && (
                           <Button
                             type="button"
-                            onClick={() => field.onChange([...field.value, ""])}
+                            onClick={() =>
+                              field.onChange([...(field.value || []), ""])
+                            }
                             className="mt-2"
                           >
                             Add Website
@@ -451,7 +472,6 @@ export default function ParticipantBaseDashboardForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="socialMedia.instagramLink"

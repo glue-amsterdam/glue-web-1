@@ -21,6 +21,7 @@ import {
   Route,
   PencilOff,
   ChevronsLeftRightEllipsis,
+  LucidePencilRuler,
 } from "lucide-react";
 
 export const USER_DASHBOARD_SECTIONS = [
@@ -58,9 +59,14 @@ export const ADMIN_DASHBOARD_SECTIONS = [
     icon: PencilOff,
   },
   {
-    href: `hub-admin`,
-    label: "HUB Admin",
+    href: `hub-create`,
+    label: "HUB Create",
     icon: ChevronsLeftRightEllipsis,
+  },
+  {
+    href: `hub-edit`,
+    label: "HUB Edit",
+    icon: LucidePencilRuler,
   },
 ];
 
@@ -149,25 +155,7 @@ export const MOCKUSER_ADMIN_PARTICIPANT: User = {
       invoiceExtra: "Extra data",
     },
   },
-
-  mapInfo: {
-    id: "place.1234",
-    text: "Rijksmuseum",
-    place_name: "Rijksmuseum, Museumstraat 1, 1071 XX Amsterdam, Netherlands",
-    center: [4.8852, 52.3599],
-    context: [
-      {
-        id: "region.678",
-        text: "North Holland",
-      },
-      {
-        id: "country.345",
-        text: "Netherlands",
-        short_code: "NL",
-      },
-    ],
-    ...generateTimestamps(),
-  },
+  mapId: { id: "place.1234" },
   visitingHours: visitingHours,
   phoneNumber: ["+31 (0)20 21 03 101"],
   visibleEmail: ["press@vanmokum.com"],
@@ -233,3 +221,11 @@ export function isRSVPRequiredEvent(
 export const safeParseDate = (date: string | Date): Date => {
   return date instanceof Date ? date : new Date(date);
 };
+
+export function dotToHyphen(id: string): string {
+  return id.replace(".", "-");
+}
+
+export function hyphenToDot(id: string): string {
+  return id.replace("-", ".");
+}

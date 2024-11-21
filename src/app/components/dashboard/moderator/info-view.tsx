@@ -1,7 +1,7 @@
 import { TabsContent } from "@/components/ui/tabs";
 import { isParticipantUser } from "@/constants";
 import { UserWithPlanDetails } from "@/schemas/usersSchemas";
-import { MapPin } from "lucide-react";
+import { MapPin, MapPinOff } from "lucide-react";
 import React from "react";
 
 type Props = {
@@ -10,28 +10,52 @@ type Props = {
 
 function InfoView({ selectedUser }: Props) {
   return (
-    <TabsContent value="info">
-      <p className="flex gap-2">
-        <strong>User Type:</strong>
-        {isParticipantUser(selectedUser) && selectedUser.isCurated ? (
-          "CURATED"
-        ) : (
-          <span className="uppercase">
-            {selectedUser.planDetails.planLabel}
+    <TabsContent value="info" className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        <p className="flex items-center gap-2">
+          <strong>User Type:</strong>
+          {isParticipantUser(selectedUser) &&
+          "isCurated" in selectedUser &&
+          selectedUser.isCurated ? (
+            <span className="inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-primary-foreground">
+              CURATED
+            </span>
+          ) : (
+            <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground uppercase">
+              {selectedUser.planDetails.planLabel}
+            </span>
+          )}
+        </p>
+        <p className="flex items-center">
+          <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground uppercase">
+            {selectedUser.type}
           </span>
-        )}
+        </p>
+      </div>
 
-        <span className="uppercase">{selectedUser.type}</span>
-      </p>
-      <p className="mt-2 text-sm">
+      <p className="text-sm text-muted-foreground">
         {isParticipantUser(selectedUser)
-          ? selectedUser.description
+          ? selectedUser.description || "No description provided"
           : "Basic user info"}
       </p>
+
       {isParticipantUser(selectedUser) && (
-        <div className="mt-4 flex items-center">
-          <MapPin className="mr-2 text-glueBlue" size={16} />
-          <span>{selectedUser.mapInfo.place_name}</span>
+        <div className="flex items-center text-sm">
+          {"mapId" in selectedUser ? (
+            <>
+              <MapPin className="mr-2 text-primary" size={16} />
+              <span>Map ID: {selectedUser.mapId.id}</span>
+            </>
+          ) : "noAddress" in selectedUser && selectedUser.noAddress ? (
+            <>
+              <MapPinOff className="mr-2 text-muted-foreground" size={16} />
+              <span>No address provided</span>
+            </>
+          ) : (
+            <span className="text-muted-foreground">
+              Location information unavailable
+            </span>
+          )}
         </div>
       )}
     </TabsContent>

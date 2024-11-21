@@ -397,9 +397,6 @@ export default function Component() {
           <span>{`You haven't created any events yet.`}</span>
         </p>
       )}
-      {events.length < 5 && (
-        <Button className="w-full mt-4">Create New Event</Button>
-      )}
     </div>
   );
 }

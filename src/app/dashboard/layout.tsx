@@ -6,7 +6,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main>
+    <main className="min-h-dvh">
       {children}
       <Background />
     </main>

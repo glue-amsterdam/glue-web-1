@@ -5,10 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin } from "lucide-react";
 import Link from "next/link";
-import { isRSVPRequiredEvent } from "@/constants";
+import { dotToHyphen, isRSVPRequiredEvent } from "@/constants";
 import { IndividualEventResponse, EnhancedUser } from "@/schemas/eventSchemas";
+import { MapInfo } from "@/app/components/map-info";
 
 export function EventModal() {
   const [event, setEvent] = useState<IndividualEventResponse | null>(null);
@@ -156,14 +156,17 @@ function EventContent({ event }: { event: IndividualEventResponse }) {
             )}
           </div>
         </div>
-        <Link target="_blank" href={`/map/${event.organizer.mapId}`}>
-          {event.organizer.mapPlaceName && (
+
+        {event.organizer.mapId && (
+          <Link
+            target="_blank"
+            href={`/map/${dotToHyphen(event.organizer.mapId)}`}
+          >
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              <span>{event.organizer.mapPlaceName}</span>
+              <MapInfo mapId={event.organizer.mapId} />
             </div>
-          )}
-        </Link>
+          </Link>
+        )}
       </article>
     </div>
   );

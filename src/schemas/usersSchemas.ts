@@ -17,8 +17,7 @@ export const enhancedUserSchema: z.ZodType<EnhancedUser> = z.object({
 export const enhancedOrganizerSchema: z.ZodType<EnhancedOrganizer> =
   enhancedUserSchema.and(
     z.object({
-      mapId: z.string().optional(),
-      mapPlaceName: z.string().optional(),
+      mapId: z.string(),
     })
   );
 
@@ -86,9 +85,9 @@ export type FormParticipantBaseType = z.infer<typeof formParticipantSchema>;
 
 /* USER TYPES => */
 import { ImageData } from "@/schemas/baseSchema";
-import { MapBoxPlace } from "@/utils/map-types";
 import { InvoiceDataCall, PlanType } from "@/utils/sign-in.types";
 import { EnhancedOrganizer, EnhancedUser, Event } from "@/schemas/eventSchemas";
+import { MapBoxPlace } from "@/schemas/mapSchema";
 
 export interface SocialMediaLinks {
   instagramLink?: string;
@@ -134,7 +133,7 @@ export type MemberUser = {
   updatedAt: Date;
 };
 
-export type ParticipantUser = {
+export type ParticipantUserBase = {
   userId: string /* FOREIGN KEY UUIID*/;
   slug: string /* UNIQUE */;
   email: string /* UNIQUE */;
@@ -146,9 +145,8 @@ export type ParticipantUser = {
   invoiceData: InvoiceDataCall;
   shortDescription: string;
   images?: ImageData[];
-  events?: Event[];
+  events?: Pick<Event, "eventId">[];
   description?: string;
-  mapInfo: MapBoxPlace;
   visitingHours?: VisitingHoursType;
   phoneNumber?: string[];
   visibleEmail?: string[];
@@ -157,7 +155,22 @@ export type ParticipantUser = {
   status: StatusType;
   createdAt: Date;
   updatedAt: Date;
-} & (CuratedParticipantUser | NonCuratedParticipantUser);
+};
+export type ParticipantUserWithMap = ParticipantUserBase & {
+  mapId: Pick<MapBoxPlace, "id">;
+  noAddress?: never;
+};
+
+export type ParticipantUserWithoutMap = ParticipantUserBase & {
+  noAddress: true;
+  mapInfo?: never;
+};
+
+export type ParticipantUser = (
+  | ParticipantUserWithMap
+  | ParticipantUserWithoutMap
+) &
+  (CuratedParticipantUser | NonCuratedParticipantUser);
 
 export type User = FreeplanUser | MemberUser | ParticipantUser;
 

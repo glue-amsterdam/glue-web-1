@@ -1,6 +1,7 @@
 "use client";
 
 import ScrollDown from "@/app/components/scroll-down";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
@@ -14,6 +15,7 @@ import { ParticipantUser } from "@/schemas/usersSchemas";
 import { fadeInConfig } from "@/utils/animations";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
+import { UserPlusIcon } from "lucide-react";
 import Link from "next/link";
 
 interface ParticipantsSection {
@@ -42,18 +44,26 @@ export default function ParticipantsSection({
       {...fadeInConfig}
       className="z-20 mx-auto container h-full flex flex-col justify-between relative"
     >
-      <motion.h1
-        initial={{ opacity: 0, y: -60 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{
-          duration: 0.5,
-          delay: 0.8,
-        }}
-        viewport={{ once: true }}
-        className="h1-titles font-bold tracking-widest my-4"
-      >
-        {title}
-      </motion.h1>
+      <div className="flex items-center justify-between">
+        <motion.h1
+          initial={{ opacity: 0, y: -60 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.5,
+            delay: 0.8,
+          }}
+          viewport={{ once: true }}
+          className="h1-titles font-bold tracking-widest my-4"
+        >
+          {title}
+        </motion.h1>
+        <Link href={"/participants"}>
+          <Button type="button" variant="ghost">
+            <UserPlusIcon />
+            <span className="text-lg">View All</span>
+          </Button>
+        </Link>
+      </div>
       <div className="h-[70%] flex items-start">
         <Carousel
           className="w-full h-full"

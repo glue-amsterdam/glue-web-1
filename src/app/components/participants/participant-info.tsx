@@ -1,8 +1,9 @@
 "use client";
 
+import { MapInfo } from "@/app/components/map-info";
 import { ParticipantUser } from "@/schemas/usersSchemas";
 import { motion, Variants } from "framer-motion";
-import { MapPinCheckIcon } from "lucide-react";
+import { MapPinOff } from "lucide-react";
 import {
   FaFacebookF,
   FaInstagram,
@@ -87,19 +88,20 @@ export default function ParticipantInfo({
           <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
             Address
           </h2>
-          <a
-            target="_blank"
-            href={`/map/${participant.mapInfo.id}`}
-            className="inline-flex gap-2 items-center"
-          >
-            <MapPinCheckIcon />
-            <motion.p
-              whileHover={{ scale: 1.05 }}
-              className="text-sm md:text-base hover:text-uiwhite transition-colors whitespace-pre-wrap"
-            >
-              {participant.mapInfo.place_name || "No address provided"}
-            </motion.p>
-          </a>
+          {"mapId" in participant ? (
+            <a target="_blank" href={`/map/${participant.mapId.id}`}>
+              <MapInfo mapId={participant.mapId.id} />
+            </a>
+          ) : "noAddress" in participant && participant.noAddress ? (
+            <div className="inline-flex gap-2 items-center text-gray-500">
+              <MapPinOff className="w-5 h-5" />
+              <span>No address provided</span>
+            </div>
+          ) : (
+            <span className="text-gray-500">
+              Address information unavailable
+            </span>
+          )}
         </motion.div>
         <motion.div className="space-y-3 mt-8" variants={fadeInUp}>
           {participant.phoneNumber && participant.phoneNumber.length > 0 && (

@@ -24,7 +24,7 @@ export default function DashboardMenu({
   const { userId: targetUserId } = useDashboardUserContext();
 
   const SidebarContent = () => (
-    <nav className="p-5 space-y-2">
+    <nav className=" space-y-2">
       {USER_DASHBOARD_SECTIONS.map((item, index) => (
         <Link
           className="cursor-pointer"
