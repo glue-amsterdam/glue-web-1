@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+/* import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "@/app/globals.css";
 import NavbarBurguer from "@/app/components/navbar/responsive-navbar-with-hamburger";
@@ -79,3 +79,14 @@ export default async function RootLayout({
     </html>
   );
 }
+ */
+
+import React from "react";
+
+type Props = {};
+
+function Layout({}: Props) {
+  return <div>Layout</div>;
+}
+
+export default Layout;
