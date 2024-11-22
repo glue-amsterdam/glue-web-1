@@ -8,11 +8,7 @@ export default function ParticipantCard({
   participant: OptimizedParticipant;
 }) {
   return (
-    <Link
-      target="_blank"
-      href={`/participants/${participant.slug}`}
-      className="block"
-    >
+    <Link href={`/participants/${participant.slug}`} className="block">
       <div className="bg-black rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
         <div className="relative h-48">
           {participant.imageUrl ? (

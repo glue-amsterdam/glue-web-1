@@ -79,13 +79,22 @@ export const fetchFiveEvents = cache(
   }
 );
 
+const eventCache = new Map<string, IndividualEventResponse>();
+const mapCache = new Map<string, MapLocationEnhaced>();
+
 export const fetchEventById = cache(
   async (eventId: string): Promise<IndividualEventResponse> => {
+    if (eventCache.has(eventId)) {
+      return eventCache.get(eventId)!;
+    }
+
     const res = await fetch(`${BASE_URL}/events/${eventId}`, {
-      next: { revalidate: 0 },
+      next: { revalidate: 60 }, // Cache for 1 minute
     });
     if (!res.ok) throw new Error("Failed to fetch event by ID");
-    return res.json();
+    const data = await res.json();
+    eventCache.set(eventId, data);
+    return data;
   }
 );
 
@@ -110,6 +119,10 @@ export const fetchAllRoutes = cache(
 
 export const fetchMapById = cache(
   async (id: string): Promise<MapLocationEnhaced> => {
+    if (mapCache.has(id)) {
+      return mapCache.get(id)!;
+    }
+
     const res = await fetch(`${BASE_URL}/mapbox-locations/${id}`, {
       next: { revalidate: 3600 },
     });
@@ -119,7 +132,9 @@ export const fetchMapById = cache(
       }
       throw new Error("Failed to fetch Mapbox Location");
     }
-    return res.json();
+    const data = await res.json();
+    mapCache.set(id, data);
+    return data;
   }
 );
 
@@ -231,7 +246,7 @@ export const fetchSponsors = cache(async (): Promise<Sponsor[]> => {
 /* SIGNUP - GETPLANS */
 export const fetchPlans = cache(async (): Promise<PlansResponse> => {
   const res = await fetch(`${BASE_URL}/plans`, {
-    next: { revalidate: 0 },
+    next: { revalidate: 3600 },
   });
   if (!res.ok) throw new Error("Failed to fetch plans");
   return res.json();

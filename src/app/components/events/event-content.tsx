@@ -1,38 +1,42 @@
 "use client";
 
-import MapInfoServer from "@/app/components/map-info-server";
 import { Button } from "@/components/ui/button";
 import { isRSVPRequiredEvent } from "@/constants";
 import { EnhancedUser, IndividualEventResponse } from "@/schemas/eventSchemas";
-import { DialogTitle, DialogContent } from "@radix-ui/react-dialog";
-import { Link } from "lucide-react";
-import { Suspense } from "react";
+import { MapLocationEnhaced } from "@/schemas/mapSchema";
+import { MapPinIcon as MapPinCheck } from "lucide-react";
+import Link from "next/link";
 
-export default function EventContent({
-  event,
-}: {
+interface EventContentProps {
   event: IndividualEventResponse;
-}) {
+  mapData: MapLocationEnhaced | null;
+}
+
+export default function EventContent({ event, mapData }: EventContentProps) {
+  console.log("organizer :", event.organizer);
+  console.log("co organizers :", event.coOrganizers);
   return (
-    <DialogContent className="max-w-[90%] md:max-w-[60vw] max-h-[90vh] bg-background text-black overflow-y-auto">
-      <div className="flex flex-col space-y-4">
-        <DialogTitle className="text-3xl">{event.name}</DialogTitle>
-        <article className="flex justify-between text-black">
-          {isRSVPRequiredEvent(event) && (
-            <div className="text-center">
-              <Button asChild>
-                <a
-                  href={event.rsvpLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  RSVP
-                </a>
-              </Button>
-              <p className="text-sm mt-2">{event.rsvpMessage}</p>
-            </div>
-          )}
-        </article>
+    <>
+      <div className="flex flex-col space-y-4 font-overpass">
+        <div className=" flex justify-between">
+          <h2 className="text-3xl font-bold">{event.name}</h2>
+          <article className="flex justify-between text-black">
+            {isRSVPRequiredEvent(event) && (
+              <div className="text-center">
+                <Button asChild>
+                  <a
+                    href={event.rsvpLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    RSVP
+                  </a>
+                </Button>
+                <p className="text-sm mt-2">{event.rsvpMessage}</p>
+              </div>
+            )}
+          </article>
+        </div>
         <article className="flex flex-col space-y-4">
           <figure className="relative w-full h-60 lg:h-[40vh] overflow-hidden">
             <img
@@ -55,39 +59,34 @@ export default function EventContent({
             <div className="flex gap-8 text-black">
               <div className="text-center">
                 <h3 className="font-bold text-lg mb-1">Organizer</h3>
-                {event.organizer.slug ? (
+                <div className="flex items-center justify-center gap-2">
                   <Link
-                    target="_blank"
                     href={`/participants/${event.organizer.slug}`}
                     className="text-sm hover:underline"
+                    target="_blank"
                   >
                     {event.organizer.userName}
                   </Link>
-                ) : (
-                  <p className="text-sm">{event.organizer.userName}</p>
-                )}
+                </div>
               </div>
               {event.coOrganizers && event.coOrganizers.length > 0 && (
-                <div>
+                <div className="text-center">
                   <h3 className="font-bold text-lg mb-1">Co organizer</h3>
-                  <ul className="text-sm text-center">
+                  <ul className="flex flex-col gap-2">
                     {event.coOrganizers.map((contributor: EnhancedUser) => (
                       <li
                         key={
                           contributor.userId + (Math.random() * 100).toString()
                         }
+                        className="flex items-center justify-center gap-2"
                       >
-                        {contributor.slug ? (
-                          <Link
-                            target="_blank"
-                            href={`/participants/${contributor.slug}`}
-                            className="hover:underline"
-                          >
-                            {contributor.userName}
-                          </Link>
-                        ) : (
-                          contributor.userName
-                        )}
+                        <Link
+                          href={`/participants/${contributor.slug}`}
+                          className="text-sm hover:underline"
+                          target="_blank"
+                        >
+                          {contributor.userName}
+                        </Link>
                       </li>
                     ))}
                   </ul>
@@ -96,17 +95,20 @@ export default function EventContent({
             </div>
           </div>
 
-          {event.organizer.mapId && (
-            <Link target="_blank" href={`/map/${event.organizer.mapId}`}>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Suspense fallback={<div>Loading map info...</div>}>
-                  <MapInfoServer mapId={event.organizer.mapId} />
-                </Suspense>
-              </div>
-            </Link>
+          {mapData && (
+            <div>
+              <a
+                className="flex gap-1"
+                target="_blank"
+                href={`/map/${mapData.mapbox_id}`}
+              >
+                <MapPinCheck />
+                <p>{mapData.place_name}</p>
+              </a>
+            </div>
           )}
         </article>
       </div>
-    </DialogContent>
+    </>
   );
 }

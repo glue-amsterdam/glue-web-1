@@ -77,7 +77,6 @@ export default function ParticipantsSection({
                 className="h-full basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 traslate-y-1/2"
               >
                 <Link
-                  target="_blank"
                   className="h-full"
                   href={`/participants/${encodeURIComponent(participant.slug)}`}
                 >
