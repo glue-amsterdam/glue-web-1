@@ -1,8 +1,8 @@
 "use client";
 
-import { MapInfo } from "@/app/components/map-info-client";
+import { MapInfoServer } from "@/app/components/map-info-server";
 import { Button } from "@/components/ui/button";
-import { dotToHyphen, isRSVPRequiredEvent } from "@/constants";
+import { isRSVPRequiredEvent } from "@/constants";
 import { EnhancedUser, IndividualEventResponse } from "@/schemas/eventSchemas";
 import { DialogTitle, DialogContent } from "@radix-ui/react-dialog";
 import { Link } from "lucide-react";
@@ -97,13 +97,10 @@ export default function EventContent({
           </div>
 
           {event.organizer.mapId && (
-            <Link
-              target="_blank"
-              href={`/map/${dotToHyphen(event.organizer.mapId)}`}
-            >
+            <Link target="_blank" href={`/map/${event.organizer.mapId}`}>
               <Suspense fallback={<div>Loading map info...</div>}>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapInfo mapId={event.organizer.mapId} />
+                  <MapInfoServer mapId={event.organizer.mapId} />
                 </div>
               </Suspense>
             </Link>

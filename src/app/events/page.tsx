@@ -4,11 +4,14 @@ import EventsPageContainer from "@/app/events/events-page-container";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { Suspense } from "react";
 
-export default async function EventsPage(
-  props: {
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-  }
-) {
+export const metadata = {
+  title: "GLUE Events",
+  description: "Explore the events taking place at GLUE design routes.",
+};
+
+export default async function EventsPage(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const searchParams = await props.searchParams;
   const params = new URLSearchParams();
 
