@@ -22,6 +22,11 @@ import {
   PencilOff,
   ChevronsLeftRightEllipsis,
   LucidePencilRuler,
+  Beer,
+  Compass,
+  BookOpenText,
+  BicepsFlexed,
+  CircleEllipsis,
 } from "lucide-react";
 
 export const USER_DASHBOARD_SECTIONS = [
@@ -95,6 +100,21 @@ export const EVENT_TYPES = [
   "Guided Tour",
   "Other",
 ] as const;
+
+export const getEventIcon = (type: EventType) => {
+  switch (type) {
+    case "Lecture":
+      return BookOpenText;
+    case "Workshop":
+      return BicepsFlexed;
+    case "Drink":
+      return Beer;
+    case "Guided Tour":
+      return Compass;
+    default:
+      return CircleEllipsis;
+  }
+};
 
 export const EMPTY_IMAGE: ImageData = {
   id: "",

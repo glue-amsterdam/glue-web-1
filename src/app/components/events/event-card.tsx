@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { fadeInConfig } from "@/utils/animations";
 import { IndividualEventResponse } from "@/schemas/eventSchemas";
+import { getEventIcon } from "@/constants";
 
 interface EventCardProps {
   event: IndividualEventResponse;
@@ -21,6 +22,8 @@ export default function EventCard({ event }: EventCardProps) {
       scroll: false,
     });
   };
+
+  const EventIcon = getEventIcon(event.type);
 
   return (
     <motion.div {...fadeInConfig}>
@@ -41,6 +44,12 @@ export default function EventCard({ event }: EventCardProps) {
           />
           <div className="absolute inset-0 flex flex-col justify-center px-2 md:px-10 z-20 group-hover:text-black text-background transition-all duration-200">
             <h3 className="text-xl md:text-2xl xl:text-4xl tracking-widest">
+              <div className="flex items-center gap-2">
+                <span>
+                  <EventIcon className="size-3 md:size-4 lg:size-6" />
+                </span>
+                <p className="text-xs md:text-sm lg:text-base">{event.type}</p>
+              </div>
               {event.name}
             </h3>
 
