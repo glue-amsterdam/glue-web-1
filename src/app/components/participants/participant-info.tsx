@@ -41,7 +41,7 @@ function ParticipantInfo({ participant, mapData }: ParticipantInfoProps) {
       animate="animate"
       variants={stagger}
     >
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto font-overpass">
         <motion.h1
           className="text-3xl md:text-4xl font-bold tracking-tight"
           variants={fadeInUp}

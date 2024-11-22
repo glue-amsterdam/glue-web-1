@@ -1,6 +1,6 @@
 "use client";
 
-import { MapInfoServer } from "@/app/components/map-info-server";
+import MapInfoServer from "@/app/components/map-info-server";
 import { Button } from "@/components/ui/button";
 import { isRSVPRequiredEvent } from "@/constants";
 import { EnhancedUser, IndividualEventResponse } from "@/schemas/eventSchemas";
@@ -98,11 +98,11 @@ export default function EventContent({
 
           {event.organizer.mapId && (
             <Link target="_blank" href={`/map/${event.organizer.mapId}`}>
-              <Suspense fallback={<div>Loading map info...</div>}>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Suspense fallback={<div>Loading map info...</div>}>
                   <MapInfoServer mapId={event.organizer.mapId} />
-                </div>
-              </Suspense>
+                </Suspense>
+              </div>
             </Link>
           )}
         </article>

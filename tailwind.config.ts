@@ -63,7 +63,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         lausanne: ["lausanne", "sans-serif"],
-        overpass: ["overpass, Times New Roman, serif"],
+        overpass: ["Overpass", "sans-serif"],
       },
       scrollBehavior: ["smooth"],
       colors: {
