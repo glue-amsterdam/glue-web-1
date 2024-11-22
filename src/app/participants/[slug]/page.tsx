@@ -6,13 +6,12 @@ import { ParticipantUser } from "@/schemas/usersSchemas";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-  searchParams: { [key: string]: string | string[] | undefined };
 }
 
 export default async function ParticipantPage({
   params: paramsPromise,
 }: PageProps) {
-  const params = await paramsPromise;
+  const params = await paramsPromise; // Await the promise
   const { slug } = params;
   const participant: ParticipantUser = await fetchParticipant(slug);
 
