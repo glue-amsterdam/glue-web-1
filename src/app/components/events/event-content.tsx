@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { isRSVPRequiredEvent } from "@/constants";
+import { getEventIcon, isRSVPRequiredEvent } from "@/constants";
 import { EnhancedUser, IndividualEventResponse } from "@/schemas/eventSchemas";
 import { MapLocationEnhaced } from "@/schemas/mapSchema";
 import { MapPinIcon as MapPinCheck } from "lucide-react";
@@ -13,13 +13,22 @@ interface EventContentProps {
 }
 
 export default function EventContent({ event, mapData }: EventContentProps) {
-  console.log("organizer :", event.organizer);
-  console.log("co organizers :", event.coOrganizers);
+  const EventIcon = getEventIcon(event.type);
+
   return (
     <>
       <div className="flex flex-col space-y-4 font-overpass">
         <div className=" flex justify-between">
-          <h2 className="text-3xl font-bold">{event.name}</h2>
+          <h3 className="text-3xl font-bold">
+            {" "}
+            <div className="flex items-center gap-2">
+              <span>
+                <EventIcon className="size-3 md:size-4 lg:size-6" />
+              </span>
+              <p className="text-xs md:text-sm lg:text-base">{event.type}</p>
+            </div>
+            {event.name}
+          </h3>
           <article className="flex justify-between text-black">
             {isRSVPRequiredEvent(event) && (
               <div className="text-center">
