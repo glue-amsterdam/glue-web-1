@@ -5,11 +5,14 @@ import ParticipantClientPage from "@/app/participants/[slug]/participants-client
 import { ParticipantUser } from "@/schemas/usersSchemas";
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
   searchParams: { [key: string]: string | string[] | undefined };
 }
 
-export default async function ParticipantPage({ params }: PageProps) {
+export default async function ParticipantPage({
+  params: paramsPromise,
+}: PageProps) {
+  const params = await paramsPromise;
   const { slug } = params;
   const participant: ParticipantUser = await fetchParticipant(slug);
 
