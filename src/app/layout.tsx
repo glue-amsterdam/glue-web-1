@@ -2,13 +2,12 @@ import type { Metadata } from "next";
 import "@/app/globals.css";
 import NavbarBurguer from "@/app/components/navbar/responsive-navbar-with-hamburger";
 import { AuthProvider } from "@/app/context/AuthContext";
-import { MainContextProvider } from "@/app/context/MainContext";
-import { fetchMain } from "@/utils/api";
+import { MainDataProvider } from "@/app/components/main-data-provider";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "GLUE",
-  description: "GLUE connected by desing",
+  title: "GLUE - Home",
+  description: "GLUE connected by design",
   openGraph: {
     title: "GLUE",
     url: "",
@@ -19,7 +18,7 @@ export const metadata: Metadata = {
   twitter: {
     title: "GLUE",
     card: "summary_large_image",
-    description: "GLUE Dallas connected by desing",
+    description: "GLUE Dallas connected by design",
     site: "",
     images: "",
   },
@@ -35,27 +34,21 @@ export const metadata: Metadata = {
   ],
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const mainSection = await fetchMain();
   return (
     <html lang="en">
       <AuthProvider>
-        <MainContextProvider
-          mainColors={mainSection.mainColors}
-          mainLinks={mainSection.mainLinks}
-          mainMenu={mainSection.mainMenu}
-          eventsDays={mainSection.eventsDays}
-        >
+        <MainDataProvider>
           <body className={`font-lausanne text-uiwhite antialiased min-h-dvh`}>
             <NavbarBurguer />
             <div className="flex-grow overflow-x-hidden">{children}</div>
             <Toaster />
           </body>
-        </MainContextProvider>
+        </MainDataProvider>
       </AuthProvider>
     </html>
   );

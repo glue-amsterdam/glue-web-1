@@ -1,6 +1,6 @@
 "use client";
 
-import { MapInfo } from "@/app/components/map-info";
+import { MapInfo } from "@/app/components/map-info-client";
 import { Button } from "@/components/ui/button";
 import { dotToHyphen, isRSVPRequiredEvent } from "@/constants";
 import { EnhancedUser, IndividualEventResponse } from "@/schemas/eventSchemas";

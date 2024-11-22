@@ -1,6 +1,4 @@
-"use client";
-
-import { MapInfo } from "@/app/components/map-info";
+import { MapInfoServer } from "@/app/components/map-info-server";
 import { ParticipantUser } from "@/schemas/usersSchemas";
 import { motion, Variants } from "framer-motion";
 import { MapPinOff } from "lucide-react";
@@ -91,9 +89,7 @@ export default function ParticipantInfo({
           </h2>
           {"mapId" in participant ? (
             <Suspense fallback={<div>Loading map info...</div>}>
-              <a target="_blank" href={`/map/${participant.mapId.id}`}>
-                <MapInfo mapId={participant.mapId.id} />
-              </a>
+              <MapInfoServer mapId={participant.mapId.id} />
             </Suspense>
           ) : "noAddress" in participant && participant.noAddress ? (
             <div className="inline-flex gap-2 items-center text-gray-500">

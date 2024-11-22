@@ -1,7 +1,11 @@
-import React from "react";
-
 type Props = {
   children: React.ReactNode;
+};
+
+export const metadata = {
+  title: "GLUE About Page",
+  description:
+    "Discover the GLUE project, the GLUE Foundation, and the GLUE International initiative.",
 };
 
 function AboutLayout({ children }: Props) {

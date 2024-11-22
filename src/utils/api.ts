@@ -111,7 +111,7 @@ export const fetchAllRoutes = cache(
 export const fetchMapById = cache(
   async (id: string): Promise<MapLocationEnhaced> => {
     const res = await fetch(`${BASE_URL}/mapbox-locations/${id}`, {
-      next: { revalidate: 0 },
+      next: { revalidate: 3600 },
     });
     if (!res.ok) throw new Error("Failed to fetch Mapbox Location");
     return res.json();

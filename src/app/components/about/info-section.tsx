@@ -111,14 +111,14 @@ export default function InfoSection({
               />
               <div className="absolute z-20 bottom-0 left-0 right-0 bg-uiwhite p-6 transition-all duration-300 ease-in-out md:opacity-0 md:group-hover:opacity-100">
                 <DialogTitle>
-                  <motion.h4
+                  <motion.p
                     initial={{ rotate: 20 }}
                     animate={modalOpen ? { rotate: 0 } : {}}
                     transition={{ duration: 0.3 }}
                     className="text-xl md:text-3xl"
                   >
                     {selectedInfo?.title}
-                  </motion.h4>
+                  </motion.p>
                   <p className="text-sm md:text-base mt-2">
                     {selectedInfo?.description}
                   </p>

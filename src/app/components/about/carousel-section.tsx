@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import Autoplay from "embla-carousel-autoplay";
 
@@ -26,7 +26,7 @@ interface MainSectionProps {
   mainSection: CarouselSectionContent | undefined;
 }
 
-export default function MainSection({ mainSection }: MainSectionProps) {
+export default function CarouselSection({ mainSection }: MainSectionProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
@@ -110,6 +110,9 @@ export default function MainSection({ mainSection }: MainSectionProps) {
         </motion.p>
         <Dialog open={modalOpen} onOpenChange={setModalOpen}>
           <DialogContent className="w-full p-0 max-w-[90vw] md:max-w-[70vw] ">
+            <DialogTitle className="sr-only">
+              Photo galery from the GLUE desing route
+            </DialogTitle>
             <div className="relative w-full h-full">
               <img
                 src={mainSection.slides[selectedImage].imageUrl}

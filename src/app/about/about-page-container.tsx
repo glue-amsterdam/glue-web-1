@@ -4,7 +4,6 @@ import {
   fetchCurated,
   fetchSponsors,
 } from "@/utils/api";
-import MainSection from "@/app/components/about/main-section";
 import Participants from "@/app/components/about/participants";
 import CitizenOfHonour from "@/app/components/about/citizens-of-honour";
 import CuratedMembers from "@/app/components/about/curated-participants";
@@ -18,13 +17,14 @@ import {
   ParticipantsSectionContent,
   SponsorsSectionContent,
 } from "@/schemas/baseSchema";
+import CarouselSection from "@/app/components/about/carousel-section";
 
 async function AboutPageContainer() {
   const aboutData = await fetchAbout();
 
   return (
     <>
-      <MainSection mainSection={aboutData.carouselSection} />
+      <CarouselSection mainSection={aboutData.carouselSection} />
       <Suspense>
         <ParticipantsPageSection headerData={aboutData.participantsSection} />
       </Suspense>
