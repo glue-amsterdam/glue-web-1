@@ -1,7 +1,6 @@
 "use client";
 
 import CitizenOfHonourSection from "@/app/components/about/citizens-of-honour-section";
-import { useColors } from "@/app/context/MainContext";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { CitizensSectionContent } from "@/schemas/baseSchema";
@@ -11,9 +10,6 @@ interface CitizenOfHonourContentProps {
   citizensSection: CitizensSectionContent;
 }
 function CitizenOfHonour({ citizensSection }: CitizenOfHonourContentProps) {
-  const colors = useColors();
-  const { box3: box3Color } = colors;
-
   const sectionRef = useRef<HTMLElement>(null);
   useScroll();
 
@@ -23,8 +19,8 @@ function CitizenOfHonour({ citizensSection }: CitizenOfHonourContentProps) {
       id="citizens"
       aria-label="citizens-content"
       aria-labelledby="citizens-heading"
-      style={{ backgroundColor: box3Color, paddingTop: `${NAVBAR_HEIGHT}rem` }}
-      className={`h-dvh mx-auto relative snap-center`}
+      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={`h-dvh bg-[var(--color-box3)]  mx-auto relative snap-center`}
     >
       <div className="citizens-bg bg-uiwhite" />
 

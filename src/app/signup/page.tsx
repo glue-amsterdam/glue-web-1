@@ -1,5 +1,7 @@
+import CenteredLoader from "@/app/components/centered-loader";
 import MultiStepForm from "@/app/signup/multi-step-form";
 import { NAVBAR_HEIGHT } from "@/constants";
+import { Suspense } from "react";
 
 function SignUpPage() {
   return (
@@ -13,7 +15,9 @@ function SignUpPage() {
         }
       >
         <main className="flex-grow container mx-auto px-4">
-          <MultiStepForm />
+          <Suspense fallback={<CenteredLoader />}>
+            <MultiStepForm />
+          </Suspense>
         </main>
       </div>
     </div>

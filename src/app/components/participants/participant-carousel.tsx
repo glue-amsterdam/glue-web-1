@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/carousel";
 import { ImageData } from "@/schemas/baseSchema";
 
-export function ImageCarousel({ images }: { images: ImageData[] }) {
+export default function ImageCarousel({ images }: { images: ImageData[] }) {
   return (
     <Carousel className="h-full">
       <CarouselContent className="p-0 h-full">

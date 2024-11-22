@@ -2,7 +2,6 @@
 import ParticipantsSection from "@/app/components/about/participants-section";
 
 import GlueLogo from "@/app/components/glue-logo";
-import { useColors } from "@/app/context/MainContext";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { ParticipantsSectionContent } from "@/schemas/baseSchema";
@@ -41,9 +40,6 @@ export default function Participants({
 }
 
 function ParticipantsBackground() {
-  const colors = useColors();
-
-  const { box1: box1Color, box2: box2Color } = colors;
   return (
     <>
       <div className="absolute bottom-0 right-0 md:right-10 ">
@@ -53,16 +49,10 @@ function ParticipantsBackground() {
       </div>
       <div className="absolute inset-0 grid grid-cols-2">
         <div className="relative">
-          <div
-            style={{ background: box1Color }}
-            className={`participants-bg`}
-          />
+          <div className={`participants-bg bg-[var(--color-box1)] `} />
         </div>
         <div className="relative">
-          <div
-            style={{ background: box2Color }}
-            className="participants-bg-r"
-          />
+          <div className="participants-bg-r bg-[var(--color-box2)] " />
         </div>
       </div>
     </>

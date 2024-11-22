@@ -3,10 +3,8 @@ import { users } from "@/lib/mockMembers";
 import { getOrganizerDetails, getUserDetails } from "@/utils/userHelpers";
 import { NextResponse } from "next/server";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { eventId: string } }
-) {
+export async function GET(request: Request, props: { params: Promise<{ eventId: string }> }) {
+  const params = await props.params;
   if (!params || !params.eventId) {
     return NextResponse.json(
       { message: "Event ID is required" },

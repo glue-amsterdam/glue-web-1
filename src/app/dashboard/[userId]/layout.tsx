@@ -5,15 +5,20 @@ import InsufficientAccess from "@/app/dashboard/insufficient-access";
 import DashboardMenu from "@/app/dashboard/menu";
 import WrongCredentials from "@/app/dashboard/wrong-credentials-access";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { ReactNode } from "react";
+import { ReactNode, use } from "react";
 
-export default function UserDashboardLayout({
-  children,
-  params,
-}: {
-  children: ReactNode;
-  params: { userId: string };
-}) {
+export default function UserDashboardLayout(
+  props: {
+    children: ReactNode;
+    params: Promise<{ userId: string }>;
+  }
+) {
+  const params = use(props.params);
+
+  const {
+    children
+  } = props;
+
   const { userId: targetUserId } = params;
   const { user: loggedInUser } = useAuth();
 

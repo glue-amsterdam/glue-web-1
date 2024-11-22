@@ -1,9 +1,7 @@
 "use client";
 
-import { MapInfo } from "@/app/components/map-info";
-import { ParticipantUser } from "@/schemas/usersSchemas";
 import { motion, Variants } from "framer-motion";
-import { MapPinOff } from "lucide-react";
+import { MapPinCheck, MapPinOff } from "lucide-react";
 import {
   FaFacebookF,
   FaInstagram,
@@ -14,6 +12,8 @@ import {
   FaInfoCircle,
   FaClock,
 } from "react-icons/fa";
+import { ParticipantUser } from "@/schemas/usersSchemas";
+import { MapLocationEnhaced } from "@/schemas/mapSchema";
 
 const fadeInUp: Variants = {
   initial: { opacity: 0, y: 40 },
@@ -28,11 +28,12 @@ const stagger: Variants = {
   },
 };
 
-export default function ParticipantInfo({
-  participant,
-}: {
+interface ParticipantInfoProps {
   participant: ParticipantUser;
-}) {
+  mapData: MapLocationEnhaced | null;
+}
+
+function ParticipantInfo({ participant, mapData }: ParticipantInfoProps) {
   return (
     <motion.div
       className="h-full p-4 md:p-6 text-white"
@@ -40,7 +41,7 @@ export default function ParticipantInfo({
       animate="animate"
       variants={stagger}
     >
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto font-overpass">
         <motion.h1
           className="text-3xl md:text-4xl font-bold tracking-tight"
           variants={fadeInUp}
@@ -88,11 +89,18 @@ export default function ParticipantInfo({
           <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
             Address
           </h2>
-          {"mapId" in participant ? (
-            <a target="_blank" href={`/map/${participant.mapId.id}`}>
-              <MapInfo mapId={participant.mapId.id} />
-            </a>
-          ) : "noAddress" in participant && participant.noAddress ? (
+          {mapData ? (
+            <div>
+              <a
+                className="flex gap-1"
+                target="_blank"
+                href={`/map?placeid=${mapData.mapbox_id}`}
+              >
+                <MapPinCheck />
+                <p>{mapData.place_name}</p>
+              </a>
+            </div>
+          ) : participant.noAddress ? (
             <div className="inline-flex gap-2 items-center text-gray-500">
               <MapPinOff className="w-5 h-5" />
               <span>No address provided</span>
@@ -206,3 +214,5 @@ export default function ParticipantInfo({
     </motion.div>
   );
 }
+
+export default ParticipantInfo;

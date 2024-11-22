@@ -1,27 +1,19 @@
 "use client";
 
-import { use, useState } from "react";
-import { useForm, useFieldArray, SubmitHandler } from "react-hook-form";
-import { fetchPlans } from "@/utils/api";
+import { usePlans } from "@/app/context/PlansProvider";
+import { PlanType } from "@/utils/sign-in.types";
+import { useState } from "react";
+import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 
 type FormData = {
-  plans: {
-    planId: string;
-    planLabel: string;
-    planPrice: string;
-    planType: string;
-    planCurrency: string;
-    currencyLogo: string;
-    planDescription: string;
-    planItems: { id: string; label: string }[];
-  }[];
+  plans: PlanType[];
 };
 
 export default function ModifyPlansForm() {
-  const initialPlans = use(fetchPlans());
+  const { plans, updatePlan } = usePlans();
   const [isEditing, setIsEditing] = useState<{ [key: string]: boolean }>({});
   const { register, control, handleSubmit, setValue } = useForm<FormData>({
-    defaultValues: { plans: initialPlans.plans },
+    defaultValues: { plans },
   });
   const { fields } = useFieldArray({
     control,
@@ -31,6 +23,7 @@ export default function ModifyPlansForm() {
   const onSubmit: SubmitHandler<FormData> = (data) => {
     console.log(data);
     // Here you would typically send the data to your API
+    data.plans.forEach(updatePlan);
     alert("Plans updated successfully!");
     setIsEditing({});
   };
@@ -38,7 +31,6 @@ export default function ModifyPlansForm() {
   const toggleEditing = (planId: string) => {
     setIsEditing((prev) => ({ ...prev, [planId]: !prev[planId] }));
   };
-
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {fields.map((plan, index) => (
@@ -154,7 +146,11 @@ export default function ModifyPlansForm() {
                 <button
                   type="button"
                   onClick={() => {
-                    const newItem = { id: `new-${Date.now()}`, label: "" };
+                    const newItem = {
+                      id: `new-${Date.now()}`,
+                      label: "",
+                      plan_id: plan.id,
+                    };
                     setValue(`plans.${index}.planItems`, [
                       ...plan.planItems,
                       newItem,
@@ -171,18 +167,21 @@ export default function ModifyPlansForm() {
               <p className="mt-1 max-w-2xl text-sm text-gray-500">
                 {plan.planDescription}
               </p>
-              <dl className="mt-2 border-t border-b border-gray-200 divide-y divide-gray-200">
-                <div className="py-3 flex justify-between text-sm font-medium">
-                  <dt className="text-gray-500">Price</dt>
-                  <dd className="text-gray-900">
-                    {plan.currencyLogo} {plan.planPrice} {plan.planCurrency}
-                  </dd>
-                </div>
-                <div className="py-3 flex justify-between text-sm font-medium">
-                  <dt className="text-gray-500">Type</dt>
-                  <dd className="text-gray-900">{plan.planType}</dd>
-                </div>
-              </dl>
+              {plan.planType !== "free" && (
+                <dl className="mt-2 border-t border-b border-gray-200 divide-y divide-gray-200">
+                  <div className="py-3 flex justify-between text-sm font-medium">
+                    <dt className="text-gray-500">Price</dt>
+                    <dd className="text-gray-900">
+                      {plan.currencyLogo} {plan.planPrice} {plan.planCurrency}
+                    </dd>
+                  </div>
+                  <div className="py-3 flex justify-between text-sm font-medium">
+                    <dt className="text-gray-500">Type</dt>
+                    <dd className="text-gray-900">{plan.planType}</dd>
+                  </div>
+                </dl>
+              )}
+
               <div className="mt-4">
                 <h4 className="text-sm font-medium text-gray-900">
                   Plan Items

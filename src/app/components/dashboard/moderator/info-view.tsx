@@ -33,7 +33,7 @@ function InfoView({ selectedUser }: Props) {
         </p>
       </div>
 
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-muted-foreground font-overpass">
         {isParticipantUser(selectedUser)
           ? selectedUser.description || "No description provided"
           : "Basic user info"}

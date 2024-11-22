@@ -1,7 +1,6 @@
 "use client";
 
 import InfoSection from "@/app/components/about/info-section";
-import { useColors } from "@/app/context/MainContext";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { InfoSectionContent } from "@/schemas/baseSchema";
@@ -12,9 +11,6 @@ type Props = {
 };
 
 function Info({ infoItemsSection }: Props) {
-  const colors = useColors();
-  const { box2: box2Color } = colors;
-
   const sectionRef = useRef<HTMLElement>(null);
   useScroll();
   return (
@@ -23,8 +19,8 @@ function Info({ infoItemsSection }: Props) {
       id="info"
       aria-label="info-content"
       aria-labelledby="info-heading"
-      style={{ backgroundColor: box2Color, paddingTop: `${NAVBAR_HEIGHT}rem` }}
-      className={`h-dvh snap-center relative`}
+      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={`h-dvh snap-center relative bg-[var(--color-box2)] `}
     >
       <InfoSection
         title={infoItemsSection.title}

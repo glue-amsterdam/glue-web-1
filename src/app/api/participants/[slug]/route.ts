@@ -1,10 +1,8 @@
 import { users } from "@/lib/mockMembers";
 import { NextResponse } from "next/server";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { slug: string } }
-) {
+export async function GET(request: Request, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   if (!params || !params.slug) {
     return NextResponse.json(
       { message: "Member SLUG is required" },
@@ -12,7 +10,7 @@ export async function GET(
     );
   }
 
-  const { slug } = params;
+  const { slug } = await params;
 
   const participants = users.filter((user) => user.type === "participant");
 

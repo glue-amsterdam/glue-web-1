@@ -1,11 +1,11 @@
-import { hyphenToDot } from "@/constants";
 import { mapInfo } from "@/lib/mockMapboxPlaces";
 import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   if (!params || !params.id) {
     return NextResponse.json(
       { message: "Map ID is required" },
@@ -14,9 +14,8 @@ export async function GET(
   }
 
   const { id } = params;
-  const transformedId = hyphenToDot(id);
 
-  const filteredMap = mapInfo.filter((map) => map.id === transformedId);
+  const filteredMap = mapInfo.filter((map) => map.id === id);
 
   if (filteredMap.length === 0) {
     return NextResponse.json({ message: "Map not found" }, { status: 404 });

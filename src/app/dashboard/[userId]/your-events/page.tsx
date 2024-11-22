@@ -121,7 +121,9 @@ export default function Component() {
                 <ClockIcon className="h-4 w-4" />
                 <span>{`${event.startTime} - ${event.endTime}`}</span>
               </div>
-              <p className="mt-2 text-sm">{event.description}</p>
+              <p className="mt-2 text-sm">
+                <span>{event.description}</span>
+              </p>
             </CardContent>
             <CardFooter>
               <Dialog>

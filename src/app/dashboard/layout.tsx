@@ -1,5 +1,10 @@
 import Background from "@/app/components/background";
 
+export const metadata = {
+  title: "GLUE Dashboard",
+  description: "Admin dashboard for GLUE users",
+};
+
 export default async function DashboardLayout({
   children,
 }: {
