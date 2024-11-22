@@ -94,7 +94,7 @@ function ParticipantInfo({ participant, mapData }: ParticipantInfoProps) {
               <a
                 className="flex gap-1"
                 target="_blank"
-                href={`/map/${mapData.mapbox_id}`}
+                href={`/map?placeid=${mapData.mapbox_id}`}
               >
                 <MapPinCheck />
                 <p>{mapData.place_name}</p>

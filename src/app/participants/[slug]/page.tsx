@@ -5,12 +5,12 @@ import ParticipantClientPage from "@/app/participants/[slug]/participants-client
 import { ParticipantUser } from "@/schemas/usersSchemas";
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
   searchParams: { [key: string]: string | string[] | undefined };
 }
 
 export default async function ParticipantPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug } = params;
   const participant: ParticipantUser = await fetchParticipant(slug);
 
   let mapData = null;
