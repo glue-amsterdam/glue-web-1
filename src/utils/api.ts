@@ -113,7 +113,12 @@ export const fetchMapById = cache(
     const res = await fetch(`${BASE_URL}/mapbox-locations/${id}`, {
       next: { revalidate: 3600 },
     });
-    if (!res.ok) throw new Error("Failed to fetch Mapbox Location");
+    if (!res.ok) {
+      if (res.status === 404) {
+        throw new Error("Map not found");
+      }
+      throw new Error("Failed to fetch Mapbox Location");
+    }
     return res.json();
   }
 );
@@ -133,16 +138,11 @@ export const fetchMapsIdandName = cache(
 /* PARTICIPANTS */
 export const fetchParticipant = cache(
   async (slug: string): Promise<ParticipantUser> => {
-    try {
-      const res = await fetch(`${BASE_URL}/participants/${slug}`, {
-        next: { revalidate: 0 },
-      });
-      if (!res.ok) throw new Error("Failed to fetch participant by slug");
-      return res.json();
-    } catch (error) {
-      console.error("Failed to fetch participant by slug:", error);
-      throw new Error("Failed to fetch participant by slug");
-    }
+    const res = await fetch(`${BASE_URL}/participants/${slug}`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) throw new Error("Failed to fetch participant");
+    return res.json();
   }
 );
 export const fetchParticipantbyId = cache(

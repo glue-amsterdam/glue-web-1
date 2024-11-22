@@ -7,8 +7,6 @@ export const metadata = {
   description: "Explore the talented participants of GLUE design routes.",
 };
 
-function ParticipantsLayout({ children }: Props) {
+export default function ParticipantsLayout({ children }: Props) {
   return <main className="bg-[var(--color-box2)] ">{children}</main>;
 }
-
-export default ParticipantsLayout;

@@ -7,7 +7,10 @@ interface MapInfoClientProps {
   mapId: string;
 }
 
-export function MapInfoClient({ placeName, mapId }: MapInfoClientProps) {
+export default function MapInfoClient({
+  placeName,
+  mapId,
+}: MapInfoClientProps) {
   return (
     <a
       target="_blank"

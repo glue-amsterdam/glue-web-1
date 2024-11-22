@@ -1,18 +1,20 @@
-"use client";
-
-import React from "react";
-import { ImageCarousel } from "@/app/components/participants/participant-carousel";
 import ParticipantInfo from "@/app/components/participants/participant-info";
 import StaticLogo from "@/app/components/static-logo";
 import { placeholderImage } from "@/mockConstants";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { ParticipantUser } from "@/schemas/usersSchemas";
+import ImageCarousel from "@/app/components/participants/participant-carousel";
+import { MapLocationEnhaced } from "@/schemas/mapSchema";
+
+interface ParticipantClientPageProps {
+  participant: ParticipantUser;
+  mapData: MapLocationEnhaced | null;
+}
 
 export default function ParticipantClientPage({
   participant,
-}: {
-  participant: ParticipantUser;
-}) {
+  mapData,
+}: ParticipantClientPageProps) {
   return (
     <section
       style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
@@ -27,7 +29,7 @@ export default function ParticipantClientPage({
         </div>
       </article>
       <article className="h-[60vh] lg:h-full overflow-y-auto">
-        <ParticipantInfo participant={participant} />
+        <ParticipantInfo participant={participant} mapData={mapData} />
       </article>
     </section>
   );

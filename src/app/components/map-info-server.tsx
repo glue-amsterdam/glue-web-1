@@ -1,14 +1,13 @@
 import { fetchMapById } from "@/utils/api";
-import { dotToHyphen } from "@/constants";
-import { MapInfoClient } from "@/app/components/map-info-client";
+import MapInfoClient from "./map-info-client";
 
 interface MapInfoServerProps {
   mapId: string;
 }
 
-export async function MapInfoServer({ mapId }: MapInfoServerProps) {
-  const mapQuery = dotToHyphen(mapId);
-  const mapData = await fetchMapById(mapQuery);
-
-  return <MapInfoClient placeName={mapData.place_name} mapId={mapQuery} />;
+export default async function MapInfoServer({ mapId }: MapInfoServerProps) {
+  const mapData = await fetchMapById(mapId);
+  return (
+    <MapInfoClient placeName={mapData.place_name} mapId={mapData.mapbox_id} />
+  );
 }

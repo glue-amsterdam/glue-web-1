@@ -6,7 +6,10 @@ import {
 } from "@/schemas/usersSchemas";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request, props: { params: Promise<{ userId: string }> }) {
+export async function GET(
+  request: Request,
+  props: { params: Promise<{ userId: string }> }
+) {
   const params = await props.params;
   if (!params || !params.userId) {
     return NextResponse.json(

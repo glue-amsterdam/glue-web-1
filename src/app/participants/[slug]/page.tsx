@@ -1,11 +1,24 @@
+import { Suspense } from "react";
+import { fetchParticipant, fetchMapById } from "@/utils/api";
+import CenteredLoader from "@/app/components/centered-loader";
 import ParticipantClientPage from "@/app/participants/[slug]/participants-client-page";
-import { fetchParticipant } from "@/utils/api";
 
-export default async function ParticipantPage(props: {
+export default async function ParticipantPage({
+  params,
+}: {
   params: { slug: string };
 }) {
-  const { slug } = await props.params;
+  const { slug } = await params;
   const participant = await fetchParticipant(slug);
 
-  return <ParticipantClientPage participant={participant} />;
+  let mapData = null;
+  if (participant && "mapId" in participant) {
+    mapData = await fetchMapById(participant.mapId.id);
+  }
+
+  return (
+    <Suspense fallback={<CenteredLoader />}>
+      <ParticipantClientPage participant={participant} mapData={mapData} />
+    </Suspense>
+  );
 }
