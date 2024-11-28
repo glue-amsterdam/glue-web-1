@@ -108,7 +108,7 @@ type NonCuratedParticipantUser = {
 export type FreeplanUser = {
   userId: string /* FOREIGN KEY UUIID*/;
   email: string /* UNIQUE */;
-  password: string /* PASSWORD UUIID OR BYCRIPT */;
+  password: string /* PASSWORD BYCRIPT */;
   userName: string;
   isMod: boolean;
   planId: "planId-0"; // El plan es "free"
@@ -122,7 +122,7 @@ export type StatusType = "pending" | "accepted" | "declined";
 export type MemberUser = {
   userId: string /* FOREIGN KEY UUIID*/;
   email: string /* UNIQUE */;
-  password: string /* PASSWORD UUIID OR BYCRIPT */;
+  password: string /* PASSWORD BYCRIPT */;
   userName: string;
   isMod: boolean;
   planId: "planId-1"; // El plan es "member"
@@ -137,7 +137,7 @@ export type ParticipantUserBase = {
   userId: string /* FOREIGN KEY UUIID*/;
   slug: string /* UNIQUE */;
   email: string /* UNIQUE */;
-  password: string /* PASSWORD OR BYCRIPT */;
+  password: string /* BYCRIPT */;
   userName: string;
   isMod: boolean;
   planId: "planId-2" | "planId-3" | "planId-4" | "planId-5";

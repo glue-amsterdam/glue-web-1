@@ -77,13 +77,7 @@ export const ADMIN_DASHBOARD_SECTIONS = [
 
 export const NAVBAR_HEIGHT: number = 5;
 
-export const DAYS_IDS = [
-  "day-1",
-  "day-2",
-  "day-3",
-  "day-4",
-  "extra-day",
-] as const;
+export const DAYS_IDS = ["day-1", "day-2", "day-3", "day-4"] as const;
 
 export const DAYS = [
   "Thursday",
