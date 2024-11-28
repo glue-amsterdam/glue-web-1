@@ -1,7 +1,5 @@
 import { cache } from "react";
 import { LocationGroup } from "@/utils/map-types";
-import { MainSection } from "@/utils/menu-types";
-
 import { Sponsor } from "@/utils/sponsors-types";
 import {
   ApiParticipantBaseType,
@@ -15,23 +13,7 @@ import { EnhancedUser, IndividualEventResponse } from "@/schemas/eventSchemas";
 import { DatabaseAboutContent } from "@/schemas/baseSchema";
 import { MapLocationEnhaced, RouteValuesEnhanced } from "@/schemas/mapSchema";
 import { OptimizedParticipant } from "@/app/api/participants/optimized/route";
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-/* MAIN */
-export const fetchMain = cache(async (): Promise<MainSection> => {
-  const res = await fetch(`${BASE_URL}/main`, {
-    next: { revalidate: 3600 },
-  });
-
-  if (!res.ok) {
-    console.error("Failed to fetch Main, using mock data");
-
-    return await import("@/lib/mockMain").then((result) => result.mainSection);
-  }
-
-  return res.json();
-});
+import { BASE_URL } from "@/constants";
 
 /* ABOUT */
 export const fetchAbout = cache(async (): Promise<DatabaseAboutContent> => {

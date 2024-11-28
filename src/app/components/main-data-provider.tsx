@@ -1,6 +1,6 @@
 import { MainContextProvider } from "@/app/context/MainContext";
 import { ColorStyleProvider } from "@/app/components/color-style-provider";
-import { fetchMain } from "@/utils/api";
+import { fetchMain } from "@/utils/api/main-api-calls";
 
 export async function MainDataProvider({
   children,
