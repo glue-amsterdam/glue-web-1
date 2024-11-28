@@ -1,22 +1,22 @@
-import { fetchMain } from "@/utils/api";
 import { MainContextProvider } from "@/app/context/MainContext";
 import { ColorStyleProvider } from "@/app/components/color-style-provider";
+import { fetchMain } from "@/utils/api";
 
 export async function MainDataProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const mainSection = await fetchMain();
+  const { mainColors, mainLinks, mainMenu, eventsDays } = await fetchMain();
 
   return (
     <MainContextProvider
-      mainColors={mainSection.mainColors}
-      mainLinks={mainSection.mainLinks}
-      mainMenu={mainSection.mainMenu}
-      eventsDays={mainSection.eventsDays}
+      mainColors={mainColors}
+      mainLinks={mainLinks}
+      mainMenu={mainMenu}
+      eventsDays={eventsDays}
     >
-      <ColorStyleProvider colors={{ ...mainSection.mainColors }}>
+      <ColorStyleProvider colors={{ ...mainColors }}>
         {children}
       </ColorStyleProvider>
     </MainContextProvider>

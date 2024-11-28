@@ -10,7 +10,7 @@ export interface MainMenuItem {
   label: string;
   section: string;
   className: string;
-  subItems?: SubMenuItem[];
+  subItems?: SubMenuItem[] | null;
 }
 
 interface SubMenuItem {
