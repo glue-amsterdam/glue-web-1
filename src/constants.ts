@@ -76,6 +76,8 @@ export const ADMIN_DASHBOARD_SECTIONS = [
 ];
 
 export const NAVBAR_HEIGHT: number = 5;
+export const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export const DAYS_IDS = ["day-1", "day-2", "day-3", "day-4"] as const;
 
@@ -206,6 +208,9 @@ export const MOCKUSER_ADMIN_PARTICIPANT: User = {
   password: "password",
   ...generateTimestamps(),
 };
+
+export const AN_HOUR_IN_S: number = 3600;
+export const THREE_DAYS_IN_S: number = 259200;
 
 export function isParticipantUser(
   user: User
