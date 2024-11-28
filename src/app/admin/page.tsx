@@ -1,16 +1,14 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import { cookies } from "next/headers";
 import AdminDashboard from "./admin-dashboard";
 import { NAVBAR_HEIGHT } from "@/constants";
-import AdminLoginForm from "@/app/admin/forms/admin-login-form";
+import AdminLoginForm from "@/app/admin/login/admin-login-form";
+import LogoutButton from "@/app/admin/components/log-out-button";
 
-export default function AdminPage() {
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    setIsAdmin(true);
-  }, []);
+export default async function AdminPage() {
+  const cookieStore = await cookies();
+  const adminToken = cookieStore.get("admin_token");
+  const isAdmin = adminToken !== undefined;
+  const adminName = "Admin";
 
   return (
     <div
@@ -18,15 +16,21 @@ export default function AdminPage() {
       className={`min-h-dvh bg-gradient-to-br from-blue-100 to-purple-100`}
     >
       <div className="container mx-auto p-4">
-        <h1 className="text-4xl font-bold mb-8 text-center text-blue-800">
-          GLUE Admin
-        </h1>
         {isAdmin ? (
           <>
+            <div className="flex gap-2 justify-end items-center mb-4">
+              <p className="text-lg">Welcome, {adminName}!</p>
+              <LogoutButton />
+            </div>
             <AdminDashboard />
           </>
         ) : (
-          <AdminLoginForm />
+          <>
+            <h1 className="text-4xl font-bold mb-8 text-center text-blue-800">
+              GLUE Admin
+            </h1>
+            <AdminLoginForm />
+          </>
         )}
       </div>
     </div>

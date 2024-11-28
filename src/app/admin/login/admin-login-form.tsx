@@ -15,9 +15,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Lock, Mail } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 
 function AdminLoginForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const form = useForm<FormDataWithName>({
     resolver: zodResolver(loginSchemaWithName),
@@ -30,9 +32,25 @@ function AdminLoginForm() {
   const onSubmit = async (data: FormDataWithName) => {
     setIsLoading(true);
     try {
-      console.log(data.userName, data.password);
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        router.refresh(); // This will cause the server component to re-render and check the auth status
+      } else {
+        throw new Error("Login failed");
+      }
     } catch (error) {
       console.error("Failed to log in:", error);
+      form.setError("root", {
+        type: "manual",
+        message: "Invalid username or password",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -82,6 +100,9 @@ function AdminLoginForm() {
             </FormItem>
           )}
         />
+        {form.formState.errors.root && (
+          <p className="text-red-500">{form.formState.errors.root.message}</p>
+        )}
         <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? (
