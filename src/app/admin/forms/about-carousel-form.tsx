@@ -21,7 +21,9 @@ interface CarouselFormProps {
   initialData: CarouselSectionContent;
 }
 
-export default function CarouselForm({ initialData }: CarouselFormProps) {
+export default function AboutCarouselSectionForm({
+  initialData,
+}: CarouselFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();

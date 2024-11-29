@@ -4,5 +4,5 @@ import { fetchMainSection } from "@/utils/api/admin-api-calls";
 export default async function MainMenuSection() {
   const mainSectionData = await fetchMainSection();
 
-  return <MainMenuForm initialData={mainSectionData} />;
+  return <MainMenuForm initialData={{ mainMenu: mainSectionData }} />;
 }

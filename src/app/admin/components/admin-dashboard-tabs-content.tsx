@@ -12,9 +12,7 @@ function AdminDashboardTabsContent() {
         <MainSectionPage />
       </TabsContent>
       <TabsContent value="about-section">
-        <Suspense fallback={<CenteredLoader />}>
-          <AboutSectionForm />
-        </Suspense>
+        <AboutSectionForm />
       </TabsContent>
       <TabsContent value="plans-section">
         <Suspense fallback={<CenteredLoader />}>
