@@ -19,12 +19,16 @@ export interface ImageData {
 }
 
 /* MAIN SECTION ADMIN FORM SCHEMAS => */
+const hexColorSchema = z
+  .string()
+  .regex(/^#([a-fA-F0-9]{3}|[a-fA-F0-9]{6})$/, "Invalid hex color format");
+
 export const mainColorsSchema = z.object({
-  box1: z.string().min(1, "Box 1 color is required"),
-  box2: z.string().min(1, "Box 2 color is required"),
-  box3: z.string().min(1, "Box 3 color is required"),
-  box4: z.string().min(1, "Box 4 color is required"),
-  triangle: z.string().min(1, "Triangle color is required"),
+  box1: hexColorSchema.min(1, "Box 1 color is required"),
+  box2: hexColorSchema.min(1, "Box 2 color is required"),
+  box3: hexColorSchema.min(1, "Box 3 color is required"),
+  box4: hexColorSchema.min(1, "Box 4 color is required"),
+  triangle: hexColorSchema.min(1, "Triangle color is required"),
 });
 
 export const menuItemSchema = z.object({
