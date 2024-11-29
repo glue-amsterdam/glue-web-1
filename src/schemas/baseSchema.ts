@@ -28,9 +28,14 @@ export const mainColorsSchema = z.object({
 });
 
 export const menuItemSchema = z.object({
+  menu_id: z.string().uuid(),
   label: z.string().min(1, "Label is required"),
   section: z.string(),
   className: z.string(),
+});
+
+export const mainMenuSchema = z.object({
+  mainMenu: z.array(menuItemSchema),
 });
 
 export const linkItemSchema = z.object({
@@ -47,7 +52,7 @@ export const mainLinksSchema = z.object({
 
 export const mainSectionSchema = z.object({
   mainColors: mainColorsSchema,
-  mainMenu: z.array(menuItemSchema),
+  mainMenu: mainMenuSchema,
   mainLinks: mainLinksSchema,
 });
 /* <= MAIN SECTION ADMIN FORM SCHEMAS */

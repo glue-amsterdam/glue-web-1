@@ -7,6 +7,7 @@ export interface MainSection {
   eventsDays: EventDay[];
 }
 export interface MainMenuItem {
+  menu_id: string;
   label: string;
   section: string;
   className: string;
