@@ -39,7 +39,6 @@ export default function MainSectionForm({ initialData }: MainSectionFormProps) {
   const onSubmit = createSubmitHandler<{ mainMenu: MainMenuItem[] }>(
     "/api/admin/main/menu",
     () => {
-      console.log("Form submitted successfully");
       toast({
         title: "Main section updated",
         description: "The main menu labels have been successfully updated.",
