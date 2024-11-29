@@ -1,20 +1,25 @@
+import MainSectionPage from "@/app/admin/main-section-page";
 import AboutSectionForm from "@/app/admin/forms/about-section-form";
-import MainSectionForm from "@/app/admin/forms/main-section-form";
 import PlanSectionsForm from "@/app/admin/forms/plans-section-form";
+import CenteredLoader from "@/app/components/centered-loader";
 import { TabsContent } from "@/components/ui/tabs";
-import React from "react";
+import React, { Suspense } from "react";
 
 function AdminDashboardTabsContent() {
   return (
     <>
       <TabsContent value="main-section">
-        <MainSectionForm />
+        <MainSectionPage />
       </TabsContent>
       <TabsContent value="about-section">
-        <AboutSectionForm />
+        <Suspense fallback={<CenteredLoader />}>
+          <AboutSectionForm />
+        </Suspense>
       </TabsContent>
       <TabsContent value="plans-section">
-        <PlanSectionsForm />
+        <Suspense fallback={<CenteredLoader />}>
+          <PlanSectionsForm />
+        </Suspense>
       </TabsContent>
     </>
   );

@@ -1,5 +1,3 @@
-"use client";
-
 import { Tabs } from "@/components/ui/tabs";
 import AdminDashboardTabsList from "@/app/admin/components/admin-dashboard-tabs-list";
 import AdminDashboardTabsContent from "@/app/admin/components/admin-dashboard-tabs-content";

@@ -1,30 +1,31 @@
 "use client";
 
-import { useEffect } from "react";
 import { useForm, useFieldArray, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { z } from "zod";
 import {
   mainColorsSchema,
   mainLinksSchema,
   mainSectionSchema,
 } from "@/schemas/baseSchema";
+import { MainSection } from "@/utils/menu-types";
 
-type MainSection = z.infer<typeof mainSectionSchema>;
+interface MainSectionFormProps {
+  initialData: MainSection;
+}
 
-export default function MainSectionForm() {
+export default function MainSectionForm({ initialData }: MainSectionFormProps) {
   const methods = useForm<MainSection>({
     resolver: zodResolver(mainSectionSchema),
+    defaultValues: initialData,
   });
 
   const {
     register,
     control,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = methods;
 
@@ -32,17 +33,6 @@ export default function MainSectionForm() {
     control,
     name: "mainMenu",
   });
-
-  useEffect(() => {
-    // Fetch main section content
-    fetch("/api/main")
-      .then((res) => res.json())
-      .then((data) => {
-        setValue("mainColors", data.mainColors);
-        setValue("mainMenu", data.mainMenu);
-        setValue("mainLinks", data.mainLinks);
-      });
-  }, [setValue]);
 
   const onSubmit = async (data: MainSection) => {
     console.log(data);
