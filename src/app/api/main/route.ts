@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { DayID, EventDay, MainLink, MainSection } from "@/utils/menu-types";
+import {
+  EventDay,
+  MainLink,
+  MainSection,
+  MainMenuItem,
+  MainColors,
+} from "@/utils/menu-types";
 
 export async function GET() {
   const supabase = await createClient();
@@ -9,8 +15,10 @@ export async function GET() {
     const [eventsDays, mainColors, mainLinks, mainMenu] = await Promise.all([
       supabase.from("events_days").select(),
       supabase.from("main_colors").select(),
-      supabase.from("main_links").select(),
-      supabase.from("main_menu").select("label, section, className, subItems"),
+      supabase.from("main_links").select().order("id"),
+      supabase
+        .from("main_menu")
+        .select("menu_id, label, section, className, subItems"),
     ]);
 
     if (eventsDays.error)
@@ -26,28 +34,19 @@ export async function GET() {
     if (mainMenu.error)
       throw new Error(`Error fetching main_menu: ${mainMenu.error.message}`);
 
-    const mainColorsData = mainColors.data?.[0];
-    const mainLinksData = mainLinks.data;
+    const mainColorsData = mainColors.data?.[0] as MainColors;
     const eventsDaysData = eventsDays.data;
-    const mainMenuData = mainMenu.data;
-
-    const main_links: Record<string, MainLink> = mainLinksData.reduce(
-      (acc, item) => {
-        acc[item.platform] = { link: item.link };
-        return acc;
-      },
-      {} as Record<string, MainLink>
-    );
+    const mainMenuData = mainMenu.data as MainMenuItem[];
 
     const events_days: EventDay[] = eventsDaysData.map((day) => ({
-      dayId: day.dayId as DayID,
+      dayId: day.dayId,
       label: day.label,
-      date: new Date(day.date),
+      date: day.date,
     }));
 
     const formattedData: MainSection = {
       mainColors: mainColorsData,
-      mainLinks: main_links,
+      mainLinks: mainLinks.data as MainLink[],
       mainMenu: mainMenuData,
       eventsDays: events_days,
     };

@@ -7,7 +7,8 @@ export async function GET() {
   const supabase = await createClient();
   const { data: eventDays, error } = await supabase
     .from("events_days")
-    .select("*");
+    .select("*")
+    .order("dayId");
 
   if (error) {
     console.error("Error fetching event days:", error);
