@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { EventDay, eventDaysSchema } from "@/schemas/eventSchemas";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { useRouter } from "next/navigation";
 
 interface EventDaysFormProps {
   initialData: { eventDays: EventDay[] };
@@ -26,6 +27,7 @@ interface EventDaysFormProps {
 export default function EventDaysForm({ initialData }: EventDaysFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const methods = useForm<{ eventDays: EventDay[] }>({
     resolver: zodResolver(eventDaysSchema),
@@ -56,6 +58,7 @@ export default function EventDaysForm({ initialData }: EventDaysFormProps) {
         description:
           "The event day labels and dates have been successfully updated.",
       });
+      router.refresh();
     },
     (error) => {
       console.error("Form submission error:", error);

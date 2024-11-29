@@ -3,12 +3,13 @@
 import { useForm, useFieldArray, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { LinkItem, mainLinksSchema } from "@/schemas/baseSchema";
 import { Instagram, Linkedin, Globe, Youtube } from "lucide-react";
+import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { useRouter } from "next/navigation";
 
 interface MainLinksFormProps {
   initialData: { mainLinks: LinkItem[] };
@@ -24,6 +25,7 @@ const platformIcons: { [key: string]: React.ReactNode } = {
 export default function MainLinksForm({ initialData }: MainLinksFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const methods = useForm<{ mainLinks: LinkItem[] }>({
     resolver: zodResolver(mainLinksSchema),
@@ -49,6 +51,7 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
         title: "Links updated",
         description: "The main links have been successfully updated.",
       });
+      router.refresh();
     },
     (error) => {
       console.error("Form submission error:", error);
@@ -104,9 +107,7 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
             </div>
           </div>
         ))}
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : "Save Social"}
-        </Button>
+        <SaveChangesButton isSubmitting={isSubmitting} className="w-full" />
       </form>
     </FormProvider>
   );

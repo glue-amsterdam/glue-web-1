@@ -3,12 +3,13 @@
 import { useForm, useFieldArray, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { mainMenuSchema } from "@/schemas/baseSchema";
 import { MainMenuItem } from "@/utils/menu-types";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { useRouter } from "next/navigation";
 
 interface MainSectionFormProps {
   initialData: { mainMenu: MainMenuItem[] };
@@ -17,6 +18,7 @@ interface MainSectionFormProps {
 export default function MainSectionForm({ initialData }: MainSectionFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const methods = useForm<{ mainMenu: MainMenuItem[] }>({
     resolver: zodResolver(mainMenuSchema),
@@ -26,7 +28,7 @@ export default function MainSectionForm({ initialData }: MainSectionFormProps) {
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting: formIsSubmitting },
+    formState: { errors },
   } = methods;
 
   const { fields: menuFields } = useFieldArray({
@@ -42,6 +44,7 @@ export default function MainSectionForm({ initialData }: MainSectionFormProps) {
         title: "Main section updated",
         description: "The main menu labels have been successfully updated.",
       });
+      router.refresh();
     },
     (error) => {
       console.error("Form submission error:", error);
@@ -105,13 +108,7 @@ export default function MainSectionForm({ initialData }: MainSectionFormProps) {
             </div>
           </div>
         ))}
-        <Button
-          type="submit"
-          disabled={isSubmitting || formIsSubmitting}
-          onClick={() => console.log("Submit button clicked")}
-        >
-          {isSubmitting || formIsSubmitting ? "Saving..." : "Save Menu"}
-        </Button>
+        <SaveChangesButton isSubmitting={isSubmitting} className="w-full" />
       </form>
     </FormProvider>
   );

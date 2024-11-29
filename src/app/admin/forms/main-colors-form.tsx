@@ -4,12 +4,14 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { mainColorsSchema } from "@/schemas/baseSchema";
 import { MainColors } from "@/utils/menu-types";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface MainColorsFormProps {
   initialData: MainColors;
@@ -18,6 +20,7 @@ interface MainColorsFormProps {
 export default function MainColorsForm({ initialData }: MainColorsFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const methods = useForm<MainColors>({
     resolver: zodResolver(mainColorsSchema),
@@ -37,6 +40,7 @@ export default function MainColorsForm({ initialData }: MainColorsFormProps) {
         title: "Colors updated",
         description: "The main colors have been successfully updated.",
       });
+      router.refresh();
     },
     (error) => {
       toast({
@@ -56,6 +60,15 @@ export default function MainColorsForm({ initialData }: MainColorsFormProps) {
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <h2 className="text-xl font-semibold">Main Colors</h2>
+        <div className="h-36 bg-gray-200 rounded-lg relative aspect-[4/3]">
+          <Image
+            src={"/admin/colors.jpg"}
+            fill
+            alt=""
+            priority={false}
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 30vw, 30vw"
+          />
+        </div>
         <div className="grid grid-cols-2 gap-4">
           {(Object.keys(mainColorsSchema.shape) as Array<keyof MainColors>).map(
             (key) => (
@@ -77,9 +90,7 @@ export default function MainColorsForm({ initialData }: MainColorsFormProps) {
             )
           )}
         </div>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : "Save Colors"}
-        </Button>
+        <SaveChangesButton isSubmitting={isSubmitting} className="w-full" />
       </form>
     </FormProvider>
   );
