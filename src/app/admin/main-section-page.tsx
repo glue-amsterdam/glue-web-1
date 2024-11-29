@@ -1,17 +1,9 @@
 import { Suspense } from "react";
-import { Loader2 } from "lucide-react";
 import MainColorsSection from "@/app/admin/sections/main-colors-sections";
 import MainMenuSection from "@/app/admin/sections/main-menu-sections";
 import MainLinksSection from "@/app/admin/sections/main-links-sections";
 import MainEventsDaysSections from "@/app/admin/sections/main-events-days-sections";
-
-function LoadingSpinner() {
-  return (
-    <div className="flex justify-center items-center h-16">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    </div>
-  );
-}
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 
 export default function MainSectionPage() {
   return (
