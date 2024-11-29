@@ -12,9 +12,9 @@ import {
 } from "@/components/ui/popover";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, isSameDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { EventDay, eventDaysSchema } from "@/schemas/eventSchemas";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
@@ -40,6 +40,8 @@ export default function EventDaysForm({ initialData }: EventDaysFormProps) {
     formState: { errors },
     setValue,
     watch,
+    setError,
+    clearErrors,
   } = methods;
 
   const { fields } = useFieldArray({
@@ -51,8 +53,7 @@ export default function EventDaysForm({ initialData }: EventDaysFormProps) {
 
   const onSubmit = createSubmitHandler<{ eventDays: EventDay[] }>(
     "/api/admin/main/days",
-    () => (data: { eventDays: EventDay[] }) => {
-      console.log("Form submitted successfully with data:", data);
+    () => {
       toast({
         title: "Event days updated",
         description:
@@ -72,7 +73,6 @@ export default function EventDaysForm({ initialData }: EventDaysFormProps) {
   );
 
   const handleFormSubmit = async (data: { eventDays: EventDay[] }) => {
-    console.log("handleFormSubmit called with data:", data);
     setIsSubmitting(true);
     try {
       await onSubmit(data);
@@ -82,6 +82,43 @@ export default function EventDaysForm({ initialData }: EventDaysFormProps) {
       setIsSubmitting(false);
     }
   };
+
+  const handleDateSelect = useCallback(
+    (index: number, date: Date | undefined) => {
+      const newDate = date ? date.toISOString() : null;
+      setValue(`eventDays.${index}.date`, newDate, { shouldDirty: true });
+
+      // Check for uniqueness
+      const otherDates = watchEventDays
+        .filter((_, i) => i !== index)
+        .map((day) => day.date);
+
+      if (
+        newDate &&
+        otherDates.some(
+          (otherDate) =>
+            otherDate && isSameDay(new Date(otherDate), new Date(newDate))
+        )
+      ) {
+        setError(`eventDays.${index}.date`, {
+          type: "manual",
+          message: "This date is already selected for another event day.",
+        });
+      } else {
+        clearErrors(`eventDays.${index}.date`);
+      }
+    },
+    [setValue, watchEventDays, setError, clearErrors]
+  );
+
+  const disabledDates = useMemo(() => {
+    return watchEventDays.reduce((acc: Date[], day) => {
+      if (day.date) {
+        acc.push(new Date(day.date));
+      }
+      return acc;
+    }, []);
+  }, [watchEventDays]);
 
   return (
     <FormProvider {...methods}>
@@ -115,6 +152,7 @@ export default function EventDaysForm({ initialData }: EventDaysFormProps) {
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
+                      type="button"
                       variant={"outline"}
                       className={cn(
                         "w-full justify-start text-left font-normal",
@@ -137,13 +175,16 @@ export default function EventDaysForm({ initialData }: EventDaysFormProps) {
                           ? new Date(watchEventDays[index].date)
                           : undefined
                       }
-                      onSelect={(date) => {
-                        setValue(
-                          `eventDays.${index}.date`,
-                          date ? date.toISOString() : null,
-                          { shouldDirty: true }
-                        );
-                      }}
+                      onSelect={(date) => handleDateSelect(index, date)}
+                      disabled={(date) =>
+                        disabledDates.some((disabledDate) =>
+                          isSameDay(date, disabledDate)
+                        ) &&
+                        !isSameDay(
+                          date,
+                          new Date(watchEventDays[index]?.date || "")
+                        )
+                      }
                       initialFocus
                     />
                   </PopoverContent>
