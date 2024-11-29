@@ -110,7 +110,7 @@ export default function MainSectionForm({ initialData }: MainSectionFormProps) {
           disabled={isSubmitting || formIsSubmitting}
           onClick={() => console.log("Submit button clicked")}
         >
-          {isSubmitting || formIsSubmitting ? "Saving..." : "Save Changes"}
+          {isSubmitting || formIsSubmitting ? "Saving..." : "Save Menu"}
         </Button>
       </form>
     </FormProvider>
