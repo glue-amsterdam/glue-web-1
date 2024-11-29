@@ -9,7 +9,11 @@ export default function AboutSectionForm() {
   const [activeTab, setActiveTab] = useState("citizens");
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+    <Tabs
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className="flex flex-col gap-2 "
+    >
       <AboutTabList />
       <AboutTabsContent />
     </Tabs>

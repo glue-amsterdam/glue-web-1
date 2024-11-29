@@ -13,7 +13,7 @@ export default async function AdminPage() {
   return (
     <div
       style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
-      className={`min-h-dvh bg-gradient-to-br from-blue-100 to-purple-100`}
+      className={`min-h-dvh bg-gradient-to-br `}
     >
       <div className="container mx-auto p-4">
         {isAdmin ? (
