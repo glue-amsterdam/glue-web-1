@@ -1,5 +1,5 @@
 import { BASE_URL } from "@/constants";
-import { MainLinks } from "@/schemas/baseSchema";
+import { CarouselSectionContent, MainLinks } from "@/schemas/baseSchema";
 import { EventDay } from "@/schemas/eventSchemas";
 import { MainColors, MainMenuItem } from "@/utils/menu-types";
 import { cache } from "react";
@@ -49,3 +49,18 @@ export const fetchEventDays = cache(async (): Promise<EventDaysResponse> => {
 
   return res.json();
 });
+
+export const fetchAboutCarousel = cache(
+  async (): Promise<CarouselSectionContent> => {
+    const res = await fetch(`${BASE_URL}/admin/about/carousel`, {
+      next: { revalidate: 0 },
+    });
+
+    if (!res.ok) {
+      console.error("Failed to fetch about carousel");
+      throw new Error("Failed to fetch about carousel");
+    }
+
+    return res.json();
+  }
+);
