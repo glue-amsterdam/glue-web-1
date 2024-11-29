@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
 import MainColorsSection from "@/app/admin/sections/main-colors-sections";
 import MainMenuSection from "@/app/admin/sections/main-menu-sections";
+import MainLinksSection from "@/app/admin/sections/main-links-sections";
 
 function LoadingSpinner() {
   return (
@@ -24,9 +25,9 @@ export default function MainSectionPage() {
         <MainMenuSection />
       </Suspense>
 
-      {/*  <Suspense fallback={<LoadingSpinner />}>
+      <Suspense fallback={<LoadingSpinner />}>
         <MainLinksSection />
-      </Suspense> */}
+      </Suspense>
     </div>
   );
 }

@@ -1,9 +1,10 @@
 import { DAYS, DAYS_IDS } from "@/constants";
+import { MainLinks } from "@/schemas/baseSchema";
 
 export interface MainSection {
   mainColors: MainColors;
   mainMenu: MainMenuItem[];
-  mainLinks: Record<string, MainLink>;
+  mainLinks: MainLinks;
   eventsDays: EventDay[];
 }
 export interface MainMenuItem {
@@ -25,10 +26,6 @@ export interface MainColors {
   box3: string;
   box4: string;
   triangle: string;
-}
-
-export interface MainLink {
-  link?: string;
 }
 
 export interface EventDay {

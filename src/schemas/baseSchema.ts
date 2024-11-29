@@ -43,16 +43,16 @@ export const mainMenuSchema = z.object({
 });
 
 export const linkItemSchema = z.object({
-  link: z.string().url("Invalid URL"),
-  icon: z.string().optional(),
+  platform: z.string().min(1, "Platform is required"),
+  link: z.string().url("Must be a valid URL"),
 });
 
 export const mainLinksSchema = z.object({
-  newsletter: linkItemSchema,
-  linkedin: linkItemSchema,
-  instagram: linkItemSchema,
-  youtube: linkItemSchema,
+  mainLinks: z.array(linkItemSchema),
 });
+
+export type LinkItem = z.infer<typeof linkItemSchema>;
+export type MainLinks = z.infer<typeof mainLinksSchema>;
 
 export const mainSectionSchema = z.object({
   mainColors: mainColorsSchema,
