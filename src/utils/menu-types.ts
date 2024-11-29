@@ -1,5 +1,6 @@
 import { DAYS, DAYS_IDS } from "@/constants";
 import { MainLinks } from "@/schemas/baseSchema";
+import { EventDay } from "@/schemas/eventSchemas";
 
 export interface MainSection {
   mainColors: MainColors;
@@ -26,12 +27,6 @@ export interface MainColors {
   box3: string;
   box4: string;
   triangle: string;
-}
-
-export interface EventDay {
-  dayId: DayID;
-  label: DaysLabels;
-  date: Date;
 }
 
 export type DayID = (typeof DAYS_IDS)[number];

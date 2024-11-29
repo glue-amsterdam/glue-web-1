@@ -1,17 +1,32 @@
-import { DAYS, DAYS_IDS, EVENT_TYPES } from "@/constants";
+import { DAYS_IDS, EVENT_TYPES } from "@/constants";
 import { ImageData, imageDataSchema } from "@/schemas/baseSchema";
 import {
   enhancedOrganizerSchema,
   enhancedUserSchema,
   ParticipantUser,
 } from "@/schemas/usersSchemas";
-import { EventDay } from "@/utils/menu-types";
 import * as z from "zod";
 
-export const eventDaySchema: z.ZodType<EventDay> = z.object({
+export const eventDaySchema = z.object({
   dayId: z.enum(DAYS_IDS),
-  label: z.enum(DAYS),
-  date: z.date(),
+  date: z.string().nullable(),
+  label: z.string().min(1, "Label is required"),
+});
+
+export type EventDay = z.infer<typeof eventDaySchema>;
+
+export const eventDaysSchema = z.object({
+  eventDays: z.array(eventDaySchema).refine(
+    (days) => {
+      const validDates = days
+        .filter((day) => day.date !== null)
+        .map((day) => new Date(day.date!).getTime());
+      return new Set(validDates).size === validDates.length;
+    },
+    {
+      message: "Event dates must be unique",
+    }
+  ),
 });
 
 export const baseEventSchema = z.object({
