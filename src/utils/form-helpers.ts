@@ -8,7 +8,7 @@ export async function handleFormSubmit<T>(
       "Content-Type": "application/json",
     },
     body: JSON.stringify(data),
-    credentials: "include", // This ensures cookies are sent with the request
+    credentials: "include",
   });
 
   if (!response.ok) {

@@ -5,8 +5,6 @@ export const imageDataSchema: z.ZodType<ImageData> = z.object({
   imageName: z.string(),
   imageUrl: z.string(),
   alt: z.string().optional(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
 });
 
 export interface ImageData {
@@ -14,8 +12,6 @@ export interface ImageData {
   imageName: string;
   imageUrl: string;
   alt?: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 /* MAIN SECTION ADMIN FORM SCHEMAS => */
