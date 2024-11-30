@@ -26,11 +26,11 @@ export const metadata: Metadata = {
   },
   icons: [
     {
-      url: "/favicons/ligthFavicon.ico",
+      url: "/ligthFavicon.ico",
       media: "(prefers-color-scheme: light)",
     },
     {
-      url: "/favicons/favicon.ico",
+      url: "/favicon.ico",
       media: "(prefers-color-scheme: dark)",
     },
   ],
