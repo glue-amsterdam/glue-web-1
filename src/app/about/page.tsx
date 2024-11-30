@@ -1,13 +1,16 @@
 import { Suspense } from "react";
 import Background from "@/app/components/background";
-import AboutPageContainer from "@/app/about/about-page-container";
+import AboutCarousel from "@/app/about/about-carousel";
 
 export default function AboutPage({}) {
   return (
     <>
-      <Suspense>
-        <AboutPageContainer />
+      <Suspense fallback={<div>Loading...</div>}>
+        <AboutCarousel />
       </Suspense>
+      {/* <Suspense>
+        <AboutPageContainer />
+      </Suspense> */}
       <Background />
     </>
   );
