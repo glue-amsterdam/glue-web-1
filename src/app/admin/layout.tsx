@@ -20,7 +20,7 @@ function AboutLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <div className="text-uiblack">{children}</div>;
+  return <div className="text-uiblack container mx-auto pt-32">{children}</div>;
 }
 
 export default AboutLayout;
