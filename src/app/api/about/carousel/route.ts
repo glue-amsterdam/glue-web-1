@@ -12,7 +12,9 @@ export async function GET() {
     ]);
 
     if (!carouselData || !slidesData) {
-      throw new Error("Failed to fetch carousel data or slides");
+      throw new Error(
+        "Failed to fetch carousel data or slides in client api call"
+      );
     }
 
     const carouselSection: CarouselClientType = {
@@ -28,7 +30,10 @@ export async function GET() {
   } catch (error) {
     console.error("Error in GET /api/about/carousel:", error);
     return NextResponse.json(
-      { error: "An error occurred while fetching carousel data" },
+      {
+        error:
+          "An error occurred while fetching carousel data in client api call",
+      },
       { status: 500 }
     );
   }
