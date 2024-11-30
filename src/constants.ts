@@ -114,11 +114,9 @@ export const getEventIcon = (type: EventType) => {
 
 export const EMPTY_IMAGE: ImageData = {
   id: "",
-  imageName: "",
-  imageUrl: "",
+  image_name: "",
+  image_url: "",
   alt: "",
-  createdAt: new Date(),
-  updatedAt: new Date(),
 };
 
 export const DEFAULT_EMPTY_EVENT: Omit<Event, "date"> = {
@@ -126,11 +124,9 @@ export const DEFAULT_EMPTY_EVENT: Omit<Event, "date"> = {
   name: "",
   thumbnail: {
     id: "",
-    imageName: "",
-    imageUrl: "",
+    image_name: "",
+    image_url: "",
     alt: "",
-    createdAt: new Date(),
-    updatedAt: new Date(),
   },
   organizer: {
     userId: "",
@@ -183,23 +179,23 @@ export const MOCKUSER_ADMIN_PARTICIPANT: User = {
   },
   images: [
     {
-      imageName: "vanmokum-carousel-image-1",
+      image_name: "vanmokum-carousel-image-1",
       id: "vanmokum-carousel-image-1",
-      imageUrl: `/placeholders/user-placeholder-1.jpg`,
+      image_url: `/placeholders/user-placeholder-1.jpg`,
       alt: "vanmokum profile image 1",
       ...generateTimestamps(),
     },
     {
-      imageName: "vanmokum-carousel-image-2",
+      image_name: "vanmokum-carousel-image-2",
       id: "vanmokum-carousel-image-2",
-      imageUrl: `/placeholders/user-placeholder-2.jpg`,
+      image_url: `/placeholders/user-placeholder-2.jpg`,
       alt: "vanmokum profile image 2",
       ...generateTimestamps(),
     },
     {
-      imageName: "vanmokum-carousel-image-3",
+      image_name: "vanmokum-carousel-image-3",
       id: "vanmokum-carousel-image-3",
-      imageUrl: `/placeholders/user-placeholder-3.jpg`,
+      image_url: `/placeholders/user-placeholder-3.jpg`,
       alt: "vanmokum profile image 3",
       ...generateTimestamps(),
     },
