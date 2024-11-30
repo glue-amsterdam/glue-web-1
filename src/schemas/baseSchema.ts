@@ -74,6 +74,15 @@ export type Citizen = z.infer<typeof citizenSchema>;
 export type InfoItem = z.infer<typeof infoItemSchema>;
 export type PressItem = z.infer<typeof pressItemSchema>;
 
+export type CarouselClientType = {
+  title: string;
+  description: string;
+  slides: Array<{
+    image_url: string;
+    alt: string;
+  }>;
+};
+
 export const carouselSectionSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),

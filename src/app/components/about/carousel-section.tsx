@@ -20,19 +20,19 @@ import ScrollDown from "@/app/components/scroll-down";
 import { useScroll } from "@/app/hooks/useScroll";
 import { fadeInConfig } from "@/utils/animations";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { CarouselSectionContent } from "@/schemas/baseSchema";
+import { CarouselClientType } from "@/schemas/baseSchema";
 
 interface MainSectionProps {
-  mainSection: CarouselSectionContent | undefined;
+  carouselData: CarouselClientType | undefined;
 }
 
-export default function CarouselSection({ mainSection }: MainSectionProps) {
+export default function CarouselSection({ carouselData }: MainSectionProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
   useScroll();
 
-  if (!mainSection) return <div className="text-center py-8">No Data</div>;
+  if (!carouselData) return <div className="text-center py-8">No Data</div>;
 
   return (
     <section
@@ -57,7 +57,7 @@ export default function CarouselSection({ mainSection }: MainSectionProps) {
           viewport={{ once: true }}
           className="h1-titles font-bold tracking-widest my-4"
         >
-          {mainSection.title}
+          {carouselData.title}
         </motion.h1>
         <div className="flex-grow h-full">
           <Carousel
@@ -69,7 +69,7 @@ export default function CarouselSection({ mainSection }: MainSectionProps) {
             ]}
           >
             <CarouselContent className="h-full">
-              {mainSection.slides.map((slide, index) => (
+              {carouselData.slides.map((slide, index) => (
                 <CarouselItem className="h-full" key={index}>
                   <Card className="border-none bg-transparent h-full">
                     <CardContent className="p-0 h-full">
@@ -80,7 +80,7 @@ export default function CarouselSection({ mainSection }: MainSectionProps) {
                         className="relative w-full h-full cursor-pointer transition-transform hover:scale-105"
                       >
                         <Image
-                          src={slide.imageUrl}
+                          src={slide.image_url}
                           alt={slide.alt || "Slide from the GLUE Gallery"}
                           className="object-cover"
                           quality={100}
@@ -106,7 +106,7 @@ export default function CarouselSection({ mainSection }: MainSectionProps) {
           transition={{ delay: 1.3 }}
           className="opacity-90 mt-4 text-md md:text-lg"
         >
-          {mainSection.description}
+          {carouselData.description}
         </motion.p>
         <Dialog open={modalOpen} onOpenChange={setModalOpen}>
           <DialogContent className="w-full p-0 max-w-[90vw] md:max-w-[70vw] ">
@@ -115,9 +115,9 @@ export default function CarouselSection({ mainSection }: MainSectionProps) {
             </DialogTitle>
             <div className="relative w-full h-full">
               <img
-                src={mainSection.slides[selectedImage].imageUrl}
+                src={carouselData.slides[selectedImage].image_url}
                 alt={
-                  mainSection.slides[selectedImage].alt ||
+                  carouselData.slides[selectedImage].alt ||
                   "Slide from the GLUE Gallery"
                 }
                 className="object-cover w-full h-full"
@@ -129,8 +129,8 @@ export default function CarouselSection({ mainSection }: MainSectionProps) {
                 onClick={() =>
                   setSelectedImage(
                     (prev) =>
-                      (prev - 1 + mainSection.slides.length) %
-                      mainSection.slides.length
+                      (prev - 1 + carouselData.slides.length) %
+                      carouselData.slides.length
                   )
                 }
               >
@@ -142,7 +142,7 @@ export default function CarouselSection({ mainSection }: MainSectionProps) {
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10"
                 onClick={() =>
                   setSelectedImage(
-                    (prev) => (prev + 1) % mainSection.slides.length
+                    (prev) => (prev + 1) % carouselData.slides.length
                   )
                 }
               >

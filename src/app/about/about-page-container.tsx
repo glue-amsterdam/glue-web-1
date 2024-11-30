@@ -17,14 +17,12 @@ import {
   ParticipantsSectionContent,
   SponsorsSectionContent,
 } from "@/schemas/baseSchema";
-import CarouselSection from "@/app/components/about/carousel-section";
 
 async function AboutPageContainer() {
   const aboutData = await fetchAbout();
 
   return (
     <>
-      <CarouselSection mainSection={aboutData.carouselSection} />
       <Suspense>
         <ParticipantsPageSection headerData={aboutData.participantsSection} />
       </Suspense>
