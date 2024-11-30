@@ -1,6 +1,7 @@
 import { BASE_URL } from "@/constants";
 import {
   CarouselSectionContent,
+  CuratedMemberSectionContent,
   MainLinks,
   ParticipantsSectionContent,
 } from "@/schemas/baseSchema";
@@ -78,6 +79,22 @@ export const fetchAboutParticipants = cache(
     if (!res.ok) {
       console.error("Failed to fetch about participants");
       throw new Error(`Failed to fetch about participants`);
+    }
+
+    return res.json();
+  }
+);
+
+export const fetchAboutCurated = cache(
+  async (): Promise<CuratedMemberSectionContent> => {
+    const res = await fetch(`${BASE_URL}/admin/about/curated`, {
+      next: { revalidate: 0 },
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      console.error("Failed to fetch about curated");
+      throw new Error(`Failed to fetch about curated`);
     }
 
     return res.json();
