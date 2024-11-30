@@ -85,7 +85,7 @@ export default function ParticipantsSection({
                       {participant.images ? (
                         <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
                           <img
-                            src={participant.images[0].imageUrl}
+                            src={participant.images[0].image_url}
                             alt={`${participant.userName} profile image thumbnail`}
                             className="w-full h-full absolute object-cover"
                           />
@@ -98,7 +98,7 @@ export default function ParticipantsSection({
                       ) : (
                         <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
                           <img
-                            src={placeholderImage.imageUrl}
+                            src={placeholderImage.image_url}
                             alt={`${participant.userName} profile image thumbnail`}
                             className="w-full h-full absolute object-cover"
                           />

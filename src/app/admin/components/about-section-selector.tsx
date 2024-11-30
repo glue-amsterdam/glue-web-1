@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const navItems = [
   { name: "Carousel", section: "about-carousel" },
@@ -20,18 +20,12 @@ interface AboutSectionSelectorProps {
 export default function AboutSectionSelector({
   currentSection,
 }: AboutSectionSelectorProps) {
-  const router = useRouter();
-
-  const handleSectionChange = (section: string) => {
-    router.push(`?section=${section}`);
-  };
-
   return (
     <div className="flex flex-wrap gap-2 p-4 bg-gray-100 rounded-lg shadow-inner overflow-x-auto">
       {navItems.map((item) => (
-        <button
+        <Link
           key={item.section}
-          onClick={() => handleSectionChange(item.section)}
+          href={`?section=${item.section}`}
           className={`
             px-4 py-2 rounded-md font-medium transition-all duration-200 ease-in-out
             ${
@@ -43,7 +37,7 @@ export default function AboutSectionSelector({
           `}
         >
           {item.name}
-        </button>
+        </Link>
       ))}
     </div>
   );
