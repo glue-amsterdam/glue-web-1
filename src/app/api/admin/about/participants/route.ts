@@ -4,6 +4,15 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function GET() {
+  const cookieStore = await cookies();
+  const adminToken = cookieStore.get("admin_token");
+
+  if (!adminToken) {
+    return NextResponse.json(
+      { error: "Unauthorized: Admin access required" },
+      { status: 403 }
+    );
+  }
   try {
     const supabase = await createClient();
 
@@ -15,7 +24,6 @@ export async function GET() {
     if (!participantsData) {
       throw new Error("Failed to fetch participants about data");
     }
-    console.log("participantsData:", participantsData);
 
     return NextResponse.json(participantsData);
   } catch (error) {
@@ -42,10 +50,8 @@ export async function PUT(request: Request) {
     const supabase = await createClient();
     const body = await request.json();
 
-    // Validate the incoming data
     const validatedData = participantsSectionSchema.parse(body);
 
-    // Update the main participants data
     const { data: participantsData, error: participantsError } = await supabase
       .from("about_participants")
       .upsert({
