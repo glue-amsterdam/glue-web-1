@@ -1,5 +1,6 @@
 import { BASE_URL } from "@/constants";
 import {
+  AboutCuratedClientType,
   AboutParticipantsClientType,
   CarouselClientType,
 } from "@/schemas/baseSchema";
@@ -29,6 +30,21 @@ export const fetchUserAboutParticipants = cache(
     if (!res.ok) {
       console.error("Failed to fetch about participants in client api call");
       throw new Error(`Failed to fetch about participants in client api call`);
+    }
+
+    return res.json();
+  }
+);
+
+export const fetchUserCurated = cache(
+  async (): Promise<AboutCuratedClientType> => {
+    const res = await fetch(`${BASE_URL}/about/curated`, {
+      next: { revalidate: 0 },
+    });
+
+    if (!res.ok) {
+      console.error("Failed to fetch about curated in client api call");
+      throw new Error(`Failed to fetch about curated in client api call`);
     }
 
     return res.json();

@@ -1,4 +1,7 @@
-import { ParticipantUser } from "@/schemas/usersSchemas";
+import {
+  CuratedParticipantWhitYear,
+  ParticipantUser,
+} from "@/schemas/usersSchemas";
 import * as z from "zod";
 
 export const imageDataSchema = z.object({
@@ -86,6 +89,11 @@ export type CarouselClientType = {
 export type AboutParticipantsClientType = {
   headerData: ParticipantsSectionContent;
   participants: ParticipantUser[];
+};
+
+export type AboutCuratedClientType = {
+  headerData: CuratedMemberSectionContent;
+  curatedParticipants: Record<number, CuratedParticipantWhitYear[]>;
 };
 
 export const carouselSectionSchema = z.object({
