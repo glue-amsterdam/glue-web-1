@@ -1,6 +1,7 @@
 import AboutSectionSelector from "@/app/admin/components/about-section-selector";
 import AdminHeader from "@/app/admin/components/admin-header";
 import AboutCarouselSection from "@/app/admin/sections/about-carousel-sections";
+import AboutParticipantsSection from "@/app/admin/sections/about-participants-sections";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -30,6 +31,11 @@ export default async function AboutSectionPage({
         {currentSection === "about-carousel" && (
           <Suspense fallback={<LoadingSpinner />}>
             <AboutCarouselSection />
+          </Suspense>
+        )}
+        {currentSection === "about-participants" && (
+          <Suspense fallback={<LoadingSpinner />}>
+            <AboutParticipantsSection />
           </Suspense>
         )}
       </div>

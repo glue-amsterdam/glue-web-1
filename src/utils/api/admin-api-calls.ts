@@ -1,5 +1,9 @@
 import { BASE_URL } from "@/constants";
-import { CarouselSectionContent, MainLinks } from "@/schemas/baseSchema";
+import {
+  CarouselSectionContent,
+  MainLinks,
+  ParticipantsSectionContent,
+} from "@/schemas/baseSchema";
 import { EventDay } from "@/schemas/eventSchemas";
 import { MainColors, MainMenuItem } from "@/utils/menu-types";
 import { cache } from "react";
@@ -59,6 +63,21 @@ export const fetchAboutCarousel = cache(
     if (!res.ok) {
       console.error("Failed to fetch about carousel:");
       throw new Error(`Failed to fetch about carousel`);
+    }
+
+    return res.json();
+  }
+);
+
+export const fetchAboutParticipants = cache(
+  async (): Promise<ParticipantsSectionContent> => {
+    const res = await fetch(`${BASE_URL}/admin/about/participants`, {
+      next: { revalidate: 0 },
+    });
+
+    if (!res.ok) {
+      console.error("Failed to fetch about participants");
+      throw new Error(`Failed to fetch about participants`);
     }
 
     return res.json();

@@ -9,23 +9,23 @@ export const mockAbout: DatabaseAboutContent = {
     slides: [
       {
         id: "carousel-image-1",
-        imageUrl: `/placeholders/placeholder-1.jpg`,
+        image_url: `/placeholders/placeholder-1.jpg`,
         alt: "GLUE connected by design 1",
-        imageName: "carousel-image-1",
+        image_name: "carousel-image-1",
         ...generateTimestamps(),
       },
       {
         id: "carousel-image-2",
-        imageUrl: `/placeholders/placeholder-2.jpg`,
+        image_url: `/placeholders/placeholder-2.jpg`,
         alt: "GLUE connected by design 2",
-        imageName: "carousel-image-2",
+        image_name: "carousel-image-2",
         ...generateTimestamps(),
       },
       {
         id: "carousel-image-3",
-        imageUrl: `/placeholders/placeholder-3.jpg`,
+        image_url: `/placeholders/placeholder-3.jpg`,
         alt: "GLUE connected by design 3",
-        imageName: "carousel-image-3",
+        image_name: "carousel-image-3",
         ...generateTimestamps(),
       },
     ],
@@ -45,8 +45,8 @@ export const mockAbout: DatabaseAboutContent = {
         name: "Emma Johnson",
         image: {
           id: "emma-johnson-image",
-          imageUrl: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
-          imageName: "emma-johnson-image",
+          image_url: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
+          image_name: "emma-johnson-image",
           alt: "Portrait of Emma Johnson, a renowned architect known for her innovative sustainable designs.",
           ...generateTimestamps(),
         },
@@ -59,8 +59,8 @@ export const mockAbout: DatabaseAboutContent = {
         name: "Michael Chen",
         image: {
           id: "michael-chen-image",
-          imageUrl: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
-          imageName: "michael-chen-image",
+          image_url: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
+          image_name: "michael-chen-image",
           alt: "Portrait of Michael Chen, a fashion designer who incorporates architectural elements into his clothing lines.",
           ...generateTimestamps(),
         },
@@ -73,8 +73,8 @@ export const mockAbout: DatabaseAboutContent = {
         name: "Sophia Patel",
         image: {
           id: "sophia-patel-image",
-          imageUrl: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
-          imageName: "sophia-patel-image",
+          image_url: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
+          image_name: "sophia-patel-image",
           alt: "Portrait of Sophia Patel, a structural engineer who bridges the gap between fashion and architecture.",
           ...generateTimestamps(),
         },
@@ -87,9 +87,9 @@ export const mockAbout: DatabaseAboutContent = {
         name: "David Lee",
         image: {
           id: "david-lee-image",
-          imageUrl: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
+          image_url: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
           alt: "Portrait of David Lee, an urban planner who integrates fashion concepts into city designs.",
-          imageName: "david-lee-image",
+          image_name: "david-lee-image",
           ...generateTimestamps(),
         },
         description:
@@ -101,9 +101,9 @@ export const mockAbout: DatabaseAboutContent = {
         name: "Olivia Martinez",
         image: {
           id: "olivia-martinez-image",
-          imageUrl: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
+          image_url: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
           alt: "Portrait of Olivia Martinez, a textile innovator creating sustainable fabrics for both fashion and architecture.",
-          imageName: "olivia-martinez-image",
+          image_name: "olivia-martinez-image",
           ...generateTimestamps(),
         },
         description:
@@ -115,9 +115,9 @@ export const mockAbout: DatabaseAboutContent = {
         name: "Alexander Kim",
         image: {
           id: "alexander-kim-image",
-          imageUrl: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
+          image_url: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
           alt: "Portrait of Alexander Kim, a 3D printing expert revolutionizing both architectural models and fashion prototypes.",
-          imageName: "alexander-kim-image",
+          image_name: "alexander-kim-image",
           ...generateTimestamps(),
         },
         description:
@@ -129,9 +129,9 @@ export const mockAbout: DatabaseAboutContent = {
         name: "Isabella Nguyen",
         image: {
           id: "isabella-nguyen-image",
-          imageUrl: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
+          image_url: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
           alt: "Portrait of Isabella Nguyen, a renowned figure in Amsterdam’s creative community, advocating for cross-disciplinary collaborations.",
-          imageName: "isabella-nguyen-image",
+          image_name: "isabella-nguyen-image",
           ...generateTimestamps(),
         },
         description: `'𝘈𝘮𝘴𝘵𝘦𝘳𝘥𝘢𝘮 𝘪𝘴 𝘢 𝘧𝘢𝘯𝘵𝘢𝘴𝘵𝘪𝘤 𝘱𝘭𝘢𝘤𝘦 𝘸𝘩𝘦𝘳𝘦 𝘤𝘳𝘦𝘢𝘵𝘪𝘷𝘦𝘴 𝘢𝘮𝘰𝘯𝘨 𝘵𝘩𝘦𝘮𝘴𝘦𝘭𝘷𝘦𝘴 𝘱𝘳𝘰𝘷𝘪𝘥𝘦 𝘰𝘱𝘱𝘰𝘳𝘵𝘶𝘯𝘪𝘵𝘪𝘦𝘴 𝘧𝘰𝘳 𝘵𝘢𝘭𝘦𝘯𝘵𝘴’, says Marcel Wanders founder of @moooi.`,
@@ -142,9 +142,9 @@ export const mockAbout: DatabaseAboutContent = {
         name: "Ethan Carter",
         image: {
           id: "ethan-carter-image",
-          imageUrl: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
+          image_url: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
           alt: "Portrait of Ethan Carter, a biomimicry specialist applying nature-inspired designs to buildings and clothing.",
-          imageName: "ethan-carter-image",
+          image_name: "ethan-carter-image",
           ...generateTimestamps(),
         },
         description:
@@ -156,9 +156,9 @@ export const mockAbout: DatabaseAboutContent = {
         name: "Zoe Anderson",
         image: {
           id: "zoe-anderson-image",
-          imageUrl: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
+          image_url: `/placeholders/user-placeholder-${getRandomNumber()}.jpg`,
           alt: "Portrait of Zoe Anderson, an acoustics expert designing spaces and garments that interact with sound.",
-          imageName: "zoe-anderson-image",
+          image_name: "zoe-anderson-image",
           ...generateTimestamps(),
         },
         description:
@@ -183,9 +183,9 @@ export const mockAbout: DatabaseAboutContent = {
         title: "Mission Statement",
         image: {
           id: "mission-statement-image",
-          imageUrl: `/placeholders/placeholder-1.jpg`,
+          image_url: `/placeholders/placeholder-1.jpg`,
           alt: "Innovative architectural fashion design 1",
-          imageName: "mission-statement-image",
+          image_name: "mission-statement-image",
           ...generateTimestamps(),
         },
         description:
@@ -196,9 +196,9 @@ export const mockAbout: DatabaseAboutContent = {
         title: "Meet the Team",
         image: {
           id: "meet-the-team-image",
-          imageUrl: `/placeholders/placeholder-2.jpg`,
+          image_url: `/placeholders/placeholder-2.jpg`,
           alt: "Innovative architectural fashion design 1",
-          imageName: "meet-the-team-image",
+          image_name: "meet-the-team-image",
           ...generateTimestamps(),
         },
         description:
@@ -209,9 +209,9 @@ export const mockAbout: DatabaseAboutContent = {
         title: "GLUE Foundation",
         image: {
           id: "glue-foundation-image",
-          imageUrl: `/placeholders/placeholder-3.jpg`,
+          image_url: `/placeholders/placeholder-3.jpg`,
           alt: "Innovative architectural fashion design 1",
-          imageName: "glue-foundation-image",
+          image_name: "glue-foundation-image",
           ...generateTimestamps(),
         },
         description:
@@ -229,9 +229,9 @@ export const mockAbout: DatabaseAboutContent = {
         title: "GLUE TV",
         image: {
           id: "glue-tv-image",
-          imageUrl: `/placeholders/placeholder-1.jpg`,
+          image_url: `/placeholders/placeholder-1.jpg`,
           alt: "Innovative architectural fashion design 1",
-          imageName: "glue-tv-image",
+          image_name: "glue-tv-image",
           ...generateTimestamps(),
         },
         description: `The third edition of GLUE TV was recorded in the studio of Pakhuis de Zwijger, the platform for social innovation & creation in Amsterdam. GLUE TV focussed this year on members that were invited to explore the definition of design, and stretch its limits a bit; the so called STICKY members. But we used the platform also to interview GLUE’s Creative Citizens of Honour: Wouter Valkenier, Marian Duff and Janine Toussaint. Due to the storm Poly some interviews took place online.
@@ -245,9 +245,9 @@ export const mockAbout: DatabaseAboutContent = {
         title: "Press",
         image: {
           id: "glue-press-image",
-          imageUrl: `/placeholders/placeholder-2.jpg`,
+          image_url: `/placeholders/placeholder-2.jpg`,
           alt: "Innovative architectural fashion design 1",
-          imageName: "glue-press-image",
+          image_name: "glue-press-image",
           ...generateTimestamps(),
         },
         description: `Please contact Karin Dijksman for the most recent press release,
