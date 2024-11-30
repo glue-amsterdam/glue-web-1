@@ -17,6 +17,12 @@ export default async function AboutSectionPage({
     <div className="container mx-auto p-4">
       <AdminHeader adminName="Admin" />
       <div className="bg-white rounded-lg shadow-md p-6 mt-4">
+        <Link
+          href="/admin"
+          className="text-blue-600 hover:underline mt-4 inline-block"
+        >
+          Back to Admin Dashboard
+        </Link>
         <h2 className="text-2xl font-semibold mb-6 text-blue-800">
           About Section
         </h2>
@@ -26,13 +32,6 @@ export default async function AboutSectionPage({
             <AboutCarouselSection />
           </Suspense>
         )}
-
-        <Link
-          href="/admin"
-          className="text-blue-600 hover:underline mt-4 inline-block"
-        >
-          Back to Admin Dashboard
-        </Link>
       </div>
     </div>
   );

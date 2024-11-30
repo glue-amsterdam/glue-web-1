@@ -1,18 +1,14 @@
 import * as z from "zod";
 
-export const imageDataSchema: z.ZodType<ImageData> = z.object({
+export const imageDataSchema = z.object({
   id: z.string(),
-  imageName: z.string(),
-  imageUrl: z.string(),
-  alt: z.string().optional(),
+  image_name: z.string(),
+  image_url: z.string(),
+  alt: z.string().min(1, "Alt text is required"),
+  file: z.any().optional(),
 });
 
-export interface ImageData {
-  id: string;
-  imageName: string;
-  imageUrl: string;
-  alt?: string;
-}
+export type ImageData = z.infer<typeof imageDataSchema>;
 
 /* MAIN SECTION ADMIN FORM SCHEMAS => */
 const hexColorSchema = z
@@ -81,10 +77,7 @@ export type PressItem = z.infer<typeof pressItemSchema>;
 export const carouselSectionSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  slides: z
-    .array(imageDataSchema)
-    .min(1, "At least 1 slide is required")
-    .max(15, "Maximum 15 slides allowed"),
+  slides: z.array(imageDataSchema).max(15, "Maximum 15 slides allowed"),
 });
 export const citizenSchema = z.object({
   id: z.string(),
