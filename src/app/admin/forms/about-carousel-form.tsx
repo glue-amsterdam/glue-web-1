@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   CarouselSectionContent,
   carouselSectionSchema,
@@ -66,7 +66,6 @@ export default function AboutCarouselSectionForm({
   );
 
   const handleFormSubmit = async (data: CarouselSectionContent) => {
-    console.log("handleFormSubmit called with data:", data);
     setIsSubmitting(true);
     try {
       await onSubmit(data);
@@ -76,10 +75,6 @@ export default function AboutCarouselSectionForm({
       setIsSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    console.log("Form errors:", errors);
-  }, [errors]);
 
   return (
     <FormProvider {...methods}>
