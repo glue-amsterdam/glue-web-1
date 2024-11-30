@@ -1,10 +1,4 @@
-import {
-  fetchAbout,
-  fetchAllParticipants,
-  fetchCurated,
-  fetchSponsors,
-} from "@/utils/api";
-import Participants from "@/app/components/about/participants";
+import { fetchAbout, fetchCurated, fetchSponsors } from "@/utils/api";
 import CitizenOfHonour from "@/app/components/about/citizens-of-honour";
 import CuratedMembers from "@/app/components/about/curated-participants";
 import Info from "@/app/components/about/info";
@@ -14,7 +8,6 @@ import { Suspense } from "react";
 import {
   CuratedMemberSectionContent,
   GlueInternationalContent,
-  ParticipantsSectionContent,
   SponsorsSectionContent,
 } from "@/schemas/baseSchema";
 
@@ -23,9 +16,6 @@ async function AboutPageContainer() {
 
   return (
     <>
-      <Suspense>
-        <ParticipantsPageSection headerData={aboutData.participantsSection} />
-      </Suspense>
       <CitizenOfHonour citizensSection={aboutData.citizensSection} />
       <Suspense>
         <CuratedSection headerData={aboutData.curatedMembersSection} />
@@ -43,19 +33,6 @@ async function AboutPageContainer() {
 }
 
 export default AboutPageContainer;
-
-async function ParticipantsPageSection({
-  headerData,
-}: {
-  headerData: ParticipantsSectionContent;
-}) {
-  const participantsData = await fetchAllParticipants();
-  const participantsSection = participantsData.slice(0, 15);
-
-  return (
-    <Participants participants={participantsSection} headerData={headerData} />
-  );
-}
 
 async function SponsorsPageSection({
   headerData,
