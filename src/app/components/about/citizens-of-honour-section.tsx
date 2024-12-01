@@ -65,7 +65,7 @@ export default function CitizenOfHonourSection({
           <div className="relative w-full h-full group">
             <div className="citizen-triangle bg-uiblack z-10 group-hover:opacity-50 opacity-20 transition-all" />
             <img
-              src={citizen.image.imageUrl}
+              src={citizen.image.image_url}
               alt={citizen.name}
               className="absolute inset-0 w-full h-full object-cover z-0 group-hover:grayscale-[0] md:grayscale-[0.2]"
             />
@@ -140,7 +140,7 @@ export default function CitizenOfHonourSection({
               </p>
 
               <img
-                src={selectedCitizen.image.imageUrl}
+                src={selectedCitizen.image.image_url}
                 alt={selectedCitizen.name}
                 className="absolute inset-0 w-full h-full object-cover mb-4 z-0"
               />
