@@ -6,11 +6,7 @@ import { NAVBAR_HEIGHT } from "@/constants";
 import { InfoSectionContent } from "@/schemas/baseSchema";
 import React, { useRef } from "react";
 
-type Props = {
-  infoItemsSection: InfoSectionContent;
-};
-
-function Info({ infoItemsSection }: Props) {
+function Info({ infoItemsSection }: { infoItemsSection: InfoSectionContent }) {
   const sectionRef = useRef<HTMLElement>(null);
   useScroll();
   return (

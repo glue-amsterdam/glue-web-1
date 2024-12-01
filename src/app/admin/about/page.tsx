@@ -2,6 +2,7 @@ import AboutSectionSelector from "@/app/admin/components/about-section-selector"
 import AdminHeader from "@/app/admin/components/admin-header";
 import AboutCarouselSection from "@/app/admin/sections/about-carousel-sections";
 import AboutCuratedSection from "@/app/admin/sections/about-curated-sections";
+import AboutInfoSection from "@/app/admin/sections/about-info-sections";
 import AboutParticipantsSection from "@/app/admin/sections/about-participants-sections";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import Link from "next/link";
@@ -42,6 +43,11 @@ export default async function AboutSectionPage({
         {currentSection === "about-curated" && (
           <Suspense fallback={<LoadingSpinner />}>
             <AboutCuratedSection />
+          </Suspense>
+        )}
+        {currentSection === "about-info" && (
+          <Suspense fallback={<LoadingSpinner />}>
+            <AboutInfoSection />
           </Suspense>
         )}
       </div>
