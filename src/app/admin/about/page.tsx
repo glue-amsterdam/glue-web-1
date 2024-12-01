@@ -8,12 +8,14 @@ import LoadingSpinner from "@/app/components/LoadingSpinner";
 import Link from "next/link";
 import { Suspense } from "react";
 
-export default async function AboutSectionPage(props: {
-  params: { slug: string };
+interface AboutPageProps {
   searchParams: { [key: string]: string | undefined };
-}) {
-  const { section } = await props.searchParams;
+}
 
+export default async function AboutSectionPage({
+  searchParams,
+}: AboutPageProps) {
+  const { section } = await searchParams;
   const currentSection = (section as string) || "about-carousel";
 
   return (
