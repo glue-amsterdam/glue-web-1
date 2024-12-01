@@ -56,7 +56,11 @@ export default function CreateEventClientPage() {
       organizer: { userId: targetUserId as string },
       eventId: `event-${Date.now()}-${Math.random().toString(36)}`,
       coOrganizers: [],
-      date: { dayId: undefined, label: undefined, date: new Date() }, // Initialize with empty values
+      date: {
+        dayId: undefined,
+        label: undefined,
+        date: new Date().toISOString(),
+      }, // Initialize with empty values
     },
   });
 
@@ -131,7 +135,11 @@ export default function CreateEventClientPage() {
         organizer: { userId: targetUserId },
         eventId: `event-${Date.now()}-${Math.random().toString(36)}`,
         coOrganizers: [],
-        date: { dayId: undefined, label: undefined, date: new Date() },
+        date: {
+          dayId: undefined,
+          label: undefined,
+          date: new Date().toISOString(),
+        },
         rsvp: false,
       });
     },
@@ -187,10 +195,10 @@ export default function CreateEventClientPage() {
                     </FormLabel>
                     <FormControl>
                       <div className="flex flex-wrap gap-4">
-                        {field.value.imageUrl ? (
+                        {field.value.image_url ? (
                           <div className="relative h-40 w-40 overflow-hidden rounded-lg">
                             <img
-                              src={field.value.imageUrl}
+                              src={field.value.image_url}
                               alt="Event thumbnail"
                               className="absolute inset-0 object-cover w-full h-full"
                             />
@@ -271,7 +279,7 @@ export default function CreateEventClientPage() {
                         const selectedDay = eventsDays.find(
                           (day) => day.dayId === value
                         );
-                        if (selectedDay) {
+                        if (selectedDay && selectedDay.date) {
                           field.onChange({
                             dayId: selectedDay.dayId,
                             label: selectedDay.label,

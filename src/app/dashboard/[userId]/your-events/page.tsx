@@ -76,12 +76,12 @@ export default function Component() {
         coOrganizers: editingEvent.coOrganizers || undefined,
         date: {
           ...editingEvent.date,
-          date: safeParseDate(editingEvent.date.date),
+          date: editingEvent.date.date
+            ? safeParseDate(editingEvent.date.date).toISOString()
+            : new Date().toISOString(),
         },
         thumbnail: {
           ...editingEvent.thumbnail,
-          createdAt: safeParseDate(editingEvent.thumbnail.createdAt),
-          updatedAt: safeParseDate(editingEvent.thumbnail.updatedAt),
         },
         createdAt: safeParseDate(editingEvent.createdAt),
         updatedAt: safeParseDate(editingEvent.updatedAt),
@@ -102,7 +102,7 @@ export default function Component() {
             <CardHeader>
               <div className="relative h-40 w-full overflow-hidden rounded-t-lg">
                 <img
-                  src={event.thumbnail.imageUrl || "/placeholder.svg"}
+                  src={event.thumbnail.image_url || "/placeholder.svg"}
                   alt={event.name}
                   className="absolute inset-0 object-cover w-full h-full"
                 />
@@ -192,7 +192,7 @@ export default function Component() {
                                 const selectedDay = eventsDays.find(
                                   (day) => day.dayId === value
                                 );
-                                if (selectedDay) {
+                                if (selectedDay && selectedDay.date) {
                                   field.onChange({
                                     ...selectedDay,
                                     date: safeParseDate(selectedDay.date),
@@ -259,7 +259,7 @@ export default function Component() {
                                 {field.value ? (
                                   <div className="relative h-40 w-40 overflow-hidden rounded-lg">
                                     <img
-                                      src={field.value.imageUrl}
+                                      src={field.value.image_url}
                                       alt="Event thumbnail"
                                       className="absolute inset-0 object-cover w-full h-full"
                                     />
@@ -271,11 +271,9 @@ export default function Component() {
                                       onClick={() =>
                                         form.setValue("thumbnail", {
                                           id: "",
-                                          imageUrl: "",
+                                          image_url: "",
                                           alt: "Image alt text for the Event thumbnail",
-                                          imageName: "",
-                                          createdAt: new Date(),
-                                          updatedAt: new Date(),
+                                          image_name: "",
                                         })
                                       }
                                     >
@@ -288,12 +286,10 @@ export default function Component() {
                                     onClick={() => {
                                       form.setValue("thumbnail", {
                                         id: "image-event-thumbnail-asdfas",
-                                        imageUrl:
+                                        image_url:
                                           "/placeholders/placeholder-1.jpg",
                                         alt: "Image alt text for the Event thumbnail",
-                                        imageName: "",
-                                        createdAt: new Date(),
-                                        updatedAt: new Date(),
+                                        image_name: "",
                                       });
                                     }}
                                     className="h-40 w-40 flex items-center justify-center"
