@@ -16,8 +16,6 @@ export default async function AboutSectionPage(props: {
 
   const currentSection = (section as string) || "about-carousel";
 
-  console.log("Current section:", currentSection);
-
   return (
     <div className="container mx-auto p-4">
       <AdminHeader adminName="Admin" />
