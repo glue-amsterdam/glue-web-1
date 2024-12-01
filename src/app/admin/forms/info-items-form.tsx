@@ -173,7 +173,7 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
 
       toast({
         title: "Info item updated",
-        description: `Info item ${infoItem.title} has been successfully updated.`,
+        description: `${infoItem.title} has been successfully updated.`,
       });
 
       // Update the form state with the new image URL and clear oldImageUrl
@@ -181,7 +181,7 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
       methods.setValue(`infoItems.${index}.image.oldImageUrl`, undefined);
       methods.setValue(`infoItems.${index}.image.file`, undefined);
     } catch (error) {
-      console.error(`Info item ${infoItem.title} submission error:`, error);
+      console.error(`${infoItem.title} submission error:`, error);
       toast({
         title: "Error",
         description: `Failed to update info item ${
