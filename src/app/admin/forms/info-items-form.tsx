@@ -114,14 +114,24 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const imageUrl = URL.createObjectURL(file);
-      const infoItemId = methods.getValues(`infoItems.${index}.id`);
 
-      methods.setValue(`infoItems.${index}.image.image_url`, imageUrl);
-      methods.setValue(`infoItems.${index}.image.file`, file);
-      methods.setValue(
-        `infoItems.${index}.image.alt`,
-        getFixedAltText(infoItemId)
+      // Store the old image URL before updating
+      const oldImageUrl = methods.getValues(
+        `infoItems.${index}.image.image_url`
       );
+
+      methods.setValue(`infoItems.${index}.image.image_url`, imageUrl, {
+        shouldDirty: true,
+      });
+      methods.setValue(`infoItems.${index}.image.file`, file, {
+        shouldDirty: true,
+      });
+      methods.setValue(`infoItems.${index}.image.oldImageUrl`, oldImageUrl, {
+        shouldDirty: true,
+      });
+
+      // Trigger rerender to show the new image immediately
+      methods.trigger(`infoItems.${index}.image.image_url`);
     }
   };
 
@@ -129,6 +139,7 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
     setIsSubmitting(true);
     const infoItem = methods.getValues(`infoItems.${index}`);
     try {
+      let newImageUrl = infoItem.image.image_url;
       if (infoItem.image.file) {
         const { imageUrl, error } = await uploadImage({
           file: infoItem.image.file,
@@ -138,8 +149,7 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
         if (error) {
           throw new Error(`Failed to upload image: ${error}`);
         }
-        infoItem.image.image_url = imageUrl;
-        delete infoItem.image.file;
+        newImageUrl = imageUrl;
       }
 
       const response = await fetch(`/api/admin/about/info/${infoItem.id}`, {
@@ -147,7 +157,14 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(infoItem),
+        body: JSON.stringify({
+          ...infoItem,
+          image: {
+            ...infoItem.image,
+            image_url: newImageUrl,
+            oldImageUrl: infoItem.image.oldImageUrl,
+          },
+        }),
       });
 
       if (!response.ok) {
@@ -158,6 +175,11 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
         title: "Info item updated",
         description: `Info item ${infoItem.title} has been successfully updated.`,
       });
+
+      // Update the form state with the new image URL and clear oldImageUrl
+      methods.setValue(`infoItems.${index}.image.image_url`, newImageUrl);
+      methods.setValue(`infoItems.${index}.image.oldImageUrl`, undefined);
+      methods.setValue(`infoItems.${index}.image.file`, undefined);
     } catch (error) {
       console.error(`Info item ${infoItem.title} submission error:`, error);
       toast({
@@ -290,6 +312,12 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
                 )}
               </div>
 
+              {/* <Input
+                {...register(`infoItems.${index}.image.alt`)}
+                placeholder="Image alt text"
+                className="mb-2"
+              /> */}
+
               <input
                 type="file"
                 accept="image/*"
@@ -315,6 +343,8 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
                   `infoItems.${index}.title`,
                   `infoItems.${index}.description`,
                   `infoItems.${index}.image.image_url`,
+                  `infoItems.${index}.image.file`,
+                  `infoItems.${index}.image.oldImageUrl`,
                 ]}
                 className="w-full mt-4"
               />

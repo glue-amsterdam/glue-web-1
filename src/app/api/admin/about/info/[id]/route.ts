@@ -1,18 +1,33 @@
-import { infoItemSchema } from "@/schemas/baseSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
+import { infoItemSchema } from "@/schemas/baseSchema";
 
-type Params = Promise<{ id: string }>;
-
-export async function PUT(request: Request, segmentData: { params: Params }) {
-  const params = await segmentData.params;
+export async function PUT(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   const supabase = await createClient();
 
   try {
     const body = await request.json();
-
-    // Validate the incoming data
     const validatedData = infoItemSchema.parse(body);
+
+    // Delete old image if a new one is uploaded
+    if (
+      validatedData.image.oldImageUrl &&
+      validatedData.image.image_url !== validatedData.image.oldImageUrl
+    ) {
+      const oldImagePath = new URL(validatedData.image.oldImageUrl).pathname
+        .split("/")
+        .pop();
+      const { error: deleteError } = await supabase.storage
+        .from("amsterdam-assets")
+        .remove([`about/info-items/${oldImagePath}`]);
+
+      if (deleteError) {
+        console.error("Error deleting old image:", deleteError);
+      }
+    }
 
     // Update the info item
     const { error: itemError } = await supabase
@@ -31,10 +46,7 @@ export async function PUT(request: Request, segmentData: { params: Params }) {
 
     return NextResponse.json({ message: "Info item updated successfully" });
   } catch (error) {
-    console.error(
-      `Error in PUT /api/admin/about/info-item/${params.id}:`,
-      error
-    );
+    console.error(`Error in PUT /api/admin/about/info/${params.id}:`, error);
     return NextResponse.json(
       { error: "An error occurred while updating the info item" },
       { status: 500 }

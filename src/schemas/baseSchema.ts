@@ -10,6 +10,7 @@ export const imageDataSchema = z.object({
   image_url: z.string(),
   alt: z.string().min(1, "Alt text is required"),
   file: z.any().optional(),
+  oldImageUrl: z.string().optional(),
 });
 
 export type ImageData = z.infer<typeof imageDataSchema>;
