@@ -91,9 +91,11 @@ export default function CuratedMembersForm({
         <p className="text-sm text-gray-500">
           {`To add or remove displayed curated members, please manage them from the user administration by marking/unmarking them as "curated/sticky."`}
         </p>
-        <SaveChangesButton isSubmitting={isSubmitting} type="submit">
-          Save Changes
-        </SaveChangesButton>
+        <SaveChangesButton
+          isSubmitting={isSubmitting}
+          watchFields={["title", "description"]}
+          className="w-full"
+        />
       </form>
     </FormProvider>
   );

@@ -195,7 +195,11 @@ export default function AboutCarouselSectionForm({
               <PlusCircle className="mr-2 h-4 w-4" /> Add Slide
             </Button>
           )}
-          <SaveChangesButton isSubmitting={isSubmitting} className="flex-1" />
+          <SaveChangesButton
+            isSubmitting={isSubmitting}
+            watchFields={["title", "description", "slides"]}
+            className="flex-1"
+          />
         </div>
         <input
           type="file"
