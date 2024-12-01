@@ -132,9 +132,12 @@ export const infoItemSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters"),
 });
 
-export const infoItemsSectionSchema = z.object({
+export const mainInfoSectionSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
+});
+
+export const infoItemsSectionSchema = mainInfoSectionSchema.extend({
   infoItems: z
     .array(infoItemSchema)
     .min(3, "At least 1 info item is required")

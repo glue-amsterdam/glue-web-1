@@ -1,37 +1,79 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useForm, useFieldArray, FormProvider } from "react-hook-form";
+import React, { useState, useRef, useEffect } from "react";
+import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import {
   InfoSectionContent,
   infoItemsSectionSchema,
   InfoItem,
 } from "@/schemas/baseSchema";
-import { PlusCircle, X, ImageIcon } from "lucide-react";
+import { ImageIcon } from "lucide-react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { uploadImage } from "@/utils/supabase/storage/client";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { RichTextEditor } from "@/app/components/editor";
+import { Textarea } from "@/components/ui/textarea";
 
 interface InfoSectionFormProps {
   initialData: InfoSectionContent;
 }
 
+const DEFAULT_INFO_ITEMS: InfoItem[] = [
+  {
+    id: "mission-statement",
+    title: "",
+    description: "",
+    image: { id: "image1", image_url: "", alt: "", image_name: "" },
+  },
+  {
+    id: "meet-the-team",
+    title: "",
+    description: "",
+    image: { id: "image2", image_url: "", alt: "", image_name: "" },
+  },
+  {
+    id: "glue-foundation",
+    title: "",
+    description: "",
+    image: { id: "image3", image_url: "", alt: "", image_name: "" },
+  },
+];
+
+const getFixedAltText = (id: string) => {
+  switch (id) {
+    case "mission-statement":
+      return "Visual representation of our mission statement";
+    case "meet-the-team":
+      return "Group photo of our team members";
+    case "glue-foundation":
+      return "Illustration of the GLUE Foundation's core values";
+    default:
+      return "Informative image for GLUE project";
+  }
+};
+
 export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const methods = useForm<InfoSectionContent>({
     resolver: zodResolver(infoItemsSectionSchema),
-    defaultValues: initialData,
+    defaultValues: {
+      ...initialData,
+      infoItems: mergeInfoItems(initialData.infoItems, DEFAULT_INFO_ITEMS),
+    },
   });
 
   const {
@@ -39,12 +81,31 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
     handleSubmit,
     register,
     formState: { errors },
+    reset,
   } = methods;
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "infoItems",
-  });
+  useEffect(() => {
+    reset({
+      ...initialData,
+      infoItems: mergeInfoItems(initialData.infoItems, DEFAULT_INFO_ITEMS),
+    });
+  }, [initialData, reset]);
+
+  function mergeInfoItems(
+    initialItems: InfoItem[],
+    defaultItems: InfoItem[]
+  ): InfoItem[] {
+    const mergedItems = [...defaultItems];
+    initialItems.forEach((item) => {
+      const index = mergedItems.findIndex(
+        (defaultItem) => defaultItem.id === item.id
+      );
+      if (index !== -1) {
+        mergedItems[index] = { ...mergedItems[index], ...item };
+      }
+    });
+    return mergedItems;
+  }
 
   const handleImageChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -53,47 +114,72 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const imageUrl = URL.createObjectURL(file);
+      const infoItemId = methods.getValues(`infoItems.${index}.id`);
 
-      const updatedInfoItem = {
-        ...fields[index],
-        image: {
-          id: fields[index].image.id,
-          image_url: imageUrl,
-          alt: "",
-          image_name: file.name,
-          file: file,
-        },
-      };
-
-      fields[index] = updatedInfoItem;
+      methods.setValue(`infoItems.${index}.image.image_url`, imageUrl);
+      methods.setValue(`infoItems.${index}.image.file`, file);
+      methods.setValue(
+        `infoItems.${index}.image.alt`,
+        getFixedAltText(infoItemId)
+      );
     }
   };
 
-  const onSubmit = async (data: InfoSectionContent) => {
+  const onSubmitInfoItem = async (index: number) => {
     setIsSubmitting(true);
+    const infoItem = methods.getValues(`infoItems.${index}`);
     try {
-      // Upload images before submitting form data
-      for (let i = 0; i < data.infoItems.length; i++) {
-        const infoItem = data.infoItems[i] as InfoItem & {
-          image: { file?: File };
-        };
-        if (infoItem.image.file) {
-          const { imageUrl, error } = await uploadImage({
-            file: infoItem.image.file,
-            bucket: "amsterdam-assets",
-            folder: "about/info-items",
-          });
-          if (error) {
-            throw new Error(`Failed to upload image: ${error}`);
-          }
-          data.infoItems[i].image.image_url = imageUrl;
-          delete data.infoItems[i].image.file; // Remove the file property before sending to API
+      if (infoItem.image.file) {
+        const { imageUrl, error } = await uploadImage({
+          file: infoItem.image.file,
+          bucket: "amsterdam-assets",
+          folder: "about/info-items",
+        });
+        if (error) {
+          throw new Error(`Failed to upload image: ${error}`);
         }
+        infoItem.image.image_url = imageUrl;
+        delete infoItem.image.file;
       }
 
-      // Submit the form data with updated image URLs
+      const response = await fetch(`/api/admin/about/info/${infoItem.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(infoItem),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update info item");
+      }
+
+      toast({
+        title: "Info item updated",
+        description: `Info item ${infoItem.title} has been successfully updated.`,
+      });
+    } catch (error) {
+      console.error(`Info item ${infoItem.title} submission error:`, error);
+      toast({
+        title: "Error",
+        description: `Failed to update info item ${
+          index + 1
+        }. Please try again.`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const onSubmitMainInfo = async (data: {
+    title: string;
+    description: string;
+  }) => {
+    setIsSubmitting(true);
+    try {
       const response = await fetch("/api/admin/about/info", {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -101,19 +187,20 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update info section");
+        throw new Error("Failed to update main info (title and description)");
       }
 
       toast({
-        title: "Info section updated",
-        description: "The info section has been successfully updated.",
+        title: "Main info updated",
+        description:
+          "The main info (title and description) has been successfully updated.",
       });
-      router.refresh();
     } catch (error) {
-      console.error("Info section form submission error:", error);
+      console.error("Main info submission error:", error);
       toast({
         title: "Error",
-        description: "Failed to update info section. Please try again.",
+        description:
+          "Failed to update main info (title and description). Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -123,7 +210,7 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmitMainInfo)} className="space-y-6">
         <div>
           <Label htmlFor="title">Title</Label>
           <Input id="title" {...register("title")} className="mt-1 bg-white" />
@@ -140,119 +227,101 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
             className="mt-1"
             rows={4}
           />
-          {errors.description && (
-            <p className="text-red-500">{errors.description.message}</p>
-          )}
         </div>
 
-        <div>
-          <Label>Info Items (3 required)</Label>
-          <div className="space-y-4 mt-2">
-            {fields.map((field, index) => (
-              <div key={field.id} className="border p-4 rounded-md">
-                <Input
-                  {...register(`infoItems.${index}.title`)}
-                  placeholder="Item Title"
-                  className="mb-2"
-                />
-                {errors.infoItems?.[index]?.title && (
-                  <p className="text-red-500 text-sm mb-2">
-                    {errors.infoItems[index]?.title?.message}
-                  </p>
-                )}
+        <SaveChangesButton
+          isSubmitting={isSubmitting}
+          watchFields={["title", "description"]}
+          className="w-full"
+        />
+      </form>
 
-                <Textarea
-                  {...register(`infoItems.${index}.description`)}
-                  placeholder="Item Description"
-                  className="mb-2"
-                  rows={3}
-                />
-                {errors.infoItems?.[index]?.description && (
-                  <p className="text-red-500 text-sm mb-2">
-                    {errors.infoItems[index]?.description?.message}
-                  </p>
-                )}
+      <div className="mt-8">
+        <Label>Info Items (3 required)</Label>
+        <div className="mt-2 grid grid-cols-1 lg:grid-cols-3 gap-5 justify-around">
+          {methods.getValues().infoItems.map((field, index) => (
+            <form
+              key={field.id}
+              onSubmit={(e) => {
+                e.preventDefault();
+                onSubmitInfoItem(index);
+              }}
+              className="border p-4 rounded-md w-full"
+            >
+              <Input
+                {...register(`infoItems.${index}.title`)}
+                placeholder="Item Title"
+                className="mb-2"
+              />
+              {errors.infoItems?.[index]?.title && (
+                <p className="text-red-500 text-sm mb-2">
+                  {errors.infoItems[index]?.title?.message}
+                </p>
+              )}
 
-                <div className="w-full h-40 object-cover rounded-md relative mb-2">
-                  {field.image.image_url ? (
-                    <Image
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      src={field.image.image_url}
-                      alt={field.image.alt || "Info item image"}
-                      className="object-cover rounded-md"
+              <FormField
+                control={control}
+                name={`infoItems.${index}.description`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Item Description</FormLabel>
+                    <RichTextEditor
+                      value={field.value}
+                      onChange={field.onChange}
                     />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-md">
-                      <ImageIcon className="w-12 h-12 text-gray-400" />
-                    </div>
-                  )}
-                </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <Input
-                  {...register(`infoItems.${index}.image.alt`)}
-                  placeholder="Image alt text"
-                  className="mb-2"
-                />
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleImageChange(e, index)}
-                  ref={(el) => {
-                    fileInputRefs.current[index] = el;
-                  }}
-                  className="hidden"
-                />
-
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => fileInputRefs.current[index]?.click()}
-                  className="w-full mb-2"
-                >
-                  {field.image.image_url ? "Change Image" : "Upload Image"}
-                </Button>
-
-                {index >= 3 && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => remove(index)}
-                    className="w-full"
-                  >
-                    <X className="mr-2 h-4 w-4" /> Remove Item
-                  </Button>
+              <div className="w-full h-40 object-cover rounded-md relative mb-2">
+                {field.image.image_url ? (
+                  <Image
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    src={field.image.image_url}
+                    alt={getFixedAltText(field.id)}
+                    className="object-cover rounded-md"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-md">
+                    <ImageIcon className="w-12 h-12 text-gray-400" />
+                  </div>
                 )}
               </div>
-            ))}
-          </div>
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageChange(e, index)}
+                ref={(el) => {
+                  fileInputRefs.current[index] = el;
+                }}
+                className="hidden"
+              />
+
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => fileInputRefs.current[index]?.click()}
+                className="w-full mb-2"
+              >
+                {field.image.image_url ? "Change Image" : "Upload Image"}
+              </Button>
+
+              <SaveChangesButton
+                isSubmitting={isSubmitting}
+                watchFields={[
+                  `infoItems.${index}.title`,
+                  `infoItems.${index}.description`,
+                  `infoItems.${index}.image.image_url`,
+                ]}
+                className="w-full mt-4"
+              />
+            </form>
+          ))}
         </div>
-
-        {fields.length < 3 && (
-          <Button
-            type="button"
-            onClick={() =>
-              append({
-                id: crypto.randomUUID(),
-                title: "",
-                description: "",
-                image: {
-                  image_url: "",
-                  alt: "",
-                  image_name: "",
-                  id: crypto.randomUUID(),
-                },
-              })
-            }
-            className="w-full"
-          >
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Info Item
-          </Button>
-        )}
-
-        <SaveChangesButton isSubmitting={isSubmitting} className="w-full" />
-      </form>
+      </div>
     </FormProvider>
   );
 }
