@@ -132,7 +132,7 @@ export default function SponsorsForm() {
           {fields.map((field, index) => {
             const currentImage = watchedFields.sponsors?.[index]?.logo;
             const hasValidImage =
-              currentImage?.imageUrl && currentImage.imageUrl !== "";
+              currentImage?.image_url && currentImage.image_url !== "";
 
             return (
               <div
@@ -181,7 +181,7 @@ export default function SponsorsForm() {
                     {hasValidImage ? (
                       <>
                         <img
-                          src={currentImage.imageUrl}
+                          src={currentImage.image_url}
                           alt={currentImage.alt}
                           className="h-40 object-cover rounded-md aspect-square"
                         />

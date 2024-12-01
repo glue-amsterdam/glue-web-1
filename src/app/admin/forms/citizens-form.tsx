@@ -171,7 +171,7 @@ export default function CitizensForm() {
               const fieldIndex = fields.findIndex((f) => f.id === field.id);
               const currentImage = watchedFields[fieldIndex]?.image;
               const hasValidImage =
-                currentImage?.imageUrl && currentImage.imageUrl !== "";
+                currentImage?.image_url && currentImage.image_url !== "";
               return (
                 <div
                   key={field.id}
@@ -194,7 +194,7 @@ export default function CitizensForm() {
                       {hasValidImage ? (
                         <>
                           <img
-                            src={currentImage.imageUrl}
+                            src={currentImage.image_url}
                             alt={currentImage.alt}
                             className="h-40 object-cover rounded-md aspect-square"
                           />

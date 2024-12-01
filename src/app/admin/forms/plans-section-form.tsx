@@ -1,6 +1,4 @@
-import { PlansServer } from "@/app/admin/components/plans-server";
 import { PlansProvider } from "@/app/context/PlansProvider";
-import { Suspense } from "react";
 
 export default function PlanSectionsForm() {
   return (
@@ -9,9 +7,7 @@ export default function PlanSectionsForm() {
         Modify Plans
       </h1>
       <PlansProvider>
-        <Suspense fallback={<div>Loading plans...</div>}>
-          <PlansServer />
-        </Suspense>
+        <div>Plans!</div>
       </PlansProvider>
     </div>
   );
