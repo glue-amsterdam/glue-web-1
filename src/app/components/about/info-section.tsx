@@ -52,7 +52,7 @@ export default function InfoSection({
           onClick={() => openModal(info)}
         >
           <img
-            src={info.image.imageUrl}
+            src={info.image.image_url}
             alt={info.title}
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
           />
@@ -105,7 +105,7 @@ export default function InfoSection({
           {selectedInfo && (
             <div className="relative w-full h-[400px] md:h-[70vh] group">
               <img
-                src={selectedInfo.image.imageUrl}
+                src={selectedInfo.image.image_url}
                 alt={selectedInfo.title}
                 className="absolute inset-0 w-full h-full object-cover rounded-lg mb-4"
               />
