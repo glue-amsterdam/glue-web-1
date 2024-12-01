@@ -75,7 +75,7 @@ export default function ParticipantBaseDashboardForm({
         visitingHours: values.visitingHours.filter(
           (hours) => hours.date && hours.ranges && hours.label
         ),
-        images: values.images.filter((image) => image && image.imageUrl),
+        images: values.images.filter((image) => image && image.image_url),
       };
 
       console.log(cleanedValues);
@@ -149,9 +149,9 @@ export default function ParticipantBaseDashboardForm({
                             key={image.id || index}
                             className="relative h-40 w-40 overflow-hidden rounded-lg"
                           >
-                            {image && image.imageUrl ? (
+                            {image && image.image_url ? (
                               <img
-                                src={image.imageUrl}
+                                src={image.image_url}
                                 alt={image.alt || `Image ${index + 1}`}
                                 className="absolute inset-0 object-cover w-full h-full"
                               />
@@ -183,15 +183,13 @@ export default function ParticipantBaseDashboardForm({
                               if (field.value.length < 3) {
                                 const newImage: ImageData = {
                                   id: `image-${Date.now()}`,
-                                  imageUrl: `/placeholders/placeholder-${
+                                  image_url: `/placeholders/placeholder-${
                                     field.value.length + 1
                                   }.jpg`,
                                   alt: `Image ${field.value.length + 1}`,
-                                  imageName: `placeholder-${
+                                  image_name: `placeholder-${
                                     field.value.length + 1
                                   }.jpg`,
-                                  createdAt: new Date(),
-                                  updatedAt: new Date(),
                                 };
                                 form.setValue("images", [
                                   ...field.value,
