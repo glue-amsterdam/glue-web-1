@@ -50,10 +50,8 @@ export const visitingHours: VisitingHoursType = [
 
 export const placeholderImage: ImageData = {
   id: "mock-image-1",
-  imageName:
+  image_name:
     "GLUE participant image, the placeholder image until upload their one",
-  imageUrl: "/placeholders/user-placeholder-1.jpg",
+  image_url: "/placeholders/user-placeholder-1.jpg",
   alt: "GLUE participant image, the placeholder image until upload their one",
-  createdAt: new Date(),
-  updatedAt: new Date(),
 };

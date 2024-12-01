@@ -4,22 +4,22 @@ import { EventDay } from "@/utils/menu-types";
 const eventsDays: EventDay[] = [
   {
     dayId: "day-1",
-    date: new Date("2025-01-16T00:00:00Z"),
+    date: "2025-01-16T00:00:00Z",
     label: "Thursday",
   },
   {
     dayId: "day-2",
-    date: new Date("2025-01-17T00:00:00Z"),
+    date: "2025-01-17T00:00:00Z",
     label: "Friday",
   },
   {
     dayId: "day-3",
-    date: new Date("2025-01-18T00:00:00Z"),
+    date: "2025-01-18T00:00:00Z",
     label: "Saturday",
   },
   {
     dayId: "day-4",
-    date: new Date("2025-01-19T00:00:00Z"),
+    date: "2025-01-19T00:00:00Z",
     label: "Sunday",
   },
 ];
@@ -56,9 +56,9 @@ export const mockEvents: Event[] = [
     name: "Modern Art Exhibition",
     thumbnail: {
       id: "modern-art-exhibition-thumbnail",
-      imageUrl: `/placeholders/placeholder-1.jpg`,
+      image_url: `/placeholders/placeholder-1.jpg`,
       alt: "GLUE modern-art-exhibition-thumbnail",
-      imageName: "modern-art-exhibition-thumbnail",
+      image_name: "modern-art-exhibition-thumbnail",
       ...generateTimestamps(),
     },
     organizer: {
@@ -87,9 +87,9 @@ export const mockEvents: Event[] = [
     name: "Urban Design Workshop",
     thumbnail: {
       id: "urban-design-workshop-thumbnail",
-      imageUrl: `/placeholders/placeholder-2.jpg`,
+      image_url: `/placeholders/placeholder-2.jpg`,
       alt: "GLUE urban-design-workshop-thumbnail",
-      imageName: "urban-design-workshop-thumbnail",
+      image_name: "urban-design-workshop-thumbnail",
       ...generateTimestamps(),
     },
     organizer: {
@@ -113,9 +113,9 @@ export const mockEvents: Event[] = [
     name: "Architectural Tour: Historic Buildings",
     thumbnail: {
       id: "architectural-tour-thumbnail",
-      imageUrl: `/placeholders/placeholder-3.jpg`,
+      image_url: `/placeholders/placeholder-3.jpg`,
       alt: "GLUE architectural-tour-thumbnail",
-      imageName: "architectural-tour-thumbnail",
+      image_name: "architectural-tour-thumbnail",
       ...generateTimestamps(),
     },
     organizer: {
@@ -135,9 +135,9 @@ export const mockEvents: Event[] = [
     name: "Design Principles Lecture",
     thumbnail: {
       id: "design-principles-lecture-thumbnail",
-      imageUrl: `/placeholders/placeholder-1.jpg`,
+      image_url: `/placeholders/placeholder-1.jpg`,
       alt: "GLUE design-principles-lecture-thumbnail",
-      imageName: "design-principles-lecture-thumbnail",
+      image_name: "design-principles-lecture-thumbnail",
       ...generateTimestamps(),
     },
     organizer: {
@@ -164,9 +164,9 @@ export const mockEvents: Event[] = [
     name: "Sculpture Workshop: Materials & Techniques",
     thumbnail: {
       id: "sculpture-workshop-thumbnail",
-      imageUrl: `/placeholders/placeholder-2.jpg`,
+      image_url: `/placeholders/placeholder-2.jpg`,
       alt: "GLUE sculpture-workshop-thumbnail",
-      imageName: "sculpture-workshop-thumbnail",
+      image_name: "sculpture-workshop-thumbnail",
       ...generateTimestamps(),
     },
     organizer: {
@@ -186,9 +186,9 @@ export const mockEvents: Event[] = [
     name: "Art & Wine Social",
     thumbnail: {
       id: "art-wine-social-thumbnail",
-      imageUrl: `/placeholders/placeholder-3.jpg`,
+      image_url: `/placeholders/placeholder-3.jpg`,
       alt: "GLUE art-wine-social-thumbnail",
-      imageName: "art-wine-social-thumbnail",
+      image_name: "art-wine-social-thumbnail",
       ...generateTimestamps(),
     },
     organizer: {
@@ -215,9 +215,9 @@ export const mockEvents: Event[] = [
     name: "Interior Design Trends Lecture",
     thumbnail: {
       id: "interior-design-trends-thumbnail",
-      imageUrl: `/placeholders/placeholder-1.jpg`,
+      image_url: `/placeholders/placeholder-1.jpg`,
       alt: "GLUE interior-design-trends-thumbnail",
-      imageName: "interior-design-trends-thumbnail",
+      image_name: "interior-design-trends-thumbnail",
       ...generateTimestamps(),
     },
     organizer: {
@@ -236,9 +236,9 @@ export const mockEvents: Event[] = [
     name: "Sustainable Architecture Workshop",
     thumbnail: {
       id: "sustainable-architecture-thumbnail",
-      imageUrl: `/placeholders/placeholder-2.jpg`,
+      image_url: `/placeholders/placeholder-2.jpg`,
       alt: "GLUE sustainable-architecture-thumbnail",
-      imageName: "sustainable-architecture-thumbnail",
+      image_name: "sustainable-architecture-thumbnail",
       ...generateTimestamps(),
     },
     organizer: {
@@ -265,9 +265,9 @@ export const mockEvents: Event[] = [
     name: "Photography Exhibition: Urban Landscapes",
     thumbnail: {
       id: "photography-exhibition-thumbnail",
-      imageUrl: `/placeholders/placeholder-3.jpg`,
+      image_url: `/placeholders/placeholder-3.jpg`,
       alt: "GLUE photography-exhibition-thumbnail",
-      imageName: "photography-exhibition-thumbnail",
+      image_name: "photography-exhibition-thumbnail",
       ...generateTimestamps(),
     },
     organizer: {
@@ -287,9 +287,9 @@ export const mockEvents: Event[] = [
     name: "Art History Guided Tour",
     thumbnail: {
       id: "art-history-tour-thumbnail",
-      imageUrl: `/placeholders/placeholder-1.jpg`,
+      image_url: `/placeholders/placeholder-1.jpg`,
       alt: "GLUE art-history-tour-thumbnail",
-      imageName: "art-history-tour-thumbnail",
+      image_name: "art-history-tour-thumbnail",
       ...generateTimestamps(),
     },
     organizer: {
