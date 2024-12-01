@@ -2,10 +2,8 @@ import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { infoItemSchema } from "@/schemas/baseSchema";
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const supabase = await createClient();
 
   try {
