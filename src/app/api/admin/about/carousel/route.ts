@@ -18,10 +18,18 @@ export async function GET() {
       throw new Error("Failed to fetch carousel data or slides");
     }
 
-    const carouselSection: CarouselSectionContent = {
+    const carouselSection: Pick<
+      CarouselSectionContent,
+      "title" | "description" | "slides"
+    > = {
       title: carouselData.title,
       description: carouselData.description,
-      slides: slidesData,
+      slides: slidesData.map(({ id, image_url, alt, image_name }) => ({
+        id,
+        image_url,
+        alt,
+        image_name,
+      })),
     };
 
     return NextResponse.json(carouselSection);
@@ -35,8 +43,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const supabase = await createClient();
   try {
-    const supabase = await createClient();
     const body = await request.json();
 
     // Validate the incoming data
@@ -53,6 +61,14 @@ export async function POST(request: Request) {
 
     if (carouselError) throw carouselError;
 
+    // Get existing slides
+    const { data: existingSlides, error: fetchError } = await supabase
+      .from("about_carousel_slides")
+      .select("id, image_url")
+      .eq("carousel_id", "about-carousel-56ca13952fcc");
+
+    if (fetchError) throw fetchError;
+
     // Update the slides
     const { error: slidesError } = await supabase
       .from("about_carousel_slides")
@@ -68,20 +84,45 @@ export async function POST(request: Request) {
 
     if (slidesError) throw slidesError;
 
-    // Delete any slides that are no longer present
+    // Identify slides to be deleted
     const currentSlideIds = validatedData.slides.map((slide) => slide.id);
-    const { error: deleteError } = await supabase
-      .from("about_carousel_slides")
-      .delete()
-      .filter("id", "not.in", `(${currentSlideIds.join(",")})`);
+    const slidesToDelete = existingSlides?.filter(
+      (slide) => !currentSlideIds.includes(slide.id)
+    );
 
-    if (deleteError) {
-      console.error("Error deleting old slides:", deleteError);
-      return NextResponse.json(
-        { error: "Failed to delete old carousel slides" },
-        { status: 500 }
-      );
+    if (slidesToDelete && slidesToDelete.length > 0) {
+      // Delete slides from the database
+      const { error: deleteError } = await supabase
+        .from("about_carousel_slides")
+        .delete()
+        .in(
+          "id",
+          slidesToDelete.map((slide) => slide.id)
+        );
+
+      if (deleteError) throw deleteError;
+
+      // Delete corresponding images from the storage bucket
+      for (const slide of slidesToDelete) {
+        try {
+          const url = new URL(slide.image_url);
+          const pathParts = url.pathname.split("/");
+          const filename = pathParts[pathParts.length - 1];
+          const filePath = `about/carousel-images/${filename}`;
+
+          console.log(`Attempting to delete image: ${filePath}`);
+
+          const { error: storageError } = await supabase.storage
+            .from("amsterdam-assets")
+            .remove([filePath]);
+
+          if (storageError) {
+          } else {
+          }
+        } catch (error) {}
+      }
     }
+
     return NextResponse.json({ message: "Carousel updated successfully" });
   } catch (error) {
     console.error("Error in POST /admin/about/carousel:", error);
