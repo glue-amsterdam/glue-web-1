@@ -9,7 +9,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 interface AboutPageProps {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: Promise<{ [key: string]: string | undefined }>;
 }
 
 export default async function AboutSectionPage({
