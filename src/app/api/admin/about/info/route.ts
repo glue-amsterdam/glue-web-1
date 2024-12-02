@@ -23,7 +23,7 @@ export async function GET() {
           id,
           title,
           description,
-          image: { image_url, alt, image_name, id },
+          image: { image_url, alt, image_name },
         })
       ),
     };

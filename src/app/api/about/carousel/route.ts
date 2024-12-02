@@ -6,15 +6,24 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    const [{ data: carouselData }, { data: slidesData }] = await Promise.all([
+    const [
+      { data: carouselData, error: carouselError },
+      { data: slidesData, error: slidesError },
+    ] = await Promise.all([
       supabase.from("about_carousel").select("title,description").single(),
       supabase.from("about_carousel_slides").select("image_url,alt"),
     ]);
 
-    if (!carouselData || !slidesData) {
+    if (carouselError || slidesError) {
       throw new Error(
-        "Failed to fetch carousel data or slides in client api call"
+        `Failed to fetch data: ${
+          carouselError?.message || slidesError?.message
+        }`
       );
+    }
+
+    if (!carouselData || !slidesData) {
+      return NextResponse.json({ error: "No data found" }, { status: 404 });
     }
 
     const carouselSection: CarouselClientType = {
@@ -30,10 +39,7 @@ export async function GET() {
   } catch (error) {
     console.error("Error in GET /api/about/carousel:", error);
     return NextResponse.json(
-      {
-        error:
-          "An error occurred while fetching carousel data in client api call",
-      },
+      { error: "An error occurred while fetching carousel data" },
       { status: 500 }
     );
   }

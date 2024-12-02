@@ -8,20 +8,32 @@ import { CitizensSection } from "@/schemas/citizenSchema";
 import { InfoSection } from "@/schemas/infoSchema";
 import { cache } from "react";
 
-export const fetchUserCarousel = cache(
-  async (): Promise<CarouselClientType> => {
-    const res = await fetch(`${BASE_URL}/about/carousel`, {
-      next: { revalidate: AN_HOUR_IN_S },
-    });
+export async function fetchUserCarousel(): Promise<CarouselClientType> {
+  const res = await fetch(`${BASE_URL}/about/carousel`, {
+    next: {
+      revalidate: 3600,
+      tags: ["about-carousel"],
+    },
+  });
 
-    if (!res.ok) {
-      console.error("Failed to fetch about carousel: in client api call");
-      throw new Error(`Failed to fetch about carousel in client api call");`);
+  if (!res.ok) {
+    if (process.env.NEXT_PHASE === "build") {
+      return {
+        title: "About Us",
+        description: "Loading...",
+        slides: [
+          {
+            image_url: "/placeholder.svg?height=400&width=600",
+            alt: "Loading carousel image",
+          },
+        ],
+      };
     }
-
-    return res.json();
+    throw new Error(`Failed to fetch carousel data: ${res.statusText}`);
   }
-);
+
+  return res.json();
+}
 
 export const fetchUserAboutParticipants = cache(
   async (): Promise<AboutParticipantsClientType> => {

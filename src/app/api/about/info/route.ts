@@ -1,4 +1,4 @@
-import { InfoItem, InfoSection } from "@/schemas/infoSchema";
+import { InfoSection } from "@/schemas/infoSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -6,13 +6,18 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    const { data: infoData, error } = await supabase
-      .from("about_info")
-      .select("*")
-      .eq("id", "about-info-56ca13952fcc")
-      .single();
+    const [{ data: infoData }, { data: infoItemsData }] = await Promise.all([
+      supabase
+        .from("about_info")
+        .select("*")
+        .eq("id", "about-info-56ca13952fcc")
+        .single(),
+      supabase.from("about_info_items").select("*").order("created_at"),
+    ]);
 
-    if (error) throw error;
+    if (!infoData || !infoItemsData) {
+      throw new Error("Failed to fetch info section data or items");
+    }
 
     if (!infoData) {
       throw new Error("Failed to fetch info section data");
@@ -21,15 +26,14 @@ export async function GET() {
     const infoSection: InfoSection = {
       title: infoData.title,
       description: infoData.description,
-      infoItems: infoData.info_items.map((item: InfoItem) => ({
-        id: item.id,
-        title: item.title,
-        description: item.description,
-        image: {
-          image_url: item.image.image_url,
-          alt: item.image.alt,
-        },
-      })),
+      infoItems: infoItemsData.map(
+        ({ id, title, description, image_url, alt, image_name }) => ({
+          id,
+          title,
+          description,
+          image: { image_url, alt, image_name },
+        })
+      ),
     };
 
     return NextResponse.json(infoSection);
