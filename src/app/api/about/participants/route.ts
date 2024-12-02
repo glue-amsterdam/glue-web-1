@@ -1,35 +1,63 @@
 import { users } from "@/lib/mockMembers";
-import { ParticipantUser } from "@/schemas/usersSchemas";
+import {
+  ParticipantClient,
+  participantsResponseSchema,
+} from "@/schemas/participantsSchema";
+import { ParticipantUser, User } from "@/schemas/usersSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
+
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
+
+function isParticipantUser(user: User): user is ParticipantUser {
+  return user.type === "participant" && "slug" in user;
+}
 
 export async function GET() {
   try {
     const supabase = await createClient();
 
-    const { data: participantsData } = await supabase
+    const { data: headerData, error: headerError } = await supabase
       .from("about_participants")
       .select("title,description")
       .single();
 
-    if (!participantsData) {
-      throw new Error(
-        "Failed to fetch participants about data in client api call"
-      );
+    if (headerError) {
+      throw headerError;
     }
 
-    const filteredUsers = users.filter((user) => user.type === "participant");
+    // Filter and transform mock users
+    const participants: ParticipantClient[] = users
+      .filter(
+        (user): user is ParticipantUser =>
+          isParticipantUser(user) && user.status === "accepted"
+      )
+      .slice(0, 15)
+      .map((user) => ({
+        userId: user.userId,
+        slug: user.slug,
+        userName: user.userName,
+        image: {
+          image_url:
+            user.images?.[0]?.image_url || "/placeholders/placeholder.jpg",
+          alt: user.images?.[0]?.alt || `${user.userName} profile image`,
+        },
+      }));
 
-    const participants: ParticipantUser[] = filteredUsers.slice(0, 15);
+    const response = {
+      headerData,
+      participants,
+    };
 
-    return NextResponse.json({ participants, headerData: participantsData });
+    // Validate response with client schema
+    const validatedResponse = participantsResponseSchema.parse(response);
+
+    return NextResponse.json(validatedResponse);
   } catch (error) {
-    console.error("Error in GET /api/about/participants", error);
+    console.error("Error in GET /api/about/participants:", error);
     return NextResponse.json(
-      {
-        error:
-          "An error occurred while fetching participants about data in client api call",
-      },
+      { error: "Failed to fetch participants data" },
       { status: 500 }
     );
   }

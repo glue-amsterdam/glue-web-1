@@ -1,7 +1,6 @@
 import { AN_HOUR_IN_S, BASE_URL } from "@/constants";
 import {
   AboutCuratedClientType,
-  AboutParticipantsClientType,
   CarouselClientType,
 } from "@/schemas/baseSchema";
 import {
@@ -9,6 +8,10 @@ import {
   clientCitizensSectionSchema,
 } from "@/schemas/citizenSchema";
 import { InfoSection } from "@/schemas/infoSchema";
+import {
+  ParticipantsResponse,
+  participantsResponseSchema,
+} from "@/schemas/participantsSchema";
 import { cache } from "react";
 
 export async function fetchUserCarousel(): Promise<CarouselClientType> {
@@ -38,20 +41,49 @@ export async function fetchUserCarousel(): Promise<CarouselClientType> {
   return res.json();
 }
 
-export const fetchUserAboutParticipants = cache(
-  async (): Promise<AboutParticipantsClientType> => {
-    const res = await fetch(`${BASE_URL}/about/participants`, {
-      next: { revalidate: AN_HOUR_IN_S },
-    });
+const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
+  headerData: {
+    title: "Our Participants",
+    description: "Loading participant information...",
+  },
+  participants: Array(6).fill({
+    userId: "placeholder",
+    slug: "loading",
+    userName: "Loading...",
+    image: {
+      image_url: "/placeholders/placeholder.jpg",
+      alt: "Loading participant",
+    },
+  }),
+};
+export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/about/participants`,
+      {
+        next: {
+          revalidate: 3600,
+          tags: ["participants"],
+        },
+      }
+    );
 
     if (!res.ok) {
-      console.error("Failed to fetch about participants in client api call");
-      throw new Error(`Failed to fetch about participants in client api call`);
+      if (process.env.NEXT_PHASE === "build") {
+        return PARTICIPANT_FALLBACK_DATA;
+      }
+      throw new Error(`Failed to fetch participants: ${res.statusText}`);
     }
 
-    return res.json();
+    const data = await res.json();
+    return participantsResponseSchema.parse(data);
+  } catch (error) {
+    if (process.env.NEXT_PHASE === "build") {
+      return PARTICIPANT_FALLBACK_DATA;
+    }
+    throw error;
   }
-);
+}
 
 export const fetchUserInfo = cache(async (): Promise<InfoSection> => {
   const res = await fetch(`${BASE_URL}/about/info`, {

@@ -5,12 +5,12 @@ import GlueLogo from "@/app/components/glue-logo";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { ParticipantsSectionHeader } from "@/schemas/participantsAdminSchema";
-import { ParticipantUser } from "@/schemas/usersSchemas";
+import { ParticipantClient } from "@/schemas/participantsSchema";
 import { useRef } from "react";
 
 interface ParticipantsProps {
   headerData: ParticipantsSectionHeader;
-  participants: ParticipantUser[];
+  participants: ParticipantClient[];
 }
 
 export default function Participants({
