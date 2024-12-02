@@ -1,8 +1,6 @@
 "use client";
 import { usePathname } from "next/navigation";
-
 import { Target, Transition, motion } from "framer-motion";
-
 import BackgrounAnimation from "./background-animation";
 import { useColors } from "../context/MainContext";
 
