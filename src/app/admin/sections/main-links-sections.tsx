@@ -4,5 +4,5 @@ import { fetchMainLinks } from "@/utils/api/admin-api-calls";
 export default async function MainLinksSection() {
   const mainLinks = await fetchMainLinks();
 
-  return <MainLinksForm initialData={mainLinks} />;
+  return <MainLinksForm initialData={{ mainLinks }} />;
 }
