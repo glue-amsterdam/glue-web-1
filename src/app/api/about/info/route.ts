@@ -31,7 +31,7 @@ export async function GET() {
           id,
           title,
           description,
-          image: { image_url, alt, image_name },
+          image: { image_url, alt, image_name: image_name || "" },
         })
       ),
     };
