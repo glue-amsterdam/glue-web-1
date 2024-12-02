@@ -6,10 +6,10 @@ import { Input } from "@/components/ui/input";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { LinkItem, mainLinksSchema } from "@/schemas/baseSchema";
 import { Instagram, Linkedin, Globe, Youtube } from "lucide-react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
+import { LinkItem, mainLinksSchema } from "@/schemas/mainSchema";
 
 interface MainLinksFormProps {
   initialData: { mainLinks: LinkItem[] };
@@ -107,7 +107,11 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
             </div>
           </div>
         ))}
-        <SaveChangesButton isSubmitting={isSubmitting} className="w-full" />
+        <SaveChangesButton
+          isSubmitting={isSubmitting}
+          className="w-full"
+          watchFields={["mainLinks"]}
+        />
       </form>
     </FormProvider>
   );

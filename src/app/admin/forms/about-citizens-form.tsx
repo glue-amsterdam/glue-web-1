@@ -1,119 +1,101 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
-import { useForm, useFieldArray, FormProvider } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PlusCircle, X } from "lucide-react";
-import { z } from "zod";
+import {
+  citizensSectionSchema,
+  CitizensSection,
+  Citizen,
+} from "@/schemas/citizenSchema";
 import { EMPTY_IMAGE } from "@/constants";
 import { placeholderImage } from "@/mockConstants";
-import { citizensSectionSchema } from "@/schemas/baseSchema";
 
-type CitizensSection = z.infer<typeof citizensSectionSchema>;
-
-export default function CitizensForm() {
-  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+export default function CitizensForm({
+  initialData,
+}: {
+  initialData: CitizensSection;
+}) {
+  const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
   const methods = useForm<CitizensSection>({
     resolver: zodResolver(citizensSectionSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      citizens: [],
-    },
+    defaultValues: initialData,
   });
 
   const {
     register,
-    control,
     handleSubmit,
     setValue,
     watch,
     formState: { errors },
   } = methods;
 
-  const { fields, append, update } = useFieldArray({
-    control,
-    name: "citizens",
-  });
-
   useEffect(() => {
     // Fetch citizens section content
-    fetch("/api/about")
+    fetch("/api/citizens")
       .then((res) => res.json())
-      .then((data) => {
-        setValue("title", data.citizensSection.title);
-        setValue("description", data.citizensSection.description);
-        setValue("citizens", data.citizensSection.citizens);
+      .then((data: CitizensSection) => {
+        setValue("title", data.title);
+        setValue("description", data.description);
+        setValue("citizensByYear", data.citizensByYear);
       })
       .catch((error) => console.error("Error fetching data:", error));
   }, [setValue]);
 
   const onSubmit = async (data: CitizensSection) => {
-    console.log(data);
-    // Uncomment when ready to submit to API
-    /* try {
-      await fetch("/api/citizens-section", {
+    try {
+      const response = await fetch("/api/citizens", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error("Failed to update citizens");
       console.log("Data submitted successfully");
     } catch (error) {
       console.error("Error submitting data:", error);
-    } */
+    }
   };
 
-  const addImage = (index: number) => {
-    const currentField = fields[index];
-    update(index, {
-      ...currentField,
-      image: placeholderImage,
-    });
-  };
+  const watchedCitizensByYear = watch("citizensByYear");
 
-  const removeImage = (index: number) => {
-    const currentField = fields[index];
-    update(index, {
-      ...currentField,
-      image: EMPTY_IMAGE,
-    });
-  };
+  const years = Object.keys(watchedCitizensByYear).sort(
+    (a, b) => Number(b) - Number(a)
+  );
 
-  const watchedFields = watch("citizens");
-
-  const years = useMemo(() => {
-    if (!watchedFields || watchedFields.length === 0) return [];
-    const uniqueYears = Array.from(new Set(watchedFields.map((c) => c.year)));
-    return uniqueYears.sort((a, b) => b - a);
-  }, [watchedFields]);
-
-  const handleAddNewYear = useCallback(() => {
-    const newYear = new Date().getFullYear();
+  const handleAddNewYear = () => {
+    const newYear = new Date().getFullYear().toString();
     setSelectedYear(newYear);
-    const newCitizens = Array(3)
-      .fill(null)
-      .map(() => ({
-        id: `${Date.now()}-${Math.random()}`,
-        name: "",
-        image: EMPTY_IMAGE,
-        description: "",
-        year: newYear,
-      }));
-    append(newCitizens);
-  }, [append]);
+    setValue(`citizensByYear.${newYear}`, [
+      { id: `${Date.now()}-1`, name: "", image: EMPTY_IMAGE, description: "" },
+      { id: `${Date.now()}-2`, name: "", image: EMPTY_IMAGE, description: "" },
+      { id: `${Date.now()}-3`, name: "", image: EMPTY_IMAGE, description: "" },
+    ]);
+  };
 
-  const handleYearChange = useCallback((year: number) => {
-    setSelectedYear(year === 0 ? null : year);
-  }, []);
+  const handleYearChange = (year: string) => {
+    setSelectedYear(year === "0" ? null : year);
+  };
 
-  const citizensForSelectedYear = useMemo(() => {
-    return fields.filter((field) => field.year === selectedYear).slice(0, 3);
-  }, [fields, selectedYear]);
+  const addImage = (year: string, index: number) => {
+    const currentCitizens = [...watchedCitizensByYear[year]];
+    currentCitizens[index] = {
+      ...currentCitizens[index],
+      image: placeholderImage,
+    };
+    setValue(`citizensByYear.${year}`, currentCitizens);
+  };
+
+  const removeImage = (year: string, index: number) => {
+    const currentCitizens = [...watchedCitizensByYear[year]];
+    currentCitizens[index] = { ...currentCitizens[index], image: EMPTY_IMAGE };
+    setValue(`citizensByYear.${year}`, currentCitizens);
+  };
 
   return (
     <FormProvider {...methods}>
@@ -152,11 +134,11 @@ export default function CitizensForm() {
           </div>
           <select
             id="yearSelect"
-            value={selectedYear || 0}
-            onChange={(e) => handleYearChange(Number(e.target.value))}
+            value={selectedYear || "0"}
+            onChange={(e) => handleYearChange(e.target.value)}
             className="w-full p-2 border rounded"
           >
-            <option value={0}>Select a year</option>
+            <option value="0">Select a year</option>
             {years.map((year) => (
               <option key={year} value={year}>
                 {year}
@@ -167,39 +149,42 @@ export default function CitizensForm() {
 
         {selectedYear && (
           <div className="space-y-6">
-            {citizensForSelectedYear.map((field) => {
-              const fieldIndex = fields.findIndex((f) => f.id === field.id);
-              const currentImage = watchedFields[fieldIndex]?.image;
-              const hasValidImage =
-                currentImage?.image_url && currentImage.image_url !== "";
-              return (
+            {watchedCitizensByYear[selectedYear].map(
+              (citizen: Citizen, index: number) => (
                 <div
-                  key={field.id}
+                  key={citizen.id}
                   className="flex flex-col space-y-2 p-4 bg-purple-50 rounded-lg"
                 >
-                  <Label htmlFor={`name-${fieldIndex}`}>Name</Label>
+                  <Label htmlFor={`name-${index}`}>Name</Label>
                   <Input
-                    id={`name-${fieldIndex}`}
-                    {...register(`citizens.${fieldIndex}.name`)}
+                    id={`name-${index}`}
+                    {...register(
+                      `citizensByYear.${selectedYear}.${index}.name`
+                    )}
                     placeholder="Name"
                   />
-                  {errors.citizens?.[fieldIndex]?.name && (
+                  {errors.citizensByYear?.[selectedYear]?.[index]?.name && (
                     <p className="text-red-500">
-                      {errors.citizens[fieldIndex]?.name?.message}
+                      {
+                        errors.citizensByYear[selectedYear][index]?.name
+                          ?.message
+                      }
                     </p>
                   )}
                   <div>
                     <Label>Image</Label>
                     <div className="relative">
-                      {hasValidImage ? (
+                      {citizen.image.image_url ? (
                         <>
                           <img
-                            src={currentImage.image_url}
-                            alt={currentImage.alt}
+                            src={citizen.image.image_url}
+                            alt={citizen.image.alt}
                             className="h-40 object-cover rounded-md aspect-square"
                           />
                           <Input
-                            {...register(`citizens.${fieldIndex}.image.alt`)}
+                            {...register(
+                              `citizensByYear.${selectedYear}.${index}.image.alt`
+                            )}
                             placeholder="Image alt text"
                             className="mt-1"
                           />
@@ -208,7 +193,7 @@ export default function CitizensForm() {
                             variant="destructive"
                             size="icon"
                             className="absolute top-2 right-2"
-                            onClick={() => removeImage(fieldIndex)}
+                            onClick={() => removeImage(selectedYear, index)}
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -216,7 +201,7 @@ export default function CitizensForm() {
                       ) : (
                         <Button
                           type="button"
-                          onClick={() => addImage(fieldIndex)}
+                          onClick={() => addImage(selectedYear, index)}
                           className="w-full h-40 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md hover:border-gray-400 transition-colors"
                         >
                           <PlusCircle className="mr-2 h-4 w-4" /> Add Image
@@ -224,27 +209,26 @@ export default function CitizensForm() {
                       )}
                     </div>
                   </div>
-                  <Label htmlFor={`description-${fieldIndex}`}>
-                    Description
-                  </Label>
+                  <Label htmlFor={`description-${index}`}>Description</Label>
                   <Textarea
-                    id={`description-${fieldIndex}`}
-                    {...register(`citizens.${fieldIndex}.description`)}
+                    id={`description-${index}`}
+                    {...register(
+                      `citizensByYear.${selectedYear}.${index}.description`
+                    )}
                     placeholder="Description"
                   />
-                  {errors.citizens?.[fieldIndex]?.description && (
+                  {errors.citizensByYear?.[selectedYear]?.[index]
+                    ?.description && (
                     <p className="text-red-500">
-                      {errors.citizens[fieldIndex]?.description?.message}
+                      {
+                        errors.citizensByYear[selectedYear][index]?.description
+                          ?.message
+                      }
                     </p>
                   )}
-                  <input
-                    type="hidden"
-                    {...register(`citizens.${fieldIndex}.year`)}
-                    value={selectedYear}
-                  />
                 </div>
-              );
-            })}
+              )
+            )}
           </div>
         )}
         <Button type="submit">Save Changes</Button>

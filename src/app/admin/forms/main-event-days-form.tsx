@@ -205,7 +205,11 @@ export default function EventDaysForm({ initialData }: EventDaysFormProps) {
         {errors.eventDays && !Array.isArray(errors.eventDays) && (
           <p className="text-red-500">{errors.eventDays.message}</p>
         )}
-        <SaveChangesButton isSubmitting={isSubmitting} className="w-full" />
+        <SaveChangesButton
+          watchFields={["eventDays"]}
+          className="w-full"
+          isSubmitting={isSubmitting}
+        />
       </form>
     </FormProvider>
   );

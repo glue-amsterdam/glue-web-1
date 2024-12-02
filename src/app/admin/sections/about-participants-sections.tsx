@@ -1,4 +1,4 @@
-import ParticipantsSectionForm from "@/app/admin/forms/participants-section-form";
+import ParticipantsSectionForm from "@/app/admin/forms/about-participants-form";
 import { fetchAboutParticipants } from "@/utils/api/admin-api-calls";
 
 export default async function AboutParticipantsSection() {

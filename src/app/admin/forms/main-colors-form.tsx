@@ -4,14 +4,14 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { mainColorsSchema } from "@/schemas/baseSchema";
-import { MainColors } from "@/utils/menu-types";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { mainColorsSchema } from "@/schemas/mainSchema";
+import { MainColors } from "@/utils/menu-types";
 
 interface MainColorsFormProps {
   initialData: MainColors;
@@ -90,7 +90,11 @@ export default function MainColorsForm({ initialData }: MainColorsFormProps) {
             )
           )}
         </div>
-        <SaveChangesButton isSubmitting={isSubmitting} className="w-full" />
+        <SaveChangesButton
+          watchFields={["box1", "box2", "box3", "box4", "triangle"]}
+          className="w-full"
+          isSubmitting={isSubmitting}
+        />
       </form>
     </FormProvider>
   );

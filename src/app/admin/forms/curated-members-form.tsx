@@ -6,25 +6,26 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  CuratedMemberSectionContent,
-  curatedMembersSectionSchema,
-} from "@/schemas/baseSchema";
+
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import {
+  CuratedMemberSectionHeader,
+  curatedMembersSectionSchema,
+} from "@/schemas/curatedSchema";
 
 export default function CuratedMembersForm({
   initialData,
 }: {
-  initialData: CuratedMemberSectionContent;
+  initialData: CuratedMemberSectionHeader;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
-  const methods = useForm<CuratedMemberSectionContent>({
+  const methods = useForm<CuratedMemberSectionHeader>({
     resolver: zodResolver(curatedMembersSectionSchema),
     defaultValues: initialData,
   });
@@ -35,7 +36,7 @@ export default function CuratedMembersForm({
     formState: { errors },
   } = methods;
 
-  const onSubmit = createSubmitHandler<CuratedMemberSectionContent>(
+  const onSubmit = createSubmitHandler<CuratedMemberSectionHeader>(
     "/api/admin/about/curated",
     () => {
       console.log("Form submitted successfully");
@@ -55,7 +56,7 @@ export default function CuratedMembersForm({
     }
   );
 
-  const handleFormSubmit = async (data: CuratedMemberSectionContent) => {
+  const handleFormSubmit = async (data: CuratedMemberSectionHeader) => {
     setIsSubmitting(true);
     await onSubmit(data);
     setIsSubmitting(false);

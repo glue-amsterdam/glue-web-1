@@ -5,26 +5,27 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  ParticipantsSectionContent,
-  participantsSectionSchema,
-} from "@/schemas/baseSchema";
+
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import {
+  ParticipantsSectionHeader,
+  participantsSectionSchema,
+} from "@/schemas/participantsAdminSchema";
 
 function ParticipantsSectionForm({
   initialData,
 }: {
-  initialData: ParticipantsSectionContent;
+  initialData: ParticipantsSectionHeader;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
-  const methods = useForm<ParticipantsSectionContent>({
+  const methods = useForm<ParticipantsSectionHeader>({
     resolver: zodResolver(participantsSectionSchema),
     defaultValues: initialData,
   });
@@ -35,7 +36,7 @@ function ParticipantsSectionForm({
     formState: { errors },
   } = methods;
 
-  const onSubmit = createSubmitHandler<ParticipantsSectionContent>(
+  const onSubmit = createSubmitHandler<ParticipantsSectionHeader>(
     "/api/admin/about/participants",
     () => {
       console.log("Form submitted successfully");
@@ -55,7 +56,7 @@ function ParticipantsSectionForm({
     }
   );
 
-  const handleFormSubmit = async (data: ParticipantsSectionContent) => {
+  const handleFormSubmit = async (data: ParticipantsSectionHeader) => {
     setIsSubmitting(true);
     await onSubmit(data);
     setIsSubmitting(false);

@@ -1,18 +1,17 @@
 "use client";
 
-import { useForm, useFieldArray, FormProvider } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
-import { mainMenuSchema } from "@/schemas/baseSchema";
-import { MainMenuItem } from "@/utils/menu-types";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
+import { MainMenuData, mainMenuSchema } from "@/schemas/mainSchema";
 
 interface MainSectionFormProps {
-  initialData: { mainMenu: MainMenuItem[] };
+  initialData: MainMenuData;
 }
 
 export default function MainSectionForm({ initialData }: MainSectionFormProps) {
@@ -20,28 +19,23 @@ export default function MainSectionForm({ initialData }: MainSectionFormProps) {
   const { toast } = useToast();
   const router = useRouter();
 
-  const methods = useForm<{ mainMenu: MainMenuItem[] }>({
+  const methods = useForm<MainMenuData>({
     resolver: zodResolver(mainMenuSchema),
     defaultValues: initialData,
   });
 
   const {
-    control,
+    register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
   } = methods;
 
-  const { fields: menuFields } = useFieldArray({
-    control,
-    name: "mainMenu",
-  });
-
-  const onSubmit = createSubmitHandler<{ mainMenu: MainMenuItem[] }>(
+  const onSubmit = createSubmitHandler<MainMenuData>(
     "/api/admin/main/menu",
     () => {
       toast({
-        title: "Main section updated",
-        description: "The main menu labels have been successfully updated.",
+        title: "Main menu updated",
+        description: "The main menu has been successfully updated.",
       });
       router.refresh();
     },
@@ -49,13 +43,13 @@ export default function MainSectionForm({ initialData }: MainSectionFormProps) {
       console.error("Form submission error:", error);
       toast({
         title: "Error",
-        description: "Failed to update main menu labels. Please try again.",
+        description: "Failed to update main menu. Please try again.",
         variant: "destructive",
       });
     }
   );
 
-  const handleFormSubmit = async (data: { mainMenu: MainMenuItem[] }) => {
+  const handleFormSubmit = async (data: MainMenuData) => {
     setIsSubmitting(true);
     try {
       await onSubmit(data);
@@ -66,20 +60,17 @@ export default function MainSectionForm({ initialData }: MainSectionFormProps) {
     }
   };
 
+  console.log("Form is valid:", isValid);
+  console.log("Form errors:", errors);
+
   return (
     <FormProvider {...methods}>
-      <form
-        onSubmit={(e) => {
-          console.log("Form onSubmit event triggered");
-          handleSubmit(handleFormSubmit)(e);
-        }}
-        className="space-y-6"
-      >
-        {menuFields.map((field, index) => (
-          <div key={field.menu_id} className="space-y-4">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        {[0, 1, 2, 3].map((index) => (
+          <div key={index} className="space-y-4 p-4 border rounded-md">
             <div className="flex items-center space-x-2">
               <Input
-                {...methods.register(`mainMenu.${index}.label`)}
+                {...register(`mainMenu.${index}.label`)}
                 placeholder={`Label ${index + 1}`}
                 className="dashboard-input"
               />
@@ -89,25 +80,22 @@ export default function MainSectionForm({ initialData }: MainSectionFormProps) {
                 </p>
               )}
             </div>
-            <div className="hidden items-center space-x-2">
-              <span className="font-medium">Section:</span>
-              <Input
-                {...methods.register(`mainMenu.${index}.section`)}
-                readOnly
-                className="dashboard-input bg-gray-100"
-              />
+            <div className="hidden">
+              <Input {...register(`mainMenu.${index}.section`)} readOnly />
             </div>
-            <div className="hidden items-center space-x-2">
-              <span className="font-medium">Class Name:</span>
-              <Input
-                {...methods.register(`mainMenu.${index}.className`)}
-                readOnly
-                className="dashboard-input bg-gray-100"
-              />
+            <div className="hidden">
+              <Input {...register(`mainMenu.${index}.className`)} readOnly />
+            </div>
+            <div className="hidden">
+              <Input {...register(`mainMenu.${index}.menu_id`)} readOnly />
             </div>
           </div>
         ))}
-        <SaveChangesButton isSubmitting={isSubmitting} className="w-full" />
+        <SaveChangesButton
+          watchFields={["mainMenu"]}
+          isSubmitting={isSubmitting}
+          className="w-full"
+        />
       </form>
     </FormProvider>
   );

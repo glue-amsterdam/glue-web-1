@@ -5,11 +5,6 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import {
-  InfoSectionContent,
-  infoItemsSectionSchema,
-  InfoItem,
-} from "@/schemas/baseSchema";
 import { ImageIcon } from "lucide-react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { Button } from "@/components/ui/button";
@@ -24,9 +19,10 @@ import {
 } from "@/components/ui/form";
 import { RichTextEditor } from "@/app/components/editor";
 import { Textarea } from "@/components/ui/textarea";
+import { InfoItem, InfoSection, infoSectionSchema } from "@/schemas/infoSchema";
 
 interface InfoSectionFormProps {
-  initialData: InfoSectionContent;
+  initialData: InfoSection;
 }
 
 const DEFAULT_INFO_ITEMS: InfoItem[] = [
@@ -68,8 +64,8 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
   const { toast } = useToast();
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const methods = useForm<InfoSectionContent>({
-    resolver: zodResolver(infoItemsSectionSchema),
+  const methods = useForm<InfoSection>({
+    resolver: zodResolver(infoSectionSchema),
     defaultValues: {
       ...initialData,
       infoItems: mergeInfoItems(initialData.infoItems, DEFAULT_INFO_ITEMS),

@@ -6,11 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import {
-  CarouselSectionContent,
-  carouselSectionSchema,
-  ImageData,
-} from "@/schemas/baseSchema";
+import { ImageData } from "@/schemas/baseSchema";
 import { PlusCircle, X, ImageIcon } from "lucide-react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
@@ -18,9 +14,13 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { uploadImage } from "@/utils/supabase/storage/client";
+import {
+  CarouselSection,
+  carouselSectionSchema,
+} from "@/schemas/carouselSchema";
 
 interface CarouselFormProps {
-  initialData: CarouselSectionContent;
+  initialData: CarouselSection;
 }
 
 export default function AboutCarouselSectionForm({
@@ -31,7 +31,7 @@ export default function AboutCarouselSectionForm({
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const methods = useForm<CarouselSectionContent>({
+  const methods = useForm<CarouselSection>({
     resolver: zodResolver(carouselSectionSchema),
     defaultValues: initialData,
   });
@@ -63,7 +63,7 @@ export default function AboutCarouselSectionForm({
     }
   };
 
-  const onSubmit = async (data: CarouselSectionContent) => {
+  const onSubmit = async (data: CarouselSection) => {
     setIsSubmitting(true);
     try {
       // Upload images before submitting form data
