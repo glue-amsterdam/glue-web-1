@@ -1,12 +1,13 @@
-import { AN_HOUR_IN_S, BASE_URL } from "@/constants";
-import {
-  AboutCuratedClientType,
-  CarouselClientType,
-} from "@/schemas/baseSchema";
+import { BASE_URL } from "@/constants";
+import { CarouselClientType } from "@/schemas/baseSchema";
 import {
   ClientCitizensSection,
   clientCitizensSectionSchema,
 } from "@/schemas/citizenSchema";
+import {
+  CuratedResponse,
+  curatedResponseSchema,
+} from "@/schemas/curatedSchema";
 import {
   InfoSectionClient,
   infoSectionClientSchema,
@@ -15,7 +16,6 @@ import {
   ParticipantsResponse,
   participantsResponseSchema,
 } from "@/schemas/participantsSchema";
-import { cache } from "react";
 
 export async function fetchUserCarousel(): Promise<CarouselClientType> {
   try {
@@ -105,20 +105,41 @@ export async function fetchInfoSection(): Promise<InfoSectionClient> {
     throw error;
   }
 }
-export const fetchUserCurated = cache(
-  async (): Promise<AboutCuratedClientType> => {
+export async function fetchUserCurated(): Promise<CuratedResponse> {
+  try {
     const res = await fetch(`${BASE_URL}/about/curated`, {
-      next: { revalidate: AN_HOUR_IN_S },
+      next: {
+        revalidate: 3600,
+        tags: ["about-curated"],
+      },
     });
 
     if (!res.ok) {
-      console.error("Failed to fetch about curated in client api call");
-      throw new Error(`Failed to fetch about curated in client api call`);
+      if (res.status === 404 || process.env.NEXT_PHASE === "build") {
+        console.warn("Using fallback data for curated section");
+        return CURATED_FALLBACK_DATA;
+      }
+      throw new Error(`Failed to fetch about curated data: ${res.statusText}`);
     }
 
-    return res.json();
+    const data = await res.json();
+
+    if ("error" in data) {
+      if (process.env.NEXT_PHASE === "build") {
+        return CURATED_FALLBACK_DATA;
+      }
+      throw new Error(data.error);
+    }
+
+    return curatedResponseSchema.parse(data);
+  } catch (error) {
+    console.error("Error fetching curated data:", error);
+    if (process.env.NEXT_PHASE === "build") {
+      return CURATED_FALLBACK_DATA;
+    }
+    throw error;
   }
-);
+}
 
 export async function fetchCitizensOfHonor(): Promise<ClientCitizensSection> {
   try {
@@ -232,4 +253,26 @@ const CAROUSEL_FALLBACK_DATA: CarouselClientType = {
       alt: "GLUE Community Members",
     },
   ],
+};
+
+const CURATED_FALLBACK_DATA: CuratedResponse = {
+  headerData: {
+    title: "GLUE STICKY MEMBER",
+    description:
+      "Discover the GLUE STICKY MEMBER, a curated group of designers, architects, and creatives who have made a significant impact on the industry.",
+  },
+  curatedParticipants: {
+    "2024": [
+      {
+        slug: "placeholder-1",
+        userName: "Loading Member 1",
+        year: 2024,
+      },
+      {
+        slug: "placeholder-2",
+        userName: "Loading Member 2",
+        year: 2024,
+      },
+    ],
+  },
 };

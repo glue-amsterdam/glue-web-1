@@ -8,3 +8,23 @@ export const curatedMembersSectionSchema = z.object({
 export type CuratedMemberSectionHeader = z.infer<
   typeof curatedMembersSectionSchema
 >;
+
+export const curatedParticipantSchema = z.object({
+  slug: z.string(),
+  userName: z.string(),
+  year: z.number(),
+});
+
+export const curatedHeaderSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+});
+
+export const curatedResponseSchema = z.object({
+  headerData: curatedHeaderSchema,
+  curatedParticipants: z.record(z.array(curatedParticipantSchema)),
+});
+
+export type CuratedParticipant = z.infer<typeof curatedParticipantSchema>;
+export type CuratedHeader = z.infer<typeof curatedHeaderSchema>;
+export type CuratedResponse = z.infer<typeof curatedResponseSchema>;
