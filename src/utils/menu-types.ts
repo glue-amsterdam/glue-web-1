@@ -1,5 +1,4 @@
 import { DAYS, DAYS_IDS } from "@/constants";
-import { MainColors, MainLink, MainMenuItem } from "@/schemas/mainSchema";
 import { z } from "zod";
 
 export type DayID = (typeof DAYS_IDS)[number];
@@ -12,10 +11,3 @@ export const eventDaySchema = z.object({
 });
 
 export type EventDay = z.infer<typeof eventDaySchema>;
-
-export interface MainSection {
-  mainColors: MainColors;
-  mainMenu: MainMenuItem[];
-  mainLinks: MainLink[];
-  eventDays: EventDay[];
-}

@@ -6,7 +6,6 @@ export const mockSponsors: Sponsor[] = [
     id: "sponsor-1",
     name: "Sponsor 1",
     logo: {
-      id: "sponsor-1-logo",
       image_url: `placeholders/user-placeholder-1.jpg`,
       alt: "Innovative architectural fashion design 1",
       image_name: "sponsor-1-logo",
@@ -19,7 +18,6 @@ export const mockSponsors: Sponsor[] = [
     id: "sponsor-2",
     name: "Sponsor 2",
     logo: {
-      id: "sponsor-2-logo",
       image_url: `placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       alt: "Innovative architectural fashion design 2",
       image_name: "sponsor-2-logo",
@@ -32,7 +30,6 @@ export const mockSponsors: Sponsor[] = [
     id: "sponsor-3",
     name: "Sponsor 3",
     logo: {
-      id: "sponsor-3-logo",
       image_url: `placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       alt: "Innovative architectural fashion design 3",
       image_name: "sponsor-3-logo",
@@ -45,7 +42,6 @@ export const mockSponsors: Sponsor[] = [
     id: "sponsor-4",
     name: "Sponsor 4",
     logo: {
-      id: "sponsor-4-logo",
       image_url: `placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       alt: "Innovative architectural fashion design 4",
       image_name: "sponsor-4-logo",
@@ -58,7 +54,6 @@ export const mockSponsors: Sponsor[] = [
     id: "sponsor-5",
     name: "Sponsor 5",
     logo: {
-      id: "sponsor-5-logo",
       image_url: `placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       alt: "Innovative architectural fashion design 5",
       image_name: "sponsor-5-logo",
@@ -71,7 +66,6 @@ export const mockSponsors: Sponsor[] = [
     id: "sponsor-6",
     name: "Sponsor 6",
     logo: {
-      id: "sponsor-6-logo",
       image_url: `placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       alt: "Innovative architectural fashion design 6",
       image_name: "sponsor-6-logo",
@@ -84,7 +78,6 @@ export const mockSponsors: Sponsor[] = [
     id: "sponsor-7",
     name: "Sponsor 7",
     logo: {
-      id: "sponsor-7-logo",
       image_url: `placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       alt: "Innovative architectural fashion design 7",
       image_name: "sponsor-7-logo",
@@ -97,7 +90,6 @@ export const mockSponsors: Sponsor[] = [
     id: "sponsor-8",
     name: "Sponsor 8",
     logo: {
-      id: "sponsor-8-logo",
       image_url: `placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       alt: "Innovative architectural fashion design 8",
       image_name: "sponsor-8-logo",
@@ -110,7 +102,6 @@ export const mockSponsors: Sponsor[] = [
     id: "sponsor-9",
     name: "Sponsor 9",
     logo: {
-      id: "sponsor-9-logo",
       image_url: `placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       alt: "Innovative architectural fashion design 9",
       image_name: "sponsor-9-logo",
@@ -123,7 +114,6 @@ export const mockSponsors: Sponsor[] = [
     id: "sponsor-10",
     name: "Sponsor 10",
     logo: {
-      id: "sponsor-10-logo",
       image_url: `placeholders/user-placeholder-${getRandomNumber()}.jpg`,
       alt: "Innovative architectural fashion design 10",
       image_name: "sponsor-10-logo",

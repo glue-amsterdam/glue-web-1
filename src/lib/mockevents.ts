@@ -55,7 +55,6 @@ export const mockEvents: Event[] = [
     eventId: "A1234567890",
     name: "Modern Art Exhibition",
     thumbnail: {
-      id: "modern-art-exhibition-thumbnail",
       image_url: `/placeholders/placeholder-1.jpg`,
       alt: "GLUE modern-art-exhibition-thumbnail",
       image_name: "modern-art-exhibition-thumbnail",
@@ -86,7 +85,6 @@ export const mockEvents: Event[] = [
     eventId: "B9876543210",
     name: "Urban Design Workshop",
     thumbnail: {
-      id: "urban-design-workshop-thumbnail",
       image_url: `/placeholders/placeholder-2.jpg`,
       alt: "GLUE urban-design-workshop-thumbnail",
       image_name: "urban-design-workshop-thumbnail",
@@ -112,7 +110,6 @@ export const mockEvents: Event[] = [
     eventId: "C1357924680",
     name: "Architectural Tour: Historic Buildings",
     thumbnail: {
-      id: "architectural-tour-thumbnail",
       image_url: `/placeholders/placeholder-3.jpg`,
       alt: "GLUE architectural-tour-thumbnail",
       image_name: "architectural-tour-thumbnail",
@@ -134,7 +131,6 @@ export const mockEvents: Event[] = [
     eventId: "D2468013579",
     name: "Design Principles Lecture",
     thumbnail: {
-      id: "design-principles-lecture-thumbnail",
       image_url: `/placeholders/placeholder-1.jpg`,
       alt: "GLUE design-principles-lecture-thumbnail",
       image_name: "design-principles-lecture-thumbnail",
@@ -163,7 +159,6 @@ export const mockEvents: Event[] = [
     eventId: "E3692581470",
     name: "Sculpture Workshop: Materials & Techniques",
     thumbnail: {
-      id: "sculpture-workshop-thumbnail",
       image_url: `/placeholders/placeholder-2.jpg`,
       alt: "GLUE sculpture-workshop-thumbnail",
       image_name: "sculpture-workshop-thumbnail",
@@ -185,7 +180,6 @@ export const mockEvents: Event[] = [
     eventId: "F1597534862",
     name: "Art & Wine Social",
     thumbnail: {
-      id: "art-wine-social-thumbnail",
       image_url: `/placeholders/placeholder-3.jpg`,
       alt: "GLUE art-wine-social-thumbnail",
       image_name: "art-wine-social-thumbnail",
@@ -214,7 +208,6 @@ export const mockEvents: Event[] = [
     eventId: "G7531594862",
     name: "Interior Design Trends Lecture",
     thumbnail: {
-      id: "interior-design-trends-thumbnail",
       image_url: `/placeholders/placeholder-1.jpg`,
       alt: "GLUE interior-design-trends-thumbnail",
       image_name: "interior-design-trends-thumbnail",
@@ -235,7 +228,6 @@ export const mockEvents: Event[] = [
     eventId: "H9513578642",
     name: "Sustainable Architecture Workshop",
     thumbnail: {
-      id: "sustainable-architecture-thumbnail",
       image_url: `/placeholders/placeholder-2.jpg`,
       alt: "GLUE sustainable-architecture-thumbnail",
       image_name: "sustainable-architecture-thumbnail",
@@ -264,7 +256,6 @@ export const mockEvents: Event[] = [
     eventId: "I2469135780",
     name: "Photography Exhibition: Urban Landscapes",
     thumbnail: {
-      id: "photography-exhibition-thumbnail",
       image_url: `/placeholders/placeholder-3.jpg`,
       alt: "GLUE photography-exhibition-thumbnail",
       image_name: "photography-exhibition-thumbnail",
@@ -286,7 +277,6 @@ export const mockEvents: Event[] = [
     eventId: "J3571594680",
     name: "Art History Guided Tour",
     thumbnail: {
-      id: "art-history-tour-thumbnail",
       image_url: `/placeholders/placeholder-1.jpg`,
       alt: "GLUE art-history-tour-thumbnail",
       image_name: "art-history-tour-thumbnail",

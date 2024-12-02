@@ -41,21 +41,18 @@ export const users: User[] = [
     images: [
       {
         image_name: "vanmokum-carousel-image-1",
-        id: "vanmokum-carousel-image-1",
         image_url: `/placeholders/user-placeholder-1.jpg`,
         alt: "vanmokum profile image 1",
         ...generateTimestamps(),
       },
       {
         image_name: "vanmokum-carousel-image-2",
-        id: "vanmokum-carousel-image-2",
         image_url: `/placeholders/user-placeholder-2.jpg`,
         alt: "vanmokum profile image 2",
         ...generateTimestamps(),
       },
       {
         image_name: "vanmokum-carousel-image-3",
-        id: "vanmokum-carousel-image-3",
         image_url: `/placeholders/user-placeholder-3.jpg`,
         alt: "vanmokum profile image 3",
         ...generateTimestamps(),
@@ -105,21 +102,18 @@ export const users: User[] = [
     images: [
       {
         image_name: "vanmokum-carousel-image-1",
-        id: "vanmokum-carousel-image-1",
         image_url: `/placeholders/user-placeholder-1.jpg`,
         alt: "vanmokum profile image 1",
         ...generateTimestamps(),
       },
       {
         image_name: "vanmokum-carousel-image-2",
-        id: "vanmokum-carousel-image-2",
         image_url: `/placeholders/user-placeholder-2.jpg`,
         alt: "vanmokum profile image 2",
         ...generateTimestamps(),
       },
       {
         image_name: "vanmokum-carousel-image-3",
-        id: "vanmokum-carousel-image-3",
         image_url: `/placeholders/user-placeholder-3.jpg`,
         alt: "vanmokum profile image 3",
         ...generateTimestamps(),
@@ -166,21 +160,18 @@ export const users: User[] = [
     images: [
       {
         image_name: "studio-job-carousel-image-1",
-        id: "studio-job-carousel-image-1",
         image_url: `/placeholders/user-placeholder-1.jpg`,
         alt: "studio-job profile image 1",
         ...generateTimestamps(),
       },
       {
         image_name: "studio-job-carousel-image-2",
-        id: "studio-job-carousel-image-2",
         image_url: `/placeholders/user-placeholder-2.jpg`,
         alt: "studio-job profile image 2",
         ...generateTimestamps(),
       },
       {
         image_name: "studio-job-carousel-image-3",
-        id: "studio-job-carousel-image-3",
         image_url: `/placeholders/user-placeholder-3.jpg`,
         alt: "studio-job profile image 3",
         ...generateTimestamps(),
@@ -227,21 +218,18 @@ export const users: User[] = [
     images: [
       {
         image_name: "studio-rens-carousel-image-1",
-        id: "studio-rens-carousel-image-1",
         image_url: `/placeholders/user-placeholder-1.jpg`,
         alt: "studio rens profile image 1",
         ...generateTimestamps(),
       },
       {
         image_name: "studio-rens-carousel-image-2",
-        id: "studio-rens-carousel-image-2",
         image_url: `/placeholders/user-placeholder-2.jpg`,
         alt: "studio rens profile image 2",
         ...generateTimestamps(),
       },
       {
         image_name: "studio-rens-carousel-image-3",
-        id: "studio-rens-carousel-image-3",
         image_url: `/placeholders/user-placeholder-3.jpg`,
         alt: "studio rens profile image 3",
         ...generateTimestamps(),
@@ -288,21 +276,18 @@ export const users: User[] = [
     images: [
       {
         image_name: "ay-illuminate-carousel-image-1",
-        id: "ay-illuminate-carousel-image-1",
         image_url: `/placeholders/user-placeholder-1.jpg`,
         alt: "ay illuminate profile image 1",
         ...generateTimestamps(),
       },
       {
         image_name: "ay-illuminate-carousel-image-2",
-        id: "ay-illuminate-carousel-image-2",
         image_url: `/placeholders/user-placeholder-2.jpg`,
         alt: "ay illuminate profile image 2",
         ...generateTimestamps(),
       },
       {
         image_name: "ay-illuminate-carousel-image-3",
-        id: "ay-illuminate-carousel-image-3",
         image_url: `/placeholders/user-placeholder-3.jpg`,
         alt: "ay illuminate profile image 3",
         ...generateTimestamps(),
@@ -349,21 +334,18 @@ export const users: User[] = [
     images: [
       {
         image_name: "nlxl-carousel-image-1",
-        id: "nlxl-carousel-image-1",
         image_url: `/placeholders/user-placeholder-1.jpg`,
         alt: "nlxl profile image 1",
         ...generateTimestamps(),
       },
       {
         image_name: "nlxl-carousel-image-2",
-        id: "nlxl-carousel-image-2",
         image_url: `/placeholders/user-placeholder-2.jpg`,
         alt: "nlxl profile image 2",
         ...generateTimestamps(),
       },
       {
         image_name: "nlxl-carousel-image-3",
-        id: "nlxl-carousel-image-3",
         image_url: `/placeholders/user-placeholder-3.jpg`,
         alt: "nlxl profile image 3",
         ...generateTimestamps(),
@@ -410,21 +392,18 @@ export const users: User[] = [
     images: [
       {
         image_name: "frama-carousel-image-1",
-        id: "frama-carousel-image-1",
         image_url: `/placeholders/user-placeholder-1.jpg`,
         alt: "frama profile image 1",
         ...generateTimestamps(),
       },
       {
         image_name: "frama-carousel-image-2",
-        id: "frama-carousel-image-2",
         image_url: `/placeholders/user-placeholder-2.jpg`,
         alt: "frama profile image 2",
         ...generateTimestamps(),
       },
       {
         image_name: "frama-carousel-image-3",
-        id: "frama-carousel-image-3",
         image_url: `/placeholders/user-placeholder-3.jpg`,
         alt: "frama profile image 3",
         ...generateTimestamps(),
@@ -470,21 +449,18 @@ export const users: User[] = [
     images: [
       {
         image_name: "frama-carousel-image-1",
-        id: "frama-carousel-image-1",
         image_url: `/placeholders/user-placeholder-1.jpg`,
         alt: "frama profile image 1",
         ...generateTimestamps(),
       },
       {
         image_name: "frama-carousel-image-2",
-        id: "frama-carousel-image-2",
         image_url: `/placeholders/user-placeholder-2.jpg`,
         alt: "frama profile image 2",
         ...generateTimestamps(),
       },
       {
         image_name: "frama-carousel-image-3",
-        id: "frama-carousel-image-3",
         image_url: `/placeholders/user-placeholder-3.jpg`,
         alt: "frama profile image 3",
         ...generateTimestamps(),
@@ -532,21 +508,18 @@ export const users: User[] = [
     images: [
       {
         image_name: "graypants-carousel-image-1",
-        id: "graypants-carousel-image-1",
         image_url: `/placeholders/user-placeholder-1.jpg`,
         alt: "graypants profile image 1",
         ...generateTimestamps(),
       },
       {
         image_name: "graypants-carousel-image-2",
-        id: "graypants-carousel-image-2",
         image_url: `/placeholders/user-placeholder-2.jpg`,
         alt: "graypants profile image 2",
         ...generateTimestamps(),
       },
       {
         image_name: "graypants-carousel-image-3",
-        id: "graypants-carousel-image-3",
         image_url: `/placeholders/user-placeholder-3.jpg`,
         alt: "graypants profile image 3",
         ...generateTimestamps(),
@@ -594,21 +567,18 @@ export const users: User[] = [
     images: [
       {
         image_name: "seletti-carousel-image-1",
-        id: "seletti-carousel-image-1",
         image_url: `/placeholders/user-placeholder-1.jpg`,
         alt: "seletti profile image 1",
         ...generateTimestamps(),
       },
       {
         image_name: "seletti-carousel-image-2",
-        id: "seletti-carousel-image-2",
         image_url: `/placeholders/user-placeholder-2.jpg`,
         alt: "seletti profile image 2",
         ...generateTimestamps(),
       },
       {
         image_name: "seletti-carousel-image-3",
-        id: "seletti-carousel-image-3",
         image_url: `/placeholders/user-placeholder-3.jpg`,
         alt: "seletti profile image 3",
         ...generateTimestamps(),
