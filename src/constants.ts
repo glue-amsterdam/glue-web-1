@@ -113,7 +113,6 @@ export const getEventIcon = (type: EventType) => {
 };
 
 export const EMPTY_IMAGE: ImageData = {
-  id: "",
   image_name: "",
   image_url: "",
   alt: "",
@@ -123,7 +122,6 @@ export const DEFAULT_EMPTY_EVENT: Omit<Event, "date"> = {
   eventId: "",
   name: "",
   thumbnail: {
-    id: "",
     image_name: "",
     image_url: "",
     alt: "",
@@ -180,21 +178,18 @@ export const MOCKUSER_ADMIN_PARTICIPANT: User = {
   images: [
     {
       image_name: "vanmokum-carousel-image-1",
-      id: "vanmokum-carousel-image-1",
       image_url: `/placeholders/user-placeholder-1.jpg`,
       alt: "vanmokum profile image 1",
       ...generateTimestamps(),
     },
     {
       image_name: "vanmokum-carousel-image-2",
-      id: "vanmokum-carousel-image-2",
       image_url: `/placeholders/user-placeholder-2.jpg`,
       alt: "vanmokum profile image 2",
       ...generateTimestamps(),
     },
     {
       image_name: "vanmokum-carousel-image-3",
-      id: "vanmokum-carousel-image-3",
       image_url: `/placeholders/user-placeholder-3.jpg`,
       alt: "vanmokum profile image 3",
       ...generateTimestamps(),
