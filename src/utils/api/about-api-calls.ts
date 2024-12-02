@@ -80,18 +80,15 @@ export async function fetchInfoSection(): Promise<InfoSectionClient> {
     });
 
     if (!res.ok) {
-      // Return fallback data during build time
-      if (process.env.NEXT_PHASE === "build") {
-        console.warn("Using fallback data for info section during build");
+      if (res.status === 404 || process.env.NEXT_PHASE === "build") {
+        console.warn("Using fallback data for info section");
         return INFO_FALLBACK_DATA;
       }
       throw new Error(`Failed to fetch info section data: ${res.statusText}`);
     }
 
     const data = await res.json();
-
-    const validatedData = infoSectionClientSchema.parse(data);
-    return validatedData;
+    return infoSectionClientSchema.parse(data);
   } catch (error) {
     console.error("Error fetching info section data:", error);
     if (process.env.NEXT_PHASE === "build") {
@@ -174,16 +171,38 @@ const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
 };
 
 const INFO_FALLBACK_DATA: InfoSectionClient = {
-  title: "About Us",
-  description: "Loading info section...",
+  title: "Information about GLUE",
+  description:
+    "Discover the GLUE project, the GLUE Foundation, and the GLUE International initiative.",
   infoItems: [
     {
-      id: "placeholder1",
-      title: "Loading...",
-      description: "Loading info item...",
+      id: "mission-statement",
+      title: "Mission Statement",
+      description:
+        "<p>GLUE aspires to diversity and inclusivity, with a focus on sustainability and wellbeing.</p>",
       image: {
-        image_url: "/placeholders/placeholder.jpg",
-        alt: "Loading info image",
+        image_url: "/placeholder.svg?height=400&width=600",
+        alt: "GLUE Mission Statement",
+      },
+    },
+    {
+      id: "meet-the-team",
+      title: "Meet the Team",
+      description:
+        "<p>Our dedicated team works tirelessly to connect and promote the Amsterdam design community.</p>",
+      image: {
+        image_url: "/placeholder.svg?height=400&width=600",
+        alt: "GLUE Team",
+      },
+    },
+    {
+      id: "glue-foundation",
+      title: "GLUE Foundation",
+      description:
+        "<p>The GLUE Foundation is responsible for cultural programs and initiatives within the GLUE community.</p>",
+      image: {
+        image_url: "/placeholder.svg?height=400&width=600",
+        alt: "GLUE Foundation",
       },
     },
   ],
