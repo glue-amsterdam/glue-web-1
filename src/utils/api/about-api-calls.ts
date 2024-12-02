@@ -18,30 +18,37 @@ import {
 import { cache } from "react";
 
 export async function fetchUserCarousel(): Promise<CarouselClientType> {
-  const res = await fetch(`${BASE_URL}/about/carousel`, {
-    next: {
-      revalidate: 3600,
-      tags: ["about-carousel"],
-    },
-  });
+  try {
+    const res = await fetch(`${BASE_URL}/about/carousel`, {
+      next: {
+        revalidate: 3600,
+        tags: ["about-carousel"],
+      },
+    });
 
-  if (!res.ok) {
-    if (process.env.NEXT_PHASE === "build") {
-      return {
-        title: "About Us",
-        description: "Loading...",
-        slides: [
-          {
-            image_url: "/placeholder.svg?height=400&width=600",
-            alt: "Loading carousel image",
-          },
-        ],
-      };
+    if (!res.ok) {
+      if (res.status === 404 || process.env.NEXT_PHASE === "build") {
+        console.warn("Using fallback data for carousel during build or 404");
+        return CAROUSEL_FALLBACK_DATA;
+      }
+      throw new Error(`Failed to fetch carousel data: ${res.statusText}`);
     }
-    throw new Error(`Failed to fetch carousel data: ${res.statusText}`);
-  }
 
-  return res.json();
+    const data = await res.json();
+
+    if ("error" in data) {
+      console.warn("API returned error, using fallback data");
+      return CAROUSEL_FALLBACK_DATA;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching carousel data:", error);
+    if (process.env.NEXT_PHASE === "build") {
+      return CAROUSEL_FALLBACK_DATA;
+    }
+    throw error;
+  }
 }
 
 export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
@@ -204,6 +211,25 @@ const INFO_FALLBACK_DATA: InfoSectionClient = {
         image_url: "/placeholder.svg?height=400&width=600",
         alt: "GLUE Foundation",
       },
+    },
+  ],
+};
+
+const CAROUSEL_FALLBACK_DATA: CarouselClientType = {
+  title: "Welcome to GLUE",
+  description: "Discover Amsterdam's vibrant design community",
+  slides: [
+    {
+      image_url: "/placeholder.jpg",
+      alt: "GLUE Amsterdam Design Community",
+    },
+    {
+      image_url: "/placeholder.jpg",
+      alt: "GLUE Events and Activities",
+    },
+    {
+      image_url: "/placeholder.jpg",
+      alt: "GLUE Community Members",
     },
   ],
 };

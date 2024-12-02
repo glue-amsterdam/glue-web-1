@@ -4,6 +4,7 @@ import React from "react";
 
 async function AboutCarousel() {
   const carouselData = await fetchUserCarousel();
+
   return <CarouselSection carouselData={carouselData} />;
 }
 
