@@ -4,6 +4,7 @@ import {
   AboutParticipantsClientType,
   CarouselClientType,
 } from "@/schemas/baseSchema";
+import { CitizensSection } from "@/schemas/citizenSchema";
 import { cache } from "react";
 
 export const fetchUserCarousel = cache(
@@ -50,3 +51,11 @@ export const fetchUserCurated = cache(
     return res.json();
   }
 );
+
+export async function fetchCitizensOfHonor(): Promise<CitizensSection> {
+  const response = await fetch(`${BASE_URL}/about/citizens`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch citizens of honor data");
+  }
+  return response.json();
+}

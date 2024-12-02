@@ -5,8 +5,9 @@ import { z } from "zod";
 
 export async function GET(
   request: Request,
-  { params }: { params: { year: string } }
+  props: { params: Promise<{ year: string }> }
 ) {
+  const params = await props.params;
   const supabase = await createClient();
   const { year } = params;
 

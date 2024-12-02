@@ -13,20 +13,11 @@ export const citizenSchema = z.object({
   oldImageUrl: z.string().optional(),
 });
 
-export const citizensByYearSchema = z.record(
-  z.string(),
-  z
-    .array(citizenSchema)
-    .min(3, "At least 3 citizens are required")
-    .max(3, "Maximum 3 citizens allowed")
-);
-
 export const citizensSectionSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  citizensByYear: citizensByYearSchema,
+  description: z.string().min(1, "Description is required"),
+  citizensByYear: z.record(z.array(citizenSchema).length(3)),
 });
 
 export type Citizen = z.infer<typeof citizenSchema>;
-export type CitizensByYear = z.infer<typeof citizensByYearSchema>;
 export type CitizensSection = z.infer<typeof citizensSectionSchema>;
