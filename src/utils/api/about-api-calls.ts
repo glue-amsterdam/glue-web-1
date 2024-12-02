@@ -4,7 +4,10 @@ import {
   AboutParticipantsClientType,
   CarouselClientType,
 } from "@/schemas/baseSchema";
-import { CitizensSection } from "@/schemas/citizenSchema";
+import {
+  ClientCitizensSection,
+  clientCitizensSectionSchema,
+} from "@/schemas/citizenSchema";
 import { InfoSection } from "@/schemas/infoSchema";
 import { cache } from "react";
 
@@ -78,10 +81,43 @@ export const fetchUserCurated = cache(
   }
 );
 
-export async function fetchCitizensOfHonor(): Promise<CitizensSection> {
-  const response = await fetch(`${BASE_URL}/about/citizens`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch citizens of honor data");
+export async function fetchCitizensOfHonor(): Promise<ClientCitizensSection> {
+  try {
+    const response = await fetch(`${BASE_URL}/about/citizens`, {
+      next: {
+        revalidate: 3600, // 1 hour
+        tags: ["citizens"],
+      },
+    });
+
+    if (!response.ok) {
+      if (process.env.NEXT_PHASE === "build") {
+        return FALLBACK_DATA;
+      }
+      throw new Error(`Failed to fetch citizens data: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return clientCitizensSectionSchema.parse(data);
+  } catch (error) {
+    if (process.env.NEXT_PHASE === "build") {
+      return FALLBACK_DATA;
+    }
+    throw error;
   }
-  return response.json();
 }
+
+const FALLBACK_DATA: ClientCitizensSection = {
+  title: "Citizens of Honor",
+  description: "Loading...",
+  citizensByYear: {
+    "2023": Array(3).fill({
+      id: "placeholder",
+      name: "Loading...",
+      image_url: "/placeholders/placeholder-1.jpg",
+      alt: "Loading placeholder",
+      description: "Loading...",
+      year: "2023",
+    }),
+  },
+};

@@ -21,3 +21,21 @@ export const citizensSectionSchema = z.object({
 
 export type Citizen = z.infer<typeof citizenSchema>;
 export type CitizensSection = z.infer<typeof citizensSectionSchema>;
+
+export const clientCitizenSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  image_url: z.string(),
+  alt: z.string(),
+  description: z.string(),
+  year: z.string(),
+});
+
+export const clientCitizensSectionSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  citizensByYear: z.record(z.array(clientCitizenSchema).length(3)),
+});
+
+export type ClientCitizen = z.infer<typeof clientCitizenSchema>;
+export type ClientCitizensSection = z.infer<typeof clientCitizensSectionSchema>;
