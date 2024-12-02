@@ -270,7 +270,6 @@ export default function Component() {
                                       className="absolute top-2 right-2"
                                       onClick={() =>
                                         form.setValue("thumbnail", {
-                                          id: "",
                                           image_url: "",
                                           alt: "Image alt text for the Event thumbnail",
                                           image_name: "",
@@ -285,7 +284,6 @@ export default function Component() {
                                     type="button"
                                     onClick={() => {
                                       form.setValue("thumbnail", {
-                                        id: "image-event-thumbnail-asdfas",
                                         image_url:
                                           "/placeholders/placeholder-1.jpg",
                                         alt: "Image alt text for the Event thumbnail",

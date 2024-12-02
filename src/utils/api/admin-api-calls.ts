@@ -4,9 +4,8 @@ import { CitizensSection } from "@/schemas/citizenSchema";
 import { CuratedMemberSectionHeader } from "@/schemas/curatedSchema";
 import { EventDay } from "@/schemas/eventSchemas";
 import { InfoSection } from "@/schemas/infoSchema";
-import { MainLinks, MainMenuData } from "@/schemas/mainSchema";
+import { MainColors, MainLinks, MainMenuData } from "@/schemas/mainSchema";
 import { ParticipantsSectionHeader } from "@/schemas/participantsAdminSchema";
-import { MainColors } from "@/utils/menu-types";
 import { cache } from "react";
 import { Citizen } from "@/schemas/citizenSchema";
 

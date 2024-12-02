@@ -146,7 +146,7 @@ export default function ParticipantBaseDashboardForm({
                       <div className="flex flex-wrap gap-4 justify-center">
                         {field.value.slice(0, 3).map((image, index) => (
                           <div
-                            key={image.id || index}
+                            key={image.image_url || index}
                             className="relative h-40 w-40 overflow-hidden rounded-lg"
                           >
                             {image && image.image_url ? (
@@ -182,7 +182,6 @@ export default function ParticipantBaseDashboardForm({
                             onClick={() => {
                               if (field.value.length < 3) {
                                 const newImage: ImageData = {
-                                  id: `image-${Date.now()}`,
                                   image_url: `/placeholders/placeholder-${
                                     field.value.length + 1
                                   }.jpg`,
@@ -333,7 +332,7 @@ export default function ParticipantBaseDashboardForm({
                           newValue: {
                             dayId: string;
                             label: string;
-                            date: Date;
+                            date: string | null;
                             ranges?:
                               | { open: string; close: string }[]
                               | undefined;
