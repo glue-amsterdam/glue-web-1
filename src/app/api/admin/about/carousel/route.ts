@@ -1,9 +1,9 @@
+import {
+  CarouselSection,
+  carouselSectionSchema,
+} from "@/schemas/carouselSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
-import {
-  CarouselSectionContent,
-  carouselSectionSchema,
-} from "@/schemas/baseSchema";
 
 export async function GET() {
   try {
@@ -19,7 +19,7 @@ export async function GET() {
     }
 
     const carouselSection: Pick<
-      CarouselSectionContent,
+      CarouselSection,
       "title" | "description" | "slides"
     > = {
       title: carouselData.title,

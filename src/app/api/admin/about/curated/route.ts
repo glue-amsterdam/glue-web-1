@@ -1,4 +1,4 @@
-import { curatedMembersSectionSchema } from "@/schemas/baseSchema";
+import { curatedMembersSectionSchema } from "@/schemas/curatedSchema";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";

@@ -1,4 +1,4 @@
-import { participantsSectionSchema } from "@/schemas/baseSchema";
+import { participantsSectionSchema } from "@/schemas/participantsAdminSchema";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
