@@ -1,5 +1,4 @@
 import { fetchAbout, fetchSponsors } from "@/utils/api";
-import CitizenOfHonour from "@/app/components/about/citizens-of-honour";
 import Press from "@/app/components/about/press";
 import LastPage from "@/app/components/about/last-page";
 import { Suspense } from "react";
@@ -13,8 +12,6 @@ async function AboutPageContainer() {
 
   return (
     <>
-      <CitizenOfHonour citizensSection={aboutData.citizensSection} />
-
       <Press pressItemsSection={aboutData.pressItemsSection} />
       <Suspense>
         <SponsorsPageSection

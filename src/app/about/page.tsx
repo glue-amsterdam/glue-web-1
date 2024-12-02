@@ -5,6 +5,7 @@ import AboutParticipants from "@/app/about/about-participants";
 import CenteredLoader from "@/app/components/centered-loader";
 import AboutCurated from "@/app/about/about-curated";
 import AboutInfo from "@/app/about/about-info";
+import AboutCitizens from "@/app/about/about-citizens";
 
 export default function AboutPage({}) {
   return (
@@ -16,11 +17,15 @@ export default function AboutPage({}) {
         <AboutParticipants />
       </Suspense>
       <Suspense fallback={<CenteredLoader />}>
+        <AboutCitizens />
+      </Suspense>
+      <Suspense fallback={<CenteredLoader />}>
         <AboutCurated />
       </Suspense>
       <Suspense fallback={<CenteredLoader />}>
         <AboutInfo />
       </Suspense>
+
       <Background />
     </>
   );
