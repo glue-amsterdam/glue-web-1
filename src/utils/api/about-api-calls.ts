@@ -1,6 +1,7 @@
 import { BASE_URL } from "@/constants";
 import { CarouselClientType } from "@/schemas/baseSchema";
 import {
+  ClientCitizen,
   ClientCitizensSection,
   clientCitizensSectionSchema,
 } from "@/schemas/citizenSchema";
@@ -157,42 +158,37 @@ export async function fetchCitizensOfHonor(): Promise<ClientCitizensSection> {
   try {
     const response = await fetch(`${BASE_URL}/about/citizens`, {
       next: {
-        revalidate: 3600, // 1 hour
+        revalidate: 3600,
         tags: ["citizens"],
       },
     });
 
     if (!response.ok) {
-      if (process.env.NEXT_PHASE === "build") {
-        return FALLBACK_DATA;
+      if (response.status === 404 || process.env.NEXT_PHASE === "build") {
+        console.warn("Using fallback data for citizens during build or 404");
+        return CITIZENS_FALLBACK_DATA;
       }
       throw new Error(`Failed to fetch citizens data: ${response.statusText}`);
     }
 
     const data = await response.json();
+
+    if ("error" in data) {
+      if (process.env.NEXT_PHASE === "build") {
+        return CITIZENS_FALLBACK_DATA;
+      }
+      throw new Error(data.error);
+    }
+
     return clientCitizensSectionSchema.parse(data);
   } catch (error) {
+    console.error("Error fetching citizens data:", error);
     if (process.env.NEXT_PHASE === "build") {
-      return FALLBACK_DATA;
+      return CITIZENS_FALLBACK_DATA;
     }
     throw error;
   }
 }
-
-const FALLBACK_DATA: ClientCitizensSection = {
-  title: "Citizens of Honor",
-  description: "Loading...",
-  citizensByYear: {
-    "2023": Array(3).fill({
-      id: "placeholder",
-      name: "Loading...",
-      image_url: "/placeholders/placeholder-1.jpg",
-      alt: "Loading placeholder",
-      description: "Loading...",
-      year: "2023",
-    }),
-  },
-};
 
 const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
   headerData: {
@@ -307,5 +303,21 @@ const CURATED_FALLBACK_DATA: CuratedResponse = {
         year: 2024,
       },
     ],
+  },
+};
+const FALLBACK_CITIZEN: ClientCitizen = {
+  id: "placeholder",
+  name: "Loading...",
+  image_url: "/placeholder.svg?height=400&width=600",
+  alt: "Loading placeholder",
+  description: "Loading description...",
+  year: "2024",
+};
+
+export const CITIZENS_FALLBACK_DATA: ClientCitizensSection = {
+  title: "Creative Citizens of Honour",
+  description: "Loading citizens of honor information...",
+  citizensByYear: {
+    "2024": Array(3).fill(FALLBACK_CITIZEN),
   },
 };
