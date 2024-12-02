@@ -10,8 +10,15 @@ export async function GET() {
       { data: carouselData, error: carouselError },
       { data: slidesData, error: slidesError },
     ] = await Promise.all([
-      supabase.from("about_carousel").select("title,description").single(),
-      supabase.from("about_carousel_slides").select("image_url,alt"),
+      supabase
+        .from("about_carousel")
+        .select("title,description")
+        .eq("id", "about-carousel-56ca13952fcc")
+        .single(),
+      supabase
+        .from("about_carousel_slides")
+        .select("image_url,alt")
+        .eq("carousel_id", "about-carousel-56ca13952fcc"),
     ]);
 
     if (carouselError || slidesError) {

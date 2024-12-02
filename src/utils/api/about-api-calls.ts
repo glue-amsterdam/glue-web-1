@@ -43,7 +43,7 @@ export async function fetchUserCarousel(): Promise<CarouselClientType> {
 
 export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
   try {
-    const res = await fetch(`${BASE_URL}/api/about/participants`, {
+    const res = await fetch(`${BASE_URL}/about/participants`, {
       next: {
         revalidate: 3600,
         tags: ["participants"],
