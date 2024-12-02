@@ -14,14 +14,14 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
 import { fadeInConfig } from "@/utils/animations";
-import { Citizen, CitizensSection } from "@/schemas/citizenSchema";
+import { ClientCitizen, ClientCitizensSection } from "@/schemas/citizenSchema";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { useScroll } from "@/app/hooks/useScroll";
 import Image from "next/image";
 
 interface CitizenCardProps {
-  citizen: Citizen;
-  openModal: (citizen: Citizen) => void;
+  citizen: ClientCitizen;
+  openModal: (citizen: ClientCitizen) => void;
 }
 
 const CitizenCard = ({ citizen, openModal }: CitizenCardProps) => {
@@ -55,12 +55,14 @@ export default function CitizenOfHonourSection({
   citizensByYear,
   description,
   title,
-}: CitizensSection) {
+}: ClientCitizensSection) {
   const years = Object.keys(citizensByYear).sort((a, b) => b.localeCompare(a));
   const initialCitizens = Object.values(citizensByYear).flat();
 
   const [selectedYear, setSelectedYear] = useState<string>(years[0] || "all");
-  const [selectedCitizen, setSelectedCitizen] = useState<Citizen | null>(null);
+  const [selectedCitizen, setSelectedCitizen] = useState<ClientCitizen | null>(
+    null
+  );
   const [modalOpen, setModalOpen] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   useScroll();
@@ -74,7 +76,7 @@ export default function CitizenOfHonourSection({
     setSelectedYear(year);
   }, []);
 
-  const openModal = useCallback((citizen: Citizen) => {
+  const openModal = useCallback((citizen: ClientCitizen) => {
     setSelectedCitizen(citizen);
     setModalOpen(true);
   }, []);
