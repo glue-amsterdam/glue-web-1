@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, useContext, ReactNode } from "react";
 import { MainSectionData } from "@/schemas/mainSchema";
 
 const MainContext = createContext<MainSectionData | undefined>(undefined);
@@ -44,7 +44,7 @@ export const MainContextProvider = ({
   mainLinks,
   eventDays,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   mainColors: MainSectionData["mainColors"];
   mainMenu: MainSectionData["mainMenu"];
   mainLinks: MainSectionData["mainLinks"];

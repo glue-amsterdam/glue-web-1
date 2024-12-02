@@ -7,18 +7,24 @@ export async function MainDataProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { mainColors, mainLinks, mainMenu, eventDays } = await fetchMain();
+  try {
+    const { mainColors, mainLinks, mainMenu, eventDays } = await fetchMain();
 
-  return (
-    <MainContextProvider
-      mainColors={mainColors}
-      mainLinks={mainLinks}
-      mainMenu={mainMenu}
-      eventDays={eventDays}
-    >
-      <ColorStyleProvider colors={{ ...mainColors }}>
-        {children}
-      </ColorStyleProvider>
-    </MainContextProvider>
-  );
+    return (
+      <MainContextProvider
+        mainColors={mainColors}
+        mainLinks={mainLinks}
+        mainMenu={mainMenu}
+        eventDays={eventDays}
+      >
+        <ColorStyleProvider colors={{ ...mainColors }}>
+          {children}
+        </ColorStyleProvider>
+      </MainContextProvider>
+    );
+  } catch (error) {
+    console.error("Error fetching main data:", error);
+    // Provide fallback data or UI
+    return <div>Error loading application data</div>;
+  }
 }
