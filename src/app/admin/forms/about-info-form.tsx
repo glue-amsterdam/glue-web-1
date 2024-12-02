@@ -30,19 +30,19 @@ const DEFAULT_INFO_ITEMS: InfoItem[] = [
     id: "mission-statement",
     title: "",
     description: "",
-    image: { id: "image1", image_url: "", alt: "", image_name: "" },
+    image: { image_url: "", alt: "", image_name: "" },
   },
   {
     id: "meet-the-team",
     title: "",
     description: "",
-    image: { id: "image2", image_url: "", alt: "", image_name: "" },
+    image: { image_url: "", alt: "", image_name: "" },
   },
   {
     id: "glue-foundation",
     title: "",
     description: "",
-    image: { id: "image3", image_url: "", alt: "", image_name: "" },
+    image: { image_url: "", alt: "", image_name: "" },
   },
 ];
 
