@@ -10,8 +10,7 @@ import { useState } from "react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { mainColorsSchema } from "@/schemas/mainSchema";
-import { MainColors } from "@/utils/menu-types";
+import { MainColors, mainColorsSchema } from "@/schemas/mainSchema";
 
 interface MainColorsFormProps {
   initialData: MainColors;
