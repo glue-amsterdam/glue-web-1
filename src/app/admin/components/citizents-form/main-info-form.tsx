@@ -3,23 +3,29 @@ import { useFormContext, FieldValues } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { CitizensSection } from "@/schemas/citizenSchema";
 
 export function MainInfoForm() {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<CitizensSection>();
   const { toast } = useToast();
 
-  const onSubmitMainInfo = async (data: FieldValues) => {
+  const onSubmit = async (data: FieldValues) => {
     try {
+      const mainInfo = {
+        title: data.title as string,
+        description: data.description as string,
+      };
+
       const response = await fetch("/api/admin/about/citizens", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(mainInfo),
       });
 
       if (!response.ok) throw new Error("Failed to update main info");
@@ -35,20 +41,15 @@ export function MainInfoForm() {
         description: "Failed to update main info. Please try again.",
         variant: "destructive",
       });
-    } finally {
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmitMainInfo)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
         <Label htmlFor="title">Title</Label>
         <Input id="title" {...register("title")} className="mt-1 bg-white" />
-        {errors.title && (
-          <p className="text-red-500">
-            {errors.title.message as React.ReactNode}
-          </p>
-        )}
+        {errors.title && <p className="text-red-500">{errors.title.message}</p>}
       </div>
 
       <div>
@@ -60,16 +61,11 @@ export function MainInfoForm() {
           rows={4}
         />
         {errors.description && (
-          <p className="text-red-500">
-            {errors.description.message as React.ReactNode}
-          </p>
+          <p className="text-red-500">{errors.description.message}</p>
         )}
       </div>
 
-      <SaveChangesButton
-        watchFields={["title", "description"]}
-        className="w-full"
-      />
+      <Button type="submit">Save Main Info</Button>
     </form>
   );
 }

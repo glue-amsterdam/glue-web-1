@@ -1,16 +1,14 @@
 import React, { useState } from "react";
-import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { ToastProps } from "@/types/toast";
-import { EMPTY_CITIZEN } from "@/app/admin/components/citizents-form/constants";
 
 interface YearSelectorProps {
   years: string[];
   selectedYear: string | null;
   onYearChange: (year: string) => void;
-  setSelectedYear: React.Dispatch<React.SetStateAction<string | null>>;
+  onAddNewYear: (year: string) => void;
   toast: (props: ToastProps) => void;
 }
 
@@ -18,20 +16,14 @@ export function YearSelector({
   years,
   selectedYear,
   onYearChange,
-  setSelectedYear,
+  onAddNewYear,
   toast,
 }: YearSelectorProps) {
   const [newYearInput, setNewYearInput] = useState<string>("");
-  const { setValue } = useFormContext();
 
   const handleAddNewYear = () => {
     if (newYearInput && /^\d{4}$/.test(newYearInput)) {
-      setSelectedYear(newYearInput);
-      setValue(`citizensByYear.${newYearInput}`, [
-        { ...EMPTY_CITIZEN, id: `${Date.now()}-1`, year: newYearInput },
-        { ...EMPTY_CITIZEN, id: `${Date.now()}-2`, year: newYearInput },
-        { ...EMPTY_CITIZEN, id: `${Date.now()}-3`, year: newYearInput },
-      ]);
+      onAddNewYear(newYearInput);
       setNewYearInput("");
     } else {
       toast({
@@ -66,7 +58,7 @@ export function YearSelector({
         className="w-full p-2 border rounded"
       >
         <option value="0">Select a year</option>
-        {years.length > 0 ? (
+        {years?.length > 0 ? (
           years.map((year) => (
             <option key={year} value={year}>
               {year}
