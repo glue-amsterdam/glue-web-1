@@ -3,10 +3,8 @@ import { NextResponse } from "next/server";
 import { citizenSchema } from "@/schemas/citizenSchema";
 import { z } from "zod";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { year: string } }
-) {
+export async function GET(request: Request, props: { params: Promise<{ year: string }> }) {
+  const params = await props.params;
   const supabase = await createClient();
   const { year } = params;
 
@@ -31,10 +29,8 @@ export async function GET(
 
 const yearCitizensSchema = z.array(citizenSchema).length(3);
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { year: string } }
-) {
+export async function PUT(request: Request, props: { params: Promise<{ year: string }> }) {
+  const params = await props.params;
   const supabase = await createClient();
   const { year } = params;
 
