@@ -61,15 +61,27 @@ export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
     });
 
     if (!res.ok) {
-      if (process.env.NEXT_PHASE === "build") {
+      if (res.status === 404 || process.env.NEXT_PHASE === "build") {
+        console.warn(
+          "Using fallback data for participants during build or 404"
+        );
         return PARTICIPANT_FALLBACK_DATA;
       }
       throw new Error(`Failed to fetch participants: ${res.statusText}`);
     }
 
     const data = await res.json();
+
+    if ("error" in data) {
+      if (process.env.NEXT_PHASE === "build") {
+        return PARTICIPANT_FALLBACK_DATA;
+      }
+      throw new Error(data.error);
+    }
+
     return participantsResponseSchema.parse(data);
   } catch (error) {
+    console.error("Error fetching participants data:", error);
     if (process.env.NEXT_PHASE === "build") {
       return PARTICIPANT_FALLBACK_DATA;
     }
@@ -184,18 +196,39 @@ const FALLBACK_DATA: ClientCitizensSection = {
 
 const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
   headerData: {
-    title: "Our Participants",
-    description: "Loading participant information...",
+    title: "Participants Section!",
+    description:
+      "Discover all participating brands, designers, studio's and academies of GLUE amsterdam connected by design",
   },
-  participants: Array(6).fill({
-    userId: "placeholder",
-    slug: "loading",
-    userName: "Loading...",
-    image: {
-      image_url: "/placeholders/placeholder.jpg",
-      alt: "Loading participant",
+  participants: [
+    {
+      userId: "placeholder-1",
+      slug: "placeholder-participant-1",
+      userName: "Loading Participant 1",
+      image: {
+        image_url: "/placeholder.svg?height=300&width=300",
+        alt: "Loading participant 1",
+      },
     },
-  }),
+    {
+      userId: "placeholder-2",
+      slug: "placeholder-participant-2",
+      userName: "Loading Participant 2",
+      image: {
+        image_url: "/placeholder.svg?height=300&width=300",
+        alt: "Loading participant 2",
+      },
+    },
+    {
+      userId: "placeholder-3",
+      slug: "placeholder-participant-3",
+      userName: "Loading Participant 3",
+      image: {
+        image_url: "/placeholder.svg?height=300&width=300",
+        alt: "Loading participant 3",
+      },
+    },
+  ],
 };
 
 const INFO_FALLBACK_DATA: InfoSectionClient = {
