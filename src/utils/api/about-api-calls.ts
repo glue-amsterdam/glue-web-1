@@ -15,8 +15,8 @@ export const fetchUserCarousel = cache(
     });
 
     if (!res.ok) {
-      console.error("Failed to fetch about carousel:");
-      throw new Error(`Failed to fetch about carousel`);
+      console.error("Failed to fetch about carousel: in client api call");
+      throw new Error(`Failed to fetch about carousel in client api call");`);
     }
 
     return res.json();

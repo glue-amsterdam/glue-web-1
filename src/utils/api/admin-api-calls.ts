@@ -61,8 +61,8 @@ export const fetchAboutCarousel = cache(async (): Promise<CarouselSection> => {
   });
 
   if (!res.ok) {
-    console.error("Failed to fetch about carousel:");
-    throw new Error(`Failed to fetch about carousel`);
+    console.error("Failed to fetch about carousel in admin-api-calls:");
+    throw new Error(`Failed to fetch about carousel in admin-api-calls:");`);
   }
 
   return res.json();
