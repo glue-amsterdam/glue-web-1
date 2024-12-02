@@ -4,7 +4,7 @@ import { useFormContext } from "react-hook-form";
 
 interface SaveChangesButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  isSubmitting: boolean;
+  isSubmitting?: boolean;
   watchFields: string[];
 }
 
