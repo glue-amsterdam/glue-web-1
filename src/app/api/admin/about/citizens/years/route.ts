@@ -14,7 +14,7 @@ export async function GET() {
 
     const years = [...new Set(data.map((item) => item.year))];
 
-    return NextResponse.json({ years });
+    return NextResponse.json(years);
   } catch (error) {
     console.error("Error fetching years:", error);
     return NextResponse.json(

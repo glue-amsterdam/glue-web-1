@@ -8,6 +8,7 @@ import { MainLinks, MainMenuData } from "@/schemas/mainSchema";
 import { ParticipantsSectionHeader } from "@/schemas/participantsAdminSchema";
 import { MainColors } from "@/utils/menu-types";
 import { cache } from "react";
+import { Citizen } from "@/schemas/citizenSchema";
 
 export const fetchColors = cache(async (): Promise<MainColors> => {
   const res = await fetch(`${BASE_URL}/admin/main/colors`, {
@@ -121,3 +122,31 @@ export const fetchAboutCitizens = cache(async (): Promise<CitizensSection> => {
 
   return res.json();
 });
+
+const caches = new Map<string, Promise<Citizen[]>>();
+
+export function fetchCitizensByYear(year: string): Promise<Citizen[]> {
+  const cacheKey = `year_${year}`;
+  if (!caches.get(cacheKey)) {
+    const promise = fetch(`/api/admin/about/citizens/${year}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to fetch citizens for year ${year}`);
+        }
+        return response.json();
+      })
+      .then((data) => data.citizens);
+
+    caches.set(year, promise);
+  }
+
+  return caches.get(year)!;
+}
+
+export async function fetchYears(): Promise<string[]> {
+  const response = await fetch(`${BASE_URL}/admin/about/citizens/years`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch citizens for years`);
+  }
+  return response.json();
+}

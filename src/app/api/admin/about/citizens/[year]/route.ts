@@ -3,8 +3,10 @@ import { NextResponse } from "next/server";
 import { citizenSchema } from "@/schemas/citizenSchema";
 import { z } from "zod";
 
-export async function GET(request: Request, props: { params: Promise<{ year: string }> }) {
-  const params = await props.params;
+export async function GET(
+  request: Request,
+  { params }: { params: { year: string } }
+) {
   const supabase = await createClient();
   const { year } = params;
 
@@ -29,7 +31,10 @@ export async function GET(request: Request, props: { params: Promise<{ year: str
 
 const yearCitizensSchema = z.array(citizenSchema).length(3);
 
-export async function PUT(request: Request, props: { params: Promise<{ year: string }> }) {
+export async function PUT(
+  request: Request,
+  props: { params: Promise<{ year: string }> }
+) {
   const params = await props.params;
   const supabase = await createClient();
   const { year } = params;
@@ -54,9 +59,9 @@ export async function PUT(request: Request, props: { params: Promise<{ year: str
       id: citizen.id,
       name: citizen.name,
       description: citizen.description,
-      image_url: citizen.image.image_url,
-      image_name: citizen.image.image_name,
-      alt: citizen.image.alt,
+      image_url: citizen.image_url,
+      image_name: citizen.image_name,
+      alt: citizen.alt,
       year,
       section_id: "about-citizens-section-56ca13952fcc",
     }));

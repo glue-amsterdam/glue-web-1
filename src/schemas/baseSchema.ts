@@ -10,7 +10,6 @@ import {
 import * as z from "zod";
 
 export const imageDataSchema = z.object({
-  id: z.string(),
   image_name: z.string().optional(),
   image_url: z.string(),
   alt: z.string().min(1, "Alt text is required"),
