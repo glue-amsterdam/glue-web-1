@@ -7,10 +7,10 @@ import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
 import { fadeInConfig } from "@/utils/animations";
 import DOMPurify from "dompurify";
-import { InfoItem } from "@/schemas/infoSchema";
+import { InfoItem, InfoItemClient } from "@/schemas/infoSchema";
 
 interface InfoSectionProps {
-  infoItems: InfoItem[];
+  infoItems: InfoItemClient[];
   title: string;
   description: string;
 }

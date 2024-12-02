@@ -7,7 +7,10 @@ import {
   ClientCitizensSection,
   clientCitizensSectionSchema,
 } from "@/schemas/citizenSchema";
-import { InfoSection } from "@/schemas/infoSchema";
+import {
+  InfoSectionClient,
+  infoSectionClientSchema,
+} from "@/schemas/infoSchema";
 import {
   ParticipantsResponse,
   participantsResponseSchema,
@@ -67,18 +70,32 @@ export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
   }
 }
 
-export const fetchUserInfo = cache(async (): Promise<InfoSection> => {
-  const res = await fetch(`${BASE_URL}/about/info`, {
-    next: { revalidate: AN_HOUR_IN_S },
-  });
+export async function fetchInfoSection(): Promise<InfoSectionClient> {
+  try {
+    const res = await fetch(`${BASE_URL}/about/info`, {
+      next: {
+        revalidate: 3600, // 1 hour
+        tags: ["info-section"],
+      },
+    });
 
-  if (!res.ok) {
-    console.error("Failed to fetch about info in client api call");
-    throw new Error(`Failed to fetch about info in client api call`);
+    if (!res.ok) {
+      if (process.env.NEXT_PHASE === "build") {
+        return INFO_FALLBACK_DATA;
+      }
+      throw new Error(`Failed to fetch info section data: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    return infoSectionClientSchema.parse(data);
+  } catch (error) {
+    console.error("Error fetching info section data:", error);
+    if (process.env.NEXT_PHASE === "build") {
+      return INFO_FALLBACK_DATA;
+    }
+    throw error;
   }
-
-  return res.json();
-});
+}
 
 export const fetchUserCurated = cache(
   async (): Promise<AboutCuratedClientType> => {
@@ -150,4 +167,20 @@ const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
       alt: "Loading participant",
     },
   }),
+};
+
+const INFO_FALLBACK_DATA: InfoSectionClient = {
+  title: "About Us",
+  description: "Loading info section...",
+  infoItems: [
+    {
+      id: "placeholder1",
+      title: "Loading...",
+      description: "Loading info item...",
+      image: {
+        image_url: "/placeholders/placeholder.jpg",
+        alt: "Loading info image",
+      },
+    },
+  ],
 };

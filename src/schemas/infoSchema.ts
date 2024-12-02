@@ -21,5 +21,23 @@ export const infoSectionSchema = infoSectionHeaderSchema.extend({
 });
 
 export type InfoSection = z.infer<typeof infoSectionSchema>;
-
 export type InfoItem = z.infer<typeof infoItemSchema>;
+
+export const infoItemClientSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  image: z.object({
+    image_url: z.string(),
+    alt: z.string(),
+  }),
+});
+
+export const infoSectionClientSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  infoItems: z.array(infoItemClientSchema).min(1).max(3),
+});
+
+export type InfoItemClient = z.infer<typeof infoItemClientSchema>;
+export type InfoSectionClient = z.infer<typeof infoSectionClientSchema>;
