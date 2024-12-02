@@ -10,7 +10,10 @@ export const citizenSchema = z.object({
 
 export const citizensByYearSchema = z.record(
   z.string(),
-  z.array(citizenSchema)
+  z
+    .array(citizenSchema)
+    .min(3, "At least 3 citizens are required")
+    .max(3, "Maximum 3 citizens allowed")
 );
 
 export const citizensSectionSchema = z.object({

@@ -3,6 +3,7 @@ import {
   carouselSectionSchema,
 } from "@/schemas/carouselSchema";
 import { createClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -43,6 +44,15 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const cookieStore = await cookies();
+  const adminToken = cookieStore.get("admin_token");
+
+  if (!adminToken) {
+    return NextResponse.json(
+      { error: "Unauthorized: Admin access required" },
+      { status: 403 }
+    );
+  }
   const supabase = await createClient();
   try {
     const body = await request.json();
