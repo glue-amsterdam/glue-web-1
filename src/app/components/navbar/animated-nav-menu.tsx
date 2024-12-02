@@ -2,7 +2,7 @@
 
 import GlueLogoSVG from "@/app/components/glue-logo-svg";
 import HomePageLogo from "@/app/components/navbar/home-page-logo";
-import { MainMenuItem } from "@/utils/menu-types";
+import { MainMenuItem } from "@/schemas/mainSchema";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
