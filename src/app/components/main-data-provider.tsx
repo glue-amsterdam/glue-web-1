@@ -7,14 +7,14 @@ export async function MainDataProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { mainColors, mainLinks, mainMenu, eventsDays } = await fetchMain();
+  const { mainColors, mainLinks, mainMenu, eventDays } = await fetchMain();
 
   return (
     <MainContextProvider
       mainColors={mainColors}
       mainLinks={mainLinks}
       mainMenu={mainMenu}
-      eventsDays={eventsDays}
+      eventsDays={eventDays}
     >
       <ColorStyleProvider colors={{ ...mainColors }}>
         {children}

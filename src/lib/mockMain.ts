@@ -1,6 +1,6 @@
-import { MainSection } from "@/utils/menu-types";
+import { MainSectionData } from "@/schemas/mainSchema";
 
-export const mainSection: MainSection = {
+export const mainSection: MainSectionData = {
   mainColors: {
     box1: "#10069f",
     box2: "#230051",
@@ -55,7 +55,7 @@ export const mainSection: MainSection = {
     { platform: "instagram", link: "https://www.instagram.com/glue.amsterdam" },
     { platform: "youtube", link: "https://www.youtube.com/@GLUETV_amsterdam" },
   ],
-  eventsDays: [
+  eventDays: [
     {
       dayId: "day-1",
       date: "2025-01-16T00:00:00Z",
