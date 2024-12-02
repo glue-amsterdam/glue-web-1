@@ -1,16 +1,17 @@
-import { BASE_URL } from "@/constants";
+import { AN_HOUR_IN_S, BASE_URL } from "@/constants";
 import {
   AboutCuratedClientType,
   AboutParticipantsClientType,
   CarouselClientType,
 } from "@/schemas/baseSchema";
 import { CitizensSection } from "@/schemas/citizenSchema";
+import { InfoSection } from "@/schemas/infoSchema";
 import { cache } from "react";
 
 export const fetchUserCarousel = cache(
   async (): Promise<CarouselClientType> => {
     const res = await fetch(`${BASE_URL}/about/carousel`, {
-      next: { revalidate: 0 },
+      next: { revalidate: AN_HOUR_IN_S },
     });
 
     if (!res.ok) {
@@ -25,7 +26,7 @@ export const fetchUserCarousel = cache(
 export const fetchUserAboutParticipants = cache(
   async (): Promise<AboutParticipantsClientType> => {
     const res = await fetch(`${BASE_URL}/about/participants`, {
-      next: { revalidate: 0 },
+      next: { revalidate: AN_HOUR_IN_S },
     });
 
     if (!res.ok) {
@@ -37,10 +38,23 @@ export const fetchUserAboutParticipants = cache(
   }
 );
 
+export const fetchUserInfo = cache(async (): Promise<InfoSection> => {
+  const res = await fetch(`${BASE_URL}/about/info`, {
+    next: { revalidate: AN_HOUR_IN_S },
+  });
+
+  if (!res.ok) {
+    console.error("Failed to fetch about info in client api call");
+    throw new Error(`Failed to fetch about info in client api call`);
+  }
+
+  return res.json();
+});
+
 export const fetchUserCurated = cache(
   async (): Promise<AboutCuratedClientType> => {
     const res = await fetch(`${BASE_URL}/about/curated`, {
-      next: { revalidate: 0 },
+      next: { revalidate: AN_HOUR_IN_S },
     });
 
     if (!res.ok) {
