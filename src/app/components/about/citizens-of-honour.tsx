@@ -3,11 +3,11 @@
 import CitizenOfHonourSection from "@/app/components/about/citizens-of-honour-section";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { CitizensSectionContent } from "@/schemas/baseSchema";
+import { CitizensSection } from "@/schemas/citizenSchema";
 import { useRef } from "react";
 
 interface CitizenOfHonourContentProps {
-  citizensSection: CitizensSectionContent;
+  citizensSection: CitizensSection;
 }
 function CitizenOfHonour({ citizensSection }: CitizenOfHonourContentProps) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -25,7 +25,7 @@ function CitizenOfHonour({ citizensSection }: CitizenOfHonourContentProps) {
       <div className="citizens-bg bg-uiwhite" />
 
       <CitizenOfHonourSection
-        citizens={citizensSection.citizens}
+        citizensByYear={citizensSection.citizensByYear}
         description={citizensSection.description}
         title={citizensSection.title}
       />

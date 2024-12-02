@@ -5,7 +5,5 @@ export default async function AboutCitizensSection() {
   const citizensData = await fetchAboutCitizens();
   const years = await fetchYears();
 
-  console.log(years);
-
   return <CitizensForm initialData={citizensData} years={years} />;
 }

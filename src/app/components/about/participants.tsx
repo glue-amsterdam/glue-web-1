@@ -4,12 +4,12 @@ import ParticipantsSection from "@/app/components/about/participants-section";
 import GlueLogo from "@/app/components/glue-logo";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { ParticipantsSectionContent } from "@/schemas/baseSchema";
+import { ParticipantsSectionHeader } from "@/schemas/participantsAdminSchema";
 import { ParticipantUser } from "@/schemas/usersSchemas";
 import { useRef } from "react";
 
 interface ParticipantsProps {
-  headerData: ParticipantsSectionContent;
+  headerData: ParticipantsSectionHeader;
   participants: ParticipantUser[];
 }
 

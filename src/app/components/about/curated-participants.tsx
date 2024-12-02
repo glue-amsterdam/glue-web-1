@@ -3,12 +3,12 @@
 import CuratedMembersSection from "@/app/components/about/curated-participants-section";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { CuratedMemberSectionContent } from "@/schemas/baseSchema";
+import { CuratedMemberSectionHeader } from "@/schemas/curatedSchema";
 import { CuratedParticipantWhitYear } from "@/schemas/usersSchemas";
 import React, { useRef } from "react";
 
 type Props = {
-  headerData: CuratedMemberSectionContent;
+  headerData: CuratedMemberSectionHeader;
   curatedParticipants: Record<number, CuratedParticipantWhitYear[]>;
 };
 
