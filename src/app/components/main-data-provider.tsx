@@ -14,7 +14,7 @@ export async function MainDataProvider({
       mainColors={mainColors}
       mainLinks={mainLinks}
       mainMenu={mainMenu}
-      eventsDays={eventDays}
+      eventDays={eventDays}
     >
       <ColorStyleProvider colors={{ ...mainColors }}>
         {children}

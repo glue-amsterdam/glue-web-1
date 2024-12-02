@@ -5,11 +5,18 @@ import { Control, Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { visitingHoursSchema } from "@/schemas/usersSchemas";
+import {
+  DayType,
+  visitingHoursSchema,
+  VisitingHoursType,
+} from "@/schemas/usersSchemas";
 import { useEventsDays } from "@/app/context/MainContext";
 import { XIcon } from "lucide-react";
 
-export type VisitingHoursType = z.infer<typeof visitingHoursSchema>;
+interface VisitingHoursFormProps {
+  value: VisitingHoursType;
+  onChange: (value: VisitingHoursType) => void;
+}
 
 interface VisitingHoursFormProps {
   value: VisitingHoursType;
@@ -21,6 +28,7 @@ export default function VisitingHoursForm({
   onChange,
 }: VisitingHoursFormProps) {
   const eventDays = useEventsDays();
+  console.log(eventDays);
   const {
     control,
     reset,
@@ -42,6 +50,10 @@ export default function VisitingHoursForm({
     }
   }, [watchingVisitingHours, isDirty, onChange]);
 
+  if (!eventDays || eventDays.length === 0) {
+    return <div className="text-center p-4">No event days available.</div>;
+  }
+
   return (
     <div className="space-y-4">
       {eventDays.map((day, dayIndex) => (
@@ -62,7 +74,7 @@ function DayField({
   dayIndex,
 }: {
   control: Control<{ visitingHours: VisitingHoursType }>;
-  day: VisitingHoursType[number];
+  day: DayType;
   dayIndex: number;
 }) {
   const { fields, append, remove } = useFieldArray({
@@ -70,9 +82,16 @@ function DayField({
     name: `visitingHours.${dayIndex}.ranges` as const,
   });
 
+  const dateObject = day.date ? new Date(day.date) : null;
+
   return (
     <div className="border p-4 rounded-md text-center">
       <h3 className="font-semibold mb-2">{day.label}</h3>
+      {dateObject && (
+        <p className="text-sm text-gray-500 mb-2">
+          {dateObject.toLocaleDateString()}
+        </p>
+      )}
       {fields.map((field, index) => (
         <div
           key={field.id}
@@ -108,7 +127,6 @@ function DayField({
               </div>
             )}
           />
-
           <Controller
             name={`visitingHours.${dayIndex}.ranges.${index}.close` as const}
             control={control}

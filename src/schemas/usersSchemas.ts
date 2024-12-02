@@ -27,15 +27,17 @@ const timeRangeSchema = z.object({
     .string()
     .regex(/^\d{2}:\d{2}$/, "Close time must be in HH:MM format"),
 });
+
 const daySchema = z.object({
   dayId: z.string(),
   label: z.string(),
-  date: z.date(),
+  date: z.union([z.string(), z.null()]),
   ranges: z.array(timeRangeSchema).optional(),
 });
 
 export const visitingHoursSchema = z.array(daySchema);
 
+export type DayType = z.infer<typeof daySchema>;
 export type VisitingHoursType = z.infer<typeof visitingHoursSchema>;
 
 export const apiParticipantSchema = z.object({

@@ -17,5 +17,5 @@ export interface MainSection {
   mainColors: MainColors;
   mainMenu: MainMenuItem[];
   mainLinks: MainLink[];
-  eventsDays: EventDay[];
+  eventDays: EventDay[];
 }

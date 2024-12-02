@@ -1,9 +1,9 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import { MainSection } from "@/utils/menu-types";
+import { MainSectionData } from "@/schemas/mainSchema";
 
-const MainContext = createContext<MainSection | undefined>(undefined);
+const MainContext = createContext<MainSectionData | undefined>(undefined);
 
 export const useColors = () => {
   const context = useContext(MainContext);
@@ -34,7 +34,7 @@ export const useEventsDays = () => {
   if (!context) {
     throw new Error("useEventsDays must be used within a MainContextProvider");
   }
-  return context.eventsDays;
+  return context.eventDays;
 };
 
 export const MainContextProvider = ({
@@ -42,17 +42,17 @@ export const MainContextProvider = ({
   mainColors,
   mainMenu,
   mainLinks,
-  eventsDays,
+  eventDays,
 }: {
   children: React.ReactNode;
-  mainColors: MainSection["mainColors"];
-  mainMenu: MainSection["mainMenu"];
-  mainLinks: MainSection["mainLinks"];
-  eventsDays: MainSection["eventsDays"];
+  mainColors: MainSectionData["mainColors"];
+  mainMenu: MainSectionData["mainMenu"];
+  mainLinks: MainSectionData["mainLinks"];
+  eventDays: MainSectionData["eventDays"];
 }) => {
   return (
     <MainContext.Provider
-      value={{ mainColors, mainMenu, mainLinks, eventsDays }}
+      value={{ mainColors, mainMenu, mainLinks, eventDays }}
     >
       {children}
     </MainContext.Provider>
