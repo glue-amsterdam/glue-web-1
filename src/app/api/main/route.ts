@@ -54,7 +54,7 @@ export async function GET() {
 
     return NextResponse.json(formattedData);
   } catch (error) {
-    console.error("Error fetching main data:", error);
+    console.error("Error fetching main data in api endpoint:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

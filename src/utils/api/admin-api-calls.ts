@@ -127,7 +127,7 @@ const caches = new Map<string, Promise<Citizen[]>>();
 export function fetchCitizensByYear(year: string): Promise<Citizen[]> {
   const cacheKey = `year_${year}`;
   if (!caches.get(cacheKey)) {
-    const promise = fetch(`/api/admin/about/citizens/${year}`)
+    const promise = fetch(`${BASE_URL}/admin/about/citizens/${year}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`Failed to fetch citizens for year ${year}`);

@@ -1,30 +1,37 @@
 import { MainContextProvider } from "@/app/context/MainContext";
 import { ColorStyleProvider } from "@/app/components/color-style-provider";
-import { fetchMain } from "@/utils/api/main-api-calls";
+import { fetchMain, getMockData } from "@/utils/api/main-api-calls";
+import { MainSectionData } from "@/schemas/mainSchema";
 
 export async function MainDataProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  try {
-    const { mainColors, mainLinks, mainMenu, eventDays } = await fetchMain();
+  let data: MainSectionData;
 
-    return (
-      <MainContextProvider
-        mainColors={mainColors}
-        mainLinks={mainLinks}
-        mainMenu={mainMenu}
-        eventDays={eventDays}
-      >
-        <ColorStyleProvider colors={{ ...mainColors }}>
-          {children}
-        </ColorStyleProvider>
-      </MainContextProvider>
-    );
+  try {
+    data = await fetchMain();
   } catch (error) {
-    console.error("Error fetching main data:", error);
-    // Provide fallback data or UI
-    return <div>Error loading application data</div>;
+    console.error("Error fetching main data in Provider:", error);
+
+    data = {
+      mainColors: getMockData().mainColors,
+      mainLinks: getMockData().mainLinks,
+      mainMenu: getMockData().mainMenu,
+      eventDays: getMockData().eventDays,
+    };
   }
+  return (
+    <MainContextProvider
+      mainColors={data.mainColors}
+      mainLinks={data.mainLinks}
+      mainMenu={data.mainMenu}
+      eventDays={data.eventDays}
+    >
+      <ColorStyleProvider colors={{ ...data.mainColors }}>
+        {children}
+      </ColorStyleProvider>
+    </MainContextProvider>
+  );
 }
