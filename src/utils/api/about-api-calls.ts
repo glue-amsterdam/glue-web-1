@@ -41,32 +41,14 @@ export async function fetchUserCarousel(): Promise<CarouselClientType> {
   return res.json();
 }
 
-const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
-  headerData: {
-    title: "Our Participants",
-    description: "Loading participant information...",
-  },
-  participants: Array(6).fill({
-    userId: "placeholder",
-    slug: "loading",
-    userName: "Loading...",
-    image: {
-      image_url: "/placeholders/placeholder.jpg",
-      alt: "Loading participant",
-    },
-  }),
-};
 export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/about/participants`,
-      {
-        next: {
-          revalidate: 3600,
-          tags: ["participants"],
-        },
-      }
-    );
+    const res = await fetch(`${BASE_URL}/api/about/participants`, {
+      next: {
+        revalidate: 3600,
+        tags: ["participants"],
+      },
+    });
 
     if (!res.ok) {
       if (process.env.NEXT_PHASE === "build") {
@@ -152,4 +134,20 @@ const FALLBACK_DATA: ClientCitizensSection = {
       year: "2023",
     }),
   },
+};
+
+const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
+  headerData: {
+    title: "Our Participants",
+    description: "Loading participant information...",
+  },
+  participants: Array(6).fill({
+    userId: "placeholder",
+    slug: "loading",
+    userName: "Loading...",
+    image: {
+      image_url: "/placeholders/placeholder.jpg",
+      alt: "Loading participant",
+    },
+  }),
 };
