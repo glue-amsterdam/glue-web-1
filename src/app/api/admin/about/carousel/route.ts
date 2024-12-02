@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     // Get existing slides
     const { data: existingSlides, error: fetchError } = await supabase
       .from("about_carousel_slides")
-      .select("id, image_url")
+      .select("image_url")
       .eq("carousel_id", "about-carousel-56ca13952fcc");
 
     if (fetchError) throw fetchError;
@@ -84,7 +84,6 @@ export async function POST(request: Request) {
       .from("about_carousel_slides")
       .upsert(
         validatedData.slides.map((slide) => ({
-          id: slide.id,
           image_url: slide.image_url,
           alt: slide.alt,
           image_name: slide.image_name,
@@ -95,9 +94,11 @@ export async function POST(request: Request) {
     if (slidesError) throw slidesError;
 
     // Identify slides to be deleted
-    const currentSlideIds = validatedData.slides.map((slide) => slide.id);
+    const currentSlideIds = validatedData.slides.map(
+      (slide) => slide.image_url
+    );
     const slidesToDelete = existingSlides?.filter(
-      (slide) => !currentSlideIds.includes(slide.id)
+      (slide) => !currentSlideIds.includes(slide.image_url)
     );
 
     if (slidesToDelete && slidesToDelete.length > 0) {
@@ -106,8 +107,8 @@ export async function POST(request: Request) {
         .from("about_carousel_slides")
         .delete()
         .in(
-          "id",
-          slidesToDelete.map((slide) => slide.id)
+          "image_url",
+          slidesToDelete.map((slide) => slide.image_url)
         );
 
       if (deleteError) throw deleteError;
