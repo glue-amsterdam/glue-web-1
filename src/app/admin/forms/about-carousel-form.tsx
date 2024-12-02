@@ -54,7 +54,6 @@ export default function AboutCarouselSectionForm({
       const imageUrl = URL.createObjectURL(file);
 
       append({
-        id: crypto.randomUUID(),
         image_url: imageUrl,
         alt: "",
         image_name: file.name,
