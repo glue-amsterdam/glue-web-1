@@ -44,7 +44,7 @@ export type AboutParticipantsClientType = {
 
 export type AboutCuratedClientType = {
   headerData: CuratedMemberSectionHeader;
-  curatedParticipants: Record<number, CuratedParticipantWhitYear[]>;
+  curatedParticipants: Record<string, CuratedParticipantWhitYear[]>;
 };
 
 export const pressItemSchema = z.object({

@@ -27,7 +27,7 @@ export async function GET() {
     );
 
     const groupedByYear = curatedUsers.reduce<
-      Record<number, CuratedParticipantWhitYear[]>
+      Record<string, CuratedParticipantWhitYear[]>
     >((acc, user) => {
       if (!acc[user.year]) {
         acc[user.year] = [];
