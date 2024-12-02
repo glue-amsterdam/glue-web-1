@@ -28,6 +28,11 @@ export const eventDaysSchema = z.object({
     }
   ),
 });
+export const eventDaysResponseSchema = z.object({
+  eventDays: z.array(eventDaySchema),
+});
+
+export type EventDaysResponse = z.infer<typeof eventDaysResponseSchema>;
 
 export const baseEventSchema = z.object({
   eventId: z.string(),

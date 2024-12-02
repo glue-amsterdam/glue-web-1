@@ -2,12 +2,35 @@ import { BASE_URL } from "@/constants";
 import { CarouselSection } from "@/schemas/carouselSchema";
 import { CitizensSection } from "@/schemas/citizenSchema";
 import { CuratedMemberSectionHeader } from "@/schemas/curatedSchema";
-import { EventDay } from "@/schemas/eventSchemas";
+import { EventDaysResponse } from "@/schemas/eventSchemas";
 import { InfoSection } from "@/schemas/infoSchema";
 import { MainColors, MainLinks, MainMenuData } from "@/schemas/mainSchema";
 import { ParticipantsSectionHeader } from "@/schemas/participantsAdminSchema";
 import { cache } from "react";
 import { Citizen } from "@/schemas/citizenSchema";
+
+export const fetchEventDays = cache(async (): Promise<EventDaysResponse> => {
+  try {
+    const res = await fetch(`${BASE_URL}/admin/main/days`, {
+      next: { tags: ["event-days"] },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch event days: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+
+    if ("error" in data) {
+      throw new Error(data.error);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching event days:", error);
+    throw error;
+  }
+});
 
 export const fetchColors = cache(async (): Promise<MainColors> => {
   const res = await fetch(`${BASE_URL}/admin/main/colors`, {
@@ -35,23 +58,6 @@ export const fetchMainLinks = cache(async (): Promise<MainLinks> => {
   if (!res.ok) {
     console.error("Failed to fetch Admin link section");
   }
-  return res.json();
-});
-
-interface EventDaysResponse {
-  eventDays: EventDay[];
-}
-
-export const fetchEventDays = cache(async (): Promise<EventDaysResponse> => {
-  const res = await fetch(`${BASE_URL}/admin/main/days`, {
-    next: { revalidate: 0 },
-  });
-
-  if (!res.ok) {
-    console.error("Failed to fetch event days");
-    throw new Error("Failed to fetch event days");
-  }
-
   return res.json();
 });
 

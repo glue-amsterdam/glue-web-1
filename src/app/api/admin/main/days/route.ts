@@ -1,24 +1,31 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { EventDay } from "@/schemas/eventSchemas";
+import { EventDay, eventDaysResponseSchema } from "@/schemas/eventSchemas";
 
 export async function GET() {
-  const supabase = await createClient();
-  const { data: eventDays, error } = await supabase
-    .from("events_days")
-    .select("*")
-    .order("dayId");
+  try {
+    const supabase = await createClient();
 
-  if (error) {
-    console.error("Error fetching event days:", error);
+    const { data: eventDays, error } = await supabase
+      .from("events_days")
+      .select("*")
+      .order("dayId");
+
+    if (error) {
+      throw new Error(`Error fetching event days: ${error.message}`);
+    }
+
+    const validatedData = eventDaysResponseSchema.parse({ eventDays });
+
+    return NextResponse.json(validatedData);
+  } catch (error) {
+    console.error("Error in GET /api/admin/main/days:", error);
     return NextResponse.json(
       { error: "Failed to fetch event days" },
       { status: 500 }
     );
   }
-
-  return NextResponse.json({ eventDays });
 }
 
 export async function PUT(request: Request) {

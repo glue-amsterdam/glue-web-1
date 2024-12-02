@@ -308,7 +308,7 @@ const CURATED_FALLBACK_DATA: CuratedResponse = {
 const FALLBACK_CITIZEN: ClientCitizen = {
   id: "placeholder",
   name: "Loading...",
-  image_url: "/placeholder.svg?height=400&width=600",
+  image_url: "/placeholder.jpg",
   alt: "Loading placeholder",
   description: "Loading description...",
   year: "2024",
