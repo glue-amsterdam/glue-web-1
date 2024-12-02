@@ -1,3 +1,4 @@
+import { eventDaySchema } from "@/schemas/eventSchemas";
 import { z } from "zod";
 
 export const subMenuItemSchema = z.object({
@@ -38,16 +39,17 @@ export const linkItemSchema = z.object({
   link: z.string().url("Must be a valid URL"),
 });
 
-export const mainLinksSchema = z.object({
-  mainLinks: z.array(linkItemSchema),
-});
+export const mainLinksSchema = z.array(linkItemSchema);
 
 export const mainSectionSchema = z.object({
   mainColors: mainColorsSchema,
   mainMenu: z.array(mainMenuItemSchema),
   mainLinks: mainLinksSchema,
+  eventDays: z.array(eventDaySchema),
 });
 
 export type MainSectionData = z.infer<typeof mainSectionSchema>;
 export type LinkItem = z.infer<typeof linkItemSchema>;
 export type MainLinks = z.infer<typeof mainLinksSchema>;
+export type MainColors = z.infer<typeof mainColorsSchema>;
+export type MainLink = z.infer<typeof linkItemSchema>;

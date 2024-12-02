@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+
 import {
-  EventDay,
-  MainLink,
-  MainSection,
-  MainMenuItem,
   MainColors,
-} from "@/utils/menu-types";
+  MainLinks,
+  MainMenuItem,
+  MainSectionData,
+} from "@/schemas/mainSchema";
+import { EventDay } from "@/schemas/eventSchemas";
 
 export async function GET() {
   const supabase = await createClient();
@@ -44,11 +45,11 @@ export async function GET() {
       date: day.date,
     }));
 
-    const formattedData: MainSection = {
+    const formattedData: MainSectionData = {
       mainColors: mainColorsData,
-      mainLinks: mainLinks.data as MainLink[],
+      mainLinks: mainLinks.data as MainLinks,
       mainMenu: mainMenuData,
-      eventsDays: events_days,
+      eventDays: events_days,
     };
 
     return NextResponse.json(formattedData);

@@ -1,6 +1,6 @@
+import { InfoItem, InfoSection } from "@/schemas/infoSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
-import { InfoItem, InfoSectionContent } from "@/schemas/baseSchema";
 
 export async function GET() {
   try {
@@ -18,7 +18,7 @@ export async function GET() {
       throw new Error("Failed to fetch info section data");
     }
 
-    const infoSection: InfoSectionContent = {
+    const infoSection: InfoSection = {
       title: infoData.title,
       description: infoData.description,
       infoItems: infoData.info_items.map((item: InfoItem) => ({
