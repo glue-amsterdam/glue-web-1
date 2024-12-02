@@ -1,8 +1,8 @@
 import Info from "@/app/components/about/info";
-import { fetchUserInfo } from "@/utils/api/about-api-calls";
+import { fetchInfoSection } from "@/utils/api/about-api-calls";
 
 export default async function AboutInfo() {
-  const infoItemsSection = await fetchUserInfo();
+  const infoItemsSection = await fetchInfoSection();
 
   return <Info infoItemsSection={infoItemsSection} />;
 }
