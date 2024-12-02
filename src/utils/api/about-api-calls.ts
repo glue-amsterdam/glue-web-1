@@ -75,28 +75,32 @@ export async function fetchInfoSection(): Promise<InfoSectionClient> {
     const res = await fetch(`${BASE_URL}/about/info`, {
       next: {
         revalidate: 3600, // 1 hour
-        tags: ["info-section"],
+        tags: ["info"],
       },
     });
 
     if (!res.ok) {
+      // Return fallback data during build time
       if (process.env.NEXT_PHASE === "build") {
+        console.warn("Using fallback data for info section during build");
         return INFO_FALLBACK_DATA;
       }
       throw new Error(`Failed to fetch info section data: ${res.statusText}`);
     }
 
     const data = await res.json();
-    return infoSectionClientSchema.parse(data);
+
+    const validatedData = infoSectionClientSchema.parse(data);
+    return validatedData;
   } catch (error) {
     console.error("Error fetching info section data:", error);
     if (process.env.NEXT_PHASE === "build") {
+      console.warn("Using fallback data for info section due to error");
       return INFO_FALLBACK_DATA;
     }
     throw error;
   }
 }
-
 export const fetchUserCurated = cache(
   async (): Promise<AboutCuratedClientType> => {
     const res = await fetch(`${BASE_URL}/about/curated`, {

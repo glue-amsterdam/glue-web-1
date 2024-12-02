@@ -44,8 +44,6 @@ export async function GET() {
     const validatedData = infoSectionClientSchema.parse(infoSection);
 
     return NextResponse.json(validatedData);
-
-    return NextResponse.json(infoSection);
   } catch (error) {
     console.error("Error in GET /api/about/info:", error);
     return NextResponse.json(
