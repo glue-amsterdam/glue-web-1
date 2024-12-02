@@ -27,7 +27,7 @@ export default function MainSectionForm({ initialData }: MainSectionFormProps) {
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
   } = methods;
 
   const onSubmit = createSubmitHandler<MainMenuData>(
@@ -59,9 +59,6 @@ export default function MainSectionForm({ initialData }: MainSectionFormProps) {
       setIsSubmitting(false);
     }
   };
-
-  console.log("Form is valid:", isValid);
-  console.log("Form errors:", errors);
 
   return (
     <FormProvider {...methods}>

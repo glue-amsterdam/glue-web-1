@@ -1,4 +1,4 @@
-import InfoItemsForm from "@/app/admin/forms/info-items-form";
+import InfoItemsForm from "@/app/admin/forms/about-info-form";
 import { fetchAboutInfo } from "@/utils/api/admin-api-calls";
 
 export default async function AboutInfoSection() {

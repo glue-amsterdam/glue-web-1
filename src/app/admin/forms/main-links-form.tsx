@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Instagram, Linkedin, Globe, Youtube } from "lucide-react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
@@ -74,10 +74,6 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
       setIsSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    console.log("Form errors:", errors);
-  }, [errors]);
 
   return (
     <FormProvider {...methods}>
