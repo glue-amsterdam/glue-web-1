@@ -1,4 +1,9 @@
 import { DAYS, DAYS_IDS } from "@/constants";
+import {
+  linkItemSchema,
+  mainColorsSchema,
+  MainMenuItem,
+} from "@/schemas/mainSchema";
 import { z } from "zod";
 
 export type DayID = (typeof DAYS_IDS)[number];
@@ -12,31 +17,8 @@ export const eventDaySchema = z.object({
 
 export type EventDay = z.infer<typeof eventDaySchema>;
 
-export interface MainMenuItem {
-  menu_id: string;
-  label: string;
-  section: string;
-  className: string;
-  subItems?: SubMenuItem[] | null;
-}
-
-interface SubMenuItem {
-  title: string;
-  href: string;
-}
-
-export interface MainColors {
-  box1: string;
-  box2: string;
-  box3: string;
-  box4: string;
-  triangle: string;
-}
-
-export interface MainLink {
-  platform: string;
-  link: string;
-}
+export type MainColors = z.infer<typeof mainColorsSchema>;
+export type MainLink = z.infer<typeof linkItemSchema>;
 
 export interface MainSection {
   mainColors: MainColors;

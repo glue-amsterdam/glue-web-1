@@ -1,13 +1,12 @@
 import { BASE_URL } from "@/constants";
-import {
-  CarouselSectionContent,
-  CuratedMemberSectionContent,
-  InfoSectionContent,
-  MainLinks,
-  ParticipantsSectionContent,
-} from "@/schemas/baseSchema";
+import { CarouselSection } from "@/schemas/carouselSchema";
+import { CitizensSection } from "@/schemas/citizenSchema";
+import { CuratedMemberSectionHeader } from "@/schemas/curatedSchema";
 import { EventDay } from "@/schemas/eventSchemas";
-import { MainColors, MainMenuItem } from "@/utils/menu-types";
+import { InfoSection } from "@/schemas/infoSchema";
+import { MainLinks, MainMenuData } from "@/schemas/mainSchema";
+import { ParticipantsSectionHeader } from "@/schemas/participantsAdminSchema";
+import { MainColors } from "@/utils/menu-types";
 import { cache } from "react";
 
 export const fetchColors = cache(async (): Promise<MainColors> => {
@@ -20,12 +19,12 @@ export const fetchColors = cache(async (): Promise<MainColors> => {
   return res.json();
 });
 
-export const fetchMainSection = cache(async (): Promise<MainMenuItem[]> => {
+export const fetchMenuLinksSection = cache(async (): Promise<MainMenuData> => {
   const res = await fetch(`${BASE_URL}/admin/main/menu`, {
     next: { revalidate: 0 },
   });
   if (!res.ok) {
-    console.error("Failed to fetch Admin main section");
+    console.error("Failed to fetch admin main menu links section");
   }
   return res.json();
 });
@@ -56,23 +55,21 @@ export const fetchEventDays = cache(async (): Promise<EventDaysResponse> => {
   return res.json();
 });
 
-export const fetchAboutCarousel = cache(
-  async (): Promise<CarouselSectionContent> => {
-    const res = await fetch(`${BASE_URL}/admin/about/carousel`, {
-      next: { revalidate: 0 },
-    });
+export const fetchAboutCarousel = cache(async (): Promise<CarouselSection> => {
+  const res = await fetch(`${BASE_URL}/admin/about/carousel`, {
+    next: { revalidate: 0 },
+  });
 
-    if (!res.ok) {
-      console.error("Failed to fetch about carousel:");
-      throw new Error(`Failed to fetch about carousel`);
-    }
-
-    return res.json();
+  if (!res.ok) {
+    console.error("Failed to fetch about carousel:");
+    throw new Error(`Failed to fetch about carousel`);
   }
-);
+
+  return res.json();
+});
 
 export const fetchAboutParticipants = cache(
-  async (): Promise<ParticipantsSectionContent> => {
+  async (): Promise<ParticipantsSectionHeader> => {
     const res = await fetch(`${BASE_URL}/admin/about/participants`, {
       next: { revalidate: 0 },
     });
@@ -87,7 +84,7 @@ export const fetchAboutParticipants = cache(
 );
 
 export const fetchAboutCurated = cache(
-  async (): Promise<CuratedMemberSectionContent> => {
+  async (): Promise<CuratedMemberSectionHeader> => {
     const res = await fetch(`${BASE_URL}/admin/about/curated`, {
       next: { revalidate: 0 },
     });
@@ -100,14 +97,26 @@ export const fetchAboutCurated = cache(
     return res.json();
   }
 );
-export const fetchAboutInfo = cache(async (): Promise<InfoSectionContent> => {
+export const fetchAboutInfo = cache(async (): Promise<InfoSection> => {
   const res = await fetch(`${BASE_URL}/admin/about/info`, {
     next: { revalidate: 0 },
   });
 
   if (!res.ok) {
-    console.error("Failed to fetch info section in info");
-    throw new Error(`Failed to fetch info section in info`);
+    console.error("Failed to fetch info in admin-api-calls");
+    throw new Error(`Failed to fetch info in admin-api-calls`);
+  }
+
+  return res.json();
+});
+export const fetchAboutCitizens = cache(async (): Promise<CitizensSection> => {
+  const res = await fetch(`${BASE_URL}/admin/about/citizens`, {
+    next: { revalidate: 0 },
+  });
+
+  if (!res.ok) {
+    console.error("Failed to fetch citizens in admin-api-calls");
+    throw new Error(`Failed to fetch citizens in admin-api-calls`);
   }
 
   return res.json();
