@@ -1,9 +1,27 @@
-import { clientCitizensSectionSchema } from "@/schemas/citizenSchema";
+import {
+  ClientCitizen,
+  ClientCitizensSection,
+  clientCitizensSectionSchema,
+} from "@/schemas/citizenSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
-export const dynamic = "force-dynamic";
+const FALLBACK_CITIZEN: ClientCitizen = {
+  id: "placeholder",
+  name: "Loading...",
+  image_url: "/placeholder.jpg",
+  alt: "Loading placeholder",
+  description: "Loading description...",
+  year: "2024",
+};
+
+const CITIZENS_FALLBACK_DATA: ClientCitizensSection = {
+  title: "Creative Citizens of Honour",
+  description: "Loading citizens of honor information...",
+  citizensByYear: {
+    "2024": Array(3).fill(FALLBACK_CITIZEN),
+  },
+};
 
 export async function GET() {
   try {
@@ -44,9 +62,14 @@ export async function GET() {
     return NextResponse.json(validatedResponse);
   } catch (error) {
     console.error("Error in GET /api/about/citizens:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch citizens data" },
-      { status: 500 }
-    );
+    if (process.env.NODE_ENV === "production") {
+      return NextResponse.json(
+        { error: "Failed to fetch citizens data" },
+        { status: 500 }
+      );
+    } else {
+      console.warn("Using fallback data for citizens");
+      return NextResponse.json(CITIZENS_FALLBACK_DATA);
+    }
   }
 }

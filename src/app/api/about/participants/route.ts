@@ -1,14 +1,49 @@
 import { users } from "@/lib/mockMembers";
 import {
   ParticipantClient,
+  ParticipantsResponse,
   participantsResponseSchema,
 } from "@/schemas/participantsSchema";
 import { ParticipantUser, User } from "@/schemas/usersSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
-export const dynamic = "force-dynamic";
+const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
+  headerData: {
+    title: "Participants Section!",
+    description:
+      "Discover all participating brands, designers, studio's and academies of GLUE amsterdam connected by design",
+  },
+  participants: [
+    {
+      userId: "placeholder-1",
+      slug: "placeholder-participant-1",
+      userName: "Loading Participant 1",
+      image: {
+        image_url: "/placeholder.svg?height=300&width=300",
+        alt: "Loading participant 1",
+      },
+    },
+    {
+      userId: "placeholder-2",
+      slug: "placeholder-participant-2",
+      userName: "Loading Participant 2",
+      image: {
+        image_url: "/placeholder.svg?height=300&width=300",
+        alt: "Loading participant 2",
+      },
+    },
+    {
+      userId: "placeholder-3",
+      slug: "placeholder-participant-3",
+      userName: "Loading Participant 3",
+      image: {
+        image_url: "/placeholder.svg?height=300&width=300",
+        alt: "Loading participant 3",
+      },
+    },
+  ],
+};
 
 function isParticipantUser(user: User): user is ParticipantUser {
   return user.type === "participant" && "slug" in user;
@@ -55,10 +90,14 @@ export async function GET() {
 
     return NextResponse.json(validatedResponse);
   } catch (error) {
-    console.error("Error in GET /api/about/participants:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch participants data" },
-      { status: 500 }
-    );
+    if (process.env.NODE_ENV === "production") {
+      return NextResponse.json(
+        { error: "Failed to fetch participants section data" },
+        { status: 500 }
+      );
+    } else {
+      console.warn("Using fallback data for citizens");
+      return NextResponse.json(PARTICIPANT_FALLBACK_DATA);
+    }
   }
 }

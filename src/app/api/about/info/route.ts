@@ -1,6 +1,47 @@
-import { infoSectionClientSchema } from "@/schemas/infoSchema";
+import {
+  InfoSectionClient,
+  infoSectionClientSchema,
+} from "@/schemas/infoSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
+
+const INFO_FALLBACK_DATA: InfoSectionClient = {
+  title: "Information about GLUE",
+  description:
+    "Discover the GLUE project, the GLUE Foundation, and the GLUE International initiative.",
+  infoItems: [
+    {
+      id: "mission-statement",
+      title: "Mission Statement",
+      description:
+        "<p>GLUE aspires to diversity and inclusivity, with a focus on sustainability and wellbeing.</p>",
+      image: {
+        image_url: "/placeholder.svg?height=400&width=600",
+        alt: "GLUE Mission Statement",
+      },
+    },
+    {
+      id: "meet-the-team",
+      title: "Meet the Team",
+      description:
+        "<p>Our dedicated team works tirelessly to connect and promote the Amsterdam design community.</p>",
+      image: {
+        image_url: "/placeholder.svg?height=400&width=600",
+        alt: "GLUE Team",
+      },
+    },
+    {
+      id: "glue-foundation",
+      title: "GLUE Foundation",
+      description:
+        "<p>The GLUE Foundation is responsible for cultural programs and initiatives within the GLUE community.</p>",
+      image: {
+        image_url: "/placeholder.svg?height=400&width=600",
+        alt: "GLUE Foundation",
+      },
+    },
+  ],
+};
 
 export async function GET() {
   try {
@@ -45,10 +86,14 @@ export async function GET() {
 
     return NextResponse.json(validatedData);
   } catch (error) {
-    console.error("Error in GET /api/about/info:", error);
-    return NextResponse.json(
-      { error: "An error occurred while fetching info section data" },
-      { status: 500 }
-    );
+    if (process.env.NODE_ENV === "production") {
+      return NextResponse.json(
+        { error: "Failed to fetch info section data" },
+        { status: 500 }
+      );
+    } else {
+      console.warn("Using fallback data for citizens");
+      return NextResponse.json(INFO_FALLBACK_DATA);
+    }
   }
 }
