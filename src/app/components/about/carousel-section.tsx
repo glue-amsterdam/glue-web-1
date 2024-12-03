@@ -113,18 +113,20 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
           {carouselData.description}
         </motion.p>
         <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-          <DialogContent className="w-full p-0 max-w-[90vw] md:max-w-[70vw] ">
+          <DialogContent className="w-full p-0 h-full max-h-[90%] max-w-[90vw] md:max-w-[70vw] ">
             <DialogTitle className="sr-only">
               Photo galery from the GLUE desing route
             </DialogTitle>
             <div className="relative w-full h-full">
-              <img
+              <Image
                 src={carouselData.slides[selectedImage].image_url}
                 alt={
                   carouselData.slides[selectedImage].alt ||
                   "Slide from the GLUE Gallery"
                 }
-                className="object-cover w-full h-full"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 90vw, 80vw"
+                className="object-cover"
               />
               <Button
                 variant="ghost"
