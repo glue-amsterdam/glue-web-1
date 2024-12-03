@@ -11,6 +11,7 @@ import { CuratedSkeleton } from "@/app/about/components/skeletons/curatedSkeleto
 import { InfoSectionSkeleton } from "@/app/about/components/skeletons/infoSkeleton";
 import { CitizensSkeleton } from "@/app/about/components/skeletons/citizenSkeleton";
 import { ErrorBoundary } from "react-error-boundary";
+
 export default function AboutPage() {
   return (
     <>
