@@ -1,4 +1,4 @@
-import { BASE_URL, THREE_DAYS_IN_S } from "@/constants";
+import { BASE_URL } from "@/constants";
 import { mainSection } from "@/lib/mockMain";
 import { MainSectionData } from "@/schemas/mainSchema";
 
@@ -13,7 +13,7 @@ export async function fetchMain(): Promise<MainSectionData> {
 
   try {
     const response = await fetch(`${BASE_URL}/main`, {
-      next: { revalidate: THREE_DAYS_IN_S },
+      next: { revalidate: 0 },
     });
 
     if (!response.ok) {
