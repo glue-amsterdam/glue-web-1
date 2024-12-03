@@ -6,11 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MainColors, mainColorsSchema } from "@/schemas/mainSchema";
+import { mutate } from "swr";
 
 interface MainColorsFormProps {
   initialData: MainColors;
@@ -30,15 +31,21 @@ export default function MainColorsForm({ initialData }: MainColorsFormProps) {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = methods;
+
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
 
   const onSubmit = createSubmitHandler<MainColors>(
     "/api/admin/main/colors",
-    () => {
+    async () => {
       toast({
         title: "Colors updated",
         description: "The main colors have been successfully updated.",
       });
+      await mutate("/api/admin/main/colors");
       router.refresh();
     },
     (error) => {
@@ -55,6 +62,7 @@ export default function MainColorsForm({ initialData }: MainColorsFormProps) {
     await onSubmit(data);
     setIsSubmitting(false);
   };
+
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
@@ -63,7 +71,7 @@ export default function MainColorsForm({ initialData }: MainColorsFormProps) {
           <Image
             src={"/admin/colors.jpg"}
             fill
-            alt=""
+            alt="Color scheme representation"
             priority={false}
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 30vw, 30vw"
           />
@@ -72,10 +80,11 @@ export default function MainColorsForm({ initialData }: MainColorsFormProps) {
           {(Object.keys(mainColorsSchema.shape) as Array<keyof MainColors>).map(
             (key) => (
               <div key={key}>
-                <Label>
+                <Label htmlFor={key}>
                   {key.charAt(0).toUpperCase() + key.slice(1)} Color
                 </Label>
                 <Input
+                  id={key}
                   className="dashboard-input"
                   {...register(key)}
                   placeholder={`${
