@@ -3,13 +3,14 @@
 import { useForm, useFieldArray, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
-import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Instagram, Linkedin, Globe, Youtube } from "lucide-react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
 import { LinkItem, mainLinksSchema } from "@/schemas/mainSchema";
+import { mutate } from "swr";
+import { createSubmitHandler } from "@/utils/form-helpers";
 
 interface MainLinksFormProps {
   initialData: { mainLinks: LinkItem[] };
@@ -36,6 +37,7 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
     control,
     handleSubmit,
     formState: { errors },
+    reset,
   } = methods;
 
   const { fields } = useFieldArray({
@@ -43,14 +45,19 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
     name: "mainLinks",
   });
 
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
+
   const onSubmit = createSubmitHandler<{ mainLinks: LinkItem[] }>(
     "/api/admin/main/links",
-    () => {
-      console.log("Form submitted successfully");
+    async (data) => {
+      console.log("Form submitted successfully", data);
       toast({
         title: "Links updated",
         description: "The main links have been successfully updated.",
       });
+      await mutate("/api/admin/main/links");
       router.refresh();
     },
     (error) => {
@@ -88,6 +95,7 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
             <div className="flex-grow space-y-2">
               <Input
                 {...methods.register(`mainLinks.${index}.link`)}
+                defaultValue={field.link}
                 placeholder="Link URL"
                 className="dashboard-input"
               />
@@ -99,6 +107,7 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
               <Input
                 type="hidden"
                 {...methods.register(`mainLinks.${index}.platform`)}
+                defaultValue={field.platform}
               />
             </div>
           </div>
