@@ -69,6 +69,16 @@ export default function InfoSection({
     );
   };
 
+  // Error handling for missing or invalid infoItems
+  if (!Array.isArray(infoItems) || infoItems.length === 0) {
+    console.error("Invalid or missing infoItems:", infoItems);
+    return (
+      <div className="text-center text-red-500 p-4">
+        Error: Unable to load information items. Please try again later.
+      </div>
+    );
+  }
+
   return (
     <motion.article
       {...fadeInConfig}
@@ -84,7 +94,7 @@ export default function InfoSection({
         viewport={{ once: true }}
         className="h1-titles font-bold tracking-widest my-4"
       >
-        {title}
+        {title || "Information"}
       </motion.h1>
       <motion.p
         initial={{ y: 20, opacity: 0 }}
@@ -92,7 +102,7 @@ export default function InfoSection({
         transition={{ delay: 1.3 }}
         className="mt-4 text-md md:text-lg text-uiwhite flex-grow-[0.3]"
       >
-        {description}
+        {description || "No description available."}
       </motion.p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[80%]">
         {infoItems.map((info, index) => (
