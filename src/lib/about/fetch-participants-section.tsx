@@ -42,11 +42,6 @@ const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
 };
 
 export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
-  if (process.env.NEXT_PHASE === "build") {
-    console.warn("Using fallback data for participants during build");
-    return PARTICIPANT_FALLBACK_DATA;
-  }
-
   try {
     const res = await fetch(`${BASE_URL}/about/participants`, {
       next: {
@@ -56,7 +51,13 @@ export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to fetch participants: ${res.statusText}`);
+      if (res.status === 404 || process.env.NEXT_PHASE === "build") {
+        console.warn("Using fallback data for curated section");
+        return PARTICIPANT_FALLBACK_DATA;
+      }
+      throw new Error(
+        `Failed to fetch curated section data: ${res.statusText}`
+      );
     }
 
     const data = await res.json();
