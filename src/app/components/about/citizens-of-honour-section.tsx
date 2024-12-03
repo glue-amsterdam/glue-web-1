@@ -3,7 +3,12 @@
 import { useMemo, useRef, useState, useCallback } from "react";
 import DOMPurify from "dompurify";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -152,6 +157,9 @@ export default function CitizenOfHonourSection({
                   <DialogTitle className="text-2xl lg:text-3xl tracking-widest">
                     {selectedCitizen?.name}
                   </DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Detailed information about {selectedCitizen.name}
+                  </DialogDescription>
                   <p className="text-sm font-bold flex flex-col">
                     <span>Year</span>
                     <span>{selectedCitizen?.year}</span>
