@@ -62,9 +62,8 @@ export async function fetchInfoSection(): Promise<InfoSectionClient> {
     }
 
     const data = await res.json();
-    console.log("Fetched info section data:", JSON.stringify(data, null, 2));
-
     const validatedData = infoSectionClientSchema.parse(data);
+
     return validatedData;
   } catch (error) {
     console.error("Error in fetchInfoSection:", error);

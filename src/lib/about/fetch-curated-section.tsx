@@ -36,7 +36,7 @@ export async function fetchCuratedSection(): Promise<CuratedResponse> {
     });
 
     if (!res.ok) {
-      if (res.status === 404 || process.env.NEXT_PHASE === "build") {
+      if (res.status === 404 || process.env.NODE_ENV === "development") {
         console.warn("Using fallback data for curated section");
         return CURATED_FALLBACK_DATA;
       }
@@ -46,7 +46,9 @@ export async function fetchCuratedSection(): Promise<CuratedResponse> {
     }
 
     const data = await res.json();
-    return curatedResponseSchema.parse(data);
+    const validatedData = curatedResponseSchema.parse(data);
+
+    return validatedData;
   } catch (error) {
     console.error("Error fetching curated section data:", error);
     if (process.env.NEXT_PHASE === "build") {

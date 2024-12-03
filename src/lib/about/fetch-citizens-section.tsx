@@ -31,15 +31,17 @@ export async function fetchCitizensOfHonor(): Promise<ClientCitizensSection> {
     });
 
     if (!res.ok) {
-      if (res.status === 404 || process.env.NEXT_PHASE === "build") {
-        console.warn("Using fallback data for carousel during build");
+      if (res.status === 404 || process.env.NODE_ENV === "development") {
+        console.warn("Using fallback data for carousel section");
         return CITIZENS_FALLBACK_DATA;
       }
       throw new Error(`Failed to fetch carousel data: ${res.statusText}`);
     }
 
     const data = await res.json();
-    return clientCitizensSectionSchema.parse(data);
+    const validatedData = clientCitizensSectionSchema.parse(data);
+
+    return validatedData;
   } catch (error) {
     console.error("Error fetching citizens data:", error);
     return CITIZENS_FALLBACK_DATA;
