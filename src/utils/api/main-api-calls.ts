@@ -3,14 +3,6 @@ import { mainSection } from "@/lib/mockMain";
 import { MainSectionData } from "@/schemas/mainSchema";
 
 export async function fetchMain(): Promise<MainSectionData> {
-  if (
-    process.env.NODE_ENV === "production" &&
-    process.env.NEXT_PHASE === "phase-production-build"
-  ) {
-    // During build time in production, return mock data
-    return getMockData();
-  }
-
   try {
     const response = await fetch(`${BASE_URL}/main`, {
       next: { revalidate: THREE_DAYS_IN_S },

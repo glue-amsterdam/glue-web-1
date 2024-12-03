@@ -1,35 +1,21 @@
 import { MainContextProvider } from "@/app/context/MainContext";
 import { ColorStyleProvider } from "@/app/components/color-style-provider";
-import { fetchMain, getMockData } from "@/utils/api/main-api-calls";
-import { MainSectionData } from "@/schemas/mainSchema";
+import { getData } from "@/lib/main/getData";
 
 export async function MainDataProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  let data: MainSectionData;
-
-  try {
-    data = await fetchMain();
-  } catch (error) {
-    console.error("Error fetching main data in Provider:", error);
-
-    data = {
-      mainColors: getMockData().mainColors,
-      mainLinks: getMockData().mainLinks,
-      mainMenu: getMockData().mainMenu,
-      eventDays: getMockData().eventDays,
-    };
-  }
+  const initialData = await getData();
   return (
     <MainContextProvider
-      mainColors={data.mainColors}
-      mainLinks={data.mainLinks}
-      mainMenu={data.mainMenu}
-      eventDays={data.eventDays}
+      mainColors={initialData.mainColors}
+      mainLinks={initialData.mainLinks}
+      mainMenu={initialData.mainMenu}
+      eventDays={initialData.eventDays}
     >
-      <ColorStyleProvider colors={{ ...data.mainColors }}>
+      <ColorStyleProvider colors={{ ...initialData.mainColors }}>
         {children}
       </ColorStyleProvider>
     </MainContextProvider>
