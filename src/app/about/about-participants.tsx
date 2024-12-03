@@ -1,5 +1,5 @@
 import Participants from "@/app/components/about/participants";
-import { fetchAboutParticipants } from "@/utils/api/about-api-calls";
+import { fetchAboutParticipants } from "@/lib/about/fetch-participants-section";
 
 import React from "react";
 
