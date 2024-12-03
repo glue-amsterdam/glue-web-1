@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useEffect,
+  useState,
+} from "react";
 import { MainSectionData } from "@/schemas/mainSchema";
 
 const MainContext = createContext<MainSectionData | undefined>(undefined);
@@ -50,9 +56,25 @@ export const MainContextProvider = ({
   mainLinks: MainSectionData["mainLinks"];
   eventDays: MainSectionData["eventDays"];
 }) => {
+  const [colors, setColors] = useState(mainColors);
+  const [links, setLinks] = useState(mainLinks);
+  const [menu, setMenu] = useState(mainMenu);
+  const [days, setDays] = useState(eventDays);
+
+  useEffect(() => {
+    setColors(mainColors);
+    setLinks(mainLinks);
+    setMenu(mainMenu);
+    setDays(eventDays);
+  }, [mainColors, mainLinks, mainMenu, eventDays]);
   return (
     <MainContext.Provider
-      value={{ mainColors, mainMenu, mainLinks, eventDays }}
+      value={{
+        mainColors: colors,
+        mainMenu: menu,
+        mainLinks: links,
+        eventDays: days,
+      }}
     >
       {children}
     </MainContext.Provider>
