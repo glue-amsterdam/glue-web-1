@@ -100,7 +100,7 @@ export async function fetchUserCurated(): Promise<CuratedResponse> {
 }
 export async function fetchCitizensOfHonor(): Promise<ClientCitizensSection> {
   try {
-    const response = await fetch(`${BASE_URL}/api/about/citizens`, {
+    const response = await fetch(`${BASE_URL}/about/citizens`, {
       next: {
         revalidate: 3600,
         tags: ["citizens"],
