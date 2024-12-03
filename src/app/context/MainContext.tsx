@@ -7,7 +7,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { MainSectionData } from "@/schemas/mainSchema";
+import { LinkItem, MainSectionData } from "@/schemas/mainSchema";
 
 const MainContext = createContext<MainSectionData | undefined>(undefined);
 
@@ -27,12 +27,12 @@ export const useMenu = () => {
   return context.mainMenu;
 };
 
-export const useLinks = () => {
+export const useLinks = (): LinkItem[] => {
   const context = useContext(MainContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useLinks must be used within a MainContextProvider");
   }
-  return context.mainLinks;
+  return context.mainLinks.mainLinks;
 };
 
 export const useEventsDays = () => {
@@ -53,7 +53,7 @@ export const MainContextProvider = ({
   children: ReactNode;
   mainColors: MainSectionData["mainColors"];
   mainMenu: MainSectionData["mainMenu"];
-  mainLinks: MainSectionData["mainLinks"];
+  mainLinks: MainSectionData["mainLinks"]["mainLinks"];
   eventDays: MainSectionData["eventDays"];
 }) => {
   const [colors, setColors] = useState(mainColors);
@@ -67,12 +67,13 @@ export const MainContextProvider = ({
     setMenu(mainMenu);
     setDays(eventDays);
   }, [mainColors, mainLinks, mainMenu, eventDays]);
+
   return (
     <MainContext.Provider
       value={{
         mainColors: colors,
         mainMenu: menu,
-        mainLinks: links,
+        mainLinks: { mainLinks: links },
         eventDays: days,
       }}
     >
