@@ -12,13 +12,14 @@ import {
 } from "@/components/ui/popover";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { CalendarIcon } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { EventDay, eventDaysSchema } from "@/schemas/eventSchemas";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
+import { mutate } from "swr";
 
 interface EventDaysFormProps {
   initialData: { eventDays: EventDay[] };
@@ -42,6 +43,7 @@ export default function EventDaysForm({ initialData }: EventDaysFormProps) {
     watch,
     setError,
     clearErrors,
+    reset,
   } = methods;
 
   const { fields } = useFieldArray({
@@ -51,14 +53,19 @@ export default function EventDaysForm({ initialData }: EventDaysFormProps) {
 
   const watchEventDays = watch("eventDays");
 
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
+
   const onSubmit = createSubmitHandler<{ eventDays: EventDay[] }>(
     "/api/admin/main/days",
-    () => {
+    async () => {
       toast({
         title: "Event days updated",
         description:
           "The event day labels and dates have been successfully updated.",
       });
+      await mutate("/api/admin/main/days");
       router.refresh();
     },
     (error) => {
