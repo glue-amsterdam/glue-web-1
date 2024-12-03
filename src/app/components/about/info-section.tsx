@@ -8,6 +8,7 @@ import ScrollDown from "@/app/components/scroll-down";
 import { fadeInConfig } from "@/utils/animations";
 import DOMPurify from "dompurify";
 import { InfoItem, InfoItemClient } from "@/schemas/infoSchema";
+import Image from "next/image";
 
 interface InfoSectionProps {
   infoItems: InfoItemClient[];
@@ -53,7 +54,7 @@ export default function InfoSection({
           onClick={() => openModal(info)}
         >
           <div className="relative w-full h-full">
-            <img
+            <Image
               src={info.image.image_url}
               alt={info.title}
               className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
@@ -118,7 +119,7 @@ export default function InfoSection({
           {selectedInfo && (
             <div className="relative w-full h-full flex flex-col">
               <div className="relative w-full h-1/2">
-                <img
+                <Image
                   src={selectedInfo.image.image_url}
                   alt={selectedInfo.title}
                   className="absolute inset-0 w-full h-full object-cover"
