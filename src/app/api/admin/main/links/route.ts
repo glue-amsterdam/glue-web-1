@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { mainLinksSchema } from "@/schemas/mainSchema";
+import { LinkItem, MainLinks, mainLinksSchema } from "@/schemas/mainSchema";
 
 export async function GET() {
   try {
@@ -16,14 +16,17 @@ export async function GET() {
       throw new Error(`Error fetching main links: ${error.message}`);
     }
 
-    const validatedLinks = mainLinksSchema.parse(mainLinks);
-
-    const linksWithoutId = validatedLinks.map(({ platform, link }) => ({
+    const linksWithoutId = mainLinks.map(({ platform, link }) => ({
       platform,
       link,
     }));
 
-    return NextResponse.json(linksWithoutId);
+    const response: MainLinks = { mainLinks: linksWithoutId };
+
+    // Validate the response against the schema
+    const validatedResponse = mainLinksSchema.parse(response);
+
+    return NextResponse.json(validatedResponse);
   } catch (error) {
     console.error("Error in GET /api/admin/main/links:", error);
     return NextResponse.json(
@@ -46,27 +49,36 @@ export async function PUT(request: Request) {
 
   try {
     const supabase = await createClient();
-    const { mainLinks } = await request.json();
+    const body = await request.json();
+
+    // Validate the incoming data against the schema
+    const validatedData = mainLinksSchema.parse(body);
+    const mainLinks = validatedData.mainLinks;
+
+    console.log("Validated mainLinks:", mainLinks);
 
     // Update links one by one
-    const updatePromises = mainLinks.map(
-      async (link: { platform: string; link: string }) => {
-        const { data, error } = await supabase
-          .from("main_links")
-          .update({ link: link.link })
-          .eq("platform", link.platform)
-          .select();
+    const updatePromises = mainLinks.map(async (link: LinkItem) => {
+      const { data, error } = await supabase
+        .from("main_links")
+        .update({ link: link.link })
+        .eq("platform", link.platform)
+        .select();
 
-        if (error) {
-          throw error;
-        }
-        return data[0];
+      if (error) {
+        throw error;
       }
-    );
+      return data[0];
+    });
 
     const updatedLinks = await Promise.all(updatePromises);
 
-    return NextResponse.json({ mainLinks: updatedLinks });
+    const response: MainLinks = { mainLinks: updatedLinks };
+
+    // Validate the response against the schema
+    const validatedResponse = mainLinksSchema.parse(response);
+
+    return NextResponse.json(validatedResponse);
   } catch (error) {
     console.error("Error updating main links:", error);
     return NextResponse.json(

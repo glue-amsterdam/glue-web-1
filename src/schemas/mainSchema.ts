@@ -39,7 +39,9 @@ export const linkItemSchema = z.object({
   link: z.string().url("Must be a valid URL"),
 });
 
-export const mainLinksSchema = z.array(linkItemSchema);
+export const mainLinksSchema = z.object({
+  mainLinks: z.array(linkItemSchema),
+});
 
 export const mainSectionSchema = z.object({
   mainColors: mainColorsSchema,
