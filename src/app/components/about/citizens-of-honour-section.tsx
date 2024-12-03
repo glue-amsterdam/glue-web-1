@@ -37,7 +37,8 @@ const CitizenCard = ({ citizen, openModal }: CitizenCardProps) => {
             src={citizen.image_url}
             alt={citizen.alt}
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            quality={100}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
             className="object-cover z-0 group-hover:grayscale-[0] md:grayscale-[0.2]"
           />
           <div className="z-30 absolute bottom-0 right-0">
@@ -169,7 +170,7 @@ export default function CitizenOfHonourSection({
                     src={selectedCitizen.image_url}
                     alt={selectedCitizen.alt}
                     fill
-                    sizes="(max-width: 1000px) 100vw, (max-width: 1200px) 60vw, 40vw"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
                     className="object-cover"
                     quality={100}
                   />
