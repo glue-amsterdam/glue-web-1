@@ -1,5 +1,5 @@
 import CitizenOfHonourSection from "@/app/components/about/citizens-of-honour-section";
-import { fetchCitizensOfHonor } from "@/utils/api/about-api-calls";
+import { fetchCitizensOfHonor } from "@/lib/about/fetch-citizens-section";
 import React from "react";
 
 async function AboutCitizens() {

@@ -1,34 +1,9 @@
-import {
-  ClientCitizen,
-  ClientCitizensSection,
-  clientCitizensSectionSchema,
-} from "@/schemas/citizenSchema";
+import { clientCitizensSectionSchema } from "@/schemas/citizenSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
-const FALLBACK_CITIZEN: ClientCitizen = {
-  id: "placeholder",
-  name: "Loading...",
-  image_url: "/placeholder.jpg",
-  alt: "Loading placeholder",
-  description: "Loading description...",
-  year: "2024",
-};
-
-const CITIZENS_FALLBACK_DATA: ClientCitizensSection = {
-  title: "Creative Citizens of Honour",
-  description: "Loading citizens of honor information...",
-  citizensByYear: {
-    "2024": Array(3).fill(FALLBACK_CITIZEN),
-  },
-};
-
 export async function GET() {
   try {
-    if (process.env.NEXT_PHASE === "build") {
-      console.warn("Using fallback data for citizens section during build");
-      return NextResponse.json(CITIZENS_FALLBACK_DATA);
-    }
     const supabase = await createClient();
 
     const { data: citizens, error } = await supabase
@@ -71,9 +46,6 @@ export async function GET() {
         { error: "Failed to fetch citizens data" },
         { status: 500 }
       );
-    } else {
-      console.warn("Using fallback data for citizens");
-      return NextResponse.json(CITIZENS_FALLBACK_DATA);
     }
   }
 }
