@@ -1,3 +1,5 @@
+"use client";
+
 import { Suspense } from "react";
 import MainColorsSection from "@/app/admin/sections/main-colors-sections";
 import MainMenuSection from "@/app/admin/sections/main-menu-sections";
@@ -8,7 +10,7 @@ import Link from "next/link";
 
 export default function MainSectionPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Main Section Settings</h1>
       <Link href="/admin" className="text-blue-600 hover:underline">
         Back to Admin Dashboard

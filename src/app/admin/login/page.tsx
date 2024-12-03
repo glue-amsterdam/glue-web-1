@@ -1,20 +1,39 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import useSWR from "swr";
 import { NAVBAR_HEIGHT } from "@/constants";
 import AdminLoginForm from "@/app/admin/login/admin-login-form";
 
-export default async function AdminLoginPage() {
-  const cookieStore = await cookies();
-  const adminToken = cookieStore.get("admin_token");
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-  if (adminToken) {
-    redirect("/admin");
+export default function AdminLoginPage() {
+  const router = useRouter();
+  const { data, error, isLoading } = useSWR("/api/admin/check-auth", fetcher);
+
+  useEffect(() => {
+    if (data?.isAdmin) {
+      router.push("/admin");
+    }
+  }, [data, router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div>Error checking admin status</div>;
   }
 
   return (
     <div
       style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
-      className="bg-gradient-to-br from-blue-50 to-white flex items-center justify-center"
+      className="bg-gradient-to-br from-blue-50 to-white flex items-center justify-center pt-20"
     >
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-center text-blue-800">
