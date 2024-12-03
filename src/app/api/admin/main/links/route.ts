@@ -1,23 +1,36 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { mainLinksSchema } from "@/schemas/mainSchema";
 
 export async function GET() {
-  const supabase = await createClient();
-  const { data: mainLinks, error } = await supabase
-    .from("main_links")
-    .select("*")
-    .order("id");
+  try {
+    const supabase = await createClient();
 
-  if (error) {
-    console.error("Error fetching main links:", error);
+    const { data: mainLinks, error } = await supabase
+      .from("main_links")
+      .select("*")
+      .order("id");
+
+    if (error) {
+      throw new Error(`Error fetching main links: ${error.message}`);
+    }
+
+    const validatedLinks = mainLinksSchema.parse(mainLinks);
+
+    const linksWithoutId = validatedLinks.map(({ platform, link }) => ({
+      platform,
+      link,
+    }));
+
+    return NextResponse.json(linksWithoutId);
+  } catch (error) {
+    console.error("Error in GET /api/admin/main/links:", error);
     return NextResponse.json(
       { error: "Failed to fetch main links" },
       { status: 500 }
     );
   }
-
-  return NextResponse.json({ mainLinks });
 }
 
 export async function PUT(request: Request) {
