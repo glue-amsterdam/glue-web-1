@@ -21,11 +21,6 @@ const CAROUSEL_FALLBACK_DATA: CarouselClientType = {
 };
 
 export async function fetchUserCarousel(): Promise<CarouselClientType> {
-  if (process.env.NEXT_PHASE === "build") {
-    console.warn("Using fallback data for carousel during build");
-    return CAROUSEL_FALLBACK_DATA;
-  }
-
   try {
     const res = await fetch(`${BASE_URL}/about/carousel`, {
       next: {
@@ -35,6 +30,10 @@ export async function fetchUserCarousel(): Promise<CarouselClientType> {
     });
 
     if (!res.ok) {
+      if (res.status === 404 || process.env.NEXT_PHASE === "build") {
+        console.warn("Using fallback data for carousel during build");
+        return CAROUSEL_FALLBACK_DATA;
+      }
       throw new Error(`Failed to fetch carousel data: ${res.statusText}`);
     }
 
