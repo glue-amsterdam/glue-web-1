@@ -51,6 +51,10 @@ function isParticipantUser(user: User): user is ParticipantUser {
 
 export async function GET() {
   try {
+    if (process.env.NEXT_PHASE === "build") {
+      console.warn("Using fallback data for participants section during build");
+      return NextResponse.json(PARTICIPANT_FALLBACK_DATA);
+    }
     const supabase = await createClient();
 
     const { data: headerData, error: headerError } = await supabase

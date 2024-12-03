@@ -45,6 +45,10 @@ const INFO_FALLBACK_DATA: InfoSectionClient = {
 
 export async function GET() {
   try {
+    if (process.env.NEXT_PHASE === "build") {
+      console.warn("Using fallback data for info section during build");
+      return NextResponse.json(INFO_FALLBACK_DATA);
+    }
     const supabase = await createClient();
 
     const [{ data: infoData }, { data: infoItemsData }] = await Promise.all([

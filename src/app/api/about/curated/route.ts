@@ -31,6 +31,11 @@ const CURATED_FALLBACK_DATA: CuratedResponse = {
 
 export async function GET() {
   try {
+    if (process.env.NEXT_PHASE === "build") {
+      console.warn("Using fallback data for curated section during build");
+      return NextResponse.json(CURATED_FALLBACK_DATA);
+    }
+
     const supabase = await createClient();
 
     const { data: curatedData } = await supabase

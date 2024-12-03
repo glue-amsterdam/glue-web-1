@@ -25,6 +25,10 @@ const CITIZENS_FALLBACK_DATA: ClientCitizensSection = {
 
 export async function GET() {
   try {
+    if (process.env.NEXT_PHASE === "build") {
+      console.warn("Using fallback data for citizens section during build");
+      return NextResponse.json(CITIZENS_FALLBACK_DATA);
+    }
     const supabase = await createClient();
 
     const { data: citizens, error } = await supabase
