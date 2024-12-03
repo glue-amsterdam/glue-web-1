@@ -1,5 +1,4 @@
 import { users } from "@/lib/mockMembers";
-import { CuratedResponse } from "@/schemas/curatedSchema";
 import {
   CuratedParticipantWhitYear,
   ParticipantUser,
@@ -7,35 +6,8 @@ import {
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
-const CURATED_FALLBACK_DATA: CuratedResponse = {
-  headerData: {
-    title: "GLUE STICKY MEMBER",
-    description:
-      "Discover the GLUE STICKY MEMBER, a curated group of designers, architects, and creatives who have made a significant impact on the industry.",
-  },
-  curatedParticipants: {
-    "2024": [
-      {
-        slug: "placeholder-1",
-        userName: "Loading Member 1",
-        year: 2024,
-      },
-      {
-        slug: "placeholder-2",
-        userName: "Loading Member 2",
-        year: 2024,
-      },
-    ],
-  },
-};
-
 export async function GET() {
   try {
-    if (process.env.NEXT_PHASE === "build") {
-      console.warn("Using fallback data for curated section during build");
-      return NextResponse.json(CURATED_FALLBACK_DATA);
-    }
-
     const supabase = await createClient();
 
     const { data: curatedData } = await supabase
@@ -78,9 +50,6 @@ export async function GET() {
         { error: "Failed to fetch citizens section data" },
         { status: 500 }
       );
-    } else {
-      console.warn("Using fallback data for citizens");
-      return NextResponse.json(CURATED_FALLBACK_DATA);
     }
   }
 }

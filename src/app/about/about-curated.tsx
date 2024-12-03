@@ -1,9 +1,9 @@
 import CuratedMembers from "@/app/components/about/curated-participants";
-import { fetchUserCurated } from "@/utils/api/about-api-calls";
+import { fetchCuratedSection } from "@/lib/about/fetch-curated-section";
 import React from "react";
 
 async function AboutCurated() {
-  const curatedData = await fetchUserCurated();
+  const curatedData = await fetchCuratedSection();
 
   return (
     <CuratedMembers
