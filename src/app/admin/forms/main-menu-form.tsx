@@ -5,16 +5,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
 import { MainMenuData, mainMenuSchema } from "@/schemas/mainSchema";
+import { mutate } from "swr";
 
-interface MainSectionFormProps {
+interface MainMenuFormProps {
   initialData: MainMenuData;
 }
 
-export default function MainSectionForm({ initialData }: MainSectionFormProps) {
+export default function MainMenuForm({ initialData }: MainMenuFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -27,16 +28,23 @@ export default function MainSectionForm({ initialData }: MainSectionFormProps) {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = methods;
 
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
+
   const onSubmit = createSubmitHandler<MainMenuData>(
     "/api/admin/main/menu",
-    () => {
+    async (data) => {
+      console.log("Form submitted successfully", data);
       toast({
         title: "Main menu updated",
         description: "The main menu has been successfully updated.",
       });
+      await mutate("/api/admin/main/menu");
       router.refresh();
     },
     (error) => {
@@ -50,6 +58,7 @@ export default function MainSectionForm({ initialData }: MainSectionFormProps) {
   );
 
   const handleFormSubmit = async (data: MainMenuData) => {
+    console.log("handleFormSubmit called with data:", data);
     setIsSubmitting(true);
     try {
       await onSubmit(data);
@@ -63,8 +72,8 @@ export default function MainSectionForm({ initialData }: MainSectionFormProps) {
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-        {[0, 1, 2, 3].map((index) => (
-          <div key={index} className="space-y-4 p-4 border rounded-md">
+        {initialData.mainMenu.map((item, index) => (
+          <div key={item.menu_id} className="space-y-4 p-4 border rounded-md">
             <div className="flex items-center space-x-2">
               <Input
                 {...register(`mainMenu.${index}.label`)}
