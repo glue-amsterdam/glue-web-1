@@ -1,32 +1,33 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import AdminDashboard from "./admin-dashboard";
+import { cookies } from "next/headers";
 import { NAVBAR_HEIGHT } from "@/constants";
-import AdminLoginForm from "@/app/admin/forms/admin-login-form";
+import AdminHeader from "./components/admin-header";
+import AdminDashboard from "@/app/admin/admin-dashboard";
+import AdminLoginForm from "@/app/admin/login/admin-login-form";
 
-export default function AdminPage() {
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    setIsAdmin(true);
-  }, []);
+export default async function AdminPage() {
+  const cookieStore = await cookies();
+  const adminToken = cookieStore.get("admin_token");
+  const isAdmin = adminToken !== undefined;
+  const adminName = "Admin"; // You might want to fetch this from a database or JWT
 
   return (
     <div
       style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
-      className={`min-h-dvh bg-gradient-to-br from-blue-100 to-purple-100`}
+      className="min-h-dvh bg-gradient-to-br from-blue-50 to-white"
     >
       <div className="container mx-auto p-4">
-        <h1 className="text-4xl font-bold mb-8 text-center text-blue-800">
-          GLUE Admin
-        </h1>
         {isAdmin ? (
           <>
+            <AdminHeader adminName={adminName} />
             <AdminDashboard />
           </>
         ) : (
-          <AdminLoginForm />
+          <>
+            <h1 className="text-4xl font-bold mb-8 text-center text-blue-800">
+              GLUE Admin
+            </h1>
+            <AdminLoginForm />
+          </>
         )}
       </div>
     </div>

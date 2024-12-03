@@ -5,11 +5,11 @@ export const metadata: Metadata = {
   title: "GLUE Admin Dashboard",
   icons: [
     {
-      url: "/favicons/ligthFavicon.ico",
+      url: "/ligthFavicon.ico",
       media: "(prefers-color-scheme: light)",
     },
     {
-      url: "/favicons/favicon.ico",
+      url: "/favicon.ico",
       media: "(prefers-color-scheme: dark)",
     },
   ],
@@ -20,7 +20,7 @@ function AboutLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <div className="text-uiblack">{children}</div>;
+  return <div className="text-uiblack container mx-auto pt-32">{children}</div>;
 }
 
 export default AboutLayout;

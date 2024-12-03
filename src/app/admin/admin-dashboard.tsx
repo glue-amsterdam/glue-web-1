@@ -1,34 +1,25 @@
-"use client";
+import Link from "next/link";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Tabs } from "@/components/ui/tabs";
-import AdminDashboardTabsList from "@/app/admin/components/admin-dashboard-tabs-list";
-import AdminDashboardTabsContent from "@/app/admin/components/admin-dashboard-tabs-content";
+const adminSections = [
+  { name: "Main", href: "/admin/main" },
+  { name: "About", href: "/admin/about" },
+];
 
 export default function AdminDashboard() {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-
-  if (!isLoggedIn) {
-    return null;
-  }
-
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-2xl font-semibold mb-6 text-blue-800">Admin Panel</h2>
-      <Tabs defaultValue="main-section" className="space-y-4">
-        <AdminDashboardTabsList />
-        <AdminDashboardTabsContent />
-      </Tabs>
-      <div className="mt-8">
-        <Button
-          type="button"
-          className="bg-red-500 hover:bg-red-600"
-          onClick={() => setIsLoggedIn(false)}
-        >
-          Log out
-        </Button>
-      </div>
+      <nav className="space-y-2">
+        {adminSections.map((section) => (
+          <Link
+            key={section.name}
+            href={section.href}
+            className="block px-4 py-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+          >
+            {section.name}
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }

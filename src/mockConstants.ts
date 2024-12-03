@@ -19,7 +19,7 @@ export function getRandomNumber() {
 export const visitingHours: VisitingHoursType = [
   {
     dayId: "day-1",
-    date: new Date("2025-01-15T00:00:00Z"),
+    date: "2025-01-15T00:00:00Z",
     label: "Thursday",
     ranges: [
       { open: "10:00", close: "15:00" },
@@ -28,7 +28,7 @@ export const visitingHours: VisitingHoursType = [
   },
   {
     dayId: "day-2",
-    date: new Date("2025-01-16T00:00:00Z"),
+    date: "2025-01-16T00:00:00Z",
     label: "Friday",
 
     ranges: [
@@ -38,7 +38,7 @@ export const visitingHours: VisitingHoursType = [
   },
   {
     dayId: "day-3",
-    date: new Date("2025-01-17T00:00:00Z"),
+    date: "2025-01-17T00:00:00Z",
     label: "Saturday",
 
     ranges: [
@@ -49,11 +49,8 @@ export const visitingHours: VisitingHoursType = [
 ];
 
 export const placeholderImage: ImageData = {
-  id: "mock-image-1",
-  imageName:
+  image_name:
     "GLUE participant image, the placeholder image until upload their one",
-  imageUrl: "/placeholders/user-placeholder-1.jpg",
+  image_url: "/placeholders/user-placeholder-1.jpg",
   alt: "GLUE participant image, the placeholder image until upload their one",
-  createdAt: new Date(),
-  updatedAt: new Date(),
 };

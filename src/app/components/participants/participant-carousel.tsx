@@ -17,7 +17,7 @@ export default function ImageCarousel({ images }: { images: ImageData[] }) {
           <CarouselItem key={index} className="h-full">
             <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
               <img
-                src={image.imageUrl}
+                src={image.image_url}
                 alt={
                   image.alt ||
                   `GLUE participant image,  image number ${index + 1}`

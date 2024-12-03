@@ -10,9 +10,9 @@ import SearchForm from "@/app/components/navbar/search-form";
 import { MobileNavMenu } from "@/app/components/navbar/mobile-nav-menu";
 import SocialIcons from "@/app/components/navbar/social-icon";
 import { Dispatch, SetStateAction } from "react";
-import { MainMenuItem } from "@/utils/menu-types";
 import HomePageLogo from "@/app/components/navbar/home-page-logo";
 import { MdMenu } from "react-icons/md";
+import { MainMenuItem } from "@/schemas/mainSchema";
 
 type Props = {
   isOpen: boolean;

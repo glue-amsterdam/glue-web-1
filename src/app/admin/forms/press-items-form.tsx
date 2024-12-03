@@ -104,7 +104,7 @@ export default function PressItemsForm() {
           {fields.map((field, index) => {
             const currentImage = watchedFields[index]?.image;
             const hasValidImage =
-              currentImage?.imageUrl && currentImage.imageUrl !== "";
+              currentImage?.image_url && currentImage.image_url !== "";
 
             return (
               <div
@@ -128,7 +128,7 @@ export default function PressItemsForm() {
                     {hasValidImage ? (
                       <>
                         <img
-                          src={currentImage.imageUrl}
+                          src={currentImage.image_url}
                           alt={currentImage.alt}
                           className="w-full h-40 object-cover rounded-md"
                         />

@@ -76,14 +76,10 @@ export const ADMIN_DASHBOARD_SECTIONS = [
 ];
 
 export const NAVBAR_HEIGHT: number = 5;
+export const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-export const DAYS_IDS = [
-  "day-1",
-  "day-2",
-  "day-3",
-  "day-4",
-  "extra-day",
-] as const;
+export const DAYS_IDS = ["day-1", "day-2", "day-3", "day-4"] as const;
 
 export const DAYS = [
   "Thursday",
@@ -117,24 +113,18 @@ export const getEventIcon = (type: EventType) => {
 };
 
 export const EMPTY_IMAGE: ImageData = {
-  id: "",
-  imageName: "",
-  imageUrl: "",
+  image_name: "",
+  image_url: "",
   alt: "",
-  createdAt: new Date(),
-  updatedAt: new Date(),
 };
 
 export const DEFAULT_EMPTY_EVENT: Omit<Event, "date"> = {
   eventId: "",
   name: "",
   thumbnail: {
-    id: "",
-    imageName: "",
-    imageUrl: "",
+    image_name: "",
+    image_url: "",
     alt: "",
-    createdAt: new Date(),
-    updatedAt: new Date(),
   },
   organizer: {
     userId: "",
@@ -187,23 +177,20 @@ export const MOCKUSER_ADMIN_PARTICIPANT: User = {
   },
   images: [
     {
-      imageName: "vanmokum-carousel-image-1",
-      id: "vanmokum-carousel-image-1",
-      imageUrl: `/placeholders/user-placeholder-1.jpg`,
+      image_name: "vanmokum-carousel-image-1",
+      image_url: `/placeholders/user-placeholder-1.jpg`,
       alt: "vanmokum profile image 1",
       ...generateTimestamps(),
     },
     {
-      imageName: "vanmokum-carousel-image-2",
-      id: "vanmokum-carousel-image-2",
-      imageUrl: `/placeholders/user-placeholder-2.jpg`,
+      image_name: "vanmokum-carousel-image-2",
+      image_url: `/placeholders/user-placeholder-2.jpg`,
       alt: "vanmokum profile image 2",
       ...generateTimestamps(),
     },
     {
-      imageName: "vanmokum-carousel-image-3",
-      id: "vanmokum-carousel-image-3",
-      imageUrl: `/placeholders/user-placeholder-3.jpg`,
+      image_name: "vanmokum-carousel-image-3",
+      image_url: `/placeholders/user-placeholder-3.jpg`,
       alt: "vanmokum profile image 3",
       ...generateTimestamps(),
     },
@@ -212,6 +199,9 @@ export const MOCKUSER_ADMIN_PARTICIPANT: User = {
   password: "password",
   ...generateTimestamps(),
 };
+
+export const AN_HOUR_IN_S: number = 3600;
+export const THREE_DAYS_IN_S: number = 259200;
 
 export function isParticipantUser(
   user: User

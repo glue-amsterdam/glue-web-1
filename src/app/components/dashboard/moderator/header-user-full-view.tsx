@@ -23,7 +23,7 @@ function HeaderUserFullView({ selectedUser }: Props) {
             selectedUser.images &&
             selectedUser.images.length > 0 ? (
               <AvatarImage
-                src={selectedUser.images[0].imageUrl}
+                src={selectedUser.images[0].image_url}
                 alt={selectedUser.userName}
               />
             ) : null}

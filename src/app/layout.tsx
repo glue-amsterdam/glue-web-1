@@ -4,6 +4,8 @@ import NavbarBurguer from "@/app/components/navbar/responsive-navbar-with-hambur
 import { AuthProvider } from "@/app/context/AuthContext";
 import { MainDataProvider } from "@/app/components/main-data-provider";
 import { Toaster } from "@/components/ui/toaster";
+import { Suspense } from "react";
+import GlueLogo from "@/app/components/glue-logo";
 
 export const metadata: Metadata = {
   title: "GLUE - Home",
@@ -24,11 +26,11 @@ export const metadata: Metadata = {
   },
   icons: [
     {
-      url: "/favicons/ligthFavicon.ico",
+      url: "/ligthFavicon.ico",
       media: "(prefers-color-scheme: light)",
     },
     {
-      url: "/favicons/favicon.ico",
+      url: "/favicon.ico",
       media: "(prefers-color-scheme: dark)",
     },
   ],
@@ -41,15 +43,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <AuthProvider>
-        <MainDataProvider>
-          <body className={`font-lausanne text-uiwhite antialiased min-h-dvh`}>
-            <NavbarBurguer />
-            <div className="flex-grow overflow-x-hidden">{children}</div>
-            <Toaster />
-          </body>
-        </MainDataProvider>
-      </AuthProvider>
+      <body className="font-lausanne text-uiwhite antialiased min-h-dvh">
+        <Suspense fallback={<LoadingFallback />}>
+          <AuthProvider>
+            <MainDataProvider>
+              <NavbarBurguer />
+              <div className="flex-grow overflow-x-hidden">{children}</div>
+              <Toaster />
+            </MainDataProvider>
+          </AuthProvider>
+        </Suspense>
+      </body>
     </html>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black">
+      <div className="size-56 animate-pulse animate relative">
+        <GlueLogo fill className="filter" />
+      </div>
+    </div>
   );
 }

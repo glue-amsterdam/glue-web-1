@@ -11,7 +11,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { placeholderImage } from "@/mockConstants";
-import { ParticipantUser } from "@/schemas/usersSchemas";
+import { ParticipantClient } from "@/schemas/participantsSchema";
 import { fadeInConfig } from "@/utils/animations";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
@@ -21,7 +21,7 @@ import Link from "next/link";
 interface ParticipantsSection {
   title: string;
   description: string;
-  participants: ParticipantUser[];
+  participants: ParticipantClient[];
 }
 
 export default function ParticipantsSection({
@@ -82,10 +82,10 @@ export default function ParticipantsSection({
                 >
                   <Card className="border-none shadow-sm bg-transparent h-full hover:shadow-md transition-shadow duration-300">
                     <CardContent className="flex items-center justify-center p-0 h-full">
-                      {participant.images ? (
+                      {participant.image ? (
                         <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
                           <img
-                            src={participant.images[0].imageUrl}
+                            src={participant.image.image_url}
                             alt={`${participant.userName} profile image thumbnail`}
                             className="w-full h-full absolute object-cover"
                           />
@@ -98,7 +98,7 @@ export default function ParticipantsSection({
                       ) : (
                         <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
                           <img
-                            src={placeholderImage.imageUrl}
+                            src={placeholderImage.image_url}
                             alt={`${participant.userName} profile image thumbnail`}
                             className="w-full h-full absolute object-cover"
                           />

@@ -20,10 +20,11 @@ type Props = {
 };
 
 export default function SocialIcons(): JSX.Element {
-  const links = useLinks();
+  const mainLinks = useLinks();
+
   return (
     <div className="flex items-center space-x-4 justify-center">
-      {Object.entries(links).map(([platform, { link }]) => (
+      {mainLinks.map(({ platform, link }) => (
         <SocialIcon
           link={link}
           platform={platform as Platform}
@@ -37,12 +38,14 @@ export default function SocialIcons(): JSX.Element {
 function SocialIcon({ link, platform }: Props) {
   if (!link) return null;
   const Icon: IconType = iconMap[platform];
+  if (!Icon) return null;
+
   return (
     <Link
       href={link}
       target="_blank"
       rel="noopener noreferrer"
-      className=" md:hover:scale-105 md:transition-all"
+      className="md:hover:scale-105 md:transition-all"
     >
       <Icon className="size-6" />
     </Link>

@@ -49,7 +49,7 @@ export default function EventContent({ event, mapData }: EventContentProps) {
         <article className="flex flex-col space-y-4">
           <figure className="relative w-full h-60 lg:h-[40vh] overflow-hidden">
             <img
-              src={event.thumbnail.imageUrl}
+              src={event.thumbnail.image_url}
               alt={event.name}
               className="rounded-md object-cover w-full h-full"
             />
@@ -57,11 +57,15 @@ export default function EventContent({ event, mapData }: EventContentProps) {
           <div className="flex flex-col lg:flex-row gap-4 text-black">
             <div className="flex-1">
               <time
-                className="text-sm text-muted-foreground mb-2 block italic"
-                dateTime={`${event.date}T${event.startTime}`}
+                className="text-sm text-muted-foreground mb-2 block"
+                dateTime={`${event.date.date ?? ""}T${event.startTime}`}
               >
-                {new Date(event.date.date).toLocaleDateString()} |{" "}
-                {event.startTime} - {event.endTime}
+                {event.date.date
+                  ? new Date(event.date.date).toLocaleDateString("en-GB", {
+                      timeZone: "UTC",
+                    })
+                  : "Invalid date"}
+                | {event.startTime} - {event.endTime}
               </time>
               <p className="mb-4 text-sm">{event.description}</p>
             </div>

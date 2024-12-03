@@ -38,7 +38,7 @@ export default function EventCard({ event }: EventCardProps) {
         >
           <div className="bg-black/20 group-hover:bg-background/80 transition-all duration-200 absolute inset-0 z-10" />
           <img
-            src={event.thumbnail.imageUrl}
+            src={event.thumbnail.image_url}
             alt={event.name}
             className="absolute rounded-md top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 object-cover w-full h-full"
           />
@@ -55,11 +55,13 @@ export default function EventCard({ event }: EventCardProps) {
 
             <time
               className="text-sm text-muted-foreground mb-2 block"
-              dateTime={`${event.date.date}T${event.startTime}`}
+              dateTime={`${event.date.date ?? ""}T${event.startTime}`}
             >
-              {new Date(event.date.date).toLocaleDateString("en-GB", {
-                timeZone: "UTC",
-              })}
+              {event.date.date
+                ? new Date(event.date.date).toLocaleDateString("en-GB", {
+                    timeZone: "UTC",
+                  })
+                : "Invalid date"}
               | {event.startTime} - {event.endTime}
             </time>
             <div>

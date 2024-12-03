@@ -3,14 +3,10 @@
 import InfoSection from "@/app/components/about/info-section";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { InfoSectionContent } from "@/schemas/baseSchema";
+import { InfoSectionClient } from "@/schemas/infoSchema";
 import React, { useRef } from "react";
 
-type Props = {
-  infoItemsSection: InfoSectionContent;
-};
-
-function Info({ infoItemsSection }: Props) {
+function Info({ infoItemsSection }: { infoItemsSection: InfoSectionClient }) {
   const sectionRef = useRef<HTMLElement>(null);
   useScroll();
   return (

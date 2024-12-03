@@ -46,7 +46,7 @@ export default function PressSection({
           onClick={() => setSelectedItem(item)}
         >
           <img
-            src={item.image.imageUrl}
+            src={item.image.image_url}
             alt={item.title}
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
           />
@@ -101,7 +101,7 @@ export default function PressSection({
         <DialogContent className="text-uiblack min-w-[80vw] rounded-none m-0 p-0">
           <div className="relative w-full h-[400px] md:h-[70vh] group">
             <img
-              src={selectedItem?.image.imageUrl}
+              src={selectedItem?.image.image_url}
               alt={selectedItem?.title}
               className="absolute inset-0 w-full h-full object-cover rounded-lg mb-4"
             />

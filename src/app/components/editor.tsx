@@ -193,6 +193,7 @@ export const RichTextEditor = ({
 
   const editor = useEditor({
     extensions: [StarterKit],
+    immediatelyRender: false,
     content: value,
     onUpdate: ({ editor }) => {
       const content = editor.getHTML();

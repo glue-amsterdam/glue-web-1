@@ -7,8 +7,8 @@ import LoginForm from "@/app/components/login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
 import { useMenu } from "@/app/context/MainContext";
 import CenteredLoader from "@/app/components/centered-loader";
-import { MainSection } from "@/utils/menu-types";
 import { LoggedInUserType } from "@/schemas/usersSchemas";
+import { MainMenuItem } from "@/schemas/mainSchema";
 
 function ClickAreas() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -83,7 +83,7 @@ function ClickAreas() {
   );
 }
 
-function Labels({ mainMenu }: { mainMenu: MainSection["mainMenu"] }) {
+function Labels({ mainMenu }: { mainMenu: MainMenuItem[] }) {
   if (!mainMenu || mainMenu.length < 4) {
     return <div>Problems with menu items, not enough</div>;
   }

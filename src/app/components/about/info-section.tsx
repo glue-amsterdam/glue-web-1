@@ -6,10 +6,11 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
 import { fadeInConfig } from "@/utils/animations";
-import { InfoItem } from "@/schemas/baseSchema";
+import DOMPurify from "dompurify";
+import { InfoItem, InfoItemClient } from "@/schemas/infoSchema";
 
 interface InfoSectionProps {
-  infoItems: InfoItem[];
+  infoItems: InfoItemClient[];
   title: string;
   description: string;
 }
@@ -48,18 +49,20 @@ export default function InfoSection({
         onViewportEnter={() => (hasAnimatedRef.current = true)}
       >
         <Card
-          className="cursor-pointer rounded-none border-none group shadow-md"
+          className="cursor-pointer rounded-none border-none group shadow-md h-full"
           onClick={() => openModal(info)}
         >
-          <img
-            src={info.image.imageUrl}
-            alt={info.title}
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
-          />
-          <div className="absolute bg-uiblack/50 w-full text-uiwhite py-4 duration-300 group-hover:py-12 transition-all">
-            <h3 className="font-bold text-xl lg:text-3xl tracking-wider mb-2 text-center">
-              {info.title}
-            </h3>
+          <div className="relative w-full h-full">
+            <img
+              src={info.image.image_url}
+              alt={info.title}
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
+            />
+            <div className="absolute bottom-0 left-0 right-0 bg-uiblack/50 w-full text-uiwhite py-4 duration-300 group-hover:py-12 transition-all">
+              <h3 className="font-bold text-xl lg:text-3xl tracking-wider mb-2 text-center">
+                {info.title}
+              </h3>
+            </div>
           </div>
         </Card>
       </motion.div>
@@ -100,29 +103,36 @@ export default function InfoSection({
       <Dialog open={modalOpen} onOpenChange={closeModal}>
         <DialogContent
           forceMount
-          className="text-uiblack min-w-[80vw] rounded-none m-0 p-0"
+          className="text-uiblack w-[90vw] max-w-[1200px] h-[90vh] rounded-none m-0 p-0 overflow-hidden"
         >
           {selectedInfo && (
-            <div className="relative w-full h-[400px] md:h-[70vh] group">
-              <img
-                src={selectedInfo.image.imageUrl}
-                alt={selectedInfo.title}
-                className="absolute inset-0 w-full h-full object-cover rounded-lg mb-4"
-              />
-              <div className="absolute z-20 bottom-0 left-0 right-0 bg-uiwhite p-6 transition-all duration-300 ease-in-out md:opacity-0 md:group-hover:opacity-100">
-                <DialogTitle>
-                  <motion.p
-                    initial={{ rotate: 20 }}
-                    animate={modalOpen ? { rotate: 0 } : {}}
-                    transition={{ duration: 0.3 }}
-                    className="text-xl md:text-3xl"
-                  >
-                    {selectedInfo?.title}
-                  </motion.p>
-                  <p className="text-sm md:text-base mt-2">
-                    {selectedInfo?.description}
-                  </p>
-                </DialogTitle>
+            <div className="relative w-full h-full flex flex-col">
+              <div className="relative w-full h-1/2">
+                <img
+                  src={selectedInfo.image.image_url}
+                  alt={selectedInfo.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-uiwhite/80 p-6">
+                  <DialogTitle>
+                    <motion.p
+                      initial={{ rotate: 20 }}
+                      animate={modalOpen ? { rotate: 0 } : {}}
+                      transition={{ duration: 0.3 }}
+                      className="text-xl md:text-3xl font-bold"
+                    >
+                      {selectedInfo.title}
+                    </motion.p>
+                  </DialogTitle>
+                </div>
+              </div>
+              <div className="flex-grow overflow-y-auto p-6 bg-white">
+                <div
+                  className="text-sm md:text-base prose max-w-none"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(selectedInfo.description || ""),
+                  }}
+                />
               </div>
             </div>
           )}

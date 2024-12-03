@@ -11,9 +11,9 @@ export default function ParticipantCard({
     <Link href={`/participants/${participant.slug}`} className="block">
       <div className="bg-black rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
         <div className="relative h-48">
-          {participant.imageUrl ? (
+          {participant.image_url ? (
             <Image
-              src={participant.imageUrl}
+              src={participant.image_url}
               alt={participant.userName}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

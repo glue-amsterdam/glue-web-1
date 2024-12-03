@@ -33,6 +33,10 @@
     @apply text-4xl flex-1 sm:text-[3rem] md:text-6xl lg:text-[4.7rem] xl:text-[4.9rem] [line-height:1.3];
   }
 
+  .admin-mini-button {
+    @apply rounded-md text-xs px-2 py-1 sm:text-sm bg-[var(--color-box4)] hover:scale-105 transition-all;
+  }
+
   .citizen-triangle {
     clip-path: polygon(100% 0, 0 100%, 100% 100%);
     position: absolute;

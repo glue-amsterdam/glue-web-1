@@ -1,5 +1,5 @@
 import { SheetClose } from "@/components/ui/sheet";
-import { MainMenuItem } from "@/utils/menu-types";
+import { MainMenuItem } from "@/schemas/mainSchema";
 import Link from "next/link";
 import React from "react";
 

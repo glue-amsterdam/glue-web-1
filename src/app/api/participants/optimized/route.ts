@@ -6,7 +6,7 @@ export type OptimizedParticipant = {
   slug: string;
   userName: string;
   shortDescription: string;
-  imageUrl: string;
+  image_url: string;
   planId: string;
 };
 
@@ -23,7 +23,7 @@ export async function GET() {
         userName,
         slug,
         shortDescription,
-        imageUrl: user.images?.[0].imageUrl || "",
+        image_url: user.images?.[0].image_url || "",
         planId: user.planId,
       };
     }
