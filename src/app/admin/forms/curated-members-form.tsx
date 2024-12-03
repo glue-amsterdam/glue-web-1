@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import {
   CuratedMemberSectionHeader,
   curatedMembersSectionSchema,
 } from "@/schemas/curatedSchema";
+import { mutate } from "swr";
 
 export default function CuratedMembersForm({
   initialData,
@@ -34,16 +35,22 @@ export default function CuratedMembersForm({
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = methods;
+
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
 
   const onSubmit = createSubmitHandler<CuratedMemberSectionHeader>(
     "/api/admin/about/curated",
-    () => {
+    async () => {
       console.log("Form submitted successfully");
       toast({
         title: "Links updated",
         description: "The curated section have been successfully updated.",
       });
+      await mutate("/api/admin/about/curated");
       router.refresh();
     },
     (error) => {
