@@ -22,24 +22,23 @@ const CITIZENS_FALLBACK_DATA: ClientCitizensSection = {
   },
 };
 export async function fetchCitizensOfHonor(): Promise<ClientCitizensSection> {
-  if (process.env.NEXT_PHASE === "build") {
-    console.warn("Using fallback data for citizens during build");
-    return CITIZENS_FALLBACK_DATA;
-  }
-
   try {
-    const response = await fetch(`${BASE_URL}/about/citizens`, {
+    const res = await fetch(`${BASE_URL}/about/citizens`, {
       next: {
         revalidate: 3600,
         tags: ["citizens"],
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch citizens data: ${response.statusText}`);
+    if (!res.ok) {
+      if (res.status === 404 || process.env.NEXT_PHASE === "build") {
+        console.warn("Using fallback data for carousel during build");
+        return CITIZENS_FALLBACK_DATA;
+      }
+      throw new Error(`Failed to fetch carousel data: ${res.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await res.json();
     return clientCitizensSectionSchema.parse(data);
   } catch (error) {
     console.error("Error fetching citizens data:", error);
