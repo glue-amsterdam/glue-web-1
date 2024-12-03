@@ -11,13 +11,12 @@ import { CuratedSkeleton } from "@/app/about/components/skeletons/curatedSkeleto
 import { InfoSectionSkeleton } from "@/app/about/components/skeletons/infoSkeleton";
 import { CitizensSkeleton } from "@/app/about/components/skeletons/citizenSkeleton";
 import { ErrorBoundary } from "react-error-boundary";
+import ErrorFallback from "@/app/components/error-fallback";
 
 export default function AboutPage() {
   return (
     <>
-      <ErrorBoundary
-        fallback={<div>Error loading carousel. Please try again later.</div>}
-      >
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
         <Suspense fallback={<CarouselSkeleton />}>
           <AboutCarousel />
         </Suspense>

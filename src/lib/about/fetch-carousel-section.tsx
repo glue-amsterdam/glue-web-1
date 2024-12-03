@@ -1,5 +1,6 @@
 import { BASE_URL } from "@/constants";
 import { CarouselClientType } from "@/schemas/baseSchema";
+import { carouselSectionSchema } from "@/schemas/carouselSchema";
 
 const CAROUSEL_FALLBACK_DATA: CarouselClientType = {
   title: "Welcome to GLUE",
@@ -25,7 +26,7 @@ export async function fetchUserCarousel(): Promise<CarouselClientType> {
     const res = await fetch(`${BASE_URL}/about/carousel`, {
       next: {
         revalidate: 3600,
-        tags: ["about-carousel"],
+        tags: ["carousel"],
       },
     });
 
@@ -39,11 +40,7 @@ export async function fetchUserCarousel(): Promise<CarouselClientType> {
 
     const data = await res.json();
 
-    if ("error" in data) {
-      throw new Error(data.error);
-    }
-
-    return data;
+    return carouselSectionSchema.parse(data);
   } catch (error) {
     console.error("Error fetching carousel data:", error);
     return CAROUSEL_FALLBACK_DATA;
