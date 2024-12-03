@@ -2,32 +2,8 @@ import { CarouselClientType } from "@/schemas/baseSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
-const CAROUSEL_FALLBACK_DATA: CarouselClientType = {
-  title: "Welcome to GLUE",
-  description: "Discover Amsterdam's vibrant design community",
-  slides: [
-    {
-      image_url: "/placeholder.jpg",
-      alt: "GLUE Amsterdam Design Community",
-    },
-    {
-      image_url: "/placeholder.jpg",
-      alt: "GLUE Events and Activities",
-    },
-    {
-      image_url: "/placeholder.jpg",
-      alt: "GLUE Community Members",
-    },
-  ],
-};
-
 export async function GET() {
   try {
-    if (process.env.NEXT_PHASE === "build") {
-      console.warn("Using fallback data for carousel section during build");
-      return NextResponse.json(CAROUSEL_FALLBACK_DATA);
-    }
-
     const supabase = await createClient();
 
     const [
@@ -79,9 +55,6 @@ export async function GET() {
           status: 500,
         }
       );
-    } else {
-      console.warn("Using fallback data for carousel");
-      return NextResponse.json(CAROUSEL_FALLBACK_DATA);
     }
   }
 }

@@ -1,5 +1,5 @@
 import CarouselSection from "@/app/components/about/carousel-section";
-import { fetchUserCarousel } from "@/utils/api/about-api-calls";
+import { fetchUserCarousel } from "@/lib/about/fetch-carousel-section";
 import React from "react";
 
 async function AboutCarousel() {
