@@ -23,10 +23,7 @@ const CAROUSEL_FALLBACK_DATA: CarouselClientType = {
 export async function fetchUserCarousel(): Promise<CarouselClientType> {
   try {
     const res = await fetch(`${BASE_URL}/about/carousel`, {
-      next: {
-        revalidate: 3600,
-        tags: ["about-carousel"],
-      },
+      cache: "no-store",
     });
 
     if (!res.ok) {

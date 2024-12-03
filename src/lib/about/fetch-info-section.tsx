@@ -53,10 +53,10 @@ export async function fetchInfoSection(): Promise<InfoSectionClient> {
 
     if (!res.ok) {
       if (res.status === 404 || process.env.NEXT_PHASE === "build") {
-        console.warn("Using fallback data for carousel during build");
+        console.warn("Using fallback data for info section during build");
         return INFO_FALLBACK_DATA;
       }
-      throw new Error(`Failed to fetch carousel data: ${res.statusText}`);
+      throw new Error(`Failed to fetch info section data: ${res.statusText}`);
     }
 
     const data = await res.json();
