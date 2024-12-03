@@ -131,3 +131,48 @@ export async function PUT(
     );
   }
 }
+
+export async function DELETE(
+  request: Request,
+  props: { params: Promise<{ year: string }> }
+) {
+  const params = await props.params;
+  const supabase = await createClient();
+  const { year } = params;
+
+  try {
+    // Delete citizens for the year
+    const { error: deleteError } = await supabase
+      .from("about_citizens")
+      .delete()
+      .eq("year", year)
+      .eq("section_id", "about-citizens-section-56ca13952fcc");
+
+    if (deleteError) throw deleteError;
+
+    // Delete corresponding images from the storage bucket
+    const { data: images, error: fetchError } = await supabase.storage
+      .from("amsterdam-assets")
+      .list(`about/citizens/${year}`);
+
+    if (fetchError) throw fetchError;
+
+    if (images && images.length > 0) {
+      const { error: storageError } = await supabase.storage
+        .from("amsterdam-assets")
+        .remove(images.map((img) => `about/citizens/${year}/${img.name}`));
+
+      if (storageError) throw storageError;
+    }
+
+    return NextResponse.json({
+      message: `Citizens and images for year ${year} deleted successfully`,
+    });
+  } catch (error) {
+    console.error(`Error in DELETE /admin/about/citizens/${year}:`, error);
+    return NextResponse.json(
+      { error: `An error occurred while deleting citizens for year ${year}` },
+      { status: 500 }
+    );
+  }
+}
