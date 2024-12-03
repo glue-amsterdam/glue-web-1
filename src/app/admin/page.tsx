@@ -1,14 +1,45 @@
-import { cookies } from "next/headers";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import useSWR from "swr";
 import { NAVBAR_HEIGHT } from "@/constants";
 import AdminHeader from "./components/admin-header";
 import AdminDashboard from "@/app/admin/admin-dashboard";
-import AdminLoginForm from "@/app/admin/login/admin-login-form";
 
-export default async function AdminPage() {
-  const cookieStore = await cookies();
-  const adminToken = cookieStore.get("admin_token");
-  const isAdmin = adminToken !== undefined;
-  const adminName = "Admin"; // You might want to fetch this from a database or JWT
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error("An error occurred while fetching the data.");
+  }
+  return res.json();
+};
+
+export default function AdminPage() {
+  const router = useRouter();
+  const { data, error, isLoading } = useSWR("/api/admin/check-auth", fetcher);
+
+  useEffect(() => {
+    if (!isLoading && !error && !data?.isAdmin) {
+      router.push("/admin/login");
+    }
+  }, [data, isLoading, error, router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div>Error loading admin status: {error.message}</div>;
+  }
+
+  if (!data?.isAdmin) {
+    return null; // This will prevent any flash of content before redirect
+  }
 
   return (
     <div
@@ -16,19 +47,8 @@ export default async function AdminPage() {
       className="min-h-dvh bg-gradient-to-br from-blue-50 to-white"
     >
       <div className="container mx-auto p-4">
-        {isAdmin ? (
-          <>
-            <AdminHeader adminName={adminName} />
-            <AdminDashboard />
-          </>
-        ) : (
-          <>
-            <h1 className="text-4xl font-bold mb-8 text-center text-blue-800">
-              GLUE Admin
-            </h1>
-            <AdminLoginForm />
-          </>
-        )}
+        <AdminHeader adminName={"Admin"} />
+        <AdminDashboard />
       </div>
     </div>
   );

@@ -1,35 +1,33 @@
-export async function handleFormSubmit<T>(
+import { FieldValues } from "react-hook-form";
+
+export function createSubmitHandler<T extends FieldValues>(
   endpoint: string,
-  data: T
-): Promise<Response> {
-  const response = await fetch(endpoint, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to update: ${response.statusText}`);
-  }
-
-  return response;
-}
-
-export function createSubmitHandler<T>(
-  endpoint: string,
-  onSuccess?: () => void,
+  onSuccess?: (data: T) => void | Promise<void>,
   onError?: (error: unknown) => void
-): (data: T) => Promise<void> {
+) {
   return async (data: T) => {
     try {
-      await handleFormSubmit(endpoint, data);
-      onSuccess?.();
+      const response = await fetch(endpoint, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update: ${response.statusText}`);
+      }
+
+      if (onSuccess) {
+        await onSuccess(data);
+      }
     } catch (error) {
       console.error(`Error updating:`, error);
-      onError?.(error);
+      if (onError) {
+        onError(error);
+      }
     }
   };
 }

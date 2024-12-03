@@ -43,18 +43,26 @@ export const mainSection: MainSectionData = {
       className: "downbutton",
     },
   ],
-  mainLinks: [
-    {
-      platform: "newsletter",
-      link: "https://amsterdam.us5.list-manage.com/subscribe?u=b588bd4354fa4df94fbd3803c&id=9cda67fd4c",
-    },
-    {
-      platform: "linkedin",
-      link: "https://www.linkedin.com/company/glue-amsterdam-connected-by-design/",
-    },
-    { platform: "instagram", link: "https://www.instagram.com/glue.amsterdam" },
-    { platform: "youtube", link: "https://www.youtube.com/@GLUETV_amsterdam" },
-  ],
+  mainLinks: {
+    mainLinks: [
+      {
+        platform: "newsletter",
+        link: "https://amsterdam.us5.list-manage.com/subscribe?u=b588bd4354fa4df94fbd3803c&id=9cda67fd4c",
+      },
+      {
+        platform: "linkedin",
+        link: "https://www.linkedin.com/company/glue-amsterdam-connected-by-design/",
+      },
+      {
+        platform: "instagram",
+        link: "https://www.instagram.com/glue.amsterdam",
+      },
+      {
+        platform: "youtube",
+        link: "https://www.youtube.com/@GLUETV_amsterdam",
+      },
+    ],
+  },
   eventDays: [
     {
       dayId: "day-1",

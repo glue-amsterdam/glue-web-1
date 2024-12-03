@@ -22,8 +22,6 @@ function CitizenOfHonour({ citizensSection }: CitizenOfHonourContentProps) {
       style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
       className={`h-dvh bg-[var(--color-box3)]  mx-auto relative snap-center`}
     >
-      <div className="citizens-bg bg-uiwhite" />
-
       <CitizenOfHonourSection
         citizensByYear={citizensSection.citizensByYear}
         description={citizensSection.description}

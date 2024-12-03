@@ -15,8 +15,7 @@ export async function GET() {
       supabase
         .from("about_info_items")
         .select("id, title, description, image_url, alt")
-        .eq("info_id", "about-info-56ca13952fcc")
-        .order("created_at"),
+        .order("id"),
     ]);
 
     if (!infoData || !infoItemsData) {

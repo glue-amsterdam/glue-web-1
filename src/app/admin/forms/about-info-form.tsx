@@ -20,6 +20,7 @@ import {
 import { RichTextEditor } from "@/app/components/editor";
 import { Textarea } from "@/components/ui/textarea";
 import { InfoItem, InfoSection, infoSectionSchema } from "@/schemas/infoSchema";
+import { mutate } from "swr";
 
 interface InfoSectionFormProps {
   initialData: InfoSection;
@@ -163,6 +164,8 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
         }),
       });
 
+      mutate("/api/admin/about/info");
+
       if (!response.ok) {
         throw new Error("Failed to update info item");
       }
@@ -203,7 +206,7 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
         },
         body: JSON.stringify(data),
       });
-
+      mutate("/api/admin/about/info");
       if (!response.ok) {
         throw new Error("Failed to update main info (title and description)");
       }
@@ -276,22 +279,6 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
                   {errors.infoItems[index]?.title?.message}
                 </p>
               )}
-
-              <FormField
-                control={control}
-                name={`infoItems.${index}.description`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Item Description</FormLabel>
-                    <RichTextEditor
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <div className="w-full h-40 object-cover rounded-md relative mb-2">
                 {field.image.image_url ? (
                   <Image
@@ -307,12 +294,28 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
                   </div>
                 )}
               </div>
-
-              {/* <Input
-                {...register(`infoItems.${index}.image.alt`)}
-                placeholder="Image alt text"
-                className="mb-2"
-              /> */}
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => fileInputRefs.current[index]?.click()}
+                className="w-full mb-2"
+              >
+                {field.image.image_url ? "Change Image" : "Upload Image"}
+              </Button>
+              <FormField
+                control={control}
+                name={`infoItems.${index}.description`}
+                render={({ field }) => (
+                  <FormItem className="max-h-[80vh] overflow-y-scroll">
+                    <FormLabel>Item Description</FormLabel>
+                    <RichTextEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <input
                 type="file"
@@ -323,15 +326,6 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
                 }}
                 className="hidden"
               />
-
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => fileInputRefs.current[index]?.click()}
-                className="w-full mb-2"
-              >
-                {field.image.image_url ? "Change Image" : "Upload Image"}
-              </Button>
 
               <SaveChangesButton
                 isSubmitting={isSubmitting}

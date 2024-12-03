@@ -53,7 +53,9 @@ export async function POST(request: Request) {
       { status: 403 }
     );
   }
+
   const supabase = await createClient();
+
   try {
     const body = await request.json();
 
@@ -64,81 +66,104 @@ export async function POST(request: Request) {
     const { error: carouselError } = await supabase
       .from("about_carousel")
       .upsert({
+        id: "about-carousel-56ca13952fcc",
         title: validatedData.title,
         description: validatedData.description,
-      })
-      .eq("id", "about-carousel-56ca13952fcc");
+      });
 
     if (carouselError) throw carouselError;
 
     // Get existing slides
     const { data: existingSlides, error: fetchError } = await supabase
       .from("about_carousel_slides")
-      .select("image_url")
+      .select("id, image_url")
       .eq("carousel_id", "about-carousel-56ca13952fcc");
 
     if (fetchError) throw fetchError;
 
-    // Update the slides
-    const { error: slidesError } = await supabase
-      .from("about_carousel_slides")
-      .upsert(
-        validatedData.slides.map((slide) => ({
-          image_url: slide.image_url,
-          alt: slide.alt,
-          image_name: slide.image_name,
-          carousel_id: "about-carousel-56ca13952fcc",
-        }))
-      );
-
-    if (slidesError) throw slidesError;
+    // Prepare new slides data
+    const newSlidesData = validatedData.slides.map((slide) => ({
+      carousel_id: "about-carousel-56ca13952fcc",
+      image_url: slide.image_url,
+      alt: slide.alt,
+      image_name: slide.image_name,
+    }));
 
     // Identify slides to be deleted
-    const currentSlideIds = validatedData.slides.map(
+    const currentSlideUrls = validatedData.slides.map(
       (slide) => slide.image_url
     );
-    const slidesToDelete = existingSlides?.filter(
-      (slide) => !currentSlideIds.includes(slide.image_url)
+    const slidesToDelete = existingSlides.filter(
+      (slide) => !currentSlideUrls.includes(slide.image_url)
     );
 
-    if (slidesToDelete && slidesToDelete.length > 0) {
-      // Delete slides from the database
+    // Delete slides from the database and storage
+    for (const slide of slidesToDelete) {
+      // Delete from database
       const { error: deleteError } = await supabase
         .from("about_carousel_slides")
         .delete()
-        .in(
-          "image_url",
-          slidesToDelete.map((slide) => slide.image_url)
+        .eq("id", slide.id);
+
+      if (deleteError) {
+        console.error(
+          `Error deleting slide ${slide.id} from database:`,
+          deleteError
         );
+        throw deleteError;
+      }
 
-      if (deleteError) throw deleteError;
+      // Delete from storage
+      try {
+        const url = new URL(slide.image_url);
+        const pathParts = url.pathname.split("/");
+        const filename = pathParts[pathParts.length - 1];
+        const filePath = `about/carousel-images/${filename}`;
 
-      // Delete corresponding images from the storage bucket
-      for (const slide of slidesToDelete) {
-        try {
-          const url = new URL(slide.image_url);
-          const pathParts = url.pathname.split("/");
-          const filename = pathParts[pathParts.length - 1];
-          const filePath = `about/carousel-images/${filename}`;
+        console.log(`Attempting to delete image: ${filePath}`);
 
-          console.log(`Attempting to delete image: ${filePath}`);
+        const { error: storageError } = await supabase.storage
+          .from("amsterdam-assets")
+          .remove([filePath]);
 
-          const { error: storageError } = await supabase.storage
-            .from("amsterdam-assets")
-            .remove([filePath]);
+        if (storageError) {
+          console.error(`Error deleting image ${filePath}:`, storageError);
+          throw storageError;
+        } else {
+          console.log(`Successfully deleted image: ${filePath}`);
+        }
+      } catch (error) {
+        console.error(
+          `Error processing image deletion for ${slide.image_url}:`,
+          error
+        );
+        throw error;
+      }
+    }
 
-          if (storageError) {
-          } else {
-          }
-        } catch (error) {}
+    // Upsert new and updated slides
+    for (const slide of newSlidesData) {
+      const { error: upsertError } = await supabase
+        .from("about_carousel_slides")
+        .upsert(slide, { onConflict: "carousel_id,image_url" });
+
+      if (upsertError) {
+        console.error(
+          `Error upserting slide: ${JSON.stringify(slide)}`,
+          upsertError
+        );
+        throw upsertError;
       }
     }
 
     return NextResponse.json({ message: "Carousel updated successfully" });
   } catch (error) {
-    console.error("Error in POST /admin/about/carousel:", error);
+    console.error("Error in POST /api/admin/about/carousel:", error);
     return NextResponse.json(
-      { error: "An error occurred while updating carousel data" },
+      {
+        error: "An error occurred while updating carousel data",
+        details: error,
+      },
       { status: 500 }
     );
   }

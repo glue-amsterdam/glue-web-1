@@ -10,11 +10,12 @@ import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ParticipantsSectionHeader,
   participantsSectionSchema,
 } from "@/schemas/participantsAdminSchema";
+import { mutate } from "swr";
 
 function ParticipantsSectionForm({
   initialData,
@@ -34,23 +35,28 @@ function ParticipantsSectionForm({
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = methods;
+
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
 
   const onSubmit = createSubmitHandler<ParticipantsSectionHeader>(
     "/api/admin/about/participants",
-    () => {
-      console.log("Form submitted successfully");
+    async () => {
       toast({
-        title: "Links updated",
-        description: "The main links have been successfully updated.",
+        title: "Participants header updated",
+        description: "The participants header have been successfully updated.",
       });
+      await mutate("/api/admin/about/participants");
       router.refresh();
     },
     (error) => {
-      console.error("Form submission error:", error);
       toast({
         title: "Error",
-        description: "Failed to update main links. Please try again.",
+        description:
+          "Failed to update articipants header. Please try again." + error,
         variant: "destructive",
       });
     }

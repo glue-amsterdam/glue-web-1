@@ -1,23 +1,22 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useForm, useFieldArray, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { ImageData } from "@/schemas/baseSchema";
-import { PlusCircle, X, ImageIcon } from "lucide-react";
-import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import Image from "next/image";
-import { uploadImage } from "@/utils/supabase/storage/client";
+import { ImageIcon, PlusCircle, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import {
   CarouselSection,
   carouselSectionSchema,
 } from "@/schemas/carouselSchema";
+import { deleteImage, uploadImage } from "@/utils/supabase/storage/client";
+import { ImageData } from "@/schemas/baseSchema";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 
 interface CarouselFormProps {
   initialData: CarouselSection;
@@ -41,34 +40,79 @@ export default function AboutCarouselSectionForm({
     handleSubmit,
     register,
     formState: { errors },
+    reset,
   } = methods;
 
-  const { fields, append, remove } = useFieldArray({
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
+
+  const { fields, append, remove, update } = useFieldArray({
     control,
     name: "slides",
   });
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index?: number
+  ) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const imageUrl = URL.createObjectURL(file);
 
-      append({
-        image_url: imageUrl,
-        alt: "",
-        image_name: file.name,
-        file: file,
-      });
+      if (index !== undefined) {
+        // Replace existing image
+        update(index, {
+          ...fields[index],
+          image_url: imageUrl,
+          image_name: file.name,
+          file: file,
+        });
+      } else {
+        // Add new image
+        append({
+          image_url: imageUrl,
+          alt: "",
+          image_name: file.name,
+          file: file,
+        });
+      }
     }
+  };
+
+  const handleDeleteImage = async (index: number) => {
+    const slide = fields[index];
+    if (slide.image_url && !slide.file) {
+      // Only delete from storage if it's an existing image (not a newly added file)
+      const { error } = await deleteImage(slide.image_url);
+      toast({
+        title: "Succes",
+        description: "Carousel image deleted successfully.",
+      });
+      if (error) {
+        console.error("Failed to delete image:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete image. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    remove(index);
   };
 
   const onSubmit = async (data: CarouselSection) => {
     setIsSubmitting(true);
     try {
-      // Upload images before submitting form data
+      // Upload new images and update existing ones
       for (let i = 0; i < data.slides.length; i++) {
         const slide = data.slides[i] as ImageData & { file?: File };
         if (slide.file) {
+          // If there's an existing image_url, delete it first
+          if (slide.image_url && !slide.image_url.startsWith("blob:")) {
+            await deleteImage(slide.image_url);
+          }
           const { imageUrl, error } = await uploadImage({
             file: slide.file,
             bucket: "amsterdam-assets",
@@ -117,22 +161,20 @@ export default function AboutCarouselSectionForm({
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div>
           <Label htmlFor="title">Title</Label>
-          <Input id="title" {...register("title")} className="mt-1 bg-white" />
+          <Input {...register("title")} id="title" placeholder="Title" />
           {errors.title && (
-            <p className="text-red-500">{errors.title.message}</p>
+            <p className="text-red-500 text-sm">{errors.title.message}</p>
           )}
         </div>
-
         <div>
           <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
+          <Input
             {...register("description")}
-            className="mt-1"
-            rows={4}
+            id="description"
+            placeholder="Description"
           />
           {errors.description && (
-            <p className="text-red-500">{errors.description.message}</p>
+            <p className="text-red-500 text-sm">{errors.description.message}</p>
           )}
         </div>
 
@@ -167,15 +209,35 @@ export default function AboutCarouselSectionForm({
                   </p>
                 )}
 
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => remove(index)}
-                >
-                  <X className="mr-2 h-4 w-4" /> Remove Slide
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      if (fileInputRef.current) {
+                        fileInputRef.current.click();
+                        fileInputRef.current.onchange = (e) =>
+                          handleImageChange(
+                            e as unknown as React.ChangeEvent<HTMLInputElement>,
+                            index
+                          );
+                      }
+                    }}
+                  >
+                    Replace Image
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleDeleteImage(index)}
+                  >
+                    <X className="mr-2 h-4 w-4" /> Remove Slide
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -187,6 +249,10 @@ export default function AboutCarouselSectionForm({
               onClick={() => {
                 if (fileInputRef.current) {
                   fileInputRef.current.click();
+                  fileInputRef.current.onchange = (e) =>
+                    handleImageChange(
+                      e as unknown as React.ChangeEvent<HTMLInputElement>
+                    );
                 }
               }}
               className="flex-1"
@@ -203,7 +269,6 @@ export default function AboutCarouselSectionForm({
         <input
           type="file"
           accept="image/*"
-          onChange={handleImageChange}
           ref={fileInputRef}
           className="hidden"
         />

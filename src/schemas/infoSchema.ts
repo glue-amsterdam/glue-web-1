@@ -36,7 +36,7 @@ export const infoItemClientSchema = z.object({
 export const infoSectionClientSchema = z.object({
   title: z.string(),
   description: z.string(),
-  infoItems: z.array(infoItemClientSchema).min(1).max(3),
+  infoItems: z.array(infoItemClientSchema).min(3).max(3),
 });
 
 export type InfoItemClient = z.infer<typeof infoItemClientSchema>;

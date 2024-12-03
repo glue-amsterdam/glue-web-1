@@ -41,7 +41,6 @@ const INFO_FALLBACK_DATA: InfoSectionClient = {
     },
   ],
 };
-
 export async function fetchInfoSection(): Promise<InfoSectionClient> {
   try {
     const res = await fetch(`${BASE_URL}/about/info`, {
@@ -52,17 +51,22 @@ export async function fetchInfoSection(): Promise<InfoSectionClient> {
     });
 
     if (!res.ok) {
-      if (res.status === 404 || process.env.NEXT_PHASE === "build") {
-        console.warn("Using fallback data for info section during build");
+      console.error(
+        `Error fetching info section: ${res.status} ${res.statusText}`
+      );
+      if (res.status === 404 || process.env.NODE_ENV === "development") {
+        console.warn("Using fallback data for info section");
         return INFO_FALLBACK_DATA;
       }
       throw new Error(`Failed to fetch info section data: ${res.statusText}`);
     }
 
     const data = await res.json();
-    return infoSectionClientSchema.parse(data);
+    const validatedData = infoSectionClientSchema.parse(data);
+
+    return validatedData;
   } catch (error) {
-    console.error("Error fetching info section data:", error);
+    console.error("Error in fetchInfoSection:", error);
     return INFO_FALLBACK_DATA;
   }
 }

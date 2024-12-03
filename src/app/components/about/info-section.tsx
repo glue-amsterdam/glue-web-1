@@ -8,6 +8,8 @@ import ScrollDown from "@/app/components/scroll-down";
 import { fadeInConfig } from "@/utils/animations";
 import DOMPurify from "dompurify";
 import { InfoItem, InfoItemClient } from "@/schemas/infoSchema";
+import Image from "next/image";
+import { DialogDescription } from "@radix-ui/react-dialog";
 
 interface InfoSectionProps {
   infoItems: InfoItemClient[];
@@ -53,10 +55,12 @@ export default function InfoSection({
           onClick={() => openModal(info)}
         >
           <div className="relative w-full h-full">
-            <img
+            <Image
               src={info.image.image_url}
               alt={info.title}
-              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
+              className="object-cover group-hover:scale-105 transition-all duration-700"
             />
             <div className="absolute bottom-0 left-0 right-0 bg-uiblack/50 w-full text-uiwhite py-4 duration-300 group-hover:py-12 transition-all">
               <h3 className="font-bold text-xl lg:text-3xl tracking-wider mb-2 text-center">
@@ -68,6 +72,16 @@ export default function InfoSection({
       </motion.div>
     );
   };
+
+  // Error handling for missing or invalid infoItems
+  if (!Array.isArray(infoItems) || infoItems.length === 0) {
+    console.error("Invalid or missing infoItems:", infoItems);
+    return (
+      <div className="text-center text-red-500 p-4">
+        Error: Unable to load information items. Please try again later.
+      </div>
+    );
+  }
 
   return (
     <motion.article
@@ -84,7 +98,7 @@ export default function InfoSection({
         viewport={{ once: true }}
         className="h1-titles font-bold tracking-widest my-4"
       >
-        {title}
+        {title || "Information"}
       </motion.h1>
       <motion.p
         initial={{ y: 20, opacity: 0 }}
@@ -92,7 +106,7 @@ export default function InfoSection({
         transition={{ delay: 1.3 }}
         className="mt-4 text-md md:text-lg text-uiwhite flex-grow-[0.3]"
       >
-        {description}
+        {description || "No description available."}
       </motion.p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[80%]">
         {infoItems.map((info, index) => (
@@ -108,10 +122,12 @@ export default function InfoSection({
           {selectedInfo && (
             <div className="relative w-full h-full flex flex-col">
               <div className="relative w-full h-1/2">
-                <img
+                <Image
                   src={selectedInfo.image.image_url}
                   alt={selectedInfo.title}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
+                  className="object-cover"
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-uiwhite/80 p-6">
                   <DialogTitle>
@@ -124,6 +140,9 @@ export default function InfoSection({
                       {selectedInfo.title}
                     </motion.p>
                   </DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Detailed information about {selectedInfo.title}
+                  </DialogDescription>
                 </div>
               </div>
               <div className="flex-grow overflow-y-auto p-6 bg-white">

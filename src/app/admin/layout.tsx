@@ -15,12 +15,12 @@ export const metadata: Metadata = {
   ],
 };
 
-function AboutLayout({
+function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <div className="text-uiblack container mx-auto pt-32">{children}</div>;
+  return <div className="text-uiblack pt-32">{children}</div>;
 }
 
-export default AboutLayout;
+export default AdminLayout;

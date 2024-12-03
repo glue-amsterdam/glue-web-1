@@ -3,7 +3,12 @@
 import { useMemo, useRef, useState, useCallback } from "react";
 import DOMPurify from "dompurify";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -37,7 +42,8 @@ const CitizenCard = ({ citizen, openModal }: CitizenCardProps) => {
             src={citizen.image_url}
             alt={citizen.alt}
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            quality={100}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
             className="object-cover z-0 group-hover:grayscale-[0] md:grayscale-[0.2]"
           />
           <div className="z-30 absolute bottom-0 right-0">
@@ -151,6 +157,9 @@ export default function CitizenOfHonourSection({
                   <DialogTitle className="text-2xl lg:text-3xl tracking-widest">
                     {selectedCitizen?.name}
                   </DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Detailed information about {selectedCitizen.name}
+                  </DialogDescription>
                   <p className="text-sm font-bold flex flex-col">
                     <span>Year</span>
                     <span>{selectedCitizen?.year}</span>
@@ -169,7 +178,7 @@ export default function CitizenOfHonourSection({
                     src={selectedCitizen.image_url}
                     alt={selectedCitizen.alt}
                     fill
-                    sizes="(max-width: 1000px) 100vw, (max-width: 1200px) 60vw, 40vw"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
                     className="object-cover"
                     quality={100}
                   />

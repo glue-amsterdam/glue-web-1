@@ -51,7 +51,7 @@ export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
     });
 
     if (!res.ok) {
-      if (res.status === 404 || process.env.NEXT_PHASE === "build") {
+      if (res.status === 404 || process.env.NODE_ENV === "development") {
         console.warn("Using fallback data for curated section");
         return PARTICIPANT_FALLBACK_DATA;
       }
@@ -61,7 +61,9 @@ export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
     }
 
     const data = await res.json();
-    return participantsResponseSchema.parse(data);
+    const validatedData = participantsResponseSchema.parse(data);
+
+    return validatedData;
   } catch (error) {
     console.error("Error fetching participants data:", error);
     return PARTICIPANT_FALLBACK_DATA;
