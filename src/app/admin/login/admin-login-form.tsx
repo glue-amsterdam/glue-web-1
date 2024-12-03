@@ -16,6 +16,7 @@ import { Loader2, Lock, Mail } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { mutate } from "swr";
 
 function AdminLoginForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -41,7 +42,9 @@ function AdminLoginForm() {
       });
 
       if (response.ok) {
-        router.refresh(); // This will cause the server component to re-render and check the auth status
+        // Invalidate the SWR cache for the admin status
+        await mutate("/api/admin/check-auth");
+        router.push("/admin");
       } else {
         throw new Error("Login failed");
       }
