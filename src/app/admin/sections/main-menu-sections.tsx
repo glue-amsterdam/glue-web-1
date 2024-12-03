@@ -1,9 +1,8 @@
 import MainMenuForm from "@/app/admin/forms/main-menu-form";
-import { MainMenuData } from "@/schemas/mainSchema";
-import { fetchMenuLinksSection } from "@/utils/api/admin-api-calls";
+import { fetchMainMenu } from "@/lib/admin/main/fetch-main-menu";
 
 export default async function MainMenuSection() {
-  const mainSectionData: MainMenuData = await fetchMenuLinksSection();
+  const mainSectionData = await fetchMainMenu();
 
   return <MainMenuForm initialData={mainSectionData} />;
 }
