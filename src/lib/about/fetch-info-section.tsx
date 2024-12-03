@@ -43,11 +43,6 @@ const INFO_FALLBACK_DATA: InfoSectionClient = {
 };
 
 export async function fetchInfoSection(): Promise<InfoSectionClient> {
-  if (process.env.NEXT_PHASE === "build") {
-    console.warn("Using fallback data for info section during build");
-    return INFO_FALLBACK_DATA;
-  }
-
   try {
     const res = await fetch(`${BASE_URL}/about/info`, {
       next: {
@@ -57,7 +52,11 @@ export async function fetchInfoSection(): Promise<InfoSectionClient> {
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to fetch info section data: ${res.statusText}`);
+      if (res.status === 404 || process.env.NEXT_PHASE === "build") {
+        console.warn("Using fallback data for carousel during build");
+        return INFO_FALLBACK_DATA;
+      }
+      throw new Error(`Failed to fetch carousel data: ${res.statusText}`);
     }
 
     const data = await res.json();
