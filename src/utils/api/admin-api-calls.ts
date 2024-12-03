@@ -2,64 +2,10 @@ import { BASE_URL } from "@/constants";
 import { CarouselSection } from "@/schemas/carouselSchema";
 import { CitizensSection } from "@/schemas/citizenSchema";
 import { CuratedMemberSectionHeader } from "@/schemas/curatedSchema";
-import { EventDaysResponse } from "@/schemas/eventSchemas";
 import { InfoSection } from "@/schemas/infoSchema";
-import { MainColors, MainLinks, MainMenuData } from "@/schemas/mainSchema";
 import { ParticipantsSectionHeader } from "@/schemas/participantsAdminSchema";
 import { cache } from "react";
 import { Citizen } from "@/schemas/citizenSchema";
-
-export const fetchEventDays = cache(async (): Promise<EventDaysResponse> => {
-  try {
-    const res = await fetch(`${BASE_URL}/admin/main/days`, {
-      next: { tags: ["event-days"] },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch event days: ${res.statusText}`);
-    }
-
-    const data = await res.json();
-
-    if ("error" in data) {
-      throw new Error(data.error);
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Error fetching event days:", error);
-    throw error;
-  }
-});
-
-export const fetchColors = cache(async (): Promise<MainColors> => {
-  const res = await fetch(`${BASE_URL}/admin/main/colors`, {
-    next: { revalidate: 0 },
-  });
-  if (!res.ok) {
-    console.error("Failed to fetch Admin main colors");
-  }
-  return res.json();
-});
-
-export const fetchMenuLinksSection = cache(async (): Promise<MainMenuData> => {
-  const res = await fetch(`${BASE_URL}/admin/main/menu`, {
-    next: { revalidate: 0 },
-  });
-  if (!res.ok) {
-    console.error("Failed to fetch admin main menu links section");
-  }
-  return res.json();
-});
-export const fetchMainLinks = cache(async (): Promise<MainLinks> => {
-  const res = await fetch(`${BASE_URL}/admin/main/links`, {
-    next: { revalidate: 0 },
-  });
-  if (!res.ok) {
-    console.error("Failed to fetch Admin link section");
-  }
-  return res.json();
-});
 
 export const fetchAboutCarousel = cache(async (): Promise<CarouselSection> => {
   const res = await fetch(`${BASE_URL}/admin/about/carousel`, {
