@@ -4,23 +4,21 @@ import { IconType } from "react-icons/lib";
 import { CiInstagram, CiLinkedin, CiYoutube } from "react-icons/ci";
 import { IoNewspaperOutline } from "react-icons/io5";
 import { useLinks } from "@/app/context/MainContext";
+import { LinkItem } from "@/schemas/mainSchema";
 
-const iconMap = {
+const iconMap: Record<string, IconType> = {
   linkedin: CiLinkedin,
   instagram: CiInstagram,
   youtube: CiYoutube,
   newsletter: IoNewspaperOutline,
 };
 
-export type Platform = keyof typeof iconMap;
+type Platform = keyof typeof iconMap;
 
-type Props = {
-  link?: string;
-  platform: Platform;
-};
+type Props = LinkItem;
 
 export default function SocialIcons(): JSX.Element {
-  const mainLinks = useLinks();
+  const { mainLinks } = useLinks();
 
   return (
     <div className="flex items-center space-x-4 justify-center">

@@ -45,9 +45,16 @@ export async function GET() {
       date: day.date,
     }));
 
+    const formattedMainLinks: MainLinks = {
+      mainLinks: mainLinks.data.map(({ platform, link }) => ({
+        platform,
+        link,
+      })),
+    };
+
     const formattedData: MainSectionData = {
       mainColors: mainColorsData,
-      mainLinks: mainLinks.data as MainLinks,
+      mainLinks: formattedMainLinks,
       mainMenu: mainMenuData,
       eventDays: events_days,
     };
