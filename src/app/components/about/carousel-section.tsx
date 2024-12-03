@@ -21,6 +21,7 @@ import { useScroll } from "@/app/hooks/useScroll";
 import { fadeInConfig } from "@/utils/animations";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { CarouselClientType } from "@/schemas/baseSchema";
+import { NoDataAvailable } from "@/app/components/no-data-available";
 
 interface MainSectionProps {
   carouselData: CarouselClientType | undefined;
@@ -32,7 +33,10 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   useScroll();
 
-  if (!carouselData) return <div className="text-center py-8">No Data</div>;
+  if (!carouselData)
+    return <div className="text-center py-8">No Carousel Data</div>;
+
+  if (carouselData.slides.length <= 0) return <NoDataAvailable />;
 
   return (
     <section
