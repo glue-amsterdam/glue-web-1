@@ -55,20 +55,18 @@ function transformApiData(data: ApiMainSectionData): MainSectionData {
 
 export async function fetchMain(): Promise<MainSectionData> {
   try {
-    // Check if we're in a build environment
-    if (
-      process.env.NODE_ENV === "production" &&
-      process.env.NEXT_PHASE === "phase-production-build"
-    ) {
-      console.log("Build environment detected, using mock data");
-      return getMockData();
-    }
-
     const response = await fetch(`${BASE_URL}/main`, {
       next: { revalidate: 6 },
     });
 
     if (!response.ok) {
+      if (
+        process.env.NODE_ENV === "production" &&
+        process.env.NEXT_PHASE === "phase-production-build"
+      ) {
+        console.log("Build environment detected, using mock data");
+        return getMockData();
+      }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
