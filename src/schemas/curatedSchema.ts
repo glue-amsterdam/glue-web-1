@@ -1,3 +1,4 @@
+import { CuratedParticipantWhitYear } from "@/schemas/usersSchemas";
 import { z } from "zod";
 
 export const curatedMembersSectionSchema = z.object({
@@ -28,3 +29,7 @@ export const curatedResponseSchema = z.object({
 export type CuratedParticipant = z.infer<typeof curatedParticipantSchema>;
 export type CuratedHeader = z.infer<typeof curatedHeaderSchema>;
 export type CuratedResponse = z.infer<typeof curatedResponseSchema>;
+export type AboutCuratedClientType = {
+  headerData: CuratedMemberSectionHeader;
+  curatedParticipants: Record<string, CuratedParticipantWhitYear[]>;
+};

@@ -1,3 +1,5 @@
+import { ParticipantsSectionHeader } from "@/schemas/participantsAdminSchema";
+import { ParticipantUser } from "@/schemas/usersSchemas";
 import { z } from "zod";
 
 export const participantHeaderSchema = z.object({
@@ -23,3 +25,7 @@ export const participantsResponseSchema = z.object({
 export type ParticipantHeader = z.infer<typeof participantHeaderSchema>;
 export type ParticipantClient = z.infer<typeof participantClientSchema>;
 export type ParticipantsResponse = z.infer<typeof participantsResponseSchema>;
+export type AboutParticipantsClientType = {
+  headerData: ParticipantsSectionHeader;
+  participants: ParticipantUser[];
+};
