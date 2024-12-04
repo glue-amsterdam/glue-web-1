@@ -3,12 +3,10 @@
 import GlueInternational from "@/app/components/about/glue-international";
 import ScrollUp from "@/app/components/scroll-up";
 import { useScroll } from "@/app/hooks/useScroll";
-
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import { fadeInConfig } from "@/utils/animations";
 import { NAVBAR_HEIGHT } from "@/constants";
-
 import { GlueInternationalContent } from "@/schemas/internationalSchema";
 import { SponsorsSection } from "@/schemas/sponsorsSchema";
 import SponsorsCarousel from "@/app/components/about/sponsors-carousel";
@@ -29,11 +27,11 @@ function LastPage({ glueInternational, sponsorsData }: Props) {
       aria-label="last-page-content"
       aria-labelledby="last-page-heading"
       style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
-      className={`h-dvh bg-[var(--color-triangle)] snap-start relative overflow-y-hidden`}
+      className="min-h-screen bg-[var(--color-triangle)] snap-start relative overflow-y-auto flex flex-col"
     >
       <motion.article
         {...fadeInConfig}
-        className="z-20 space-y-4 mx-auto container h-full flex flex-col relative"
+        className="z-20 space-y-4 mx-auto container flex flex-col flex-grow justify-between py-8"
       >
         <GlueInternational glueInternational={glueInternational} />
         <SponsorsCarousel sponsorsData={sponsorsData} />
