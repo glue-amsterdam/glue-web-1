@@ -1,7 +1,6 @@
 "use client";
 
 import GlueInternational from "@/app/components/about/glue-international";
-import SponsorsCarousel from "@/app/components/about/sponsors-carousel";
 import ScrollUp from "@/app/components/scroll-up";
 import { useScroll } from "@/app/hooks/useScroll";
 
@@ -9,19 +8,14 @@ import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import { fadeInConfig } from "@/utils/animations";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { Sponsor } from "@/utils/sponsors-types";
-import {
-  GlueInternationalContent,
-  SponsorsSectionContent,
-} from "@/schemas/baseSchema";
+
+import { GlueInternationalContent } from "@/schemas/internationalSchema";
 
 type Props = {
-  glueInternationalSection: GlueInternationalContent;
-  headerData: SponsorsSectionContent;
-  sponsors: Sponsor[];
+  glueInternational: GlueInternationalContent;
 };
 
-function LastPage({ glueInternationalSection, headerData, sponsors }: Props) {
+function LastPage({ glueInternational }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
   useScroll();
 
@@ -38,12 +32,12 @@ function LastPage({ glueInternationalSection, headerData, sponsors }: Props) {
         {...fadeInConfig}
         className="z-20 space-y-4 mx-auto container h-full flex flex-col justify-between relative"
       >
-        <GlueInternational glueInternational={glueInternationalSection} />
-        <SponsorsCarousel
+        <GlueInternational glueInternational={glueInternational} />
+        {/*  <SponsorsCarousel
           sponsors={sponsors}
           title={headerData.title}
           description={headerData.description}
-        />
+        /> */}
         <ScrollUp color="uiblack" href="#main" />
       </motion.article>
     </section>

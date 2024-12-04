@@ -15,10 +15,6 @@ export const MainContextProvider = ({
   children: ReactNode;
   initialData: MainSectionData;
 }) => {
-  setTimeout(() => {
-    console.log("MainContextProvider initialData:", initialData);
-  }, 1000);
-
   const { data } = useSWR<MainSectionData>("/api/main", fetcher, {
     fallbackData: initialData,
     revalidateOnFocus: false,
