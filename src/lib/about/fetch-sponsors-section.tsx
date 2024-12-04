@@ -44,7 +44,7 @@ const SPONSORS_FALLBACK_DATA: SponsorsSection = {
   ],
 };
 
-export async function fetchAboutParticipants(): Promise<SponsorsSection> {
+export async function fetchSponsorsData(): Promise<SponsorsSection> {
   try {
     const res = await fetch(`${BASE_URL}/about/sponsors`, {
       next: {

@@ -19,7 +19,7 @@ export default function GlueInternational({
       initial={{ x: 80, y: 20 }}
       whileInView={{ x: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full md:w-[80%] mx-auto rounded-lg"
+      className="w-full md:w-[80%] mx-auto rounded-lg flex-grow flex justify-center items-center"
     >
       <motion.div
         initial={{ x: -120, opacity: 0 }}
