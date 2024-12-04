@@ -10,9 +10,8 @@ import {
 import { EventDay } from "@/schemas/eventSchemas";
 
 export async function GET() {
-  const supabase = await createClient();
-
   try {
+    const supabase = await createClient();
     const [eventsDays, mainColors, mainLinks, mainMenu] = await Promise.all([
       supabase.from("events_days").select(),
       supabase.from("main_colors").select(),

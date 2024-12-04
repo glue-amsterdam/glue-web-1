@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import "@/app/globals.css";
 import NavbarBurguer from "@/app/components/navbar/responsive-navbar-with-hamburger";
 import { AuthProvider } from "@/app/context/AuthContext";
-import { MainDataProvider } from "@/app/components/main-data-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { Suspense } from "react";
 import GlueLogo from "@/app/components/glue-logo";
+import { MainDataProvider } from "@/app/context/MainDataProvider";
 
 export const metadata: Metadata = {
   title: "GLUE - Home",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -45,20 +45,20 @@ export default function RootLayout({
     <html lang="en">
       <body className="font-lausanne text-uiwhite antialiased min-h-dvh">
         <Suspense fallback={<LoadingFallback />}>
-          <AuthProvider>
-            <MainDataProvider>
+          <MainDataProvider>
+            <AuthProvider>
               <NavbarBurguer />
               <div className="flex-grow overflow-x-hidden">{children}</div>
               <Toaster />
-            </MainDataProvider>
-          </AuthProvider>
+            </AuthProvider>
+          </MainDataProvider>
         </Suspense>
       </body>
     </html>
   );
 }
 
-function LoadingFallback() {
+export function LoadingFallback() {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black">
       <div className="size-56 animate-pulse animate relative">

@@ -1,5 +1,6 @@
 import { BASE_URL } from "@/constants";
 import {
+  Citizen,
   ClientCitizen,
   ClientCitizensSection,
   clientCitizensSectionSchema,
@@ -46,4 +47,32 @@ export async function fetchCitizensOfHonor(): Promise<ClientCitizensSection> {
     console.error("Error fetching citizens data:", error);
     return CITIZENS_FALLBACK_DATA;
   }
+}
+
+const caches = new Map<string, Promise<Citizen[]>>();
+
+export function fetchCitizensByYear(year: string): Promise<Citizen[]> {
+  const cacheKey = `year_${year}`;
+  if (!caches.get(cacheKey)) {
+    const promise = fetch(`${BASE_URL}/admin/about/citizens/${year}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to fetch citizens for year ${year}`);
+        }
+        return response.json();
+      })
+      .then((data) => data.citizens);
+
+    caches.set(year, promise);
+  }
+
+  return caches.get(year)!;
+}
+
+export async function fetchYears(): Promise<string[]> {
+  const response = await fetch(`${BASE_URL}/admin/about/citizens/years`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch citizens for years`);
+  }
+  return response.json();
 }

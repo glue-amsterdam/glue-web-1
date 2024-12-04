@@ -2,7 +2,6 @@
 
 import useSWR from "swr";
 import { CitizensYearForm } from "./citizens-year-form";
-import { fetchCitizensByYear } from "@/utils/api/admin-api-calls";
 
 import { useFormContext, FieldValues } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +24,7 @@ import { AlertDialogContent } from "@radix-ui/react-alert-dialog";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { fetchCitizensByYear } from "@/lib/about/fetch-citizens-section";
 
 interface CitizensYearFormWrapperProps {
   selectedYear: string;
