@@ -11,6 +11,7 @@ import { CuratedSkeleton } from "@/app/about/components/skeletons/curatedSkeleto
 import { InfoSectionSkeleton } from "@/app/about/components/skeletons/infoSkeleton";
 import { CitizensSkeleton } from "@/app/about/components/skeletons/citizenSkeleton";
 import AboutLastPage from "@/app/about/about-last-page";
+import AboutPress from "@/app/about/about-press";
 
 export default function AboutPage() {
   return (
@@ -33,6 +34,10 @@ export default function AboutPage() {
 
       <Suspense fallback={<InfoSectionSkeleton />}>
         <AboutInfo />
+      </Suspense>
+
+      <Suspense fallback={<InfoSectionSkeleton />}>
+        <AboutPress />
       </Suspense>
 
       <Suspense fallback={<InfoSectionSkeleton />}>
