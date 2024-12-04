@@ -229,7 +229,7 @@ function BackgroundGrid({}) {
         animate={triangle?.animate}
         transition={triangle?.transition}
         style={{ background: mainColors?.triangle }}
-        className={`triangle`}
+        className={`triangle bg-[var(--color-triangle)] `}
       />
       {extra && (
         <motion.div
@@ -238,10 +238,22 @@ function BackgroundGrid({}) {
           transition={extra?.transition}
         ></motion.div>
       )}
-      <div style={{ background: mainColors?.box1 }} />
-      <div style={{ background: mainColors?.box2 }} />
-      <div style={{ background: mainColors?.box3 }} />
-      <div style={{ background: mainColors?.box4 }} />
+      <div
+        style={{ background: mainColors?.box1 }}
+        className="bg-[var(--color-box1)] "
+      />
+      <div
+        style={{ background: mainColors?.box2 }}
+        className="bg-[var(--color-box2)] "
+      />
+      <div
+        style={{ background: mainColors?.box3 }}
+        className="bg-[var(--color-box3)] "
+      />
+      <div
+        style={{ background: mainColors?.box4 }}
+        className="bg-[var(--color-box4)] "
+      />
     </motion.div>
   );
 }
