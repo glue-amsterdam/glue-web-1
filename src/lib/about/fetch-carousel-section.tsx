@@ -1,6 +1,8 @@
 import { BASE_URL } from "@/constants";
-import { CarouselClientType } from "@/schemas/baseSchema";
-import { carouselSectionSchema } from "@/schemas/carouselSchema";
+import {
+  CarouselClientType,
+  carouselSectionSchema,
+} from "@/schemas/carouselSchema";
 
 const CAROUSEL_FALLBACK_DATA: CarouselClientType = {
   title: "Welcome to GLUE",
