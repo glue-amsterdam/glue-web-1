@@ -34,6 +34,7 @@ export default function AboutPage() {
       <Suspense fallback={<InfoSectionSkeleton />}>
         <AboutInfo />
       </Suspense>
+
       <Suspense fallback={<InfoSectionSkeleton />}>
         <AboutLastPage />
       </Suspense>
