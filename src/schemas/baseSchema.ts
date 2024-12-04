@@ -2,6 +2,7 @@ import { CarouselSection } from "@/schemas/carouselSchema";
 import { CitizensSection } from "@/schemas/citizenSchema";
 import { CuratedMemberSectionHeader } from "@/schemas/curatedSchema";
 import { InfoSection } from "@/schemas/infoSchema";
+import { GlueInternationalContent } from "@/schemas/internationalSchema";
 import { ParticipantsSectionHeader } from "@/schemas/participantsAdminSchema";
 import {
   CuratedParticipantWhitYear,
@@ -23,9 +24,6 @@ export type ImageData = z.infer<typeof imageDataSchema>;
 
 export type PressItemsSectionContent = z.infer<typeof pressItemsSectionSchema>;
 export type SponsorsSectionContent = z.infer<typeof sponsorsSectionSchema>;
-export type GlueInternationalContent = z.infer<
-  typeof glueInternationalSectionSchema
->;
 
 export type PressItem = z.infer<typeof pressItemSchema>;
 
@@ -65,24 +63,6 @@ export const pressItemsSectionSchema = z.object({
     .array(pressItemSchema)
     .min(1, "At least 1 press item is required")
     .max(2, "Maximum 2 press items allowed"),
-});
-
-export const glueInternationalButtonColorSchema = z.object({
-  buttonColor: z
-    .string()
-    .min(1, "Button color is required")
-    .regex(
-      /^#(?:[0-9a-fA-F]{3}){1,2}$/,
-      "Button color must be a valid hex code"
-    ),
-});
-
-export const glueInternationalSectionSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  subtitle: z.string().min(1, "Subtitle is required"),
-  buttonText: z.string().min(1, "Button text is required"),
-  website: z.string().url("Invalid website URL"),
-  buttonColor: glueInternationalButtonColorSchema,
 });
 
 export const sponsorSchema = z.object({
