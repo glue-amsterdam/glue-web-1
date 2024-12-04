@@ -5,8 +5,8 @@ import { AuthProvider } from "@/app/context/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 import { Suspense } from "react";
 import GlueLogo from "@/app/components/glue-logo";
-import { MainContextProvider } from "@/app/context/MainContext";
 import { getData } from "@/lib/main/getData";
+import { MainContextProvider } from "@/app/context/MainContext";
 
 export const metadata: Metadata = {
   title: "GLUE - Home",
@@ -60,7 +60,7 @@ export default async function RootLayout({
   );
 }
 
-function LoadingFallback() {
+export function LoadingFallback() {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black">
       <div className="size-56 animate-pulse animate relative">

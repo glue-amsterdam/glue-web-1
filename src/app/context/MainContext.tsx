@@ -3,7 +3,6 @@
 import { createContext, useContext, ReactNode } from "react";
 import useSWR from "swr";
 import { MainSectionData } from "@/schemas/mainSchema";
-import { ColorStyleProvider } from "@/app/components/color-style-provider";
 
 const MainContext = createContext<MainSectionData | undefined>(undefined);
 
@@ -16,6 +15,10 @@ export const MainContextProvider = ({
   children: ReactNode;
   initialData: MainSectionData;
 }) => {
+  setTimeout(() => {
+    console.log("MainContextProvider initialData:", initialData);
+  }, 1000);
+
   const { data } = useSWR<MainSectionData>("/api/main", fetcher, {
     fallbackData: initialData,
     revalidateOnFocus: false,
@@ -23,13 +26,7 @@ export const MainContextProvider = ({
     refreshInterval: 60000, // Revalidate every minute
   });
 
-  return (
-    <MainContext.Provider value={data}>
-      <ColorStyleProvider colors={data?.mainColors || initialData.mainColors}>
-        {children}
-      </ColorStyleProvider>
-    </MainContext.Provider>
-  );
+  return <MainContext.Provider value={data}>{children}</MainContext.Provider>;
 };
 
 export const useColors = () => {
