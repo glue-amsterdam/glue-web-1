@@ -1,6 +1,57 @@
-import { BASE_URL, THREE_DAYS_IN_S } from "@/constants";
+import { BASE_URL } from "@/constants";
 import { mainSection } from "@/lib/mockMain";
 import { MainSectionData, mainSectionSchema } from "@/schemas/mainSchema";
+import { ApiMainSectionData } from "@/types/api-main-raw";
+import { v4 as uuidv4 } from "uuid";
+
+function transformApiData(data: ApiMainSectionData): MainSectionData {
+  // Ensure mainColors has all required fields
+  const transformedMainColors = {
+    box1: data.mainColors?.box1 ?? "#000000",
+    box2: data.mainColors?.box2 ?? "#000000",
+    box3: data.mainColors?.box3 ?? "#000000",
+    box4: data.mainColors?.box4 ?? "#000000",
+    triangle: data.mainColors?.triangle ?? "#000000",
+  };
+
+  // Ensure mainMenu items have all required fields
+  const transformedMainMenu = (data.mainMenu || []).map((item) => ({
+    menu_id: item.menu_id || uuidv4(),
+    label: item.label || "",
+    section: item.section || "",
+    className: item.className || "",
+    subItems: item.subItems || null,
+  }));
+
+  // Ensure mainLinks exists and all items have required fields
+  const transformedMainLinks = {
+    mainLinks: (data.mainLinks?.mainLinks || []).map((link) => ({
+      platform: link.platform || "",
+      link: link.link || "",
+    })),
+  };
+
+  // Ensure eventDays exists and all items have required fields
+  const transformedEventDays = (data.eventDays || []).map((day) => ({
+    dayId: (day.dayId as "day-1" | "day-2" | "day-3" | "day-4") || "day-1",
+    label: day.label || "",
+    date: day.date || null,
+  }));
+
+  return {
+    mainColors: transformedMainColors,
+    mainMenu: transformedMainMenu.map((item) => ({
+      ...item,
+      subItems:
+        item.subItems?.map((subItem) => ({
+          title: subItem.title || "",
+          href: subItem.href || "",
+        })) || null,
+    })),
+    mainLinks: transformedMainLinks,
+    eventDays: transformedEventDays,
+  };
+}
 
 export async function fetchMain(): Promise<MainSectionData> {
   try {
@@ -14,17 +65,23 @@ export async function fetchMain(): Promise<MainSectionData> {
     }
 
     const response = await fetch(`${BASE_URL}/main`, {
-      next: { revalidate: THREE_DAYS_IN_S },
+      next: { revalidate: 6 },
     });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: ApiMainSectionData = await response.json();
+    console.log("Raw API response:", JSON.stringify(data, null, 2));
 
-    // Validate the data against the schema
-    const validatedData = mainSectionSchema.parse(data);
+    // Transform the data to match our schema
+    const transformedData = transformApiData(data);
+
+    console.log("Transformed data:", JSON.stringify(transformedData, null, 2));
+
+    // Validate the transformed data against the schema
+    const validatedData = mainSectionSchema.parse(transformedData);
 
     return validatedData;
   } catch (error) {
