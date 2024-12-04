@@ -71,12 +71,9 @@ export async function fetchMain(): Promise<MainSectionData> {
     }
 
     const data: ApiMainSectionData = await response.json();
-    console.log("Raw API response:", JSON.stringify(data, null, 2));
 
     // Transform the data to match our schema
     const transformedData = transformApiData(data);
-
-    console.log("Transformed data:", JSON.stringify(transformedData, null, 2));
 
     // Validate the transformed data against the schema
     const validatedData = mainSectionSchema.parse(transformedData);
