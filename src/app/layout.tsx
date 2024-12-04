@@ -5,8 +5,7 @@ import { AuthProvider } from "@/app/context/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 import { Suspense } from "react";
 import GlueLogo from "@/app/components/glue-logo";
-import { getData } from "@/lib/main/getData";
-import { MainContextProvider } from "@/app/context/MainContext";
+import { MainDataProvider } from "@/app/context/MainDataProvider";
 
 export const metadata: Metadata = {
   title: "GLUE - Home",
@@ -42,18 +41,17 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const initialData = await getData();
   return (
     <html lang="en">
       <body className="font-lausanne text-uiwhite antialiased min-h-dvh">
         <Suspense fallback={<LoadingFallback />}>
-          <MainContextProvider initialData={initialData}>
+          <MainDataProvider>
             <AuthProvider>
               <NavbarBurguer />
               <div className="flex-grow overflow-x-hidden">{children}</div>
               <Toaster />
             </AuthProvider>
-          </MainContextProvider>
+          </MainDataProvider>
         </Suspense>
       </body>
     </html>
