@@ -1,6 +1,6 @@
 "use client";
 
-import CuratedMembersForm from "@/app/admin/forms/curated-members-form";
+import CuratedMembersForm from "@/app/admin/forms/about-curated-members-form";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { CuratedMemberSectionHeader } from "@/schemas/curatedSchema";
 import useSWR from "swr";

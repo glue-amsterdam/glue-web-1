@@ -2,14 +2,14 @@
 
 import useSWR from "swr";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
-import InternationalForm from "@/app/admin/forms/international-form";
+import InternationalForm from "@/app/admin/forms/about-international-form";
 import { GlueInternationalContent } from "@/schemas/internationalSchema";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function AboutInternationalSection() {
   const {
-    data: internacionalData,
+    data: internationalData,
     error,
     isLoading,
   } = useSWR<GlueInternationalContent>(
@@ -19,7 +19,7 @@ export default function AboutInternationalSection() {
 
   if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Failed to load carousel data</div>;
-  if (!internacionalData) return <div>No carousel data available</div>;
+  if (!internationalData) return <div>No carousel data available</div>;
 
-  return <InternationalForm initialData={internacionalData} />;
+  return <InternationalForm initialData={internationalData} />;
 }
