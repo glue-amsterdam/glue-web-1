@@ -241,9 +241,9 @@ export const mockAbout: DatabaseAboutContent = {
   glueInternationalSection: {
     title: "GLUE International",
     subtitle: "GLUE arround the world",
-    buttonText: "Visit GLUE International",
+    button_text: "Visit GLUE International",
     website: "http://glue-international.com",
-    buttonColor: { buttonColor: "#10069F" },
+    button_color: "#10069F",
   },
   ...generateTimestamps(),
 };
