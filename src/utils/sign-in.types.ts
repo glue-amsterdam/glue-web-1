@@ -1,6 +1,4 @@
 type PlanItemType = {
-  id: string;
-  plan_id: string;
   label: string;
 };
 
