@@ -198,3 +198,20 @@
   border-radius: 20px;
   border: transparent;
 }
+.prose {
+  max-width: none;
+}
+
+.prose strong {
+  font-weight: 600;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-weight: 600;
+  line-height: 1.25;
+}
