@@ -49,6 +49,7 @@ export default function AboutSponsorsSection() {
       <div>
         <h3 className="text-xl font-semibold mb-2">Existing Sponsors</h3>
         <SponsorsTable
+          onEditSponsor={setSelectedSponsor}
           sponsors={sponsorsData}
           mutate={() => mutate("/api/admin/about/sponsors")}
         />
