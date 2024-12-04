@@ -4,7 +4,9 @@ import AboutCarouselSection from "@/app/admin/sections/about-carousel-sections";
 import AboutCitizensSection from "@/app/admin/sections/about-citizens-section";
 import AboutCuratedSection from "@/app/admin/sections/about-curated-sections";
 import AboutInfoSection from "@/app/admin/sections/about-info-sections";
+import AboutInternationalSection from "@/app/admin/sections/about-international-sections";
 import AboutParticipantsSection from "@/app/admin/sections/about-participants-sections";
+import AboutSponsorsSection from "@/app/admin/sections/about-sponsors-sections";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -56,6 +58,16 @@ export default async function AboutSectionPage({
         {currentSection === "about-info" && (
           <Suspense fallback={<LoadingSpinner />}>
             <AboutInfoSection />
+          </Suspense>
+        )}
+        {currentSection === "about-international" && (
+          <Suspense fallback={<LoadingSpinner />}>
+            <AboutInternationalSection />
+          </Suspense>
+        )}
+        {currentSection === "about-sponsors" && (
+          <Suspense fallback={<LoadingSpinner />}>
+            <AboutSponsorsSection />
           </Suspense>
         )}
       </div>

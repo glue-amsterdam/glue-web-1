@@ -52,11 +52,11 @@ export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
 
     if (!res.ok) {
       if (res.status === 404 || process.env.NODE_ENV === "development") {
-        console.warn("Using fallback data for curated section");
+        console.warn("Using fallback data for participants section");
         return PARTICIPANT_FALLBACK_DATA;
       }
       throw new Error(
-        `Failed to fetch curated section data: ${res.statusText}`
+        `Failed to fetch participants section data: ${res.statusText}`
       );
     }
 

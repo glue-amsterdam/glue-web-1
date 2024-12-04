@@ -3,26 +3,23 @@
 import { GiWorld } from "react-icons/gi";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { GlueInternationalContent } from "@/schemas/baseSchema";
-
-interface GlueInternationalProps {
-  glueInternational: GlueInternationalContent;
-}
+import { GlueInternationalContent } from "@/schemas/internationalSchema";
 
 export default function GlueInternational({
   glueInternational,
-}: GlueInternationalProps) {
-  const { buttonColor, buttonText, subtitle, title, website } =
+}: {
+  glueInternational: GlueInternationalContent;
+}) {
+  const { button_color, button_text, subtitle, title, website } =
     glueInternational;
 
-  console.log(typeof buttonColor);
   return (
     <motion.div
-      style={{ backgroundColor: buttonColor.buttonColor }}
+      style={{ backgroundColor: button_color }}
       initial={{ x: 80, y: 20 }}
       whileInView={{ x: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full md:w-[80%] mx-auto rounded-lg"
+      className="w-full md:w-[80%] mx-auto rounded-lg flex-grow flex justify-center items-center"
     >
       <motion.div
         initial={{ x: -120, opacity: 0 }}
@@ -54,13 +51,13 @@ export default function GlueInternational({
         </div>
 
         <Link
-          style={{ backgroundColor: buttonColor.buttonColor }}
+          style={{ backgroundColor: button_color }}
           href={website}
           target="_blank"
           className="hover:scale-110 rounded-md py-2 mx-auto flex items-center justify-center text-uiwhite transition duration-500 w-[80%]"
         >
           <GiWorld className="size-12 px-2" />
-          <p className="text-center px-2">{buttonText}</p>
+          <p className="text-center px-2">{button_text}</p>
         </Link>
       </motion.div>
     </motion.div>

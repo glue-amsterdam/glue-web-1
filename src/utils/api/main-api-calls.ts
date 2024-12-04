@@ -1,4 +1,4 @@
-import { BASE_URL } from "@/constants";
+import { AN_HOUR_IN_S, BASE_URL } from "@/constants";
 import { mainSection } from "@/lib/mockMain";
 import { MainSectionData, mainSectionSchema } from "@/schemas/mainSchema";
 import { ApiMainSectionData } from "@/types/api-main-raw";
@@ -56,7 +56,7 @@ function transformApiData(data: ApiMainSectionData): MainSectionData {
 export async function fetchMain(): Promise<MainSectionData> {
   try {
     const response = await fetch(`${BASE_URL}/main`, {
-      next: { revalidate: 6 },
+      next: { revalidate: AN_HOUR_IN_S },
     });
 
     if (!response.ok) {

@@ -234,16 +234,50 @@ export const mockAbout: DatabaseAboutContent = {
     ],
   },
   sponsorsSection: {
-    title: "Sponsors",
-    description:
-      "Discover the GLUE project, the GLUE Foundation, and the GLUE International initiative.",
+    sponsorsHeaderSchema: {
+      id: "sponsors-section",
+      title: "Sponsors",
+      description:
+        "Discover the GLUE project, the GLUE Foundation, and the GLUE International initiative.",
+      sponsors_types: [
+        { label: "Gold" },
+        { label: "Silver" },
+        { label: "Bronze" },
+      ],
+    },
+    sponsors: [
+      {
+        id: "placeholder-1",
+        name: "Placeholder 1",
+        website: "https://www.placeholder.com",
+        sponsor_type: "Gold",
+        image_url: "/placeholder.jgp",
+        alt: "Placeholder 1",
+      },
+      {
+        id: "placeholder-2",
+        name: "Placeholder 2",
+        website: "https://www.placeholder.com",
+        sponsor_type: "Silver",
+        image_url: "/placeholder.jgp",
+        alt: "Placeholder 2",
+      },
+      {
+        id: "placeholder-3",
+        name: "Placeholder 3",
+        website: "https://www.placeholder.com",
+        sponsor_type: "Bronze",
+        image_url: "/placeholder.jgp",
+        alt: "Placeholder 3",
+      },
+    ],
   },
   glueInternationalSection: {
     title: "GLUE International",
     subtitle: "GLUE arround the world",
-    buttonText: "Visit GLUE International",
+    button_text: "Visit GLUE International",
     website: "http://glue-international.com",
-    buttonColor: { buttonColor: "#10069F" },
+    button_color: "#10069F",
   },
   ...generateTimestamps(),
 };

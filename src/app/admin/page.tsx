@@ -7,17 +7,15 @@ import { NAVBAR_HEIGHT } from "@/constants";
 import AdminHeader from "./components/admin-header";
 import AdminDashboard from "@/app/admin/admin-dashboard";
 
-const fetcher = async (url: string) => {
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error("An error occurred while fetching the data.");
-  }
-  return res.json();
-};
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function AdminPage() {
   const router = useRouter();
-  const { data, error, isLoading } = useSWR("/api/admin/check-auth", fetcher);
+  const { data, error, isLoading } = useSWR("/api/admin/check-auth", fetcher, {
+    refreshInterval: 20 * 60 * 1000,
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+  });
 
   useEffect(() => {
     if (!isLoading && !error && !data?.isAdmin) {

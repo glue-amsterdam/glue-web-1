@@ -1,29 +1,23 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { Sponsor } from "@/utils/sponsors-types";
+import { SponsorsSection } from "@/schemas/sponsorsSchema";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 
-interface SponsorsCarouselProps {
-  sponsors: Sponsor[];
-  title: string;
-  description: string;
-}
-
 export default function SponsorsCarousel({
-  sponsors,
-  title,
-  description,
-}: SponsorsCarouselProps) {
+  sponsorsData,
+}: {
+  sponsorsData: SponsorsSection;
+}) {
   return (
-    <>
+    <div className="w-full max-w-6xl mx-auto px-4 py-8">
       <motion.h1
         initial={{ opacity: 0, y: -60 }}
         animate={{ opacity: 1, y: 0 }}
@@ -32,68 +26,60 @@ export default function SponsorsCarousel({
           delay: 0.8,
         }}
         viewport={{ once: true }}
-        className="h1-titles font-bold tracking-widest text-uiblack pt-4"
+        className="h1-titles font-bold tracking-widest text-uiblack pt-4 text-center mb-4"
       >
-        {title}
+        {sponsorsData.sponsorsHeaderSchema.title}
       </motion.h1>
       <motion.p
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 1.3 }}
-        className="text-md md:text-lg text-uiblack flex-grow-[0.3]"
+        className="text-md md:text-lg text-uiblack text-center mb-8"
       >
-        {description}
+        {sponsorsData.sponsorsHeaderSchema.description}
       </motion.p>
-      <section
-        aria-labelledby="sponsors-heading"
-        className="h-full flex items-start"
+      <Carousel
+        opts={{
+          align: "start",
+          loop: true,
+        }}
+        className="w-full"
+        plugins={[
+          Autoplay({
+            delay: 3000,
+          }),
+        ]}
       >
-        <Carousel
-          className="w-full h-full"
-          plugins={[
-            Autoplay({
-              stopOnMouseEnter: true,
-              delay: 1000,
-            }),
-          ]}
-        >
-          <CarouselContent className="h-full">
-            {sponsors.map((sponsor, index) => (
-              <CarouselItem
-                key={index}
-                className="basis-1/4 lg:basis-1/6 h-full"
+        <CarouselContent>
+          {sponsorsData.sponsors.map((sponsor, index) => (
+            <CarouselItem
+              key={index}
+              className="md:basis-1/3 lg:basis-1/4 xl:basis-1/5"
+            >
+              <Link
+                href={sponsor.website || "#"}
+                target={sponsor.website ? "_blank" : "_self"}
+                className="block w-full h-24 relative group"
               >
-                <Link
-                  href={sponsor.website ? sponsor.website : ""}
-                  target={sponsor.website && "_blank"}
-                >
-                  <Card className="border-none shadow-none bg-transparent h-full transition-shadow duration-300">
-                    <CardContent className="flex items-center justify-center p-0 h-full">
-                      <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
-                        <img
-                          src={sponsor.logo.image_url}
-                          alt={sponsor.name}
-                          className="w-full h-full absolute object-cover"
-                        />
-                        <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                          <div>
-                            <p className="text-center font-semibold">
-                              {sponsor.name}
-                            </p>
-                            <p className="text-center font-semibold">
-                              {sponsor.sponsorT}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
-      </section>
-    </>
+                <div className="w-full relative h-full flex items-center justify-center">
+                  <Image
+                    src={sponsor.image_url}
+                    alt={sponsor.name}
+                    fill
+                    className="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="text-center">
+                    <p className="font-semibold">{sponsor.name}</p>
+                    <p className="text-sm">{sponsor.sponsor_type}</p>
+                  </div>
+                </div>
+              </Link>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+    </div>
   );
 }

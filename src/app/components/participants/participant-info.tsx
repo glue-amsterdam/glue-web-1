@@ -9,7 +9,6 @@ import {
   FaEnvelope,
   FaPhone,
   FaGlobe,
-  FaInfoCircle,
   FaClock,
 } from "react-icons/fa";
 import { ParticipantUser } from "@/schemas/usersSchemas";
@@ -174,7 +173,7 @@ function ParticipantInfo({ participant, mapData }: ParticipantInfoProps) {
                 whileHover={{ scale: 1.2, rotate: 15 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <FaInstagram className="w-6 h-6 md:w-7 md:h-7 text-pink-500" />
+                <FaInstagram className="w-6 h-6 md:w-7 md:h-7 text-white" />
               </motion.a>
             )}
             {participant.socialMedia.facebookLink && (
@@ -185,7 +184,7 @@ function ParticipantInfo({ participant, mapData }: ParticipantInfoProps) {
                 whileHover={{ scale: 1.2, rotate: -15 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <FaFacebookF className="w-6 h-6 md:w-7 md:h-7 text-blue-600" />
+                <FaFacebookF className="w-6 h-6 md:w-7 md:h-7 text-white" />
               </motion.a>
             )}
             {participant.socialMedia.linkedinLink && (
@@ -201,15 +200,6 @@ function ParticipantInfo({ participant, mapData }: ParticipantInfoProps) {
             )}
           </motion.div>
         )}
-        <motion.div
-          variants={fadeInUp}
-          className="flex items-center gap-2 text-sm text-gray-500 mt-8"
-        >
-          <FaInfoCircle className="w-4 h-4" />
-          <span>
-            Join GLUE: {new Date(participant.createdAt).toLocaleDateString()}
-          </span>
-        </motion.div>
       </div>
     </motion.div>
   );
