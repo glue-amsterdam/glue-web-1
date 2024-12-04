@@ -32,12 +32,23 @@ interface CitizenCardProps {
 const CitizenCard = ({ citizen, openModal }: CitizenCardProps) => {
   return (
     <Card
-      className="cursor-pointer h-full border-none"
+      className="cursor-pointer h-full border-none "
       onClick={() => openModal(citizen)}
     >
       <CardContent className="p-0 h-full">
         <div className="relative w-full h-full group">
-          <div className="citizen-triangle bg-black z-10 group-hover:opacity-20 opacity-50 transition-all" />
+          <div
+            className="
+    absolute inset-0 
+    bg-black/10 
+    backdrop-blur-xs 
+    transition-all duration-300 ease-in-out
+    group-hover:opacity-0 group-hover:backdrop-blur-none
+    z-10
+    transform-gpu
+  "
+          />
+
           <Image
             src={citizen.image_url}
             alt={citizen.alt}
@@ -146,7 +157,7 @@ export default function CitizenOfHonourSection({
         </div>
 
         <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-          <DialogContent className="text-uiwhite min-w-[50vw] border-none rounded-none bg-transparent">
+          <DialogContent className="text-uiwhite min-w-[50vw] border-none rounded-none bg-transparent font-overpass">
             {selectedCitizen && (
               <div className="relative w-full h-[70vh] overflow-hidden">
                 <motion.div

@@ -63,9 +63,17 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
         >
           {carouselData.title}
         </motion.h1>
+        <motion.p
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 1.3 }}
+          className="mt-4 text-md md:text-lg"
+        >
+          {carouselData.description}
+        </motion.p>
         <div className="flex-grow h-full">
           <Carousel
-            className="w-full h-full"
+            className="w-[90%] h-full mx-auto"
             plugins={[
               Autoplay({
                 delay: 4000,
@@ -104,14 +112,7 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
             <CarouselNext className="hidden md:flex text-uiblack" />
           </Carousel>
         </div>
-        <motion.p
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 1.3 }}
-          className="opacity-90 mt-4 text-md md:text-lg"
-        >
-          {carouselData.description}
-        </motion.p>
+
         <Dialog open={modalOpen} onOpenChange={setModalOpen}>
           <DialogContent className="w-full p-0 h-full max-h-[90%] max-w-[90vw] md:max-w-[70vw] ">
             <DialogTitle className="sr-only">
