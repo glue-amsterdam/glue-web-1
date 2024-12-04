@@ -4,7 +4,7 @@ import PressSection from "@/app/components/about/press-section";
 import GlueConectedImage from "@/app/components/glue-connected-image";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { PressItemsSectionContent } from "@/schemas/baseSchema";
+import { PressItemsSectionContent } from "@/schemas/pressSchema";
 import React, { useRef } from "react";
 
 type Props = {

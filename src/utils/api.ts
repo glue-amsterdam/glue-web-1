@@ -3,42 +3,15 @@ import { LocationGroup } from "@/utils/map-types";
 import { Sponsor } from "@/utils/sponsors-types";
 import {
   ApiParticipantBaseType,
-  CuratedParticipantWhitYear,
   ParticipantUser,
   User,
   UserWithPlanDetails,
 } from "@/schemas/usersSchemas";
 import { PlansResponse } from "@/utils/sign-in.types";
 import { EnhancedUser, IndividualEventResponse } from "@/schemas/eventSchemas";
-import { DatabaseAboutContent } from "@/schemas/baseSchema";
 import { MapLocationEnhaced, RouteValuesEnhanced } from "@/schemas/mapSchema";
 import { OptimizedParticipant } from "@/app/api/participants/optimized/route";
 import { BASE_URL } from "@/constants";
-
-/* ABOUT */
-export const fetchAbout = cache(async (): Promise<DatabaseAboutContent> => {
-  const res = await fetch(`${BASE_URL}/about`, {
-    next: { revalidate: 0 },
-  });
-  if (!res.ok) {
-    console.error("Failed to fetch Main, using mock data");
-    return await import("@/lib/mockAbout").then((result) => result.mockAbout);
-  }
-
-  if (!res.ok) throw new Error("Failed to fetch About section");
-  return res.json();
-});
-
-export const fetchCurated = cache(
-  async (): Promise<Record<number, CuratedParticipantWhitYear[]>> => {
-    const res = await fetch(`${BASE_URL}/curated`, {
-      next: { revalidate: 0 },
-    });
-
-    if (!res.ok) throw new Error("Failed to fetch curated members");
-    return res.json();
-  }
-);
 
 /* EVENTS */
 export const fetchEvents = cache(

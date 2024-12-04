@@ -6,6 +6,7 @@ import AboutCuratedSection from "@/app/admin/sections/about-curated-sections";
 import AboutInfoSection from "@/app/admin/sections/about-info-sections";
 import AboutInternationalSection from "@/app/admin/sections/about-international-sections";
 import AboutParticipantsSection from "@/app/admin/sections/about-participants-sections";
+import AboutPressSection from "@/app/admin/sections/about-press-section";
 import AboutSponsorsSection from "@/app/admin/sections/about-sponsors-sections";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import Link from "next/link";
@@ -58,6 +59,11 @@ export default async function AboutSectionPage({
         {currentSection === "about-info" && (
           <Suspense fallback={<LoadingSpinner />}>
             <AboutInfoSection />
+          </Suspense>
+        )}
+        {currentSection === "about-press" && (
+          <Suspense fallback={<LoadingSpinner />}>
+            <AboutPressSection />
           </Suspense>
         )}
         {currentSection === "about-international" && (

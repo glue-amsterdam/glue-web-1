@@ -8,3 +8,11 @@ export const carouselSectionSchema = z.object({
 });
 
 export type CarouselSection = z.infer<typeof carouselSectionSchema>;
+export type CarouselClientType = {
+  title: string;
+  description: string;
+  slides: Array<{
+    image_url: string;
+    alt: string;
+  }>;
+};

@@ -1,4 +1,4 @@
-import { CarouselClientType } from "@/schemas/baseSchema";
+import { CarouselClientType } from "@/schemas/carouselSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 

@@ -20,8 +20,8 @@ import ScrollDown from "@/app/components/scroll-down";
 import { useScroll } from "@/app/hooks/useScroll";
 import { fadeInConfig } from "@/utils/animations";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { CarouselClientType } from "@/schemas/baseSchema";
 import { NoDataAvailable } from "@/app/components/no-data-available";
+import { CarouselClientType } from "@/schemas/carouselSchema";
 
 interface MainSectionProps {
   carouselData: CarouselClientType | undefined;

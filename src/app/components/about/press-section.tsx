@@ -6,7 +6,10 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
 import { fadeInConfig } from "@/utils/animations";
-import { PressItem } from "@/schemas/baseSchema";
+import { PressItem } from "@/schemas/pressSchema";
+import Image from "next/image";
+import DOMPurify from "dompurify";
+import { DialogDescription } from "@radix-ui/react-dialog";
 
 interface PressSectionProps {
   pressItems: PressItem[];
@@ -21,6 +24,16 @@ export default function PressSection({
 }: PressSectionProps) {
   const [selectedItem, setSelectedItem] = useState<PressItem | null>(null);
   const hasAnimatedRef = useRef(false);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const openModal = (item: PressItem) => {
+    setSelectedItem(item);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+  };
 
   const PressCard = ({ item, i }: { item: PressItem; i: number }) => {
     const xSide = i === 0 ? -100 : 100;
@@ -42,25 +55,39 @@ export default function PressSection({
         onViewportEnter={() => (hasAnimatedRef.current = true)}
       >
         <Card
-          className="cursor-pointer rounded-none border-none group shadow-md"
-          onClick={() => setSelectedItem(item)}
+          className="cursor-pointer rounded-none border-none group shadow-md h-full"
+          onClick={() => openModal(item)}
         >
-          <img
-            src={item.image.image_url}
-            alt={item.title}
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
-          />
-          <div className="absolute bg-uiblack/50 w-full text-uiwhite py-4 duration-300 group-hover:py-12 transition-all">
-            <h3 className="font-bold text-xl lg:text-3xl tracking-wider mb-2 text-center">
-              {item.title}
-            </h3>
+          <div className="relative w-full h-full">
+            <Image
+              src={item.image_url}
+              alt={item.title}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
+              className="object-cover group-hover:scale-105 transition-all duration-700"
+            />
+            <div className="absolute bottom-0 left-0 right-0 bg-uiblack/50 w-full text-uiwhite py-4 duration-300 group-hover:py-12 transition-all">
+              <h3 className="font-bold text-xl lg:text-3xl tracking-wider mb-2 text-center">
+                {item.title}
+              </h3>
+            </div>
           </div>
         </Card>
       </motion.div>
     );
   };
 
-  const hasGlueTV = pressItems.length <= 2;
+  // Error handling for missing or invalid infoItems
+  if (!Array.isArray(pressItems) || pressItems.length === 0) {
+    console.error("Invalid or missing press Items:", pressItems);
+    return (
+      <div className="text-center text-red-500 p-4">
+        Error: Unable to load press infomation items. Please try again later.
+      </div>
+    );
+  }
+
+  const hasGlueTV = (pressItems.length = 2);
 
   return (
     <motion.article
@@ -77,7 +104,7 @@ export default function PressSection({
         viewport={{ once: true }}
         className="h1-titles font-bold tracking-widest my-4"
       >
-        {title}
+        {title || "Press"}
       </motion.h1>
       <motion.p
         initial={{ y: 20, opacity: 0 }}
@@ -85,7 +112,7 @@ export default function PressSection({
         transition={{ delay: 1.3 }}
         className="mt-4 text-md md:text-lg text-uiwhite flex-grow-[0.3]"
       >
-        {description}
+        {description || "No description available."}
       </motion.p>
       <div
         className={`grid grid-cols-1 gap-6 h-[80%] ${
@@ -97,34 +124,47 @@ export default function PressSection({
         ))}
       </div>
 
-      <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
-        <DialogContent className="text-uiblack min-w-[80vw] rounded-none m-0 p-0">
-          <div className="relative w-full h-[400px] md:h-[70vh] group">
-            <img
-              src={selectedItem?.image.image_url}
-              alt={selectedItem?.title}
-              className="absolute inset-0 w-full h-full object-cover rounded-lg mb-4"
-            />
-            <div
-              id="dialog"
-              className="absolute z-20 bottom-0 left-0 right-0 bg-uiwhite p-6 transition-all duration-300 ease-in-out md:opacity-0 md:group-hover:opacity-100"
-            >
-              <DialogTitle>
-                <h4 className="text-xl md:text-3xl">{selectedItem?.title}</h4>
-              </DialogTitle>
-              <p className="text-sm md:text-base mt-2">
-                {selectedItem?.description}
-              </p>
-              {selectedItem?.content && (
-                <div className="mt-4">
-                  <h4 className="font-semibold mb-2 text-4xl">
-                    Additional Information
-                  </h4>
-                  <p>{selectedItem.content}</p>
+      <Dialog open={modalOpen} onOpenChange={closeModal}>
+        <DialogContent
+          forceMount
+          className="text-uiblack w-[90vw] max-w-[1200px] h-[90vh] rounded-none m-0 p-0 overflow-hidden"
+        >
+          {selectedItem && (
+            <div className="relative w-full h-full flex flex-col">
+              <div className="relative w-full h-1/2">
+                <Image
+                  src={selectedItem.image_url}
+                  alt={selectedItem.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
+                  className="object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-uiwhite/80 p-6">
+                  <DialogTitle>
+                    <motion.p
+                      initial={{ rotate: 20 }}
+                      animate={modalOpen ? { rotate: 0 } : {}}
+                      transition={{ duration: 0.3 }}
+                      className="text-xl md:text-3xl font-bold"
+                    >
+                      {selectedItem.title}
+                    </motion.p>
+                  </DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Detailed information about {selectedItem.title}
+                  </DialogDescription>
                 </div>
-              )}
+              </div>
+              <div className="flex-grow overflow-y-auto p-6 bg-white">
+                <div
+                  className="text-sm md:text-base prose max-w-none"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(selectedItem.description || ""),
+                  }}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </DialogContent>
       </Dialog>
       <ScrollDown color="uiblack" href="#last" className="py-2" />

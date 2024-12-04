@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { SponsorsHeader, sponsorsHeaderSchema } from "@/schemas/sponsorsSchema";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
@@ -34,12 +34,17 @@ export default function SponsorsHeaderForm({
     control,
     handleSubmit,
     formState: { errors, isDirty },
+    reset,
   } = methods;
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "sponsors_types",
   });
+
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
 
   const onSubmit = createSubmitHandler<SponsorsHeader>(
     "/api/admin/about/sponsors/header",
