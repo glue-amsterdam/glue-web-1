@@ -1,15 +1,36 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  ReactNode,
-  useEffect,
-  useState,
-} from "react";
-import { MainLinks, MainSectionData } from "@/schemas/mainSchema";
+import { createContext, useContext, ReactNode } from "react";
+import useSWR from "swr";
+import { MainSectionData } from "@/schemas/mainSchema";
+import { ColorStyleProvider } from "@/app/components/color-style-provider";
 
 const MainContext = createContext<MainSectionData | undefined>(undefined);
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export const MainContextProvider = ({
+  children,
+  initialData,
+}: {
+  children: ReactNode;
+  initialData: MainSectionData;
+}) => {
+  const { data } = useSWR<MainSectionData>("/api/main", fetcher, {
+    fallbackData: initialData,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    refreshInterval: 60000, // Revalidate every minute
+  });
+
+  return (
+    <MainContext.Provider value={data}>
+      <ColorStyleProvider colors={data?.mainColors || initialData.mainColors}>
+        {children}
+      </ColorStyleProvider>
+    </MainContext.Provider>
+  );
+};
 
 export const useColors = () => {
   const context = useContext(MainContext);
@@ -27,9 +48,9 @@ export const useMenu = () => {
   return context.mainMenu;
 };
 
-export const useLinks = (): MainLinks => {
+export const useLinks = () => {
   const context = useContext(MainContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useLinks must be used within a MainContextProvider");
   }
   return context.mainLinks;
@@ -41,43 +62,4 @@ export const useEventsDays = () => {
     throw new Error("useEventsDays must be used within a MainContextProvider");
   }
   return context.eventDays;
-};
-
-export const MainContextProvider = ({
-  children,
-  mainColors,
-  mainMenu,
-  mainLinks,
-  eventDays,
-}: {
-  children: ReactNode;
-  mainColors: MainSectionData["mainColors"];
-  mainMenu: MainSectionData["mainMenu"];
-  mainLinks: MainLinks;
-  eventDays: MainSectionData["eventDays"];
-}) => {
-  const [colors, setColors] = useState(mainColors);
-  const [links, setLinks] = useState(mainLinks);
-  const [menu, setMenu] = useState(mainMenu);
-  const [days, setDays] = useState(eventDays);
-
-  useEffect(() => {
-    setColors(mainColors);
-    setLinks(mainLinks);
-    setMenu(mainMenu);
-    setDays(eventDays);
-  }, [mainColors, mainLinks, mainMenu, eventDays]);
-
-  return (
-    <MainContext.Provider
-      value={{
-        mainColors: colors,
-        mainMenu: menu,
-        mainLinks: links,
-        eventDays: days,
-      }}
-    >
-      {children}
-    </MainContext.Provider>
-  );
 };
