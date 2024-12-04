@@ -234,9 +234,16 @@ export const mockAbout: DatabaseAboutContent = {
     ],
   },
   sponsorsSection: {
-    title: "Sponsors",
-    description:
-      "Discover the GLUE project, the GLUE Foundation, and the GLUE International initiative.",
+    sponsorsSection: {
+      title: "Sponsors",
+      description:
+        "Discover the GLUE project, the GLUE Foundation, and the GLUE International initiative.",
+      sponsorsTypes: [
+        { label: "Gold" },
+        { label: "Silver" },
+        { label: "Bronze" },
+      ],
+    },
   },
   glueInternationalSection: {
     title: "GLUE International",

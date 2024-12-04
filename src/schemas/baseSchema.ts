@@ -4,6 +4,7 @@ import { CuratedMemberSectionHeader } from "@/schemas/curatedSchema";
 import { InfoSection } from "@/schemas/infoSchema";
 import { GlueInternationalContent } from "@/schemas/internationalSchema";
 import { ParticipantsSectionHeader } from "@/schemas/participantsAdminSchema";
+import { SponsorsSection } from "@/schemas/sponsorsSchema";
 import {
   CuratedParticipantWhitYear,
   ParticipantUser,
@@ -17,14 +18,11 @@ export const imageDataSchema = z.object({
   file: z.any().optional(),
   oldImageUrl: z.string().optional(),
 });
-
 export type ImageData = z.infer<typeof imageDataSchema>;
 
 /* ABOUT SECTION ADMIN FORM SCHEMAS => */
 
 export type PressItemsSectionContent = z.infer<typeof pressItemsSectionSchema>;
-export type SponsorsSectionContent = z.infer<typeof sponsorsSectionSchema>;
-
 export type PressItem = z.infer<typeof pressItemSchema>;
 
 export type CarouselClientType = {
@@ -39,7 +37,6 @@ export type AboutParticipantsClientType = {
   headerData: ParticipantsSectionHeader;
   participants: ParticipantUser[];
 };
-
 export type AboutCuratedClientType = {
   headerData: CuratedMemberSectionHeader;
   curatedParticipants: Record<string, CuratedParticipantWhitYear[]>;
@@ -55,7 +52,6 @@ export const pressItemSchema = z.object({
     .min(10, "Content must be at least 10 characters")
     .optional(),
 });
-
 export const pressItemsSectionSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
@@ -65,18 +61,6 @@ export const pressItemsSectionSchema = z.object({
     .max(2, "Maximum 2 press items allowed"),
 });
 
-export const sponsorSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, "Name is required"),
-  website: z.string().url("Invalid website URL"),
-  sponsorT: z.string().min(1, "Sponsor type is required"),
-  logo: imageDataSchema,
-});
-
-export const sponsorsSectionSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().min(1, "Description is required"),
-});
 /* <= ABOUT SECTION ADMIN FORM SCHEMAS */
 
 /* API CALLS TYPES => */
@@ -88,7 +72,7 @@ export type DatabaseAboutContent = {
   curatedMembersSection: CuratedMemberSectionHeader;
   infoItemsSection: InfoSection;
   pressItemsSection: PressItemsSectionContent;
-  sponsorsSection: SponsorsSectionContent;
+  sponsorsSection: SponsorsSection;
   glueInternationalSection: GlueInternationalContent;
   createdAt: Date;
   updatedAt: Date;
