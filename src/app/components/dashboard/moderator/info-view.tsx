@@ -22,7 +22,7 @@ function InfoView({ selectedUser }: Props) {
             </span>
           ) : (
             <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground uppercase">
-              {selectedUser.planDetails.planLabel}
+              {selectedUser.planDetails.plan_label}
             </span>
           )}
         </p>
@@ -44,7 +44,7 @@ function InfoView({ selectedUser }: Props) {
           {"mapId" in selectedUser ? (
             <>
               <MapPin className="mr-2 text-primary" size={16} />
-              <span>Map ID: {selectedUser.mapId.id}</span>
+              <span>Map ID: {selectedUser.map_id?.id}</span>
             </>
           ) : "noAddress" in selectedUser && selectedUser.noAddress ? (
             <>

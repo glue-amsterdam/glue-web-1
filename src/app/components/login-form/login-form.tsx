@@ -25,15 +25,21 @@ import GlueLogoSVG from "@/app/components/glue-logo-svg";
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import { FormDataWithEmail, loginSchemaWithEmail } from "@/schemas/loginSchema";
+import { LoggedInUserType } from "@/schemas/usersSchemas";
 import Link from "next/link";
 
 interface LoginFormProps {
   isOpen: boolean;
   onClose: () => void;
+  onLoginSuccess: (user: LoggedInUserType) => void;
 }
 
-export default function LoginForm({ isOpen, onClose }: LoginFormProps) {
-  const { login, loginError, clearLoginError } = useAuth();
+export default function LoginForm({
+  isOpen,
+  onClose,
+  onLoginSuccess,
+}: LoginFormProps) {
+  const { login, loginError } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormDataWithEmail>({
@@ -46,10 +52,10 @@ export default function LoginForm({ isOpen, onClose }: LoginFormProps) {
 
   const onSubmit = async (data: FormDataWithEmail) => {
     setIsLoading(true);
-    clearLoginError();
     try {
-      await login(data.email, data.password);
+      const user = await login(data.email, data.password);
       onClose();
+      onLoginSuccess(user);
     } catch (error) {
       console.error("Failed to log in:", error);
     } finally {
@@ -58,8 +64,7 @@ export default function LoginForm({ isOpen, onClose }: LoginFormProps) {
   };
 
   const handlePasswordForgot = () => {
-    // Implement password reset functionality here
-    console.log("Password reset requested");
+    /* API CALL TO FORGOT PASSWORD */
   };
 
   return (
@@ -151,7 +156,7 @@ export default function LoginForm({ isOpen, onClose }: LoginFormProps) {
             <div className="text-center">
               <a
                 onClick={handlePasswordForgot}
-                className="text-sm text-primary hover:underline cursor-pointer"
+                className="text-sm text-primary hover:underline"
               >
                 Forgot your password?
               </a>
