@@ -17,7 +17,7 @@ interface PlanSelectorProps {
   plansData: PlansArrayType;
 }
 
-export default function PlanSelector({
+export default function SignInPlanSelector({
   attemptedNextStep,
   plansData,
 }: PlanSelectorProps) {

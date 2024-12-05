@@ -23,7 +23,7 @@ export async function GET() {
 
     const curatedUsers = filteredUsers.filter(
       (user): user is ParticipantUser & { year: number } =>
-        user.isCurated && user.year !== undefined
+        user.is_sticky && user.year !== undefined
     );
 
     const groupedByYear = curatedUsers.reduce<
@@ -34,7 +34,7 @@ export async function GET() {
       }
       acc[user.year].push({
         slug: user.slug,
-        userName: user.userName,
+        userName: user.user_name,
         year: user.year,
       });
       return acc;

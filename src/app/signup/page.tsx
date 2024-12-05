@@ -1,4 +1,4 @@
-import MultiStepForm from "@/app/signup/multi-step-form";
+import RegistrationForm from "@/app/signup/RegistrationForm";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { fetchPlans } from "@/lib/plans/fetch-plans";
 
@@ -16,7 +16,7 @@ export default async function SignUpPage() {
         }
       >
         <main className="flex-grow container mx-auto px-4">
-          <MultiStepForm plansData={plansData} />
+          <RegistrationForm plansData={plansData} />
         </main>
       </div>
     </div>

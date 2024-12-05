@@ -2,22 +2,28 @@ import { imageDataSchema } from "@/schemas/baseSchema";
 import * as z from "zod";
 
 export interface LoggedInUserType {
-  userId: string;
-  userName: string;
-  isMod: boolean;
+  user_id: string;
+  user_name: string;
+  is_mod: boolean;
   userType: string;
 }
 
+export type CuratedParticipantWhitYear = {
+  slug: string;
+  userName: string;
+  year: number;
+};
+
 /* PARTICIPANTS */
 export const enhancedUserSchema: z.ZodType<EnhancedUser> = z.object({
-  userId: z.string(),
-  userName: z.string(),
+  user_id: z.string(),
+  user_name: z.string(),
   slug: z.string().optional(),
 });
 export const enhancedOrganizerSchema: z.ZodType<EnhancedOrganizer> =
   enhancedUserSchema.and(
     z.object({
-      mapId: z.string(),
+      map_id: z.string(),
     })
   );
 
@@ -87,9 +93,10 @@ export type FormParticipantBaseType = z.infer<typeof formParticipantSchema>;
 
 /* USER TYPES => */
 import { ImageData } from "@/schemas/baseSchema";
-import { InvoiceDataCall, PlanType } from "@/schemas/invoiceSchemas";
+import { InvoiceDataCall } from "@/schemas/invoiceSchemas";
 import { EnhancedOrganizer, EnhancedUser, Event } from "@/schemas/eventSchemas";
 import { MapBoxPlace } from "@/schemas/mapSchema";
+import { PlanType } from "@/schemas/plansSchema";
 
 export interface SocialMediaLinks {
   instagramLink?: string;
@@ -97,88 +104,73 @@ export interface SocialMediaLinks {
   linkedinLink?: string;
 }
 
-type CuratedParticipantUser = {
-  isCurated: true;
-  year: number;
-};
-
-type NonCuratedParticipantUser = {
-  isCurated: false;
-  year?: number;
-};
-
 export type FreeplanUser = {
-  userId: string /* FOREIGN KEY UUIID*/;
+  user_id: string /* FOREIGN KEY UUIID*/;
   email: string /* UNIQUE */;
   password: string /* PASSWORD BYCRIPT */;
-  userName: string;
-  isMod: boolean;
-  planId: "planId-0"; // El plan es "free"
+  user_name: string;
+  is_mod: boolean;
+  plan_id: "planId-0"; // El plan es "free"
   type: "visitor";
-  createdAt: Date;
-  updatedAt: Date;
 };
 
 export type StatusType = "pending" | "accepted" | "declined";
 
 export type MemberUser = {
-  userId: string /* FOREIGN KEY UUIID*/;
+  user_id: string /* FOREIGN KEY UUIID*/;
   email: string /* UNIQUE */;
   password: string /* PASSWORD BYCRIPT */;
-  userName: string;
-  isMod: boolean;
-  planId: "planId-1"; // El plan es "member"
+  user_name: string;
+  is_mod: boolean;
+  plan_id: "planId-1"; // El plan es "member"
   type: "member";
-  invoiceData: InvoiceDataCall;
+  invoice_data: InvoiceDataCall;
   status: StatusType;
-  createdAt: Date;
-  updatedAt: Date;
 };
 
 export type ParticipantUserBase = {
-  userId: string /* FOREIGN KEY UUIID*/;
+  user_id: string /* FOREIGN KEY UUIID*/;
   slug: string /* UNIQUE */;
   email: string /* UNIQUE */;
   password: string /* BYCRIPT */;
-  userName: string;
-  isMod: boolean;
-  planId: "planId-2" | "planId-3" | "planId-4" | "planId-5";
+  user_name: string;
+  is_mod: boolean;
+  plan_id: "planId-2" | "planId-3" | "planId-4" | "planId-5";
   type: "participant";
-  invoiceData: InvoiceDataCall;
-  shortDescription: string;
+  invoice_data: InvoiceDataCall;
+  short_description: string;
   images?: ImageData[];
   events?: Pick<Event, "eventId">[];
   description?: string;
-  visitingHours?: VisitingHoursType;
-  phoneNumber?: string[];
-  visibleEmail?: string[];
-  visibleWebsite?: string[];
-  socialMedia?: SocialMediaLinks;
+  visiting_hours?: VisitingHoursType;
+  phone_number?: string[];
+  visible_email?: string[];
+  visible_website?: string[];
+  social_media?: SocialMediaLinks;
   status: StatusType;
-  createdAt: Date;
-  updatedAt: Date;
 };
+
 export type ParticipantUserWithMap = ParticipantUserBase & {
-  mapId: Pick<MapBoxPlace, "id">;
-  noAddress?: never;
+  map_id: Pick<MapBoxPlace, "id">;
+  no_address?: never;
 };
 
 export type ParticipantUserWithoutMap = ParticipantUserBase & {
-  noAddress: true;
-  mapInfo?: never;
+  no_address: true;
+  map_id?: never;
 };
 
 export type ParticipantUser = (
   | ParticipantUserWithMap
   | ParticipantUserWithoutMap
 ) &
-  (CuratedParticipantUser | NonCuratedParticipantUser);
+  (CuratedStickyParticipantUser | NonCuratedStickyParticipantUser);
 
 export type User = FreeplanUser | MemberUser | ParticipantUser;
 
 export type PlanResponseById = Pick<
   PlanType,
-  "planLabel" | "planPrice" | "planCurrency" | "currencyLogo"
+  "plan_label" | "plan_price" | "plan_currency" | "currency_logo"
 >;
 
 export type UserWithPlanDetails = User & {
@@ -189,10 +181,18 @@ export interface UsersResponse {
   users: User[];
 }
 
-export type CuratedParticipantWhitYear = {
+export type CuratedStickyParticipant = {
   slug: string;
-  userName: string;
+  user_name: string;
   year: number;
 };
 
-/* <= USER TYPES */
+type CuratedStickyParticipantUser = {
+  is_sticky: true;
+  year: number;
+};
+
+type NonCuratedStickyParticipantUser = {
+  is_sticky: false;
+  year?: number;
+};
