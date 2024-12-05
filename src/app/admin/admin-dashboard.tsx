@@ -3,6 +3,7 @@ import Link from "next/link";
 const adminSections = [
   { name: "Main", href: "/admin/main" },
   { name: "About", href: "/admin/about" },
+  { name: "Plans", href: "/admin/plans" },
 ];
 
 export default function AdminDashboard() {
