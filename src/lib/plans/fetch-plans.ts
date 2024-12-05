@@ -202,22 +202,23 @@ const PLANS_MOCK_DATA: PlansArrayType = {
 
 export const fetchPlans = cache(async (): Promise<PlansArrayType> => {
   try {
-    const res = await fetch(`${BASE_URL}/plans`, {
+    const response = await fetch(`${BASE_URL}/plans`, {
       next: { revalidate: AN_HOUR_IN_S },
     });
 
-    if (!res.ok) {
+    if (!response.ok) {
       if (
         process.env.NODE_ENV === "production" &&
         process.env.NEXT_PHASE === "phase-production-build"
       ) {
         console.log("Build environment detected, using mock data for plans");
-        return PLANS_MOCK_DATA;
+        return getPlansMockData();
       }
-      throw new Error(`Failed to fetch plans: ${res.statusText}`);
+      throw new Error(`Failed to fetch plans: ${response.statusText}`);
     }
 
-    const data = await res.json();
+    const data = await response.json();
+
     const validatedData = PlansArraySchema.parse(data);
 
     return validatedData;
@@ -226,3 +227,7 @@ export const fetchPlans = cache(async (): Promise<PlansArrayType> => {
     return PLANS_MOCK_DATA;
   }
 });
+
+export function getPlansMockData(): PlansArrayType {
+  return PLANS_MOCK_DATA;
+}
