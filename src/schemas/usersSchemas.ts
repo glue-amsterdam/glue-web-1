@@ -87,7 +87,7 @@ export type FormParticipantBaseType = z.infer<typeof formParticipantSchema>;
 
 /* USER TYPES => */
 import { ImageData } from "@/schemas/baseSchema";
-import { InvoiceDataCall, PlanType } from "@/utils/sign-in.types";
+import { InvoiceDataCall, PlanType } from "@/schemas/invoiceSchemas";
 import { EnhancedOrganizer, EnhancedUser, Event } from "@/schemas/eventSchemas";
 import { MapBoxPlace } from "@/schemas/mapSchema";
 

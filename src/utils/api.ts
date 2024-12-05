@@ -7,7 +7,6 @@ import {
   User,
   UserWithPlanDetails,
 } from "@/schemas/usersSchemas";
-import { PlansResponse } from "@/utils/sign-in.types";
 import { EnhancedUser, IndividualEventResponse } from "@/schemas/eventSchemas";
 import { MapLocationEnhaced, RouteValuesEnhanced } from "@/schemas/mapSchema";
 import { OptimizedParticipant } from "@/app/api/participants/optimized/route";
@@ -195,15 +194,6 @@ export const fetchSponsors = cache(async (): Promise<Sponsor[]> => {
     next: { revalidate: 0 },
   });
   if (!res.ok) throw new Error("Failed to fetch sponsors");
-  return res.json();
-});
-
-/* SIGNUP - GETPLANS */
-export const fetchPlans = cache(async (): Promise<PlansResponse> => {
-  const res = await fetch(`${BASE_URL}/plans`, {
-    next: { revalidate: 3600 },
-  });
-  if (!res.ok) throw new Error("Failed to fetch plans");
   return res.json();
 });
 
