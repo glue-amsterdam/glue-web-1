@@ -39,6 +39,7 @@ export default function RegistrationForm({ plansData }: RegistrationFormProps) {
     setSelectedPlan(null);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSubmit = async (data: any) => {
     setLoading(true);
     setError(null);
@@ -50,7 +51,6 @@ export default function RegistrationForm({ plansData }: RegistrationFormProps) {
     };
 
     console.log("Registration data:", registrationData);
-
     const result = await registerUser(registrationData);
 
     if (result.success) {
