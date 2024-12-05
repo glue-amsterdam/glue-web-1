@@ -14,6 +14,7 @@ import UserInfo from "@/app/components/signup/user-info";
 import InvoiceData from "@/app/components/signup/invoice-data";
 import LocationInfo from "@/app/components/signup/location-info";
 import { useToast } from "@/hooks/use-toast";
+import { PlansArrayType } from "@/schemas/plansSchema";
 
 // Define the form schema using Zod
 const formSchema = z
@@ -105,7 +106,11 @@ const getStepFields = (planType: PlanType) => {
   return steps;
 };
 
-export default function MultiStepForm() {
+export default function MultiStepForm({
+  plansData,
+}: {
+  plansData: PlansArrayType;
+}) {
   const [step, setStep] = useState(1);
   const [attemptedNextStep, setAttemptedNextStep] = useState(false);
   const router = useRouter();
@@ -239,7 +244,7 @@ export default function MultiStepForm() {
     if (step === 1) {
       return (
         <Suspense fallback={<CenteredLoader />}>
-          <PlanSelector {...commonProps} />
+          <PlanSelector {...commonProps} plansData={plansData} />
         </Suspense>
       );
     }

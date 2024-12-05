@@ -10,27 +10,28 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { use } from "react";
-import { fetchPlans } from "@/utils/api";
-import { PlanType } from "@/utils/sign-in.types";
+import { PlansArrayType, PlanType } from "@/schemas/plansSchema";
 
 interface PlanSelectorProps {
   attemptedNextStep: boolean;
+  plansData: PlansArrayType;
 }
 
-export default function PlanSelector({ attemptedNextStep }: PlanSelectorProps) {
+export default function PlanSelector({
+  attemptedNextStep,
+  plansData,
+}: PlanSelectorProps) {
   const {
     watch,
     setValue,
     formState: { errors },
   } = useFormContext();
   const selectedPlan = watch("plan");
-  const plans = use(fetchPlans());
-  const plansArray: PlanType[] = plans.plans;
+  const plansArray: PlansArrayType = plansData;
 
   const handleSelectPlan = (plan: PlanType) => {
-    setValue("plan", plan.planId);
-    setValue("planType", plan.planType);
+    setValue("plan", plan.plan_id);
+    setValue("planType", plan.plan_type);
   };
 
   return (
@@ -43,35 +44,37 @@ export default function PlanSelector({ attemptedNextStep }: PlanSelectorProps) {
       )}
       <div className="flex-grow overflow-x-auto scrollbar-visible">
         <div className="flex space-x-4 pb-4">
-          {plansArray.map((plan) => (
+          {plansArray.plans.map((plan) => (
             <Card
-              key={plan.planId}
+              key={plan.plan_id}
               className={`w-[350px] flex-shrink-0 cursor-pointer ${
-                selectedPlan === plan.planId ? "border-primary" : ""
+                selectedPlan === plan.plan_id ? "border-primary" : ""
               }`}
             >
               <CardHeader>
                 <CardTitle className="text-xl font-bold tracking-wider">
-                  {plan.planLabel}
+                  {plan.plan_label}
                 </CardTitle>
                 <CardDescription>
-                  {plan.currencyLogo}
-                  {plan.planPrice}
+                  {plan.currency_logo}
+                  {plan.plan_price}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[40vh] overflow-y-auto scrollbar-visible">
-                  <p className="mb-2 text-sm">{plan.planDescription}</p>
+                  <p className="mb-2 text-sm">{plan.plan_description}</p>
                   <ul className="list-disc list-inside text-sm space-y-1">
-                    {plan.planItems.map((feature) => (
-                      <li key={feature.id}>{feature.label}</li>
+                    {plan.plan_items.map((feature, index) => (
+                      <li key={feature.label + index}>{feature.label}</li>
                     ))}
                   </ul>
                 </div>
               </CardContent>
               <CardFooter>
                 <Button
-                  variant={selectedPlan === plan.planId ? "default" : "outline"}
+                  variant={
+                    selectedPlan === plan.plan_id ? "default" : "outline"
+                  }
                   className="w-full"
                   onClick={() => handleSelectPlan(plan)}
                 >

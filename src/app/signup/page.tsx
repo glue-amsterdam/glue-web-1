@@ -1,9 +1,10 @@
-import CenteredLoader from "@/app/components/centered-loader";
 import MultiStepForm from "@/app/signup/multi-step-form";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { Suspense } from "react";
+import { fetchPlans } from "@/lib/plans/fetch-plans";
 
-function SignUpPage() {
+export default async function SignUpPage() {
+  const plansData = await fetchPlans();
+
   return (
     <div className="min-h-screen bg-black">
       <div
@@ -15,13 +16,9 @@ function SignUpPage() {
         }
       >
         <main className="flex-grow container mx-auto px-4">
-          <Suspense fallback={<CenteredLoader />}>
-            <MultiStepForm />
-          </Suspense>
+          <MultiStepForm plansData={plansData} />
         </main>
       </div>
     </div>
   );
 }
-
-export default SignUpPage;
