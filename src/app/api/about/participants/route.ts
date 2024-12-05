@@ -32,13 +32,13 @@ export async function GET() {
       )
       .slice(0, 15)
       .map((user) => ({
-        userId: user.userId,
+        userId: user.user_id,
         slug: user.slug,
-        userName: user.userName,
+        userName: user.user_name,
         image: {
           image_url:
             user.images?.[0]?.image_url || "/placeholders/placeholder.jpg",
-          alt: user.images?.[0]?.alt || `${user.userName} profile image`,
+          alt: user.images?.[0]?.alt || `${user.user_name} profile image`,
         },
       }));
 
