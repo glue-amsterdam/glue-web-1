@@ -1,6 +1,5 @@
 import { AN_HOUR_IN_S, BASE_URL } from "@/constants";
 import { PlansArraySchema, PlansArrayType } from "@/schemas/plansSchema";
-import { cache } from "react";
 
 const PLANS_MOCK_DATA: PlansArrayType = {
   plans: [
@@ -200,7 +199,7 @@ const PLANS_MOCK_DATA: PlansArrayType = {
   ],
 };
 
-export const fetchPlans = cache(async (): Promise<PlansArrayType> => {
+export async function fetchPlans(): Promise<PlansArrayType> {
   try {
     const response = await fetch(`${BASE_URL}/plans`, {
       next: { revalidate: AN_HOUR_IN_S },
@@ -211,10 +210,10 @@ export const fetchPlans = cache(async (): Promise<PlansArrayType> => {
         process.env.NODE_ENV === "production" &&
         process.env.NEXT_PHASE === "phase-production-build"
       ) {
-        console.log("Build environment detected, using mock data for plans");
+        console.log("Build environment detected, using mock data");
         return getPlansMockData();
       }
-      throw new Error(`Failed to fetch plans: ${response.statusText}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
@@ -224,10 +223,9 @@ export const fetchPlans = cache(async (): Promise<PlansArrayType> => {
     return validatedData;
   } catch (error) {
     console.error("Last error in the tryCatch block in Plans fetcher:", error);
-    return PLANS_MOCK_DATA;
+    return getPlansMockData();
   }
-});
-
+}
 export function getPlansMockData(): PlansArrayType {
   return PLANS_MOCK_DATA;
 }
