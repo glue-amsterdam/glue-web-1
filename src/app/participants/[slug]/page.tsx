@@ -16,8 +16,8 @@ export default async function ParticipantPage({
   const participant: ParticipantUser = await fetchParticipant(slug);
 
   let mapData = null;
-  if (participant && "mapId" in participant) {
-    mapData = await fetchMapById(participant.mapId.id);
+  if (participant && "map_id" in participant && participant.map_id?.id) {
+    mapData = await fetchMapById(participant.map_id.id);
   }
 
   return (

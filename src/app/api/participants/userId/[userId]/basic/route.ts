@@ -1,30 +1,26 @@
 import { users } from "@/lib/mockMembers";
-import {
-  ParticipantUser,
-  ParticipantUserWithMap,
-  ParticipantUserWithoutMap,
-} from "@/schemas/usersSchemas";
+import { ParticipantUserBase } from "@/schemas/usersSchemas";
 import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  props: { params: Promise<{ userId: string }> }
+  props: { params: Promise<{ user_id: string }> }
 ) {
   const params = await props.params;
-  if (!params || !params.userId) {
+  if (!params || !params.user_id) {
     return NextResponse.json(
-      { message: "Participant userId is required" },
+      { message: "Participant user_id is required" },
       { status: 400 }
     );
   }
 
-  const { userId } = params;
+  const { user_id } = params;
 
   const participants = users.filter(
     (user) => user.type === "participant"
-  ) as ParticipantUser[];
+  ) as ParticipantUserBase[];
 
-  const filteredUser = participants.find((user) => user.userId === userId);
+  const filteredUser = participants.find((user) => user.user_id === user_id);
 
   if (!filteredUser) {
     return NextResponse.json(
@@ -34,29 +30,25 @@ export async function GET(
   }
 
   const {
-    createdAt,
     images,
     slug,
-    userName,
-    shortDescription,
+    user_name,
+    short_description: shortDescription,
     description,
-    visitingHours,
-    phoneNumber,
-    visibleEmail,
-    visibleWebsite,
-    socialMedia,
-    updatedAt,
-    planId,
+    visiting_hours: visitingHours,
+    phone_number: phoneNumber,
+    visible_email: visibleEmail,
+    visible_website: visibleWebsite,
+    social_media: socialMedia,
+    plan_id: planId,
   } = filteredUser;
 
   // Create the base response object
   const responseData = {
-    updatedAt,
-    createdAt,
     images,
     slug,
     planId,
-    userName,
+    user_name,
     shortDescription,
     description,
     visitingHours,
@@ -68,16 +60,16 @@ export async function GET(
 
   // Check if the user has a mapId or noAddress
   if ("mapId" in filteredUser) {
-    const userWithMap = filteredUser as ParticipantUserWithMap;
+    const userWithMap = filteredUser;
     return NextResponse.json({
       ...responseData,
-      mapId: userWithMap.mapId.id,
+      mapId: userWithMap,
     });
   } else if ("noAddress" in filteredUser) {
-    const userWithoutMap = filteredUser as ParticipantUserWithoutMap;
+    const userWithoutMap = filteredUser;
     return NextResponse.json({
       ...responseData,
-      noAddress: userWithoutMap.noAddress,
+      noAddress: userWithoutMap,
     });
   }
 

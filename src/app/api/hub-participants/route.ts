@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const filteredUsers = users.filter((user) => user.type === "participant");
 
-  const hubParticipants = filteredUsers.filter((p) => p.noAddress === true);
+  const hubParticipants = filteredUsers.filter((p) => p.no_address === true);
 
   if (!hubParticipants.length)
     return NextResponse.json(
@@ -14,8 +14,8 @@ export async function GET() {
     );
 
   const response: EnhancedUser[] = hubParticipants.map((p) => ({
-    userId: p.userId,
-    userName: p.userName,
+    user_id: p.user_id,
+    user_name: p.user_name,
     slug: p.slug,
   }));
 

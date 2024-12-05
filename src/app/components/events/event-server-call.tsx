@@ -4,7 +4,7 @@ import EventContent from "./event-content";
 
 const getEventData = cache(async (eventId: string) => {
   const event = await fetchEventById(eventId);
-  const mapData = await fetchMapById(event.organizer.mapId);
+  const mapData = await fetchMapById(event.organizer.map_id);
   return { event, mapData };
 });
 

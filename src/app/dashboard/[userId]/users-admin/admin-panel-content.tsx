@@ -41,7 +41,7 @@ export default function UsersAdminPage({ users }: { users: User[] }) {
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
-      user.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = selectedType === "all" || user.type === selectedType;
 
@@ -118,7 +118,7 @@ export default function UsersAdminPage({ users }: { users: User[] }) {
 
           <ScrollArea className="h-[calc(100vh-200px)]">
             {filteredUsers.map((user) => (
-              <div key={user.userId}>
+              <div key={user.user_id}>
                 <UserCard
                   selectedUsers={selectedUsers}
                   setSelectedUsers={setSelectedUsers}

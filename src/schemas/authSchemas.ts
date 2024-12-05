@@ -1,3 +1,4 @@
+import { imageDataSchema } from "@/schemas/baseSchema";
 import { z } from "zod";
 
 const baseUserSchema = z.object({
@@ -34,7 +35,10 @@ const participantSchema = z.object({
   is_sticky: z.boolean().optional(),
   year: z.number().optional(),
   status: z.string().optional(),
+  images: z.array(imageDataSchema).optional(),
 });
+
+export type ParticipantAuthData = z.infer<typeof participantSchema>;
 
 const mapInfoSchema = z.object({
   formatted_address: z.string().optional(),
