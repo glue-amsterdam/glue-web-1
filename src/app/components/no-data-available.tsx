@@ -10,8 +10,8 @@ export function NoDataAvailable({
 }: NoDataAvailableProps) {
   return (
     <div
-      style={{ paddingTop: `${NAVBAR_HEIGHT + 5}rem` }}
-      className={`h-dvh snap-start relative `}
+      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+      className={`h-dvh snap-start relative bg-black/50`}
     >
       <div className="flex flex-col items-center justify-center pt-20 bg-gray-50 rounded-lg shadow-inner">
         <div className="mb-4 text-gray-400">

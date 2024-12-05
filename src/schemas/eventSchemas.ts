@@ -73,11 +73,11 @@ export const eventSchema: z.ZodType<Event> = z.discriminatedUnion("rsvp", [
 export type EventType = (typeof EVENT_TYPES)[number];
 
 export interface BaseEvent {
-  organizer: Pick<ParticipantUser, "userId">;
+  organizer: Pick<ParticipantUser, "user_id">;
   eventId: string;
   name: string;
   thumbnail: ImageData;
-  coOrganizers?: Pick<ParticipantUser, "userId">[];
+  coOrganizers?: Pick<ParticipantUser, "user_id">[];
   date: EventDay;
   startTime: string;
   endTime: string;
@@ -102,14 +102,14 @@ export interface RSVPOptionalEvent extends BaseEvent {
 export type Event = RSVPRequiredEvent | RSVPOptionalEvent;
 
 export interface EnhancedUser {
-  mapId?: string;
-  userId: string;
-  userName: string;
+  map_id?: string;
+  user_id: string;
+  user_name: string;
   slug?: string;
 }
 
 export interface EnhancedOrganizer extends EnhancedUser {
-  mapId: string;
+  map_id: string;
 }
 
 export interface IndividualEventResponse

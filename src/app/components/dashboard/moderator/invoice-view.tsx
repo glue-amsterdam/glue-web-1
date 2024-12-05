@@ -3,12 +3,12 @@ import React from "react";
 
 type Props = {
   invoiceData: {
-    invoiceCompanyName: string;
-    invoiceZipCode: string;
-    invoiceAddress: string;
-    invoiceCountry: string;
-    invoiceCity: string;
-    invoiceExtra?: string;
+    invoice_company_name: string;
+    invoice_zip_code: string;
+    invoice_address: string;
+    invoice_country: string;
+    invoice_city: string;
+    invoice_extra?: string;
   };
 };
 
@@ -22,29 +22,29 @@ function InvoiceView({ invoiceData }: Props) {
             <p>
               <strong>Company Name:</strong>
             </p>
-            <p>{invoiceData.invoiceCompanyName}</p>
+            <p>{invoiceData.invoice_company_name}</p>
             <p>
               <strong>Address:</strong>
             </p>
-            <p>{invoiceData.invoiceAddress}</p>
+            <p>{invoiceData.invoice_address}</p>
             <p>
               <strong>Zip Code:</strong>
             </p>
-            <p>{invoiceData.invoiceZipCode}</p>
+            <p>{invoiceData.invoice_zip_code}</p>
             <p>
               <strong>City:</strong>
             </p>
-            <p>{invoiceData.invoiceCity}</p>
+            <p>{invoiceData.invoice_city}</p>
             <p>
               <strong>Country:</strong>
             </p>
-            <p>{invoiceData.invoiceCountry}</p>
-            {invoiceData.invoiceExtra && (
+            <p>{invoiceData.invoice_country}</p>
+            {invoiceData.invoice_extra && (
               <>
                 <p>
                   <strong>Extra Data:</strong>
                 </p>
-                <p>{invoiceData.invoiceExtra}</p>
+                <p>{invoiceData.invoice_extra}</p>
               </>
             )}
           </div>

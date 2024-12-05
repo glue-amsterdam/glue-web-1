@@ -9,8 +9,8 @@ export function getUserDetails(user: User | undefined): EnhancedUser | null {
   if (!user) return null;
 
   const baseDetails: EnhancedUser = {
-    userId: user.userId,
-    userName: user.userName,
+    user_id: user.user_id,
+    user_name: user.user_name,
   };
 
   if (user.type === "participant") {
@@ -20,8 +20,8 @@ export function getUserDetails(user: User | undefined): EnhancedUser | null {
       slug: participantUser.slug,
     };
 
-    if ("mapId" in participantUser) {
-      enhancedUser.mapId = participantUser.mapId.id;
+    if ("map_id" in participantUser) {
+      enhancedUser.map_id = participantUser.map_id?.id;
     }
 
     return enhancedUser;
@@ -36,9 +36,9 @@ export function getOrganizerDetails(
   if (!user) return null;
 
   const baseDetails: EnhancedOrganizer = {
-    userId: user.userId,
-    userName: user.userName,
-    mapId: "", // Default empty string for mapId
+    user_id: user.user_id,
+    user_name: user.user_name,
+    map_id: "", // Default empty string for map_id
   };
 
   if (user.type === "participant") {
@@ -48,20 +48,20 @@ export function getOrganizerDetails(
       slug: participantUser.slug,
     };
 
-    if ("mapId" in participantUser) {
+    if ("map_id" in participantUser) {
       const userWithMap = participantUser as ParticipantUserWithMap;
       return {
         ...participantDetails,
-        mapId: userWithMap.mapId.id,
+        map_id: userWithMap.map_id.id,
       };
     } else if ("noAddress" in participantUser) {
       return {
         ...participantDetails,
-        mapId: "", // Empty string for users without an address
+        map_id: "", // Empty string for users without an address
       };
     }
 
-    // If neither mapId nor noAddress is present (this should not happen based on the types, but we'll handle it just in case)
+    // If neither map_id nor noAddress is present (this should not happen based on the types, but we'll handle it just in case)
     return participantDetails;
   }
 

@@ -1,27 +1,22 @@
-import CenteredLoader from "@/app/components/centered-loader";
-import MultiStepForm from "@/app/signup/multi-step-form";
-import { NAVBAR_HEIGHT } from "@/constants";
-import { Suspense } from "react";
+"use client";
 
-function SignUpPage() {
-  return (
-    <div className="min-h-screen bg-black">
-      <div
-        className="pt-[var(--navbar-height)] min-h-screen flex flex-col"
-        style={
-          {
-            "--navbar-height": `${NAVBAR_HEIGHT}rem`,
-          } as React.CSSProperties
-        }
-      >
-        <main className="flex-grow container mx-auto px-4">
-          <Suspense fallback={<CenteredLoader />}>
-            <MultiStepForm />
-          </Suspense>
-        </main>
-      </div>
-    </div>
-  );
+import LoadingSpinner from "@/app/components/LoadingSpinner";
+import RegistrationForm from "@/app/signup/RegistrationForm";
+import { PlansArrayType } from "@/schemas/plansSchema";
+import useSWR from "swr";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export default function SignUpPage() {
+  const {
+    data: plansData,
+    error,
+    isLoading,
+  } = useSWR<PlansArrayType>("/api/plans", fetcher);
+
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <div>Failed to load participants data</div>;
+  if (!plansData) return <div>No participants data available</div>;
+
+  return <RegistrationForm plansData={plansData} />;
 }
-
-export default SignUpPage;

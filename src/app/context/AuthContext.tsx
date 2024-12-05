@@ -64,11 +64,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD
         ) {
           const loggedInUser = MOCKUSER_ADMIN_PARTICIPANT;
-          if (!loggedInUser || !loggedInUser.userId) {
+          if (!loggedInUser || !loggedInUser.user_id) {
             throw new Error("Invalid user data");
           }
-          const { userId, userName, isMod, type } = loggedInUser;
-          const userData = { userId, userName, isMod, userType: type };
+          const { user_id, user_name, is_mod, type } = loggedInUser;
+          const userData = { user_id, user_name, is_mod, userType: type };
 
           localStorage.setItem("user", JSON.stringify(userData));
           setUser(userData);

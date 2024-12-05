@@ -24,23 +24,23 @@ function HeaderUserFullView({ selectedUser }: Props) {
             selectedUser.images.length > 0 ? (
               <AvatarImage
                 src={selectedUser.images[0].image_url}
-                alt={selectedUser.userName}
+                alt={selectedUser.user_name}
               />
             ) : null}
-            <AvatarFallback>{selectedUser.userName.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{selectedUser.user_name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
-            <CardTitle>{selectedUser.userName}</CardTitle>
+            <CardTitle>{selectedUser.user_name}</CardTitle>
             <p className="text-sm text-muted-foreground">
               {isParticipantUser(selectedUser)
-                ? selectedUser.shortDescription
+                ? selectedUser.short_description
                 : selectedUser.email}
             </p>
           </div>
         </div>
         <Link
           target="_blank"
-          href={`/dashboard/${selectedUser.userId}/user-data`}
+          href={`/dashboard/${selectedUser.user_id}/user-data`}
         >
           <Button variant="outline">
             <Edit className="mr-2 h-4 w-4" /> Edit User

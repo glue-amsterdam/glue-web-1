@@ -202,7 +202,7 @@ export const RichTextEditor = ({
     editorProps: {
       attributes: {
         class:
-          "min-h-[200px] bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm max-w-none",
+          "min-h-[200px] bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none",
       },
     },
   });
@@ -232,7 +232,7 @@ export const RichTextEditor = ({
       )}
       {showPreview ? (
         <div
-          className="min-h-[200px] bg-white font-overpass text-black w-full p-2 prose prose-sm max-w-none"
+          className="min-h-[200px] bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none"
           dangerouslySetInnerHTML={{ __html: editor?.getHTML() || "" }}
         />
       ) : (

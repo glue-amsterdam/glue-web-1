@@ -8,10 +8,10 @@ export async function GET(
   props: { params: Promise<{ year: string }> }
 ) {
   const params = await props.params;
-  const supabase = await createClient();
   const { year } = params;
 
   try {
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("about_citizens")
       .select("*")

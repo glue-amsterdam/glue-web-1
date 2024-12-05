@@ -22,15 +22,15 @@ export async function GET(request: NextRequest) {
   // Filter users based on the search term
   const filteredUsers = participants.filter(
     (user) =>
-      user.userName.toLowerCase().includes(lowercaseTerm) ||
+      user.user_name.toLowerCase().includes(lowercaseTerm) ||
       user.slug.toLowerCase().includes(lowercaseTerm) ||
-      user.userId.toLowerCase().includes(lowercaseTerm)
+      user.user_id.toLowerCase().includes(lowercaseTerm)
   );
 
   const response: EnhancedUser[] = filteredUsers.map((user) => {
     return {
-      userId: user.userId,
-      userName: user.userName,
+      user_id: user.user_id,
+      user_name: user.user_name,
       slug: user.slug,
     };
   });

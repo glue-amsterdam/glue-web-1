@@ -78,7 +78,7 @@ export default function EventContent({ event, mapData }: EventContentProps) {
                     className="text-sm hover:underline"
                     target="_blank"
                   >
-                    {event.organizer.userName}
+                    {event.organizer.user_name}
                   </Link>
                 </div>
               </div>
@@ -89,7 +89,7 @@ export default function EventContent({ event, mapData }: EventContentProps) {
                     {event.coOrganizers.map((contributor: EnhancedUser) => (
                       <li
                         key={
-                          contributor.userId + (Math.random() * 100).toString()
+                          contributor.user_id + (Math.random() * 100).toString()
                         }
                         className="flex items-center justify-center gap-2"
                       >
@@ -98,7 +98,7 @@ export default function EventContent({ event, mapData }: EventContentProps) {
                           className="text-sm hover:underline"
                           target="_blank"
                         >
-                          {contributor.userName}
+                          {contributor.user_name}
                         </Link>
                       </li>
                     ))}

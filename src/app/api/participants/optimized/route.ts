@@ -2,10 +2,10 @@ import { users } from "@/lib/mockMembers";
 import { ParticipantUser } from "@/schemas/usersSchemas";
 
 export type OptimizedParticipant = {
-  userId: string;
+  user_id: string;
   slug: string;
-  userName: string;
-  shortDescription: string;
+  user_name: string;
+  short_description: string;
   image_url: string;
   planId: string;
 };
@@ -17,14 +17,14 @@ export async function GET() {
 
   const optimizedParticipants: OptimizedParticipant[] = participants.map(
     (user) => {
-      const { userId, userName, slug, shortDescription } = user;
+      const { user_id, user_name, slug, short_description } = user;
       return {
-        userId,
-        userName,
+        user_id,
+        user_name,
         slug,
-        shortDescription,
+        short_description,
         image_url: user.images?.[0].image_url || "",
-        planId: user.planId,
+        planId: user.plan_id,
       };
     }
   );

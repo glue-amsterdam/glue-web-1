@@ -116,7 +116,7 @@ export function HubForm({
                       onValueChange={async (value) => {
                         const selectedParticipant =
                           await fetchAllHubParticipants().then((participants) =>
-                            participants.find((p) => p.userId === value)
+                            participants.find((p) => p.user_id === value)
                           );
                         if (selectedParticipant) {
                           controllerField.onChange(selectedParticipant);

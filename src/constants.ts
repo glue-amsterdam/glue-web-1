@@ -127,7 +127,7 @@ export const DEFAULT_EMPTY_EVENT: Omit<Event, "date"> = {
     alt: "",
   },
   organizer: {
-    userId: "",
+    user_id: "",
   },
   coOrganizers: [],
   startTime: "",
@@ -140,37 +140,37 @@ export const DEFAULT_EMPTY_EVENT: Omit<Event, "date"> = {
 };
 
 export const MOCKUSER_ADMIN_PARTICIPANT: User = {
-  userId: "50654654",
+  user_id: "50654654",
   slug: "vanmokum",
-  userName: "VANMOKUM",
-  shortDescription: "High-end lighting and furniture brands",
+  user_name: "VANMOKUM",
+  short_description: "High-end lighting and furniture brands",
   type: "participant",
-  isCurated: true,
+  is_sticky: true,
   year: 1998,
-  isMod: true,
+  is_mod: true,
   status: "accepted",
-  planId: "planId-3",
+  plan_id: "planId-3",
   description:
     "At VANMOKUM we take care of the development, manufacturing and distribution of high-end lighting and furniture brands:\n\nGRAYPANTS\nFRAMA\nPIET HEIN EEK LIGHTING\nAY ILLUMINATE\nSELETTI\nJAPTH\n\nAt GLUE'24, our PANDVANMOKUM will also be the place to discover work from external brands and designers:\n\nNLXLxSTUDIO JOB\nARTLINEZ\nJAN WILLEM KALDENBACH\nSUPA DUPA STUDIO\nSTUDIO RENS\nVANJOOSTxKEGEL\nDIRK DUIF\nTEUN ZWETS",
-  invoiceData: {
+  invoice_data: {
     ...generateTimestamps(),
-    invoiceId: "invoice-user50654654",
-    userId: "50654654",
-    invoiceData: {
-      invoiceCompanyName: "VANMOKUM",
-      invoiceZipCode: "1071 XX",
-      invoiceAddress: "Museumstraat 1",
-      invoiceCountry: "Netherlands",
-      invoiceCity: "Amsterdam",
-      invoiceExtra: "Extra data",
+    invoice_id: "invoice-user50654654",
+    user_id: "50654654",
+    invoice_data: {
+      invoice_company_name: "VANMOKUM",
+      invoice_zip_code: "1071 XX",
+      invoice_address: "Museumstraat 1",
+      invoice_country: "Netherlands",
+      invoice_city: "Amsterdam",
+      invoice_extra: "Extra data",
     },
   },
-  mapId: { id: "place.1234" },
-  visitingHours: visitingHours,
-  phoneNumber: ["+31 (0)20 21 03 101"],
-  visibleEmail: ["press@vanmokum.com"],
-  visibleWebsite: ["/members/vanmokum"],
-  socialMedia: {
+  map_id: { id: "place.1234" },
+  visiting_hours: visitingHours,
+  phone_number: ["+31 (0)20 21 03 101"],
+  visible_email: ["press@vanmokum.com"],
+  visible_website: ["/members/vanmokum"],
+  social_media: {
     instagramLink: "https://www.instagram.com/vanmokum/",
     facebookLink: "https://www.facebook.com/VANMOKUM/",
     linkedinLink: "https://www.linkedin.com/company/vanmokum",

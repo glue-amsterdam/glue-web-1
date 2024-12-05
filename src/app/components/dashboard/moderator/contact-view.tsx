@@ -21,46 +21,46 @@ function ContactView({ selectedUser }: Props) {
     <TabsContent value="contact">
       {isParticipantUser(selectedUser) && (
         <div className="space-y-2">
-          {selectedUser.phoneNumber?.map((phone, index) => (
+          {selectedUser.phone_number?.map((phone, index) => (
             <div key={index} className="flex items-center">
               <Phone className="mr-2" size={16} />
               <span className="text-sm">{phone}</span>
             </div>
           ))}
-          {selectedUser.visibleEmail?.map((email, index) => (
+          {selectedUser.visible_email?.map((email, index) => (
             <div key={index} className="flex items-center">
               <Mail className="mr-2" size={16} />
               <span className="text-sm">{email}</span>
             </div>
           ))}
-          {selectedUser.visibleWebsite?.map((website, index) => (
+          {selectedUser.visible_website?.map((website, index) => (
             <div key={index} className="flex items-center">
               <Globe className="mr-2" size={16} />
               <span className="text-sm">{website}</span>
             </div>
           ))}
           <div className="flex flex-wrap gap-1 mt-2">
-            {selectedUser.socialMedia?.instagramLink && (
-              <a href={selectedUser.socialMedia.instagramLink} target="_blank">
+            {selectedUser.social_media?.instagramLink && (
+              <a href={selectedUser.social_media.instagramLink} target="_blank">
                 <Badge variant="secondary">
                   <Instagram className="mr-1" size={14} />
-                  {selectedUser.socialMedia.instagramLink}
+                  {selectedUser.social_media.instagramLink}
                 </Badge>
               </a>
             )}
-            {selectedUser.socialMedia?.facebookLink && (
-              <a href={selectedUser.socialMedia.facebookLink} target="_blank">
+            {selectedUser.social_media?.facebookLink && (
+              <a href={selectedUser.social_media.facebookLink} target="_blank">
                 <Badge variant="secondary">
                   <Facebook className="mr-1" size={14} />
-                  {selectedUser.socialMedia.facebookLink}
+                  {selectedUser.social_media.facebookLink}
                 </Badge>
               </a>
             )}
-            {selectedUser.socialMedia?.linkedinLink && (
-              <a href={selectedUser.socialMedia.linkedinLink} target="_blank">
+            {selectedUser.social_media?.linkedinLink && (
+              <a href={selectedUser.social_media.linkedinLink} target="_blank">
                 <Badge variant="secondary">
                   <Linkedin className="mr-1" size={14} />
-                  {selectedUser.socialMedia.linkedinLink}
+                  {selectedUser.social_media.linkedinLink}
                 </Badge>
               </a>
             )}

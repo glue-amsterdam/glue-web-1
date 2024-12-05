@@ -10,6 +10,7 @@ import { PressItem } from "@/schemas/pressSchema";
 import Image from "next/image";
 import DOMPurify from "dompurify";
 import { DialogDescription } from "@radix-ui/react-dialog";
+import { NoDataAvailable } from "@/app/components/no-data-available";
 
 interface PressSectionProps {
   pressItems: PressItem[];
@@ -31,14 +32,26 @@ export default function PressSection({
     setModalOpen(true);
   };
 
+  const visiblePressItems = pressItems.filter((item) => item.isVisible);
+  const hasGlueTV = visiblePressItems.length === 2;
+
   const closeModal = () => {
     setModalOpen(false);
   };
+
+  if (visiblePressItems.length <= 0)
+    return (
+      <div className="h-full">
+        <NoDataAvailable />
+      </div>
+    );
 
   const PressCard = ({ item, i }: { item: PressItem; i: number }) => {
     const xSide = i === 0 ? -100 : 100;
     const ySide = i === 0 ? -100 : 100;
     const rotateSide = i === 0 ? -20 : 20;
+
+    if (!item.isVisible) return null;
 
     return (
       <motion.div
@@ -86,8 +99,6 @@ export default function PressSection({
       </div>
     );
   }
-
-  const hasGlueTV = (pressItems.length = 2);
 
   return (
     <motion.article
@@ -157,7 +168,7 @@ export default function PressSection({
               </div>
               <div className="flex-grow overflow-y-auto p-6 bg-white">
                 <div
-                  className="text-sm md:text-base prose max-w-none"
+                  className="text-sm md:text-base prose max-w-none font-overpass"
                   dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(selectedItem.description || ""),
                   }}

@@ -45,13 +45,13 @@ function ParticipantInfo({ participant, mapData }: ParticipantInfoProps) {
           className="text-3xl md:text-4xl font-bold tracking-tight"
           variants={fadeInUp}
         >
-          {participant.userName}
+          {participant.user_name}
         </motion.h1>
         <motion.p
           className="text-sm md:text-base leading-relaxed mt-4"
           variants={fadeInUp}
         >
-          {participant.shortDescription}
+          {participant.short_description}
         </motion.p>
         {participant.description && (
           <motion.p
@@ -65,8 +65,9 @@ function ParticipantInfo({ participant, mapData }: ParticipantInfoProps) {
           <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700 flex items-center">
             <FaClock className="mr-2" /> Visiting Hours
           </h2>
-          {participant.visitingHours && participant.visitingHours.length > 0 ? (
-            participant.visitingHours.map((dayRange) => (
+          {participant.visiting_hours &&
+          participant.visiting_hours.length > 0 ? (
+            participant.visiting_hours.map((dayRange) => (
               <div key={dayRange.dayId} className="mb-2">
                 <p className="text-sm md:text-base">
                   <span className="font-medium">{dayRange.label}:</span>{" "}
@@ -99,7 +100,7 @@ function ParticipantInfo({ participant, mapData }: ParticipantInfoProps) {
                 <p>{mapData.place_name}</p>
               </a>
             </div>
-          ) : participant.noAddress ? (
+          ) : participant.no_address ? (
             <div className="inline-flex gap-2 items-center text-gray-500">
               <MapPinOff className="w-5 h-5" />
               <span>No address provided</span>
@@ -111,10 +112,10 @@ function ParticipantInfo({ participant, mapData }: ParticipantInfoProps) {
           )}
         </motion.div>
         <motion.div className="space-y-3 mt-8" variants={fadeInUp}>
-          {participant.phoneNumber && participant.phoneNumber.length > 0 && (
+          {participant.phone_number && participant.phone_number.length > 0 && (
             <div className="flex items-center gap-2">
               <FaPhone className="w-4 h-4 md:w-5 md:h-5 mr-3 text-uiwhite" />
-              {participant.phoneNumber.map((phone, index) => (
+              {participant.phone_number.map((phone, index) => (
                 <motion.a
                   key={index}
                   href={`tel:${phone}`}
@@ -122,32 +123,33 @@ function ParticipantInfo({ participant, mapData }: ParticipantInfoProps) {
                   whileHover={{ scale: 1.05 }}
                 >
                   {phone}
-                  {index < participant.phoneNumber!.length - 1 && ", "}
+                  {index < participant.phone_number!.length - 1 && ", "}
                 </motion.a>
               ))}
             </div>
           )}
-          {participant.visibleEmail && participant.visibleEmail.length > 0 && (
-            <div className="flex items-center gap-2">
-              <FaEnvelope className="w-4 h-4 md:w-5 md:h-5 mr-3 text-uiwhite" />
-              {participant.visibleEmail.map((email, index) => (
-                <motion.a
-                  key={email + index}
-                  href={`mailto:${email}`}
-                  className="text-sm md:text-base hover:text-uiwhite transition-colors"
-                  whileHover={{ scale: 1.05 }}
-                >
-                  {email}
-                  {index < participant.visibleEmail!.length - 1 && ", "}
-                </motion.a>
-              ))}
-            </div>
-          )}
-          {participant.visibleWebsite &&
-            participant.visibleWebsite.length > 0 && (
+          {participant.visible_email &&
+            participant.visible_email.length > 0 && (
+              <div className="flex items-center gap-2">
+                <FaEnvelope className="w-4 h-4 md:w-5 md:h-5 mr-3 text-uiwhite" />
+                {participant.visible_email.map((email, index) => (
+                  <motion.a
+                    key={email + index}
+                    href={`mailto:${email}`}
+                    className="text-sm md:text-base hover:text-uiwhite transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    {email}
+                    {index < participant.visible_email!.length - 1 && ", "}
+                  </motion.a>
+                ))}
+              </div>
+            )}
+          {participant.visible_website &&
+            participant.visible_website.length > 0 && (
               <div className="flex items-center gap-2">
                 <FaGlobe className="w-4 h-4 md:w-5 md:h-5 mr-3 text-uiwhite" />
-                {participant.visibleWebsite.map((website, index) => (
+                {participant.visible_website.map((website, index) => (
                   <motion.a
                     key={index}
                     href={website}
@@ -157,17 +159,17 @@ function ParticipantInfo({ participant, mapData }: ParticipantInfoProps) {
                     whileHover={{ scale: 1.05 }}
                   >
                     {website}
-                    {index < participant.visibleWebsite!.length - 1 && ", "}
+                    {index < participant.visible_website!.length - 1 && ", "}
                   </motion.a>
                 ))}
               </div>
             )}
         </motion.div>
-        {participant.socialMedia && (
+        {participant.social_media && (
           <motion.div className="flex space-x-6 mt-8" variants={fadeInUp}>
-            {participant.socialMedia.instagramLink && (
+            {participant.social_media.instagramLink && (
               <motion.a
-                href={participant.socialMedia.instagramLink}
+                href={participant.social_media.instagramLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.2, rotate: 15 }}
@@ -176,9 +178,9 @@ function ParticipantInfo({ participant, mapData }: ParticipantInfoProps) {
                 <FaInstagram className="w-6 h-6 md:w-7 md:h-7 text-white" />
               </motion.a>
             )}
-            {participant.socialMedia.facebookLink && (
+            {participant.social_media.facebookLink && (
               <motion.a
-                href={participant.socialMedia.facebookLink}
+                href={participant.social_media.facebookLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.2, rotate: -15 }}
@@ -187,9 +189,9 @@ function ParticipantInfo({ participant, mapData }: ParticipantInfoProps) {
                 <FaFacebookF className="w-6 h-6 md:w-7 md:h-7 text-white" />
               </motion.a>
             )}
-            {participant.socialMedia.linkedinLink && (
+            {participant.social_media.linkedinLink && (
               <motion.a
-                href={participant.socialMedia.linkedinLink}
+                href={participant.social_media.linkedinLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.2, rotate: 15 }}

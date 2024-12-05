@@ -21,13 +21,13 @@ function UserCard({
   setSelectedUsers,
   selectedUsers,
 }: Props) {
-  const toggleUserSelection = (userId: string) => {
+  const toggleUserSelection = (user_id: string) => {
     setSelectedUsers((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(userId)) {
-        newSet.delete(userId);
+      if (newSet.has(user_id)) {
+        newSet.delete(user_id);
       } else {
-        newSet.add(userId);
+        newSet.add(user_id);
       }
       return newSet;
     });
@@ -45,17 +45,17 @@ function UserCard({
   return (
     <Card
       className="mb-2 cursor-pointer hover:bg-gray transition-all duration-300 group select-none flex justify-start items-start gap-2 p-2"
-      onClick={() => handleUserClick(user.userId)}
+      onClick={() => handleUserClick(user.user_id)}
     >
       <Checkbox
-        id={`select-${user.userId}`}
-        checked={selectedUsers.has(user.userId)}
-        onCheckedChange={() => toggleUserSelection(user.userId)}
+        id={`select-${user.user_id}`}
+        checked={selectedUsers.has(user.user_id)}
+        onCheckedChange={() => toggleUserSelection(user.user_id)}
       />
       <div>
         <CardHeader className="px-2 py-1">
           <CardTitle className="group-hover:underline">
-            {user.userName}
+            {user.user_name}
           </CardTitle>
         </CardHeader>
         <CardContent className="px-2 py-1">

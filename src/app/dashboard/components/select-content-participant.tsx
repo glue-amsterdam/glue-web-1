@@ -19,8 +19,8 @@ export function SelectContentParticipant() {
   return (
     <SelectContent className="dashboard-input ">
       {hubParticipants.map((hubParticipant) => (
-        <SelectItem key={hubParticipant.userId} value={hubParticipant.userId}>
-          {hubParticipant.userName} - (id:{hubParticipant.userId})
+        <SelectItem key={hubParticipant.user_id} value={hubParticipant.user_id}>
+          {hubParticipant.user_name} - (id:{hubParticipant.user_id})
         </SelectItem>
       ))}
     </SelectContent>

@@ -1,4 +1,5 @@
 import { DeleteSponsorButton } from "@/app/admin/components/sponsors-form/delete-sponsor-button";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -8,13 +9,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Sponsor } from "@/schemas/sponsorsSchema";
+import { Edit } from "lucide-react";
 
 interface SponsorsTableProps {
   sponsors: Sponsor[];
   mutate: () => void;
+  onEditSponsor: (sponsor: Sponsor) => void;
 }
 
-export function SponsorsTable({ sponsors, mutate }: SponsorsTableProps) {
+export function SponsorsTable({
+  sponsors,
+  mutate,
+  onEditSponsor,
+}: SponsorsTableProps) {
   return (
     <Table>
       <TableHeader>
@@ -32,11 +39,21 @@ export function SponsorsTable({ sponsors, mutate }: SponsorsTableProps) {
             <TableCell>{sponsor.sponsor_type}</TableCell>
             <TableCell>{sponsor.website}</TableCell>
             <TableCell>
-              <DeleteSponsorButton
-                sponsorId={sponsor.id!}
-                sponsorName={sponsor.name}
-                onSponsorDeleted={mutate}
-              />
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEditSponsor(sponsor)}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+                <DeleteSponsorButton
+                  sponsorId={sponsor.id!}
+                  sponsorName={sponsor.name}
+                  onSponsorDeleted={mutate}
+                />
+              </div>
             </TableCell>
           </TableRow>
         ))}

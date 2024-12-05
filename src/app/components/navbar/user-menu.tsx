@@ -42,7 +42,7 @@ export default function UserMenu(): JSX.Element {
   const handleLoginSuccess = (user: LoggedInUserType) => {
     setIsLoginModalOpen(false);
     if (pathname === "/") {
-      router.push(`/dashboard/${user.userId}/user-data`);
+      router.push(`/dashboard/${user.user_id}/user-data`);
     } else {
       router.refresh();
     }
@@ -58,7 +58,7 @@ export default function UserMenu(): JSX.Element {
       <DropdownMenuContent align="end">
         {user && (
           <>
-            <DropdownMenuLabel>{`Hello, ${user.userName}`}</DropdownMenuLabel>
+            <DropdownMenuLabel>{`Hello, ${user.user_name}`}</DropdownMenuLabel>
             <DropdownMenuSeparator />
           </>
         )}
@@ -67,7 +67,7 @@ export default function UserMenu(): JSX.Element {
           {user ? (
             <>
               <DropdownMenuItem>
-                <Link href={`/dashboard/${user.userId}/user-data`}>
+                <Link href={`/dashboard/${user.user_id}/user-data`}>
                   Dashboard
                 </Link>
               </DropdownMenuItem>

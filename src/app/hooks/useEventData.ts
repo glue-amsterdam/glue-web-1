@@ -27,8 +27,10 @@ export function useEventData(eventId: string | null) {
         const eventData = await fetchEventById(eventId);
         if (isMounted) setEvent(eventData);
 
-        if (eventData.organizer.mapId) {
-          const mapLocationData = await fetchMapById(eventData.organizer.mapId);
+        if (eventData.organizer.map_id) {
+          const mapLocationData = await fetchMapById(
+            eventData.organizer.map_id
+          );
           if (isMounted) setMapData(mapLocationData);
         } else {
           if (isMounted) setMapData(null);

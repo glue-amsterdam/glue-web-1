@@ -61,17 +61,17 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      userId: getRandomUserId(),
+      user_id: getRandomUserId(),
     },
     rsvp: true,
     rsvpMessage: "Please RSVP for the Modern Art Exhibition",
     rsvpLink: "https://rsvp.modernartexhibition.com",
     coOrganizers: [
       {
-        userId: getRandomUserId(),
+        user_id: getRandomUserId(),
       },
       {
-        userId: getRandomUserId(),
+        user_id: getRandomUserId(),
       },
     ],
     date: getRandomDay(),
@@ -91,11 +91,11 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      userId: getRandomUserId(),
+      user_id: getRandomUserId(),
     },
     coOrganizers: [
       {
-        userId: getRandomUserId(),
+        user_id: getRandomUserId(),
       },
     ],
     date: getRandomDay(),
@@ -116,7 +116,7 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      userId: getRandomUserId(),
+      user_id: getRandomUserId(),
     },
     coOrganizers: [],
     date: getRandomDay(),
@@ -137,14 +137,14 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      userId: getRandomUserId(),
+      user_id: getRandomUserId(),
     },
     rsvp: true,
     rsvpMessage: "RSVP required for the Design Principles Lecture",
     rsvpLink: "https://rsvp.designprinciples.com",
     coOrganizers: [
       {
-        userId: getRandomUserId(),
+        user_id: getRandomUserId(),
       },
     ],
     date: getRandomDay(),
@@ -165,7 +165,7 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      userId: getRandomUserId(),
+      user_id: getRandomUserId(),
     },
     coOrganizers: [],
     date: getRandomDay(),
@@ -186,14 +186,14 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      userId: getRandomUserId(),
+      user_id: getRandomUserId(),
     },
     rsvp: true,
     rsvpMessage: "Please RSVP for the Art & Wine Social",
     rsvpLink: "https://rsvp.artandwine.com",
     coOrganizers: [
       {
-        userId: getRandomUserId(),
+        user_id: getRandomUserId(),
       },
     ],
     date: getRandomDay(),
@@ -214,7 +214,7 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      userId: getRandomUserId(),
+      user_id: getRandomUserId(),
     },
     coOrganizers: [],
     date: getRandomDay(),
@@ -234,14 +234,14 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      userId: getRandomUserId(),
+      user_id: getRandomUserId(),
     },
     rsvp: true,
     rsvpMessage: "RSVP for the Sustainable Architecture Workshop",
     rsvpLink: "https://rsvp.sustainablearchitecture.com",
     coOrganizers: [
       {
-        userId: getRandomUserId(),
+        user_id: getRandomUserId(),
       },
     ],
     date: getRandomDay(),
@@ -262,7 +262,7 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      userId: getRandomUserId(),
+      user_id: getRandomUserId(),
     },
     coOrganizers: [],
     date: getRandomDay(),
@@ -283,11 +283,11 @@ export const mockEvents: Event[] = [
       ...generateTimestamps(),
     },
     organizer: {
-      userId: getRandomUserId(),
+      user_id: getRandomUserId(),
     },
     coOrganizers: [
       {
-        userId: getRandomUserId(),
+        user_id: getRandomUserId(),
       },
     ],
     date: getRandomDay(),

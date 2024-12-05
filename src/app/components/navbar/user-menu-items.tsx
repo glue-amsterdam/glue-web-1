@@ -35,7 +35,7 @@ export default function UserMenuItems({
   const handleLoginSuccess = (user: LoggedInUserType) => {
     setIsLoginModalOpen(false);
     setIsOpen(false);
-    router.push(`/dashboard/${user.userId}/user-data`);
+    router.push(`/dashboard/${user.user_id}/user-data`);
   };
 
   const handleCloseLoginModal = () => {

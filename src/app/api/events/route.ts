@@ -31,15 +31,20 @@ export async function GET(request: Request) {
   const enhancedEvents: IndividualEventResponse[] = filteredEvents
     .map((event) => {
       const organizer = getOrganizerDetails(
-        users.find((u) => u.userId === event.organizer.userId)
-      ) || { userId: "", userName: "Unknown", mapId: "" };
+        users.find((u) => u.user_id === event.organizer.user_id)
+      ) || { user_id: "", user_name: "Unknown", mapId: "" };
       const coOrganizers = (event.coOrganizers ?? [])
-        .map((co) => getUserDetails(users.find((u) => u.userId === co.userId)))
+        .map((co) =>
+          getUserDetails(users.find((u) => u.user_id === co.user_id))
+        )
         .filter((co): co is EnhancedUser => co !== null);
 
       const enhancedEvent: IndividualEventResponse = {
         ...event,
-        organizer,
+        organizer: {
+          ...organizer,
+          map_id: organizer.user_id || organizer.user_id,
+        },
         coOrganizers,
         rsvp: event.rsvp ?? false,
       };
@@ -49,11 +54,11 @@ export async function GET(request: Request) {
         if (
           enhancedEvent.name.toLowerCase().includes(searchLower) ||
           enhancedEvent.description.toLowerCase().includes(searchLower) ||
-          enhancedEvent.organizer.userName
+          enhancedEvent.organizer.user_name
             .toLowerCase()
             .includes(searchLower) ||
           (enhancedEvent.coOrganizers?.some((coOrganizer) =>
-            coOrganizer.userName.toLowerCase().includes(searchLower)
+            coOrganizer.user_name.toLowerCase().includes(searchLower)
           ) ??
             false)
         ) {

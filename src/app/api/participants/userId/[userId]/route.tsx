@@ -1,20 +1,23 @@
 import { users } from "@/lib/mockMembers";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request, props: { params: Promise<{ userId: string }> }) {
+export async function GET(
+  request: Request,
+  props: { params: Promise<{ user_id: string }> }
+) {
   const params = await props.params;
-  if (!params || !params.userId) {
+  if (!params || !params.user_id) {
     return NextResponse.json(
-      { message: "Participant userId is required" },
+      { message: "Participant user_id is required" },
       { status: 400 }
     );
   }
 
-  const { userId } = params;
+  const { user_id } = params;
 
   const participants = users.filter((user) => user.type === "participant");
 
-  const filteredUser = participants.filter((user) => user.userId === userId);
+  const filteredUser = participants.filter((user) => user.user_id === user_id);
 
   if (filteredUser.length === 0) {
     return NextResponse.json(

@@ -21,7 +21,7 @@ function UserFullViewFooter({
         // await updateUserStatus(selectedUser.userId, status);
         setUserStatus(status);
         console.log(
-          `User ${selectedUser.userName} status changed to ${status}`
+          `User ${selectedUser.user_name} status changed to ${status}`
         );
       } catch (error) {
         console.error("Error updating user status:", error);

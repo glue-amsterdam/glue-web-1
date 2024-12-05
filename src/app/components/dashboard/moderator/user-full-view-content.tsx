@@ -32,7 +32,7 @@ function UserFullViewContent({ selectedUser }: Props) {
         <ContactView selectedUser={selectedUser} />
         <HoursView selectedUser={selectedUser} />
         {isPaidUser(selectedUser) && (
-          <InvoiceView invoiceData={selectedUser.invoiceData.invoiceData} />
+          <InvoiceView invoiceData={selectedUser.invoice_data.invoice_data} />
         )}
       </Tabs>
     </CardContent>

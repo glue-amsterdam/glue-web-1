@@ -25,15 +25,15 @@ function ClickAreas() {
     e.preventDefault();
     if (requiresAuth && !user) {
       setIsLoginModalOpen(true);
-    } else if (requiresAuth && user?.userId) {
-      router.push(`/dashboard/${user.userId}/user-data`);
+    } else if (requiresAuth && user?.user_id) {
+      router.push(`/dashboard/${user.user_id}/user-data`);
     } else {
       router.push(href);
     }
   };
 
   const handleLoginSuccess = (user: LoggedInUserType) => {
-    router.push(`/dashboard/${user.userId}/user-data`);
+    router.push(`/dashboard/${user.user_id}/user-data`);
   };
 
   const orderedSections = ["dashboard", "about", "events", "map"];

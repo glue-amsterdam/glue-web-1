@@ -11,9 +11,9 @@ function HoursView({ selectedUser }: Props) {
     <TabsContent value="hours">
       <div className="space-y-2 text-sm">
         {isParticipantUser(selectedUser) &&
-        selectedUser.visitingHours &&
-        selectedUser.visitingHours.length > 0 ? (
-          selectedUser.visitingHours.map((day) => (
+        selectedUser.visiting_hours &&
+        selectedUser.visiting_hours.length > 0 ? (
+          selectedUser.visiting_hours.map((day) => (
             <div
               key={day.dayId}
               className="flex flex-wrap sm:w-[200px] justify-between"

@@ -3,7 +3,10 @@ import { users } from "@/lib/mockMembers";
 import { getOrganizerDetails, getUserDetails } from "@/utils/userHelpers";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request, props: { params: Promise<{ eventId: string }> }) {
+export async function GET(
+  request: Request,
+  props: { params: Promise<{ eventId: string }> }
+) {
   const params = await props.params;
   if (!params || !params.eventId) {
     return NextResponse.json(
@@ -19,7 +22,7 @@ export async function GET(request: Request, props: { params: Promise<{ eventId: 
   }
 
   const organizer = getOrganizerDetails(
-    users.find((u) => u.userId === event.organizer.userId)
+    users.find((u) => u.user_id === event.organizer.user_id)
   );
 
   if (!organizer) {
@@ -30,7 +33,7 @@ export async function GET(request: Request, props: { params: Promise<{ eventId: 
   }
 
   const coOrganizers = (event.coOrganizers || [])
-    .map((co) => getUserDetails(users.find((u) => u.userId === co.userId)))
+    .map((co) => getUserDetails(users.find((u) => u.user_id === co.user_id)))
     .filter((co) => co !== null);
 
   const eventWithDetails = {

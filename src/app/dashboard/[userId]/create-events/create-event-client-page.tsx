@@ -53,7 +53,7 @@ export default function CreateEventClientPage() {
     defaultValues: {
       ...DEFAULT_EMPTY_EVENT,
       type: undefined,
-      organizer: { userId: targetUserId as string },
+      organizer: { user_id: targetUserId as string },
       eventId: `event-${Date.now()}-${Math.random().toString(36)}`,
       coOrganizers: [],
       date: {
@@ -91,14 +91,14 @@ export default function CreateEventClientPage() {
 
   const addCoOrganizer = useCallback(() => {
     const selectedUser = suggestions.find(
-      (user) => user.userName.toLowerCase() === coOrganizerInput.toLowerCase()
+      (user) => user.user_name.toLowerCase() === coOrganizerInput.toLowerCase()
     );
     if (
       selectedUser &&
       fields.length < 4 &&
-      !fields.some((field) => field.userId === selectedUser.userId)
+      !fields.some((field) => field.user_id === selectedUser.user_id)
     ) {
-      append({ userId: selectedUser.userId });
+      append({ user_id: selectedUser.user_id });
       setSelectedCoOrganizers((prev) => [...prev, selectedUser]);
       setCoOrganizerInput("");
       setSuggestions([]);
@@ -124,7 +124,7 @@ export default function CreateEventClientPage() {
         ...data,
         createdAt: new Date(),
         updatedAt: new Date(),
-        organizer: { userId: targetUserId as string },
+        organizer: { user_id: targetUserId as string },
       };
 
       console.log("New event data:", newEvent);
@@ -132,7 +132,7 @@ export default function CreateEventClientPage() {
       setEvents((prev) => [...prev, newEvent]);
       form.reset({
         ...DEFAULT_EMPTY_EVENT,
-        organizer: { userId: targetUserId },
+        organizer: { user_id: targetUserId },
         eventId: `event-${Date.now()}-${Math.random().toString(36)}`,
         coOrganizers: [],
         date: {
@@ -166,8 +166,8 @@ export default function CreateEventClientPage() {
               .map(
                 (co) =>
                   selectedCoOrganizers.find(
-                    (selected) => selected.userId === co.userId
-                  )?.userName || co.userId
+                    (selected) => selected.user_id === co.user_id
+                  )?.user_name || co.user_id
               )
               .join(", ")}
           </p>
@@ -466,7 +466,7 @@ export default function CreateEventClientPage() {
                           fields.length >= 4 ||
                           !suggestions.some(
                             (s) =>
-                              s.userName.toLowerCase() ===
+                              s.user_name.toLowerCase() ===
                               coOrganizerInput.toLowerCase()
                           )
                         }
@@ -477,15 +477,15 @@ export default function CreateEventClientPage() {
                     <datalist id="co-organizer-suggestions">
                       {suggestions.map((suggestion) => (
                         <option
-                          key={suggestion.userId}
-                          value={suggestion.userName}
+                          key={suggestion.user_id}
+                          value={suggestion.user_name}
                         />
                       ))}
                     </datalist>
                     <div className="flex flex-wrap gap-2">
                       {selectedCoOrganizers.map((coOrganizer, index) => (
-                        <Badge key={coOrganizer.userId} variant="secondary">
-                          {coOrganizer.userName}
+                        <Badge key={coOrganizer.user_id} variant="secondary">
+                          {coOrganizer.user_name}
                           <X
                             className="ml-1 h-3 w-3 cursor-pointer"
                             onClick={() => removeCoOrganizer(index)}

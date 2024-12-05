@@ -7,17 +7,13 @@ import WrongCredentials from "@/app/dashboard/wrong-credentials-access";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { ReactNode, use } from "react";
 
-export default function UserDashboardLayout(
-  props: {
-    children: ReactNode;
-    params: Promise<{ userId: string }>;
-  }
-) {
+export default function UserDashboardLayout(props: {
+  children: ReactNode;
+  params: Promise<{ userId: string }>;
+}) {
   const params = use(props.params);
 
-  const {
-    children
-  } = props;
+  const { children } = props;
 
   const { userId: targetUserId } = params;
   const { user: loggedInUser } = useAuth();
@@ -26,8 +22,8 @@ export default function UserDashboardLayout(
     return <div>Error loading user, no user found for dashboard</div>;
   }
 
-  const isLoggedInUserMod = loggedInUser.isMod;
-  const isTargetUserSameAsLoggedInUser = loggedInUser.userId === targetUserId;
+  const isLoggedInUserMod = loggedInUser.is_mod;
+  const isTargetUserSameAsLoggedInUser = loggedInUser.user_id === targetUserId;
   const isLoggedInUserParticipant = loggedInUser.userType === "participant";
 
   if (!isLoggedInUserMod && !isTargetUserSameAsLoggedInUser) {
@@ -37,8 +33,8 @@ export default function UserDashboardLayout(
         style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}
       >
         <WrongCredentials
-          userId={loggedInUser.userId}
-          userName={loggedInUser.userName}
+          userId={loggedInUser.user_id}
+          userName={loggedInUser.user_name}
         />
       </div>
     );
@@ -51,8 +47,8 @@ export default function UserDashboardLayout(
         style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}
       >
         <InsufficientAccess
-          userName={loggedInUser.userName}
-          userId={loggedInUser.userId}
+          userName={loggedInUser.user_name}
+          userId={loggedInUser.user_id}
         />
       </div>
     );
