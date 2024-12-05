@@ -1,24 +1,22 @@
+"use client";
+
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import RegistrationForm from "@/app/signup/RegistrationForm";
-import { NAVBAR_HEIGHT } from "@/constants";
-import { fetchPlans } from "@/lib/plans/fetch-plans";
+import { PlansArrayType } from "@/schemas/plansSchema";
+import useSWR from "swr";
 
-export default async function SignUpPage() {
-  const plansData = await fetchPlans();
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-  return (
-    <div className="min-h-screen bg-black">
-      <div
-        className="pt-[var(--navbar-height)] min-h-screen flex flex-col"
-        style={
-          {
-            "--navbar-height": `${NAVBAR_HEIGHT}rem`,
-          } as React.CSSProperties
-        }
-      >
-        <main className="flex-grow container mx-auto px-4">
-          <RegistrationForm plansData={plansData} />
-        </main>
-      </div>
-    </div>
-  );
+export default function SignUpPage() {
+  const {
+    data: plansData,
+    error,
+    isLoading,
+  } = useSWR<PlansArrayType>("/api/plans", fetcher);
+
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <div>Failed to load participants data</div>;
+  if (!plansData) return <div>No participants data available</div>;
+
+  return <RegistrationForm plansData={plansData} />;
 }
