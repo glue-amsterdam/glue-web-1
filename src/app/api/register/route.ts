@@ -1,31 +1,25 @@
-"use server";
-
+import { NextResponse } from "next/server";
 import { userSchema } from "@/schemas/authSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { z } from "zod";
 import { generateUniqueSlug } from "@/utils/slugUtils";
-import { nanoid } from "nanoid";
+import { v4 as uuidv4 } from "uuid";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 type UserData = z.infer<typeof userSchema>;
 
-export async function registerUser(userData: UserData) {
+export async function POST(request: Request) {
+  const supabase = await createClient();
+  const tempUserId = uuidv4();
+  let realUserId: string | null = null;
+
   try {
-    const supabase = await createClient();
-    // Validate user data
+    const userData: UserData = await request.json();
     const validatedData = userSchema.parse(userData);
 
-    // Sign up the user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: validatedData.email,
-      password: validatedData.password,
-    });
-
-    if (authError) throw authError;
-    if (!authData.user) throw new Error("User creation failed");
-
-    // Insert user info directly after user creation
+    // Insert user info
     const { error: profileError } = await supabase.from("user_info").insert({
-      user_id: authData.user.id,
+      user_id: tempUserId,
       user_name: validatedData.user_name || "",
       plan_id: validatedData.plan_id,
       plan_type: validatedData.plan_type,
@@ -33,7 +27,7 @@ export async function registerUser(userData: UserData) {
       social_media: validatedData.social_media,
       visible_emails: validatedData.visible_emails,
       visible_websites: validatedData.visible_websites,
-      is_mod: false, // Default value
+      is_mod: false,
     });
 
     if (profileError) throw new Error(`Profile Error: ${profileError.message}`);
@@ -46,7 +40,7 @@ export async function registerUser(userData: UserData) {
       const { error: invoiceError } = await supabase
         .from("invoice_data")
         .insert({
-          user_id: authData.user.id,
+          user_id: tempUserId,
           invoice_company_name: validatedData.invoice_company_name,
           invoice_zip_code: validatedData.invoice_zip_code,
           invoice_address: validatedData.invoice_address,
@@ -62,13 +56,19 @@ export async function registerUser(userData: UserData) {
     // Handle participant-specific data
     if (validatedData.plan_type === "participant") {
       const baseSlug =
-        validatedData.slug || validatedData.user_name || nanoid(10);
+        validatedData.slug ||
+        (validatedData.user_name
+          ? validatedData.user_name
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/(^-|-$)/g, "")
+          : uuidv4());
       const slug = await generateUniqueSlug(baseSlug);
 
       const { error: participantError } = await supabase
         .from("participant_details")
         .insert({
-          user_id: authData.user.id,
+          user_id: tempUserId,
           short_description: validatedData.short_description,
           description: validatedData.description,
           slug: slug,
@@ -83,7 +83,7 @@ export async function registerUser(userData: UserData) {
       // Handle map info
       if (!validatedData.no_address) {
         const { error: mapError } = await supabase.from("map_info").insert({
-          user_id: authData.user.id,
+          user_id: tempUserId,
           formatted_address: validatedData.formatted_address,
           latitude: validatedData.latitude,
           longitude: validatedData.longitude,
@@ -94,13 +94,76 @@ export async function registerUser(userData: UserData) {
       }
     }
 
-    return { success: true, user: authData.user };
+    // Create the user account
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: validatedData.email,
+      password: validatedData.password,
+      options: {
+        data: {
+          schema: process.env.SUPABASE_SCHEMA,
+        },
+      },
+    });
+
+    if (authError) throw authError;
+    if (!authData.user) throw new Error("User creation failed");
+
+    realUserId = authData.user.id;
+
+    // Update all records with the real user ID
+    const tables = [
+      "user_info",
+      "invoice_data",
+      "participant_details",
+      "map_info",
+    ];
+    for (const table of tables) {
+      const { error } = await supabase
+        .from(table)
+        .update({ user_id: realUserId })
+        .eq("user_id", tempUserId);
+      if (error) {
+        console.error(`Error updating ${table}:`, error);
+        throw new Error(`Error updating ${table}: ${error.message}`);
+      }
+    }
+
+    return NextResponse.json(
+      { success: true, user: authData.user },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Registration error:", error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : "An unknown error occurred",
-    };
+
+    // Clean up any inserted data
+    await cleanupIncompleteRegistration(supabase as SupabaseClient, tempUserId);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "An unknown error occurred",
+      },
+      { status: 400 }
+    );
+  }
+}
+
+async function cleanupIncompleteRegistration(
+  supabase: SupabaseClient,
+  tempUserId: string
+) {
+  const tables = [
+    "user_info",
+    "invoice_data",
+    "participant_details",
+    "map_info",
+  ];
+  for (const table of tables) {
+    const { error } = await supabase
+      .from(table)
+      .delete()
+      .eq("user_id", tempUserId);
+    if (error) console.error(`Error cleaning up ${table}:`, error);
   }
 }
