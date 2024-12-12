@@ -1,4 +1,5 @@
 "use client";
+
 import { useAuth } from "@/app/context/AuthContext";
 import { UserDashboardProvider } from "@/app/context/UserDashboardContext";
 import InsufficientAccess from "@/app/dashboard/insufficient-access";
@@ -6,6 +7,13 @@ import DashboardMenu from "@/app/dashboard/menu";
 import WrongCredentials from "@/app/dashboard/wrong-credentials-access";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { ReactNode, use } from "react";
+import { User } from "@supabase/supabase-js";
+
+interface ExtendedUser extends User {
+  is_mod?: boolean;
+  userType?: string;
+  user_name?: string;
+}
 
 export default function UserDashboardLayout(props: {
   children: ReactNode;
@@ -22,9 +30,11 @@ export default function UserDashboardLayout(props: {
     return <div>Error loading user, no user found for dashboard</div>;
   }
 
-  const isLoggedInUserMod = loggedInUser.is_mod;
-  const isTargetUserSameAsLoggedInUser = loggedInUser.user_id === targetUserId;
-  const isLoggedInUserParticipant = loggedInUser.userType === "participant";
+  const extendedUser = loggedInUser as ExtendedUser;
+
+  const isLoggedInUserMod = extendedUser.is_mod;
+  const isTargetUserSameAsLoggedInUser = extendedUser.id === targetUserId;
+  const isLoggedInUserParticipant = extendedUser.userType === "participant";
 
   if (!isLoggedInUserMod && !isTargetUserSameAsLoggedInUser) {
     return (
@@ -33,8 +43,8 @@ export default function UserDashboardLayout(props: {
         style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}
       >
         <WrongCredentials
-          userId={loggedInUser.user_id}
-          userName={loggedInUser.user_name}
+          userId={extendedUser.id}
+          userName={extendedUser.user_name || extendedUser.email || ""}
         />
       </div>
     );
@@ -47,8 +57,8 @@ export default function UserDashboardLayout(props: {
         style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}
       >
         <InsufficientAccess
-          userName={loggedInUser.user_name}
-          userId={loggedInUser.user_id}
+          userName={extendedUser.user_name || extendedUser.email || ""}
+          userId={extendedUser.id}
         />
       </div>
     );
@@ -60,7 +70,7 @@ export default function UserDashboardLayout(props: {
         className="flex h-screen z-10 relative"
         style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
       >
-        <DashboardMenu loggedInUser={loggedInUser} />
+        <DashboardMenu loggedInUser={extendedUser} />
         <section className="flex-1 p-10 overflow-auto">{children}</section>
       </div>
     </UserDashboardProvider>

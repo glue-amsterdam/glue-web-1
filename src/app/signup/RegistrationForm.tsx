@@ -1,6 +1,5 @@
 "use client";
 
-import { registerUser } from "@/app/actions/auth";
 import PlanPicker from "@/app/components/signup/plan-picker";
 import FreeUserRegistration from "@/app/signup/FreeUserRegistration";
 import MemberUserRegistration from "@/app/signup/MemberUserRegistration";
@@ -50,21 +49,32 @@ export default function RegistrationForm({ plansData }: RegistrationFormProps) {
       plan_type: selectedPlan!.plan_type,
     };
 
-    console.log("Registration data:", registrationData);
-    const result = await registerUser(registrationData);
-
-    if (result.success) {
-      toast({
-        title: "User Created!",
-        description: "A moderator is going to confirm you as a participant.",
-        duration: 3000,
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(registrationData),
       });
-      router.push("/");
-    } else {
-      setError(result.error || "Registration failed");
-    }
 
-    setLoading(false);
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "User Created!",
+          description: "A moderator is going to confirm you as a participant.",
+          duration: 3000,
+        });
+        router.push("/");
+      } else {
+        setError(result.error || "Registration failed");
+      }
+    } catch (error) {
+      setError("An error occurred during registration");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

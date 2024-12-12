@@ -11,13 +11,19 @@ import {
   NAVBAR_HEIGHT,
   USER_DASHBOARD_SECTIONS,
 } from "@/constants";
-import { LoggedInUserType } from "@/schemas/usersSchemas";
+import { User } from "@supabase/supabase-js";
 import { useDashboardUserContext } from "@/app/context/UserDashboardContext";
+
+interface ExtendedUser extends User {
+  is_mod?: boolean;
+  userType?: string;
+  user_name?: string;
+}
 
 export default function DashboardMenu({
   loggedInUser,
 }: {
-  loggedInUser: LoggedInUserType;
+  loggedInUser: ExtendedUser;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -80,7 +86,7 @@ export default function DashboardMenu({
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0 bg-uiblack">
           <h2 className="text-white text-center">
-            Hello {loggedInUser.user_name}
+            Hello {loggedInUser.user_name || loggedInUser.email}
           </h2>
           <SidebarContent />
         </SheetContent>
@@ -94,7 +100,7 @@ export default function DashboardMenu({
         className="hidden md:block w-64 bg-uiblack shadow-md"
       >
         <h2 className="text-white text-center">
-          Hello {loggedInUser.user_name}
+          Hello {loggedInUser.user_name || loggedInUser.email}
         </h2>
         <SidebarContent />
       </motion.aside>
