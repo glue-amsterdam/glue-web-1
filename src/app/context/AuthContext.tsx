@@ -13,6 +13,7 @@ import React, {
 
 type AuthContextType = {
   user: User | null;
+  isLoading: boolean;
   isLoginModalOpen: boolean;
   loginError: string | null;
   login: (email: string, password: string) => Promise<User>;
@@ -27,76 +28,77 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
   const supabase = createClientComponentClient();
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        setUser(session.user);
-      } else {
-        setUser(null);
-      }
-    });
+    const initializeAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      setIsLoading(false);
 
-    return () => subscription.unsubscribe();
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((event, session) => {
+        setUser(session?.user ?? null);
+      });
+
+      return () => subscription.unsubscribe();
+    };
+
+    initializeAuth();
   }, [supabase.auth]);
+
+  useEffect(() => {
+    if (!user && !isLoading) {
+      const currentPath = window.location.pathname;
+      if (currentPath.startsWith("/dashboard")) {
+        router.push(`/login?redirectedFrom=${encodeURIComponent(currentPath)}`);
+      }
+    }
+  }, [user, isLoading, router]);
 
   const openLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
   const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
   const clearLoginError = useCallback(() => setLoginError(null), []);
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    router.push("/");
-  }, [supabase.auth, router]);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setUser(null);
+      router.push("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  }, [router]);
 
   const login = useCallback(
     async (email: string, password: string): Promise<User> => {
       try {
         setLoginError(null);
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
         });
 
-        if (error) {
-          throw error;
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to log in");
         }
 
         if (data.user) {
           setUser(data.user);
-
-          // Set up a recurring session refresh
-          const refreshInterval = setInterval(async () => {
-            const { data: refreshData, error: refreshError } =
-              await supabase.auth.refreshSession();
-            if (refreshError) {
-              console.error("Failed to refresh session:", refreshError);
-              clearInterval(refreshInterval);
-            } else if (refreshData.session) {
-              console.log(
-                "Session refreshed, new expiry:",
-                new Date(refreshData.session.expires_at!).toLocaleString()
-              );
-            }
-          }, 29 * 24 * 60 * 60 * 1000); // Refresh every 29 days
-
-          // Clear the interval when the component unmounts
-          const cleanup = () => clearInterval(refreshInterval);
-
           closeLoginModal();
-
-          // Return cleanup function and user
-          cleanup();
           return data.user;
         } else {
-          throw new Error("No user returned from Supabase");
+          throw new Error("No user returned from server");
         }
       } catch (error) {
         const errorMessage =
@@ -107,13 +109,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
     },
-    [supabase.auth, closeLoginModal]
+    [closeLoginModal]
   );
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        isLoading,
         isLoginModalOpen,
         loginError,
         login,

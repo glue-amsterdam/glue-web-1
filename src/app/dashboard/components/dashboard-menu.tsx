@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/app/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
@@ -11,31 +12,20 @@ import {
   NAVBAR_HEIGHT,
   USER_DASHBOARD_SECTIONS,
 } from "@/constants";
-import { User } from "@supabase/supabase-js";
-import { useDashboardUserContext } from "@/app/context/UserDashboardContext";
 
-interface ExtendedUser extends User {
-  is_mod?: boolean;
-  userType?: string;
-  user_name?: string;
-}
-
-export default function DashboardMenu({
-  loggedInUser,
-}: {
-  loggedInUser: ExtendedUser;
-}) {
+export default function DashboardMenu() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { user } = useAuth();
 
-  const { userId: targetUserId } = useDashboardUserContext();
+  if (!user) return null;
 
   const SidebarContent = () => (
-    <nav className=" space-y-2">
+    <nav className="space-y-2">
       {USER_DASHBOARD_SECTIONS.map((item, index) => (
         <Link
           className="cursor-pointer"
           key={index}
-          href={`/dashboard/${targetUserId}/${item.href}`}
+          href={`/dashboard/${user.id}/${item.href}`}
         >
           <Button
             variant="ghost"
@@ -47,14 +37,14 @@ export default function DashboardMenu({
           </Button>
         </Link>
       ))}
-      {loggedInUser.is_mod && (
+      {user.is_mod && (
         <>
           <h3 className="text-white text-sm pb-2">Mod Section</h3>
           {ADMIN_DASHBOARD_SECTIONS.map((item, index) => (
             <Link
               className="cursor-pointer"
               key={index}
-              href={`/dashboard/${targetUserId}/${item.href}`}
+              href={`/dashboard/${user.id}/${item.href}`}
             >
               <Button
                 variant="ghost"
@@ -86,7 +76,7 @@ export default function DashboardMenu({
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0 bg-uiblack">
           <h2 className="text-white text-center">
-            Hello {loggedInUser.user_name || loggedInUser.email}
+            Hello {user.user_name || user.email}
           </h2>
           <SidebarContent />
         </SheetContent>
@@ -100,7 +90,7 @@ export default function DashboardMenu({
         className="hidden md:block w-64 bg-uiblack shadow-md"
       >
         <h2 className="text-white text-center">
-          Hello {loggedInUser.user_name || loggedInUser.email}
+          Hello {user.user_name || user.email}
         </h2>
         <SidebarContent />
       </motion.aside>

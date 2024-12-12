@@ -40,22 +40,6 @@ export default function ParticipantBaseDashboardForm({
     resolver: zodResolver(formParticipantSchema),
     defaultValues: {
       ...participantBaseData,
-      userId: participantBaseData.userId || "",
-      images: participantBaseData.images || [],
-      slug: participantBaseData.slug || "",
-      shortDescription: participantBaseData.shortDescription || "",
-      description: participantBaseData.description || "",
-      mapPlaceName: participantBaseData.mapPlaceName || "",
-      mapId: participantBaseData.mapId || "",
-      visitingHours: participantBaseData.visitingHours || [],
-      phoneNumber: participantBaseData.phoneNumber || [],
-      visibleWebsite: participantBaseData.visibleWebsite || [],
-      visibleEmail: participantBaseData.visibleEmail || [],
-      socialMedia: participantBaseData.socialMedia || {
-        facebookLink: "",
-        instagramLink: "",
-        linkedinLink: "",
-      },
     },
   });
 

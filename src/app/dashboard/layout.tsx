@@ -1,26 +1,35 @@
-import Background from "@/app/components/background";
-import LoginModalWrapper from "@/app/components/login-modal-wrapper";
-import { cookies } from "next/headers";
+"use client";
 
-export const metadata = {
-  title: "GLUE Dashboard",
-  description: "Admin dashboard for GLUE users",
-};
+import { ReactNode } from "react";
+import DashboardMenu from "@/app/dashboard/components/dashboard-menu";
+import { NAVBAR_HEIGHT } from "@/constants";
+import { useAuth } from "@/app/context/AuthContext";
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const cookieStore = await cookies();
-  const loginRequired = cookieStore.get("login_required")?.value === "true";
+export default function DashboardLayout({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+
+  console.log(user);
+
+  /*   if (!isLoggedInUserParticipant && !isLoggedInUserMod) {
+    return (
+      <div
+        className="flex justify-center h-screen z-10 relative"
+        style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}
+      >
+
+        insufficient access
+       <InsufficientAccess />
+      </div>
+    );
+  }
+ */
   return (
-    <main className="min-h-dvh">
-      {loginRequired && (
-        <LoginModalWrapper initialLoginRequired={loginRequired} />
-      )}
-      {children}
-      <Background />
-    </main>
+    <div
+      style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}
+      className="flex h-full"
+    >
+      <DashboardMenu />
+      <section className="flex-1 p-10 overflow-auto">{children}</section>
+    </div>
   );
 }

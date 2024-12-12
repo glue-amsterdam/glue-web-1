@@ -1,6 +1,3 @@
-import { users } from "@/lib/mockMembers";
-import { PlanSchema } from "@/schemas/plansSchema";
-import { UserWithPlanDetails } from "@/schemas/usersSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -9,57 +6,41 @@ export async function GET(
   props: { params: Promise<{ id: string }> }
 ) {
   const params = await props.params;
-  if (!params?.id) {
+  const userId = params.id;
+
+  if (!userId) {
     return NextResponse.json(
       { message: "User ID is required" },
       { status: 400 }
     );
   }
+
   try {
-    const user = users.find((user) => user.user_id === params.id);
-
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
-
     const supabase = await createClient();
-
-    const { data: plan, error } = await supabase
-      .from("plans")
+    // Fetch user data from participants_info table
+    const { data: userData, error: userError } = await supabase
+      .from("user_info")
       .select("*")
-      .eq("plan_id", user.plan_id);
+      .eq("user_id", userId)
+      .single();
 
-    if (error) {
-      console.error("Error fetching plan:", error);
+    if (userError) {
+      console.error("Error fetching user:", userError);
       return NextResponse.json(
-        { error: "Failed to fetch plan" },
+        { error: "Failed to fetch user" },
         { status: 500 }
       );
     }
 
-    if (!plan) {
-      return NextResponse.json({ message: "Plan not found" }, { status: 404 });
+    if (!userData) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    const validatePlan = PlanSchema.parse(plan);
-
-    const planSummary = {
-      plan_label: validatePlan.plan_label,
-      plan_price: validatePlan.plan_price,
-      plan_currency: validatePlan.plan_currency,
-      currency_logo: validatePlan.currency_logo,
-    };
-
-    const userWithPlanDetails: UserWithPlanDetails = {
-      ...user,
-      planDetails: planSummary,
-    };
-
-    return NextResponse.json(userWithPlanDetails);
+    return NextResponse.json(userData);
   } catch (error) {
-    console.error("Error fetching user:", error);
+    console.error("Error processing request:", error);
     return NextResponse.json(
-      { error: "Failed to fetch user" },
+      { error: "Failed to process request" },
       { status: 500 }
     );
   }

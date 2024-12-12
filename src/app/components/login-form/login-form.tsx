@@ -26,7 +26,6 @@ import { motion } from "framer-motion";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import { z } from "zod";
 import Link from "next/link";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { User } from "@supabase/supabase-js";
 
 const loginSchema = z.object({
@@ -51,7 +50,6 @@ export default function LoginForm({
 }: LoginFormProps) {
   const { login, loginError, clearLoginError } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const supabase = createClientComponentClient();
 
   const form = useForm<FormData>({
     resolver: zodResolver(loginSchema),
@@ -86,8 +84,12 @@ export default function LoginForm({
     }
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
-      if (error) throw error;
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!response.ok) throw new Error("Failed to send reset email");
       alert("Password reset email sent. Please check your inbox.");
     } catch (error) {
       console.error("Error sending password reset email:", error);
