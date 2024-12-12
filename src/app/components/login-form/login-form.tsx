@@ -24,14 +24,24 @@ import { useAuth } from "@/app/context/AuthContext";
 import GlueLogoSVG from "@/app/components/glue-logo-svg";
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader2 } from "lucide-react";
-import { FormDataWithEmail, loginSchemaWithEmail } from "@/schemas/loginSchema";
-import { LoggedInUserType } from "@/schemas/usersSchemas";
+import { z } from "zod";
 import Link from "next/link";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { User } from "@supabase/supabase-js";
+
+const loginSchema = z.object({
+  email: z.string().email({ message: "Invalid email address" }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" }),
+});
+
+type FormData = z.infer<typeof loginSchema>;
 
 interface LoginFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onLoginSuccess: (user: LoggedInUserType) => void;
+  onLoginSuccess: (user: User) => void;
 }
 
 export default function LoginForm({
@@ -39,19 +49,21 @@ export default function LoginForm({
   onClose,
   onLoginSuccess,
 }: LoginFormProps) {
-  const { login, loginError } = useAuth();
+  const { login, loginError, clearLoginError } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const supabase = createClientComponentClient();
 
-  const form = useForm<FormDataWithEmail>({
-    resolver: zodResolver(loginSchemaWithEmail),
+  const form = useForm<FormData>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = async (data: FormDataWithEmail) => {
+  const onSubmit = async (data: FormData) => {
     setIsLoading(true);
+    clearLoginError();
     try {
       const user = await login(data.email, data.password);
       onClose();
@@ -63,8 +75,24 @@ export default function LoginForm({
     }
   };
 
-  const handlePasswordForgot = () => {
-    /* API CALL TO FORGOT PASSWORD */
+  const handlePasswordForgot = async () => {
+    const email = form.getValues("email");
+    if (!email) {
+      form.setError("email", {
+        type: "manual",
+        message: "Please enter your email",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) throw error;
+      alert("Password reset email sent. Please check your inbox.");
+    } catch (error) {
+      console.error("Error sending password reset email:", error);
+      alert("Failed to send password reset email. Please try again.");
+    }
   };
 
   return (
@@ -156,7 +184,7 @@ export default function LoginForm({
             <div className="text-center">
               <a
                 onClick={handlePasswordForgot}
-                className="text-sm text-primary hover:underline"
+                className="text-sm text-primary hover:underline cursor-pointer"
               >
                 Forgot your password?
               </a>

@@ -1,7 +1,8 @@
 "use client";
-import { MOCKUSER_ADMIN_PARTICIPANT } from "@/constants";
+
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
-import { LoggedInUserType } from "@/schemas/usersSchemas";
+import { User } from "@supabase/supabase-js";
 import React, {
   createContext,
   useContext,
@@ -11,11 +12,11 @@ import React, {
 } from "react";
 
 type AuthContextType = {
-  user: LoggedInUserType | null;
+  user: User | null;
   isLoginModalOpen: boolean;
   loginError: string | null;
-  login: (email: string, password: string) => Promise<LoggedInUserType>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<User>;
+  logout: () => Promise<void>;
   openLoginModal: () => void;
   closeLoginModal: () => void;
   clearLoginError: () => void;
@@ -25,69 +26,88 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [user, setUser] = useState<null | LoggedInUserType>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  const checkLoggedInUser = useCallback(() => {
-    if (typeof window !== "undefined") {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    }
-  }, []);
+  const supabase = createClientComponentClient();
 
   useEffect(() => {
-    checkLoggedInUser();
-  }, [checkLoggedInUser]);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        setUser(session.user);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
 
   const openLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
   const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
   const clearLoginError = useCallback(() => setLoginError(null), []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem("user");
     router.push("/");
-  }, [router]);
+  }, [supabase.auth, router]);
 
   const login = useCallback(
-    async (email: string, password: string): Promise<LoggedInUserType> => {
+    async (email: string, password: string): Promise<User> => {
       try {
         setLoginError(null);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("Login attempt:", email, password);
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-        if (
-          email === process.env.NEXT_PUBLIC_ADMIN_USERNAME &&
-          password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD
-        ) {
-          const loggedInUser = MOCKUSER_ADMIN_PARTICIPANT;
-          if (!loggedInUser || !loggedInUser.user_id) {
-            throw new Error("Invalid user data");
-          }
-          const { user_id, user_name, is_mod, type } = loggedInUser;
-          const userData = { user_id, user_name, is_mod, userType: type };
+        if (error) {
+          throw error;
+        }
 
-          localStorage.setItem("user", JSON.stringify(userData));
-          setUser(userData);
+        if (data.user) {
+          setUser(data.user);
+
+          // Set up a recurring session refresh
+          const refreshInterval = setInterval(async () => {
+            const { data: refreshData, error: refreshError } =
+              await supabase.auth.refreshSession();
+            if (refreshError) {
+              console.error("Failed to refresh session:", refreshError);
+              clearInterval(refreshInterval);
+            } else if (refreshData.session) {
+              console.log(
+                "Session refreshed, new expiry:",
+                new Date(refreshData.session.expires_at!).toLocaleString()
+              );
+            }
+          }, 29 * 24 * 60 * 60 * 1000); // Refresh every 29 days
+
+          // Clear the interval when the component unmounts
+          const cleanup = () => clearInterval(refreshInterval);
+
           closeLoginModal();
-          setTimeout(() => {
-            logout();
-          }, 3600000);
-          return userData;
+
+          // Return cleanup function and user
+          cleanup();
+          return data.user;
         } else {
-          throw new Error("Invalid credentials");
+          throw new Error("No user returned from Supabase");
         }
       } catch (error) {
         const errorMessage =
-          "Failed to log in. Please check your credentials and try again.";
+          error instanceof Error
+            ? error.message
+            : "Failed to log in. Please check your credentials and try again.";
         setLoginError(errorMessage);
         throw error;
       }
     },
-    [closeLoginModal, logout]
+    [supabase.auth, closeLoginModal]
   );
 
   return (

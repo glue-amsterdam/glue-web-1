@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useState } from "react";
 import { SheetClose } from "@/components/ui/sheet";
 import LoginForm from "../login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
-import { LoggedInUserType } from "@/schemas/usersSchemas";
+import { User } from "@supabase/supabase-js";
 
 export default function UserMenuItems({
   setIsOpen,
@@ -15,11 +15,13 @@ export default function UserMenuItems({
 }): JSX.Element {
   const router = useRouter();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const pathname = usePathname();
   const { user, logout } = useAuth();
 
   const handleLogout = async () => {
     try {
       await logout();
+      setIsOpen(false);
       router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -32,10 +34,14 @@ export default function UserMenuItems({
     setIsLoginModalOpen(true);
   };
 
-  const handleLoginSuccess = (user: LoggedInUserType) => {
+  const handleLoginSuccess = (loggedInUser: User) => {
     setIsLoginModalOpen(false);
     setIsOpen(false);
-    router.push(`/dashboard/${user.user_id}/user-data`);
+    if (pathname === "/") {
+      router.push(`/dashboard/${loggedInUser.id}/user-data`);
+    } else {
+      router.refresh();
+    }
   };
 
   const handleCloseLoginModal = () => {
@@ -45,14 +51,12 @@ export default function UserMenuItems({
   if (user) {
     return (
       <div className="space-y-2">
-        <SheetClose asChild>
-          <button
-            onClick={handleLogout}
-            className="block w-full text-left px-2 py-1 hover:bg-accent rounded-md"
-          >
-            Log Out
-          </button>
-        </SheetClose>
+        <button
+          onClick={handleLogout}
+          className="block w-full text-left px-2 py-1 hover:bg-accent rounded-md"
+        >
+          Log Out
+        </button>
       </div>
     );
   }
@@ -70,6 +74,7 @@ export default function UserMenuItems({
         <Link
           href="/signup?step=1"
           className="block px-2 py-1 hover:bg-accent rounded-md"
+          onClick={() => setIsOpen(false)}
         >
           Sign Up
         </Link>
