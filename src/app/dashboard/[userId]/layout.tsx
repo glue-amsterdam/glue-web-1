@@ -1,0 +1,79 @@
+import { DashboardProvider } from "@/app/context/DashboardContext";
+import DashboardMenu from "@/app/dashboard/components/dashboard-menu";
+import InsufficientAccess from "@/app/dashboard/insufficient-access";
+import WrongCredentials from "@/app/dashboard/wrong-credentials-access";
+import { NAVBAR_HEIGHT } from "@/constants";
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
+import React from "react";
+
+export default async function DashboardLayout({
+  params,
+  children,
+}: {
+  children: React.ReactNode;
+  params: { userId?: string };
+}) {
+  const supabase = await createClient();
+  const paramsData = await params;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/");
+
+  const targetUserId = paramsData.userId;
+  const loggedInUserId = user.id;
+
+  const { data: loggedUserInfo } = await supabase
+    .from("user_info")
+    .select("is_mod, plan_type, user_name")
+    .eq("user_id", loggedInUserId)
+    .single();
+
+  const isModerator = loggedUserInfo?.is_mod || false;
+  const isParticipant = loggedUserInfo?.plan_type === "participant";
+  const isTargetUserSameAsLoggedInUser = loggedInUserId === targetUserId;
+
+  // If user is not a moderator and not a participant, show insufficient access
+  if (!isModerator && !isParticipant) {
+    return (
+      <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
+        <InsufficientAccess
+          userId={loggedInUserId}
+          userName={user.email || loggedUserInfo?.user_name || ""}
+        />
+      </section>
+    );
+  }
+
+  // If user is a participant but trying to access someone else's dashboard and is not a moderator
+  if (isParticipant && !isTargetUserSameAsLoggedInUser && !isModerator) {
+    return (
+      <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
+        <WrongCredentials
+          userId={loggedInUserId}
+          userName={user.email || loggedUserInfo?.user_name || ""}
+        />
+      </section>
+    );
+  }
+
+  const propData = {
+    isMod: isModerator,
+    loggedInUserId: loggedInUserId,
+    targetUserId,
+    loggedPlanType: loggedUserInfo?.plan_type,
+  };
+
+  return (
+    <section className="flex min-h-dvh">
+      <DashboardMenu
+        isMod={isModerator}
+        userName={loggedUserInfo?.user_name}
+        targetUserId={targetUserId}
+      />
+      <DashboardProvider {...propData}>{children}</DashboardProvider>
+    </section>
+  );
+}

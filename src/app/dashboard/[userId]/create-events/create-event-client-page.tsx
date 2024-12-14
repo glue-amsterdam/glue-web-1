@@ -1,4 +1,4 @@
-"use client";
+/* "use client";
 
 import { useState, useCallback, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -512,3 +512,4 @@ export default function CreateEventClientPage() {
     </motion.div>
   );
 }
+ */

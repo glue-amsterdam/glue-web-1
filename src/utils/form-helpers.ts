@@ -3,12 +3,13 @@ import { FieldValues } from "react-hook-form";
 export function createSubmitHandler<T extends FieldValues>(
   endpoint: string,
   onSuccess?: (data: T) => void | Promise<void>,
-  onError?: (error: unknown) => void
+  onError?: (error: unknown) => void,
+  method: "PUT" | "POST" = "PUT"
 ) {
   return async (data: T) => {
     try {
       const response = await fetch(endpoint, {
-        method: "PUT",
+        method: method,
         headers: {
           "Content-Type": "application/json",
         },

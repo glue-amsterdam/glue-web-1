@@ -1,4 +1,4 @@
-import { invoiceData } from "@/schemas/invoiceSchemas";
+import { participantDetailsSchema } from "@/schemas/participantDetailsSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -17,22 +17,22 @@ export async function GET(
     const supabase = await createClient();
 
     const { data, error } = await supabase
-      .from("invoice_data")
+      .from("participant_details")
       .select("*")
       .eq("user_id", userId)
       .single();
 
     if (error) {
-      console.error("Error fetching invoice data:", error);
+      console.error("Error fetching participant details:", error);
       return NextResponse.json(
-        { error: "Failed to fetch invoice data" },
+        { error: "Failed to fetch participant details" },
         { status: 500 }
       );
     }
 
     if (!data) {
       return NextResponse.json(
-        { error: "invoice data not found" },
+        { error: "user info not found" },
         { status: 404 }
       );
     }
@@ -66,7 +66,7 @@ export async function PUT(
 async function handleRequest(
   request: Request,
   userId: string,
-  action: "create" | "update"
+  action: "update" | "create"
 ) {
   if (!userId) {
     return NextResponse.json({ error: "User ID is required" }, { status: 400 });
@@ -76,20 +76,20 @@ async function handleRequest(
     const supabase = await createClient();
 
     const body = await request.json();
-    const validatedData = invoiceData.parse(body);
+    const validatedData = participantDetailsSchema.parse(body);
 
     let result;
-    if (action === "create") {
+    if (action === "update") {
       result = await supabase
-        .from("invoice_data")
-        .insert({ ...validatedData, user_id: userId })
+        .from("participant_details")
+        .update(validatedData)
+        .eq("user_id", userId)
         .select()
         .single();
     } else {
       result = await supabase
-        .from("invoice_data")
-        .update(validatedData)
-        .eq("user_id", userId)
+        .from("participant_details")
+        .insert({ ...validatedData, user_id: userId })
         .select()
         .single();
     }
@@ -97,19 +97,16 @@ async function handleRequest(
     const { data, error } = result;
 
     if (error) {
-      console.error(
-        `Error ${action === "create" ? "creating" : "updating"} invoice data:`,
-        error
-      );
+      console.error("Error updating/creating participant details:", error);
       return NextResponse.json(
-        { error: `Failed to ${action} invoice data` },
+        { error: `Failed to ${action} participant details` },
         { status: 500 }
       );
     }
 
     if (!data) {
       return NextResponse.json(
-        { error: "Invoice data not found" },
+        { error: "Participant details not found" },
         { status: 404 }
       );
     }
@@ -118,7 +115,7 @@ async function handleRequest(
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Invalid invoice data", details: error.errors },
+        { error: "Invalid participant data", details: error.errors },
         { status: 400 }
       );
     }

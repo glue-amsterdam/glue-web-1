@@ -3,6 +3,7 @@ import {
   SheetContent,
   SheetTrigger,
   SheetClose,
+  SheetTitle,
 } from "@/components/ui/sheet";
 
 import UserMenuItems from "./user-menu-items";
@@ -29,6 +30,7 @@ export default function MobileSheet({
 }: Props) {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTitle className="sr-only">Menu</SheetTitle>
       <SheetTrigger asChild className="md:hidden">
         <MdMenu
           className="size-10 cursor-pointer"

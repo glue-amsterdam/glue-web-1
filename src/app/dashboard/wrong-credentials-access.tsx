@@ -25,7 +25,7 @@ export default function WrongCredentials({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.8 }}
     >
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>

@@ -1,4 +1,4 @@
-import { invoiceData } from "@/schemas/invoiceSchemas";
+import { mapInfoSchema } from "@/schemas/mapInfoSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -17,23 +17,23 @@ export async function GET(
     const supabase = await createClient();
 
     const { data, error } = await supabase
-      .from("invoice_data")
+      .from("map_info")
       .select("*")
       .eq("user_id", userId)
       .single();
 
-    if (error) {
-      console.error("Error fetching invoice data:", error);
+    if (!data) {
       return NextResponse.json(
-        { error: "Failed to fetch invoice data" },
-        { status: 500 }
+        { error: "map info not found" },
+        { status: 404 }
       );
     }
 
-    if (!data) {
+    if (error) {
+      console.error("Error fetching map info:", error);
       return NextResponse.json(
-        { error: "invoice data not found" },
-        { status: 404 }
+        { error: "Failed to fetch map info" },
+        { status: 500 }
       );
     }
 
@@ -76,18 +76,18 @@ async function handleRequest(
     const supabase = await createClient();
 
     const body = await request.json();
-    const validatedData = invoiceData.parse(body);
+    const validatedData = mapInfoSchema.parse(body);
 
     let result;
     if (action === "create") {
       result = await supabase
-        .from("invoice_data")
+        .from("map_info")
         .insert({ ...validatedData, user_id: userId })
         .select()
         .single();
     } else {
       result = await supabase
-        .from("invoice_data")
+        .from("map_info")
         .update(validatedData)
         .eq("user_id", userId)
         .select()
@@ -98,18 +98,18 @@ async function handleRequest(
 
     if (error) {
       console.error(
-        `Error ${action === "create" ? "creating" : "updating"} invoice data:`,
+        `Error ${action === "create" ? "creating" : "updating"} map info:`,
         error
       );
       return NextResponse.json(
-        { error: `Failed to ${action} invoice data` },
+        { error: `Failed to ${action} map info` },
         { status: 500 }
       );
     }
 
     if (!data) {
       return NextResponse.json(
-        { error: "Invoice data not found" },
+        { error: "map info not found" },
         { status: 404 }
       );
     }
@@ -118,7 +118,7 @@ async function handleRequest(
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Invalid invoice data", details: error.errors },
+        { error: "Invalid map info", details: error.errors },
         { status: 400 }
       );
     }

@@ -8,11 +8,15 @@ interface SaveChangesButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   isSubmitting?: boolean;
   watchFields: string[];
+  label?: string;
+  isDirty?: boolean;
 }
 
 export function SaveChangesButton({
   isSubmitting,
   watchFields,
+  label,
+  isDirty: isDirtyProp,
   ...props
 }: SaveChangesButtonProps) {
   const {
@@ -37,8 +41,12 @@ export function SaveChangesButton({
   });
 
   return (
-    <Button type="submit" disabled={isSubmitting || !isDirty} {...props}>
-      {isSubmitting ? "Saving..." : "Save Changes"}
+    <Button
+      type="submit"
+      disabled={isSubmitting || !isDirty || !isDirtyProp}
+      {...props}
+    >
+      {label ? label : isSubmitting ? "Saving..." : "Save Changes"}
     </Button>
   );
 }

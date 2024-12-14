@@ -27,6 +27,10 @@ import {
   BookOpenText,
   BicepsFlexed,
   CircleEllipsis,
+  ClipboardPen,
+  PanelTopDashed,
+  Map,
+  Clock8,
 } from "lucide-react";
 
 export const USER_DASHBOARD_SECTIONS = [
@@ -34,6 +38,31 @@ export const USER_DASHBOARD_SECTIONS = [
     href: `user-data`,
     label: "User Data",
     icon: UserRoundPen,
+  },
+  {
+    href: `participant-details`,
+    label: "Participant Details",
+    icon: ClipboardPen,
+  },
+  {
+    href: `profile-image`,
+    label: "Profile Image/s",
+    icon: ClipboardPen,
+  },
+  {
+    href: `visiting-hours`,
+    label: "Visiting Hours",
+    icon: Clock8,
+  },
+  {
+    href: `map-info`,
+    label: "Map Information",
+    icon: Map,
+  },
+  {
+    href: `invoice-data`,
+    label: "Invoice Data",
+    icon: PanelTopDashed,
   },
   {
     href: `create-events`,

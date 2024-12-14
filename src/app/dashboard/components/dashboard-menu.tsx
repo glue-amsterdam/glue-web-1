@@ -3,95 +3,162 @@
 import { useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Menu } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X } from "lucide-react";
 import {
   ADMIN_DASHBOARD_SECTIONS,
   NAVBAR_HEIGHT,
   USER_DASHBOARD_SECTIONS,
 } from "@/constants";
 
-export default function DashboardMenu() {
+type DashboardMenuProps = {
+  isMod?: boolean;
+  userName?: string;
+  targetUserId?: string;
+};
+
+export default function DashboardMenu({
+  isMod,
+  userName,
+  targetUserId,
+}: DashboardMenuProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user } = useAuth();
 
   if (!user) return null;
 
   const SidebarContent = () => (
-    <nav className="space-y-2">
-      {USER_DASHBOARD_SECTIONS.map((item, index) => (
-        <Link
-          className="cursor-pointer"
-          key={index}
-          href={`/dashboard/${user.id}/${item.href}`}
-        >
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2"
-            onClick={() => setIsSidebarOpen(false)}
+    <nav className="space-y-4 p-6">
+      <AnimatePresence>
+        {USER_DASHBOARD_SECTIONS.map((item, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ delay: index * 0.1 }}
           >
-            <item.icon className="size-6 mb-2" />
-            <label>{item.label}</label>
-          </Button>
-        </Link>
-      ))}
-      {user.is_mod && (
-        <>
-          <h3 className="text-white text-sm pb-2">Mod Section</h3>
-          {ADMIN_DASHBOARD_SECTIONS.map((item, index) => (
-            <Link
-              className="cursor-pointer"
-              key={index}
-              href={`/dashboard/${user.id}/${item.href}`}
-            >
+            <Link href={`/dashboard/${targetUserId}/${item.href}`}>
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-2"
+                className="w-full justify-start gap-3 text-white hover:text-gray-800 hover:bg-[var(--color-box2)] transition-all duration-200"
                 onClick={() => setIsSidebarOpen(false)}
               >
-                <item.icon className="size-6 mb-2" />
-                <label>{item.label}</label>
+                <item.icon className="size-5" />
+                <span>{item.label}</span>
               </Button>
             </Link>
-          ))}
-        </>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+      {isMod && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-8 pt-6 border-t border-[var(--color-box3)]"
+        >
+          <h3 className="text-white font-bold text-center pb-4 tracking-wider text-sm uppercase">
+            Mod Section
+          </h3>
+          <AnimatePresence>
+            {ADMIN_DASHBOARD_SECTIONS.map((item, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Link href={`/dashboard/${user.id}/${item.href}`}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-3 text-white hover:text-gray-800 hover:bg-[var(--color-box2)] transition-all duration-200"
+                    onClick={() => setIsSidebarOpen(false)}
+                  >
+                    <item.icon className="size-5" />
+                    <span>{item.label}</span>
+                  </Button>
+                </Link>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       )}
     </nav>
   );
 
   return (
     <>
-      <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-        <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            className="md:hidden bg-white/80 rounded-none z-50 text-black hover:text-black/80"
-          >
-            <Menu className="h-6 w-6" />
-            <span className="sr-only">Toggle menu</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0 bg-uiblack">
-          <h2 className="text-white text-center">
-            Hello {user.user_name || user.email}
-          </h2>
-          <SidebarContent />
-        </SheetContent>
-      </Sheet>
+      <motion.div
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="fixed top-0 left-0 right-0 z-50 md:hidden"
+      >
+        <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="m-4 bg-[var(--color-box2)] text-white hover:bg-[var(--color-box3)]"
+              aria-label="Toggle menu"
+            >
+              <Menu className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-80 p-0 bg-[var(--color-box1)]">
+            <SheetTitle className="sr-only">Dashboard Menu</SheetTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-4 top-4 text-white hover:bg-[var(--color-box2)]"
+              onClick={() => setIsSidebarOpen(false)}
+              aria-label="Close menu"
+            >
+              <X className="h-6 w-6" />
+            </Button>
+            <div className="p-6">
+              <h2 className="text-white text-xl font-bold mb-2">
+                Hello, {userName || user.email}
+              </h2>
+              {isMod && targetUserId && (
+                <p className="text-sm text-gray-600 mb-6">
+                  Modifying profile of ID: {targetUserId}
+                </p>
+              )}
+            </div>
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+      </motion.div>
 
       <motion.aside
-        initial={{ opacity: 0, x: -150 }}
+        initial={{ opacity: 0, x: -100 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 1, type: "keyframes" }}
-        style={{ paddingTop: `${NAVBAR_HEIGHT / 2}rem` }}
-        className="hidden md:block w-64 bg-uiblack shadow-md"
+        transition={{ duration: 0.5 }}
+        style={{
+          paddingTop: `${NAVBAR_HEIGHT}rem`,
+        }}
+        className="hidden md:block w-80 bg-[var(--color-box1)] shadow-xl overflow-y-auto fixed left-0 top-0 h-screen scrollbar scrollbar-thumb-white scrollbar-track-white/10"
       >
-        <h2 className="text-white text-center">
-          Hello {user.user_name || user.email}
-        </h2>
+        <div className="p-6">
+          <h2 className="text-white text-xl font-bold mb-2">
+            Hello, {userName || user.email}
+          </h2>
+          {isMod && targetUserId && (
+            <p className="text-sm text-gray-600 mb-6">
+              Modifying profile for: {targetUserId}
+            </p>
+          )}
+        </div>
         <SidebarContent />
       </motion.aside>
     </>

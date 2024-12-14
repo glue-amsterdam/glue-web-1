@@ -1,6 +1,5 @@
 "use client";
 
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import { User } from "@supabase/supabase-js";
 import React, {
@@ -10,6 +9,7 @@ import React, {
   useState,
   useCallback,
 } from "react";
+import { createBrowserClient } from "@supabase/ssr";
 
 type AuthContextType = {
   user: User | null;
@@ -32,7 +32,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -58,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user && !isLoading) {
       const currentPath = window.location.pathname;
       if (currentPath.startsWith("/dashboard")) {
-        router.push(`/login?redirectedFrom=${encodeURIComponent(currentPath)}`);
+        router.push(`/`);
       }
     }
   }, [user, isLoading, router]);
@@ -69,7 +72,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
       setUser(null);
       router.push("/");
     } catch (error) {
@@ -96,6 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (data.user) {
           setUser(data.user);
           closeLoginModal();
+          console.log(data.user);
           return data.user;
         } else {
           throw new Error("No user returned from server");
@@ -109,6 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
     },
+
     [closeLoginModal]
   );
 

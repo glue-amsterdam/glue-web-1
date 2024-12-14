@@ -2,20 +2,7 @@ import { z } from "zod";
 import { imageDataSchema } from "./baseSchema";
 import { PlanSchema } from "@/schemas/plansSchema";
 import { invoiceDataCallSchema } from "@/schemas/invoiceSchemas";
-
-const timeRangeSchema = z.object({
-  open: z.string().regex(/^\d{2}:\d{2}$/, "Open time must be in HH:MM format"),
-  close: z
-    .string()
-    .regex(/^\d{2}:\d{2}$/, "Close time must be in HH:MM format"),
-});
-
-const daySchema = z.object({
-  dayId: z.string(),
-  ranges: z.array(timeRangeSchema).optional(),
-});
-
-export const visitingHoursSchema = z.array(daySchema);
+import { visitingHoursSchema } from "@/schemas/visitingHoursSchema";
 
 // SocialMediaLinks schema
 const socialMediaLinksSchema = z.object({

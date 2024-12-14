@@ -1,4 +1,4 @@
-import { invoiceData } from "@/schemas/invoiceSchemas";
+import { visitingHoursSchema } from "@/schemas/visitingHoursSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -17,22 +17,23 @@ export async function GET(
     const supabase = await createClient();
 
     const { data, error } = await supabase
-      .from("invoice_data")
+      .from("visiting_hours")
       .select("*")
       .eq("user_id", userId)
       .single();
 
     if (error) {
-      console.error("Error fetching invoice data:", error);
+      console.error("Error fetching visiting hours:", error);
       return NextResponse.json(
-        { error: "Failed to fetch invoice data" },
+        { error: "Failed to fetch visiting hours" },
         { status: 500 }
       );
     }
 
     if (!data) {
+      console.log("No data found for userId:", userId);
       return NextResponse.json(
-        { error: "invoice data not found" },
+        { error: "Visiting hours not found" },
         { status: 404 }
       );
     }
@@ -76,18 +77,18 @@ async function handleRequest(
     const supabase = await createClient();
 
     const body = await request.json();
-    const validatedData = invoiceData.parse(body);
+    const validatedData = visitingHoursSchema.parse(body);
 
     let result;
     if (action === "create") {
       result = await supabase
-        .from("invoice_data")
+        .from("visiting_hours")
         .insert({ ...validatedData, user_id: userId })
         .select()
         .single();
     } else {
       result = await supabase
-        .from("invoice_data")
+        .from("visiting_hours")
         .update(validatedData)
         .eq("user_id", userId)
         .select()
@@ -98,18 +99,20 @@ async function handleRequest(
 
     if (error) {
       console.error(
-        `Error ${action === "create" ? "creating" : "updating"} invoice data:`,
+        `Error ${
+          action === "create" ? "creating" : "updating"
+        } visiting hours:`,
         error
       );
       return NextResponse.json(
-        { error: `Failed to ${action} invoice data` },
+        { error: `Failed to ${action} visiting hours` },
         { status: 500 }
       );
     }
 
     if (!data) {
       return NextResponse.json(
-        { error: "Invoice data not found" },
+        { error: "visiting hours not found" },
         { status: 404 }
       );
     }
@@ -118,7 +121,7 @@ async function handleRequest(
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Invalid invoice data", details: error.errors },
+        { error: "Invalid visiting hours", details: error.errors },
         { status: 400 }
       );
     }

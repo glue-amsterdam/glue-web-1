@@ -15,23 +15,23 @@ export async function GET(
     const supabase = await createClient();
 
     const { data, error } = await supabase
-      .from("participant_details")
-      .select("*")
+      .from("user_info")
+      .select("plan_id")
       .eq("user_id", userId)
       .single();
 
-    if (error) {
-      console.error("Error fetching participant details:", error);
+    if (!data) {
       return NextResponse.json(
-        { error: "Failed to fetch participant details" },
-        { status: 500 }
+        { error: "map info not found" },
+        { status: 404 }
       );
     }
 
-    if (!data) {
+    if (error) {
+      console.error("Error fetching map info:", error);
       return NextResponse.json(
-        { error: "Participant details not found" },
-        { status: 404 }
+        { error: "Failed to fetch map info" },
+        { status: 500 }
       );
     }
 

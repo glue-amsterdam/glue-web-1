@@ -6,8 +6,8 @@ import React from "react";
 export function MobileNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
   return (
     <ul className="space-y-2">
-      {navItems.map((item) => (
-        <li key={item.section}>
+      {navItems.map((item, i) => (
+        <li key={item.section + i}>
           <SheetClose asChild>
             <Link
               href={`/${item.section}`}
@@ -18,8 +18,8 @@ export function MobileNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
           </SheetClose>
           {item.subItems && (
             <ul className="ml-4 mt-1 space-y-1">
-              {item.subItems.map((subItem) => (
-                <li key={subItem.href}>
+              {item.subItems.map((subItem, i) => (
+                <li key={subItem.href + i}>
                   <SheetClose asChild>
                     <Link
                       href={`/${item.section}#${subItem.href}`}

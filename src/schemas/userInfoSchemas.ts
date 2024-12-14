@@ -7,20 +7,10 @@ export const userInfoSchema = z.object({
   is_mod: z.boolean().nullable().default(false),
   plan_id: z.string(),
   plan_type: z.string(),
-  phone_numbers: z.array(z.string()).nullable(),
+  phone_numbers: z.array(z.string()).max(3, "Only 3 items max").nullable(),
   social_media: z.record(z.string(), z.any()).nullable(),
-  visible_emails: z.array(z.string().email()).nullable(),
-  visible_websites: z.array(z.string().url()).nullable(),
-  created_at: z
-    .string()
-    .datetime()
-    .nullable()
-    .default(() => new Date().toISOString()),
-  updated_at: z
-    .string()
-    .datetime()
-    .nullable()
-    .default(() => new Date().toISOString()),
+  visible_emails: z.array(z.string()).max(3, "Only 3 items max").nullable(),
+  visible_websites: z.array(z.string()).max(3, "Only 3 items max").nullable(),
 });
 
 export type UserInfo = z.infer<typeof userInfoSchema>;

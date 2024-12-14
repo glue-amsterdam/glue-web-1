@@ -17,6 +17,7 @@ import { NAVBAR_HEIGHT } from "@/constants";
 export default function NavbarBurger() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isDashboard, setIsDashboard] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const navItems = useMenu();
@@ -34,14 +35,20 @@ export default function NavbarBurger() {
     } else {
       setIsVisible(false);
     }
+
+    if (pathname.startsWith("/dashboard")) {
+      setIsDashboard(true);
+    } else {
+      setIsDashboard(false);
+    }
   }, [pathname]);
 
   return (
     <AnimatePresence>
       <header
-        className={`${
-          isVisible && "select-none backdrop-blur-lg bg-uiblack/20"
-        } h-[${NAVBAR_HEIGHT}rem] w-full z-50 absolute top-0 drop-shadow-md`}
+        className={`${isVisible && "select-none backdrop-blur-lg bg-uiblack/20"}
+        ${isDashboard ? "sticky top-0 z-50" : "absolute z-50 top-0"}  
+        h-[${NAVBAR_HEIGHT}rem] w-full drop-shadow-md`}
       >
         <motion.div
           className="absolute inset-0 z-0 bg-transparent"
