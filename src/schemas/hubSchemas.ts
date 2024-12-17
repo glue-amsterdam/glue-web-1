@@ -19,11 +19,15 @@ export type HubValues = z.infer<typeof hubSchema>;
 export type HubUser = z.infer<typeof hubUserSchema>;
 
 export const hubSchemaApiCall = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(1, "Name is required"),
+  id: z.string(),
+  name: z.string(),
   description: z.string().optional(),
-  participants: z.array(hubUserSchema),
-  hub_host: hubUserSchema,
+  hub_host: z.object({
+    user_id: z.string(),
+    user_name: z.string().optional(),
+    visible_emails: z.array(z.string()).optional(),
+  }),
+  participants: z.array(z.object({ user_id: z.string() })),
 });
 
 export type HubApiCall = z.infer<typeof hubSchemaApiCall>;

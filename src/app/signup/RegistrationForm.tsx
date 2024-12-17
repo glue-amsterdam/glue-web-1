@@ -43,6 +43,7 @@ export default function RegistrationForm({ plansData }: RegistrationFormProps) {
     setLoading(true);
     setError(null);
 
+    console.log("Registration data:", data);
     const registrationData = {
       ...data,
       plan_id: selectedPlan!.plan_id,

@@ -30,6 +30,8 @@ import { LoadingFallbackMini } from "@/app/components/loading-fallback";
 import { CombinedUserInfo } from "@/types/combined-user-info";
 import UserCard from "@/app/dashboard/[userId]/users-admin/user-card";
 import UserFullViewContent from "@/app/components/dashboard/moderator/user-full-view-content";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 interface UsersAdminPageProps {
   users: UserInfo[];
@@ -49,6 +51,9 @@ export default function UsersAdminPage({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
@@ -63,10 +68,54 @@ export default function UsersAdminPage({
     return matchesSearch && matchesType;
   });
 
-  const deleteSelectedUsers = () => {
-    // API call to delete the users
-    console.log("Deleting users:", Array.from(selectedUsers));
-    setSelectedUsers(new Set());
+  const deleteSelectedUsers = async () => {
+    setIsDeleting(true);
+    const userIdsToDelete = Array.from(selectedUsers);
+
+    try {
+      const response = await fetch("/api/deleteUsers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userIds: userIdsToDelete }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        if (response.status === 207) {
+          // Partial success
+          toast({
+            title: "Partial Deletion",
+            description: `${result.deletedUsers.length} users deleted. ${result.failedDeletions.length} deletions failed.`,
+            variant: "destructive",
+          });
+        } else {
+          // Full success
+          toast({
+            title: "Success",
+            description: `${result.deletedUsers.length} users deleted successfully.`,
+          });
+        }
+        setSelectedUsers(new Set());
+        router.refresh();
+      } else {
+        throw new Error(result.message || "Failed to delete users");
+      }
+    } catch (error) {
+      console.error("Error deleting users:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -81,7 +130,7 @@ export default function UsersAdminPage({
                 <Button
                   variant="destructive"
                   size="sm"
-                  disabled={selectedUsers.size === 0}
+                  disabled={selectedUsers.size === 0 || isDeleting}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

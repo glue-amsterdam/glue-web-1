@@ -10,17 +10,14 @@ import {
   EmailPasswordFormData,
 } from "./EmailPasswordForm";
 import { invoiceDataTypeSchema } from "@/schemas/invoiceSchemas";
-import {
-  MapInfoForm,
-  MapInfoFormData,
-  mapInfoSchema,
-} from "@/app/signup/MapInfoForm";
+import { MapInfoForm } from "@/app/signup/MapInfoForm";
 import { InvoiceForm, InvoiceFormData } from "@/app/signup/InvoiceFormData";
 import {
   ParticipantExtraDataForm,
   ParticipantExtraDataFormData,
   participantExtraDataSchema,
 } from "@/app/signup/ParticipantExtraData";
+import { MapInfo, mapInfoSchema } from "@/schemas/mapInfoSchemas";
 
 const participantUserSchema = z
   .object({
@@ -51,7 +48,7 @@ export default function ParticipantRegistration({
   const [invoiceData, setInvoiceData] = useState<InvoiceFormData | null>(null);
   const [extraData, setExtraData] =
     useState<ParticipantExtraDataFormData | null>(null);
-  const [mapInfo, setMapInfo] = useState<MapInfoFormData | null>(null);
+  const [mapInfo, setMapInfo] = useState<MapInfo | null>(null);
 
   const handleInvoiceSubmit = (data: InvoiceFormData) => {
     setInvoiceData(data);
@@ -63,7 +60,7 @@ export default function ParticipantRegistration({
     setStep(3);
   };
 
-  const handleMapInfoSubmit = (data: MapInfoFormData) => {
+  const handleMapInfoSubmit = (data: MapInfo) => {
     setMapInfo(data);
     setStep(4);
   };

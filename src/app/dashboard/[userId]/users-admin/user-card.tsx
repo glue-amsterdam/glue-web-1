@@ -40,7 +40,6 @@ export default function UserCard({
         <p className="text-black font-medium">
           {user.user_name || "Unnamed User"}
         </p>
-        <p className=" text-black text-xs">id: {user.user_id}</p>
         <p className=" text-black text-xs">
           v.email: {user.visible_emails?.[0] || "not setted"}
         </p>
