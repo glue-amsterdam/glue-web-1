@@ -2,24 +2,6 @@ import { NextResponse } from "next/server";
 import { hubSchema } from "@/schemas/hubSchemas";
 import { createClient } from "@/utils/supabase/server";
 
-export async function GET() {
-  try {
-    const supabase = await createClient();
-    const { data: hubs, error } = await supabase.from("hubs").select(`
-        *,
-        hub_participants(user_id),
-        user_info!hubs_hub_host_id_fkey(user_id)
-      `);
-
-    if (error) throw error;
-
-    return NextResponse.json(hubs);
-  } catch (error) {
-    console.error("Error fetching hubs:", error);
-    return NextResponse.json({ error: "Error fetching hubs" }, { status: 500 });
-  }
-}
-
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();
