@@ -73,8 +73,8 @@ export function VisitingHoursForm({
   };
 
   useEffect(() => {
-    form.reset(initialData as VisitingHours);
-  }, [form, initialData]);
+    form.reset({ ...(initialData as VisitingHours), user_id: targetUserId });
+  }, [form, initialData, targetUserId]);
 
   return (
     <Card className="w-full max-w-2xl mx-auto">

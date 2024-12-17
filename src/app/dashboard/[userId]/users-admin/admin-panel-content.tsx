@@ -4,10 +4,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import UserCard from "@/app/components/dashboard/moderator/user-card";
 import HeaderUserFullView from "@/app/components/dashboard/moderator/header-user-full-view";
-import UserFullViewContent from "@/app/components/dashboard/moderator/user-full-view-content";
-import UserFullViewFooter from "@/app/components/dashboard/moderator/user-full-view-footer";
 import {
   Select,
   SelectContent,
@@ -28,39 +25,57 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { StatusType, User, UserWithPlanDetails } from "@/schemas/usersSchemas";
+import { UserInfo } from "@/schemas/userInfoSchemas";
+import { LoadingFallbackMini } from "@/app/components/loading-fallback";
+import { CombinedUserInfo } from "@/types/combined-user-info";
+import UserCard from "@/app/dashboard/[userId]/users-admin/user-card";
+import UserFullViewContent from "@/app/components/dashboard/moderator/user-full-view-content";
 
-export default function UsersAdminPage({ users }: { users: User[] }) {
+interface UsersAdminPageProps {
+  users: UserInfo[];
+  selectedUserDetails: CombinedUserInfo | undefined;
+  isLoadingDetails: boolean;
+  detailsError: undefined | string;
+  onSelectUser: (userId: string) => void;
+}
+
+export default function UsersAdminPage({
+  users,
+  selectedUserDetails,
+  isLoadingDetails,
+  detailsError,
+  onSelectUser,
+}: UsersAdminPageProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedUser, setSelectedUser] = useState<UserWithPlanDetails | null>(
-    null
-  );
-  const [userStatus, setUserStatus] = useState<StatusType | null>(null);
   const [selectedType, setSelectedType] = useState<string>("all");
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
-      user.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = selectedType === "all" || user.type === selectedType;
+      user.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.visible_emails?.some((email) =>
+        email.toLowerCase().includes(searchTerm.toLowerCase())
+      ) ||
+      user.user_id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType =
+      selectedType === "all" || user.plan_type === selectedType;
 
     return matchesSearch && matchesType;
   });
 
   const deleteSelectedUsers = () => {
-    // API to delete the users
+    // API call to delete the users
     console.log("Deleting users:", Array.from(selectedUsers));
     setSelectedUsers(new Set());
   };
 
   return (
-    <div className="container mx-auto ">
+    <div className="container mx-auto">
       <h1 className="text-2xl font-bold mb-4">Mod Panel</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-1">
           <div className="flex justify-between items-center mb-2">
-            <p className="text-sm ">{selectedUsers.size} users selected</p>
+            <p className="text-sm">{selectedUsers.size} users selected</p>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
@@ -118,28 +133,35 @@ export default function UsersAdminPage({ users }: { users: User[] }) {
 
           <ScrollArea className="h-[calc(100vh-200px)]">
             {filteredUsers.map((user) => (
-              <div key={user.user_id}>
-                <UserCard
-                  selectedUsers={selectedUsers}
-                  setSelectedUsers={setSelectedUsers}
-                  user={user}
-                  setSelectedUser={setSelectedUser}
-                  setUserStatus={setUserStatus}
-                />
-              </div>
+              <UserCard
+                key={user.user_id}
+                selectedUsers={selectedUsers}
+                setSelectedUsers={setSelectedUsers}
+                user={user}
+                onSelectUser={onSelectUser}
+              />
             ))}
           </ScrollArea>
         </div>
         <div className="md:col-span-2">
-          {selectedUser ? (
+          {selectedUserDetails ? (
             <Card>
-              <HeaderUserFullView selectedUser={selectedUser} />
-              <UserFullViewContent selectedUser={selectedUser} />
-              <UserFullViewFooter
-                selectedUser={selectedUser}
-                userStatus={userStatus}
-                setUserStatus={setUserStatus}
-              />
+              <HeaderUserFullView selectedUser={selectedUserDetails} />
+              <UserFullViewContent selectedUser={selectedUserDetails} />
+            </Card>
+          ) : isLoadingDetails ? (
+            <Card>
+              <CardContent className="flex items-center justify-center h-[calc(100vh-200px)]">
+                <LoadingFallbackMini />
+              </CardContent>
+            </Card>
+          ) : detailsError ? (
+            <Card>
+              <CardContent className="flex items-center justify-center h-[calc(100vh-200px)]">
+                <p className="text-muted-foreground">
+                  Error loading user details
+                </p>
+              </CardContent>
             </Card>
           ) : (
             <Card>

@@ -1,41 +1,38 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardTitle } from "@/components/ui/card";
-import { isParticipantUser } from "@/constants";
-import { UserWithPlanDetails } from "@/schemas/usersSchemas";
+import { UserInfo } from "@/schemas/userInfoSchemas";
 import { Edit } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
 type Props = {
-  selectedUser: UserWithPlanDetails;
+  selectedUser: UserInfo;
 };
 
 function HeaderUserFullView({ selectedUser }: Props) {
+  const userInitial = selectedUser.user_name
+    ? selectedUser.user_name.charAt(0).toUpperCase()
+    : "U";
+
+  const displayName = selectedUser.user_name || "Unnamed User";
+  const displayEmail =
+    selectedUser.visible_emails && selectedUser.visible_emails.length > 0
+      ? selectedUser.visible_emails[0]
+      : "No email provided";
+
   return (
     <CardHeader>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between">
         <div className="flex items-center space-x-4">
           <Avatar>
-            {isParticipantUser(selectedUser) &&
-            selectedUser.images &&
-            selectedUser.images.length > 0 ? (
-              <AvatarImage
-                src={selectedUser.images[0].image_url}
-                alt={selectedUser.user_name}
-              />
-            ) : null}
-            <AvatarFallback>{selectedUser.user_name.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{userInitial}</AvatarFallback>
           </Avatar>
           <div>
-            <CardTitle>{selectedUser.user_name}</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {isParticipantUser(selectedUser)
-                ? selectedUser.short_description
-                : selectedUser.email}
-            </p>
+            <CardTitle>{displayName}</CardTitle>
+            <p className="text-sm text-muted-foreground">{displayEmail}</p>
           </div>
         </div>
         <Link

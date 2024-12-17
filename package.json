@@ -68,6 +68,7 @@
     "@types/mapbox__mapbox-sdk": "^0.16.0",
     "@types/node": "^20",
     "@types/react": "^18.3.13",
+    "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-dom": "^18",
     "@types/uuid": "^10.0.0",
     "eslint": "^8",

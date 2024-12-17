@@ -1,61 +1,54 @@
-import * as z from "zod";
+import { z } from "zod";
+
+export const mapInfoSchemaApiCall = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  formatted_address: z.string().nullable(),
+  latitude: z.number().nullable(),
+  longitude: z.number().nullable(),
+  no_address: z.boolean().nullable().default(false),
+  user_info: z.object({
+    user_name: z.string(),
+    visible_emails: z.array(z.string().email()).nullable(),
+  }),
+});
+
+export type MapInfoAPICall = z.infer<typeof mapInfoSchemaApiCall>;
+
+export const ZoneEnum = z.enum(["NORTH", "SOUTH", "EAST", "WEST"]);
 
 export const routeSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  description: z
-    .string()
-    .min(1, "Description is required")
-    .max(60, "It should be a brief description, maximum 60 characters"),
-  dots: z
-    .array(
-      z.object({
-        mapbox_id: z.string(),
-        place_name: z.string(),
-        user_id: z.string(),
-      })
-    )
-    .min(2, "At least 2 location must be selected"),
+  description: z.string().optional(),
+  zone: ZoneEnum,
+  dots: z.array(
+    z.object({
+      ...mapInfoSchemaApiCall.shape,
+      route_step: z.number(),
+    })
+  ),
 });
 
+export type RouteStep = MapInfoAPICall & { route_step: number };
 export type RouteValues = z.infer<typeof routeSchema>;
-export type RouteValuesEnhanced = RouteValues & { id: string };
 
-export type MapLocationEnhaced = {
-  mapbox_id: string;
-  user_id: string;
-  place_name: string;
-};
+export const routeApiCallSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  description: z.string(),
+  zone: z.string(),
+  route_dots: z.array(
+    z.object({
+      id: z.string().uuid(),
+      route_step: z.number(),
+      map_info: z.object({
+        id: z.string().uuid(),
+        formatted_address: z.string(),
+        latitude: z.number(),
+        longitude: z.number(),
+      }),
+    })
+  ),
+});
 
-export interface MapBoxPlace {
-  id: string /* FOREING KEY */;
-  text: string;
-  place_name: string;
-  center: [number, number];
-  context: LocationContext[];
-  userId: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface Location {
-  id: number;
-  title: string;
-  content: string;
-  coordinates: {
-    x: number;
-    y: number;
-  };
-}
-
-export interface LocationGroup {
-  id: string;
-  title: string;
-  protected: boolean;
-  locations: Location[];
-}
-
-interface LocationContext {
-  id: string;
-  text: string;
-  short_code?: string;
-}
+export type RouteApiCall = z.infer<typeof routeApiCallSchema>;
