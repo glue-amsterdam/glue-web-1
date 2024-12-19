@@ -172,7 +172,7 @@ export default function HubsList() {
         open={!!selectedHub}
         onOpenChange={(open) => !open && setSelectedHub(null)}
       >
-        <DialogContent className="max-w-[90%] lg:max-w-[80%] max-h-[90%] overscroll-y-auto text-black">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col text-black">
           <DialogHeader>
             <DialogTitle>Edit Hub</DialogTitle>
           </DialogHeader>
