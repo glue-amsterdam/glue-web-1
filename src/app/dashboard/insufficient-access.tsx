@@ -53,7 +53,7 @@ export default function InsufficientAccess({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.8 }}
     >
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>
@@ -70,7 +70,7 @@ export default function InsufficientAccess({
           >
             <AlertCircle className="mx-auto mb-4 h-12 w-12 text-yellow-500" />
           </motion.div>
-          <motion.p
+          <motion.article
             className="mb-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -78,10 +78,9 @@ export default function InsufficientAccess({
           >
             <p>{`Sorry, you don't have sufficient privileges to access profile modification.`}</p>
             <p>
-              {" "}
               {`Visitors and base members can only access the Map to see the routes`}
             </p>
-          </motion.p>
+          </motion.article>
         </CardContent>
         <CardFooter className="flex justify-center">
           <div>

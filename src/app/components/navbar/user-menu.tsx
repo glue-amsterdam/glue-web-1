@@ -16,7 +16,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import LoginForm from "../login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
-import { LoggedInUserType } from "@/schemas/usersSchemas";
+import { User } from "@supabase/supabase-js";
 
 export default function UserMenu(): JSX.Element {
   const router = useRouter();
@@ -39,10 +39,10 @@ export default function UserMenu(): JSX.Element {
     setIsLoginModalOpen(true);
   };
 
-  const handleLoginSuccess = (user: LoggedInUserType) => {
+  const handleLoginSuccess = (loggedInUser: User) => {
     setIsLoginModalOpen(false);
     if (pathname === "/") {
-      router.push(`/dashboard/${user.user_id}/user-data`);
+      router.push(`/dashboard/${loggedInUser.id}/user-data`);
     } else {
       router.refresh();
     }
@@ -58,7 +58,7 @@ export default function UserMenu(): JSX.Element {
       <DropdownMenuContent align="end">
         {user && (
           <>
-            <DropdownMenuLabel>{`Hello, ${user.user_name}`}</DropdownMenuLabel>
+            <DropdownMenuLabel>{`Hello, ${user.email}`}</DropdownMenuLabel>
             <DropdownMenuSeparator />
           </>
         )}
@@ -67,9 +67,7 @@ export default function UserMenu(): JSX.Element {
           {user ? (
             <>
               <DropdownMenuItem>
-                <Link href={`/dashboard/${user.user_id}/user-data`}>
-                  Dashboard
-                </Link>
+                <Link href={`/dashboard/${user.id}/user-data`}>Dashboard</Link>
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={handleLogout}>
                 Log Out

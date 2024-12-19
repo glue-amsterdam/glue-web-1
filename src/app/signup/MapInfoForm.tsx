@@ -1,50 +1,43 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-
-// You'll need to install this package: npm install @mapbox/mapbox-sdk
 import mapboxSdk from "@mapbox/mapbox-sdk/services/geocoding";
+import { MapInfo, mapInfoSchema } from "@/schemas/mapInfoSchemas";
 
-// Replace with your actual Mapbox access token
 const mapboxClient = mapboxSdk({
   accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN as string,
 });
 
-export const mapInfoSchema = z.object({
-  formatted_address: z.string().optional(),
-  coordinates: z.tuple([z.number(), z.number()]).optional(),
-  no_address: z.boolean(),
-});
-
-export type MapInfoFormData = z.infer<typeof mapInfoSchema>;
-
 interface MapInfoFormProps {
-  onSubmit: (data: MapInfoFormData) => void;
+  onSubmit: (data: MapInfo) => void;
   onBack: () => void;
 }
 
 export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
-  const [hasAddress, setHasAddress] = useState(true);
   const [suggestions, setSuggestions] = useState<
     Array<{ place_name: string; center: [number, number] }>
   >([]);
 
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors },
     setValue,
-  } = useForm<MapInfoFormData>({
+    watch,
+  } = useForm<MapInfo>({
     resolver: zodResolver(mapInfoSchema),
     defaultValues: {
       no_address: false,
     },
   });
+
+  console.log(errors);
+
+  const hasAddress = !watch("no_address");
 
   const handleAddressChange = async (input: string) => {
     if (input.length > 2) {
@@ -75,39 +68,59 @@ export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
     center: [number, number];
   }) => {
     setValue("formatted_address", suggestion.place_name);
-    setValue("coordinates", suggestion.center);
+    setValue("latitude", suggestion.center[1]);
+    setValue("longitude", suggestion.center[0]);
     setSuggestions([]);
   };
 
   const handleNoAddressChange = (checked: boolean) => {
-    setHasAddress(!checked);
     setValue("no_address", checked);
     if (checked) {
-      setValue("formatted_address", undefined);
-      setValue("coordinates", undefined);
+      setValue("formatted_address", null);
+      setValue("latitude", null);
+      setValue("longitude", null);
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <Label htmlFor="no_address" className="flex items-center space-x-2">
-          <Checkbox
-            id="no_address"
-            checked={!hasAddress}
-            onCheckedChange={handleNoAddressChange}
-          />
-          <span>{`I don't have an address, please provide me one`}</span>
-        </Label>
-      </div>
+      <Controller
+        name="no_address"
+        control={control}
+        render={({ field }) => (
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="no_address"
+              checked={field.value || false}
+              onCheckedChange={(checked) => {
+                field.onChange(checked);
+                handleNoAddressChange(checked as boolean);
+              }}
+            />
+            <Label htmlFor="no_address">
+              {`I don't have an address, please provide me one`}
+            </Label>
+          </div>
+        )}
+      />
       {hasAddress && (
         <div>
           <Label htmlFor="address">Address in Amsterdam</Label>
-          <Input
-            id="address"
-            {...register("formatted_address")}
-            onChange={(e) => handleAddressChange(e.target.value)}
-            placeholder="Start typing an address in Amsterdam"
+          <Controller
+            name="formatted_address"
+            control={control}
+            render={({ field }) => (
+              <Input
+                id="address"
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  handleAddressChange(e.target.value);
+                }}
+                value={field.value ?? ""}
+                placeholder="Start typing an address in Amsterdam"
+              />
+            )}
           />
           {errors.formatted_address && (
             <p className="text-red-500 text-sm mt-1">

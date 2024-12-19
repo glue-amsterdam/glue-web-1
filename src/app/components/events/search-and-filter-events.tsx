@@ -14,13 +14,8 @@ import {
 import { useDebounce } from "use-debounce";
 import { motion } from "framer-motion";
 import { EVENT_TYPES } from "@/constants";
-import { DayID } from "@/utils/menu-types";
 import { useEventsDays } from "@/app/context/MainContext";
-import { EventType } from "@/schemas/eventSchemas";
-
-const getEventTypes = (): (EventType | "all")[] => {
-  return ["all", ...EVENT_TYPES];
-};
+import { DayID, EventType } from "@/schemas/eventSchemas";
 
 const formatEventType = (type: string): string => {
   return type
@@ -33,15 +28,19 @@ export default function SearchAndFilter() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("search") || "");
-  const [type, setType] = useState<EventType | "all">(
-    (searchParams.get("type") as EventType) || "all"
-  );
+  const [type, setType] = useState<EventType | "all">("all");
   const [selectedDay, setSelectedDay] = useState<DayID | "all">(
     (searchParams.get("day") as DayID) || "all"
   );
 
   const [debouncedSearch] = useDebounce(search, 300);
   const eventsDays = useEventsDays();
+
+  const sortedEventDays = eventsDays.sort((a, b) => {
+    const numA = parseInt(a.dayId.split("-")[1], 10);
+    const numB = parseInt(b.dayId.split("-")[1], 10);
+    return numA - numB;
+  });
 
   const updateSearchParams = useCallback(
     (newParams: { [key: string]: string | null }) => {
@@ -61,6 +60,20 @@ export default function SearchAndFilter() {
   useEffect(() => {
     updateSearchParams({ search: debouncedSearch });
   }, [debouncedSearch, updateSearchParams]);
+
+  useEffect(() => {
+    const typeFromUrl = searchParams.get("type")?.toLowerCase();
+    if (
+      typeFromUrl &&
+      EVENT_TYPES.map((t) => t.toLowerCase()).includes(typeFromUrl)
+    ) {
+      setType(
+        EVENT_TYPES.find((t) => t.toLowerCase() === typeFromUrl) || "all"
+      );
+    } else {
+      setType("all");
+    }
+  }, [searchParams]);
 
   const handleTypeChange = (value: string) => {
     setType(value as EventType | "all");
@@ -92,7 +105,8 @@ export default function SearchAndFilter() {
             <SelectValue placeholder="Event Type" />
           </SelectTrigger>
           <SelectContent className="absolute bg-white z-50 max-h-60 overflow-auto">
-            {getEventTypes().map((eventType) => (
+            <SelectItem value="all">All Types</SelectItem>
+            {EVENT_TYPES.map((eventType) => (
               <SelectItem key={eventType} value={eventType}>
                 {formatEventType(eventType)}
               </SelectItem>
@@ -105,7 +119,7 @@ export default function SearchAndFilter() {
           </SelectTrigger>
           <SelectContent className="absolute bg-white z-50 max-h-60 overflow-auto">
             <SelectItem value="all">All Days</SelectItem>
-            {eventsDays.map((day) => (
+            {sortedEventDays.map((day) => (
               <SelectItem key={day.dayId} value={day.dayId}>
                 {day.label}
               </SelectItem>

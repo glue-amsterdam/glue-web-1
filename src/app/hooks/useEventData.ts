@@ -1,54 +1,32 @@
-import { useState, useEffect } from "react";
-import { fetchEventById, fetchMapById } from "@/utils/api";
-import { IndividualEventResponse } from "@/schemas/eventSchemas";
-import { MapLocationEnhaced } from "@/schemas/mapSchema";
+import useSWR from "swr";
+import { IndividualEventWithMapResponse } from "@/schemas/eventSchemas";
+
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(
+      errorData.message || "An error occurred while fetching the data."
+    );
+  }
+  return res.json();
+};
 
 export function useEventData(eventId: string | null) {
-  const [event, setEvent] = useState<IndividualEventResponse | null>(null);
-  const [mapData, setMapData] = useState<MapLocationEnhaced | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    if (!eventId) {
-      setEvent(null);
-      setMapData(null);
-      setIsLoading(false);
-      setError(null);
-      return;
+  const { data, error, isLoading } = useSWR<IndividualEventWithMapResponse>(
+    eventId ? `/api/events/${eventId}` : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      refreshInterval: 60000,
     }
+  );
 
-    let isMounted = true;
-    setIsLoading(true);
-    setError(null);
+  return {
+    event: data ? { ...data, mapData: undefined } : null, // Remove mapData from event object
 
-    const fetchData = async () => {
-      try {
-        const eventData = await fetchEventById(eventId);
-        if (isMounted) setEvent(eventData);
-
-        if (eventData.organizer.map_id) {
-          const mapLocationData = await fetchMapById(
-            eventData.organizer.map_id
-          );
-          if (isMounted) setMapData(mapLocationData);
-        } else {
-          if (isMounted) setMapData(null);
-        }
-      } catch (err) {
-        if (isMounted)
-          setError(err instanceof Error ? err : new Error("An error occurred"));
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [eventId]);
-
-  return { event, mapData, isLoading, error };
+    isLoading,
+    error: error ? error : null,
+  };
 }

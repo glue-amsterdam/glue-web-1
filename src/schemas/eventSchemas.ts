@@ -7,6 +7,8 @@ import {
 } from "@/schemas/usersSchemas";
 import * as z from "zod";
 
+export type DayID = (typeof DAYS_IDS)[number];
+
 export const eventDaySchema = z.object({
   dayId: z.enum(DAYS_IDS),
   date: z.string().nullable(),
@@ -119,3 +121,14 @@ export interface IndividualEventResponse
   coOrganizers: EnhancedUser[] | null;
 }
 /* <= EVENT TYPES */
+
+export type MapBasicInfo = {
+  id: string;
+  formatted_address: string;
+  // Add any other fields that are returned by the API
+};
+
+// Extended type for individual event with map info
+export type IndividualEventWithMapResponse = IndividualEventResponse & {
+  mapInfo: MapBasicInfo;
+};

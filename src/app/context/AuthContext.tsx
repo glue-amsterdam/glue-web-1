@@ -1,7 +1,7 @@
 "use client";
-import { MOCKUSER_ADMIN_PARTICIPANT } from "@/constants";
+
 import { useRouter } from "next/navigation";
-import { LoggedInUserType } from "@/schemas/usersSchemas";
+import { User } from "@supabase/supabase-js";
 import React, {
   createContext,
   useContext,
@@ -9,13 +9,15 @@ import React, {
   useState,
   useCallback,
 } from "react";
+import { createBrowserClient } from "@supabase/ssr";
 
 type AuthContextType = {
-  user: LoggedInUserType | null;
+  user: User | null;
+  isLoading: boolean;
   isLoginModalOpen: boolean;
   loginError: string | null;
-  login: (email: string, password: string) => Promise<LoggedInUserType>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<User>;
+  logout: () => Promise<void>;
   openLoginModal: () => void;
   closeLoginModal: () => void;
   clearLoginError: () => void;
@@ -25,75 +27,104 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [user, setUser] = useState<null | LoggedInUserType>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  const checkLoggedInUser = useCallback(() => {
-    if (typeof window !== "undefined") {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    }
-  }, []);
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   useEffect(() => {
-    checkLoggedInUser();
-  }, [checkLoggedInUser]);
+    const initializeAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((event, session) => {
+        setUser(session?.user ?? null);
+      });
+
+      return () => subscription.unsubscribe();
+    };
+
+    initializeAuth();
+  }, [supabase.auth]);
+
+  useEffect(() => {
+    if (!user && !isLoading) {
+      const currentPath = window.location.pathname;
+      if (currentPath.startsWith("/dashboard")) {
+        router.push(`/`);
+      }
+    }
+  }, [user, isLoading, router]);
 
   const openLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
   const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
   const clearLoginError = useCallback(() => setLoginError(null), []);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    localStorage.removeItem("user");
-    router.push("/");
+  const logout = useCallback(async () => {
+    try {
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
+      setUser(null);
+      router.push("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   }, [router]);
 
   const login = useCallback(
-    async (email: string, password: string): Promise<LoggedInUserType> => {
+    async (email: string, password: string): Promise<User> => {
       try {
         setLoginError(null);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("Login attempt:", email, password);
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
 
-        if (
-          email === process.env.NEXT_PUBLIC_ADMIN_USERNAME &&
-          password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD
-        ) {
-          const loggedInUser = MOCKUSER_ADMIN_PARTICIPANT;
-          if (!loggedInUser || !loggedInUser.user_id) {
-            throw new Error("Invalid user data");
-          }
-          const { user_id, user_name, is_mod, type } = loggedInUser;
-          const userData = { user_id, user_name, is_mod, userType: type };
+        const data = await response.json();
 
-          localStorage.setItem("user", JSON.stringify(userData));
-          setUser(userData);
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to log in");
+        }
+
+        if (data.user) {
+          setUser(data.user);
           closeLoginModal();
-          setTimeout(() => {
-            logout();
-          }, 3600000);
-          return userData;
+          console.log(data.user);
+          return data.user;
         } else {
-          throw new Error("Invalid credentials");
+          throw new Error("No user returned from server");
         }
       } catch (error) {
         const errorMessage =
-          "Failed to log in. Please check your credentials and try again.";
+          error instanceof Error
+            ? error.message
+            : "Failed to log in. Please check your credentials and try again.";
         setLoginError(errorMessage);
         throw error;
       }
     },
-    [closeLoginModal, logout]
+
+    [closeLoginModal]
   );
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        isLoading,
         isLoginModalOpen,
         loginError,
         login,

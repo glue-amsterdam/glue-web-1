@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import { MainContextProvider } from "@/app/context/MainContext";
 import { ColorStyleProvider } from "@/app/components/color-style-provider";
-import { LoadingFallback } from "@/app/layout";
+
 import { fetchMain } from "@/lib/main/fetch-main";
+import { LoadingFallback } from "@/app/components/loading-fallback";
 
 export async function MainDataProvider({
   children,

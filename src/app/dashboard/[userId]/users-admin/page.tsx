@@ -1,18 +1,42 @@
-import { Suspense } from "react";
-import CenteredLoader from "@/app/components/centered-loader";
-import { fetchAllUsers } from "@/utils/api";
+"use client";
+
+import { useState } from "react";
+import { LoadingFallbackMini } from "@/app/components/loading-fallback";
+import { useDashboardContext } from "@/app/context/DashboardContext";
+import { UserInfo } from "@/schemas/userInfoSchemas";
+import useSWR from "swr";
 import UsersAdminPage from "@/app/dashboard/[userId]/users-admin/admin-panel-content";
 
-export default function AdminPanelContainer() {
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export default function AdminPanelCall() {
+  const { isMod } = useDashboardContext();
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+  const {
+    data: users,
+    error,
+    isLoading,
+  } = useSWR<UserInfo[]>(`/api/users/list`, fetcher);
+
+  const {
+    data: selectedUserDetails,
+    error: detailsError,
+    isLoading: isLoadingDetails,
+  } = useSWR(selectedUserId ? `/api/users/${selectedUserId}` : null, fetcher);
+
+  if (!isMod) return null;
+
+  if (isLoading) return <LoadingFallbackMini />;
+  if (error) return <div>Failed to load user data</div>;
+
   return (
-    <Suspense fallback={<CenteredLoader />}>
-      <AdminPanelCall />
-    </Suspense>
+    <UsersAdminPage
+      users={users || []}
+      selectedUserDetails={selectedUserDetails}
+      isLoadingDetails={isLoadingDetails}
+      detailsError={detailsError}
+      onSelectUser={setSelectedUserId}
+    />
   );
-}
-
-async function AdminPanelCall() {
-  const users = await fetchAllUsers();
-
-  return <UsersAdminPage users={users} />;
 }

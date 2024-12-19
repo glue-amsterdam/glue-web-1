@@ -27,7 +27,7 @@ export default function LoginModalWrapper({
     <LoginForm
       isOpen={isLoginRequired}
       onClose={handleClose}
-      onLoginSuccess={() => handleClose()}
+      onLoginSuccess={handleClose}
     />
   );
 }

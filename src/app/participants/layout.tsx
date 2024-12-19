@@ -8,5 +8,5 @@ export const metadata = {
 };
 
 export default function ParticipantsLayout({ children }: Props) {
-  return <main className="bg-[var(--color-box2)] ">{children}</main>;
+  return <main className="bg-[var(--color-box2)] min-h-dvh">{children}</main>;
 }

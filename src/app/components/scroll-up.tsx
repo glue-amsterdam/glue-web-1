@@ -19,7 +19,7 @@ export default function ScrollDown({ color, href, className, delay }: Props) {
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    const id = href.slice(1); // Remove the '#' from the href
+    const id = href.slice(1);
     scrollToElement(id);
   };
 

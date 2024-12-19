@@ -1,68 +1,79 @@
-"use client";
-import { useAuth } from "@/app/context/AuthContext";
-import { UserDashboardProvider } from "@/app/context/UserDashboardContext";
+import { DashboardProvider } from "@/app/context/DashboardContext";
+import DashboardMenu from "@/app/dashboard/components/dashboard-menu";
 import InsufficientAccess from "@/app/dashboard/insufficient-access";
-import DashboardMenu from "@/app/dashboard/menu";
 import WrongCredentials from "@/app/dashboard/wrong-credentials-access";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { ReactNode, use } from "react";
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
+import React from "react";
 
-export default function UserDashboardLayout(props: {
-  children: ReactNode;
-  params: Promise<{ userId: string }>;
+export default async function DashboardLayout({
+  params,
+  children,
+}: {
+  children: React.ReactNode;
+  params: { userId?: string };
 }) {
-  const params = use(props.params);
+  const supabase = await createClient();
+  const paramsData = await params;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const { children } = props;
+  if (!user) redirect("/");
 
-  const { userId: targetUserId } = params;
-  const { user: loggedInUser } = useAuth();
+  const targetUserId = paramsData.userId;
+  const loggedInUserId = user.id;
 
-  if (!loggedInUser) {
-    return <div>Error loading user, no user found for dashboard</div>;
-  }
+  const { data: loggedUserInfo } = await supabase
+    .from("user_info")
+    .select("is_mod, plan_type, user_name")
+    .eq("user_id", loggedInUserId)
+    .single();
 
-  const isLoggedInUserMod = loggedInUser.is_mod;
-  const isTargetUserSameAsLoggedInUser = loggedInUser.user_id === targetUserId;
-  const isLoggedInUserParticipant = loggedInUser.userType === "participant";
+  const isModerator = loggedUserInfo?.is_mod || false;
+  const isParticipant = loggedUserInfo?.plan_type === "participant";
+  const isTargetUserSameAsLoggedInUser = loggedInUserId === targetUserId;
 
-  if (!isLoggedInUserMod && !isTargetUserSameAsLoggedInUser) {
+  // If user is not a moderator and not a participant, show insufficient access
+  if (!isModerator && !isParticipant) {
     return (
-      <div
-        className="flex justify-center h-screen z-10 relative"
-        style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}
-      >
-        <WrongCredentials
-          userId={loggedInUser.user_id}
-          userName={loggedInUser.user_name}
-        />
-      </div>
-    );
-  }
-
-  if (!isLoggedInUserParticipant) {
-    return (
-      <div
-        className="flex justify-center h-screen z-10 relative"
-        style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}
-      >
+      <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
         <InsufficientAccess
-          userName={loggedInUser.user_name}
-          userId={loggedInUser.user_id}
+          userId={loggedInUserId}
+          userName={user.email || loggedUserInfo?.user_name || ""}
         />
-      </div>
+      </section>
     );
   }
+
+  // If user is a participant but trying to access someone else's dashboard and is not a moderator
+  if (isParticipant && !isTargetUserSameAsLoggedInUser && !isModerator) {
+    return (
+      <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
+        <WrongCredentials
+          userId={loggedInUserId}
+          userName={user.email || loggedUserInfo?.user_name || ""}
+        />
+      </section>
+    );
+  }
+
+  const propData = {
+    isMod: isModerator,
+    loggedInUserId: loggedInUserId,
+    targetUserId,
+    loggedPlanType: loggedUserInfo?.plan_type,
+  };
 
   return (
-    <UserDashboardProvider userId={targetUserId}>
-      <div
-        className="flex h-screen z-10 relative"
-        style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
-      >
-        <DashboardMenu loggedInUser={loggedInUser} />
-        <section className="flex-1 p-10 overflow-auto">{children}</section>
-      </div>
-    </UserDashboardProvider>
+    <section className="flex min-h-dvh">
+      <DashboardMenu
+        isMod={isModerator}
+        userName={loggedUserInfo?.user_name}
+        targetUserId={targetUserId}
+      />
+      <DashboardProvider {...propData}>{children}</DashboardProvider>
+    </section>
   );
 }

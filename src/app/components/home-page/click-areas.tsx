@@ -2,18 +2,18 @@
 
 import Link from "next/link";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import LoginForm from "@/app/components/login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
 import { useMenu } from "@/app/context/MainContext";
 import CenteredLoader from "@/app/components/centered-loader";
-import { LoggedInUserType } from "@/schemas/usersSchemas";
 import { MainMenuItem } from "@/schemas/mainSchema";
+import { User } from "@supabase/supabase-js";
 
 function ClickAreas() {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const router = useRouter();
-
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const pathname = usePathname();
   const { user } = useAuth();
   const mainMenu = useMenu();
 
@@ -25,15 +25,21 @@ function ClickAreas() {
     e.preventDefault();
     if (requiresAuth && !user) {
       setIsLoginModalOpen(true);
-    } else if (requiresAuth && user?.user_id) {
-      router.push(`/dashboard/${user.user_id}/user-data`);
+    } else if (requiresAuth && user?.id) {
+      router.push(`/dashboard/${user.id}/user-data`);
     } else {
       router.push(href);
     }
   };
 
-  const handleLoginSuccess = (user: LoggedInUserType) => {
-    router.push(`/dashboard/${user.user_id}/user-data`);
+  const handleLoginSuccess = (loggedInUser: User) => {
+    setIsLoginModalOpen(false);
+
+    if (pathname === "/") {
+      router.push(`/dashboard/${loggedInUser.id}/user-data`);
+    } else {
+      router.refresh();
+    }
   };
 
   const orderedSections = ["dashboard", "about", "events", "map"];

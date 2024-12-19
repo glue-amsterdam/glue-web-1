@@ -16,7 +16,10 @@ async function EventListContainer({ params }: { params: URLSearchParams }) {
   return (
     <section aria-label="Event list">
       <Suspense fallback={<CenteredLoader />}>
-        <LazyEventsList events={events} />
+        <LazyEventsList
+          events={events}
+          searchParams={Object.fromEntries(params)}
+        />
       </Suspense>
     </section>
   );

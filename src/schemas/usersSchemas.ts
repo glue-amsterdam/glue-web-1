@@ -8,7 +8,7 @@ export interface LoggedInUserType {
   userType: string;
 }
 
-export type CuratedParticipantWhitYear = {
+export type CuratedParticipantWithYear = {
   slug: string;
   userName: string;
   year: number;
@@ -26,25 +26,6 @@ export const enhancedOrganizerSchema: z.ZodType<EnhancedOrganizer> =
       map_id: z.string(),
     })
   );
-
-const timeRangeSchema = z.object({
-  open: z.string().regex(/^\d{2}:\d{2}$/, "Open time must be in HH:MM format"),
-  close: z
-    .string()
-    .regex(/^\d{2}:\d{2}$/, "Close time must be in HH:MM format"),
-});
-
-const daySchema = z.object({
-  dayId: z.string(),
-  label: z.string(),
-  date: z.union([z.string(), z.null()]),
-  ranges: z.array(timeRangeSchema).optional(),
-});
-
-export const visitingHoursSchema = z.array(daySchema);
-
-export type DayType = z.infer<typeof daySchema>;
-export type VisitingHoursType = z.infer<typeof visitingHoursSchema>;
 
 export const apiParticipantSchema = z.object({
   userId: z.string(),
@@ -95,8 +76,13 @@ export type FormParticipantBaseType = z.infer<typeof formParticipantSchema>;
 import { ImageData } from "@/schemas/baseSchema";
 import { InvoiceDataCall } from "@/schemas/invoiceSchemas";
 import { EnhancedOrganizer, EnhancedUser, Event } from "@/schemas/eventSchemas";
-import { MapBoxPlace } from "@/schemas/mapSchema";
+
 import { PlanType } from "@/schemas/plansSchema";
+import {
+  VisitingHours,
+  visitingHoursSchema,
+} from "@/schemas/visitingHoursSchema";
+import { MapInfoAPICall } from "@/schemas/mapSchema";
 
 export interface SocialMediaLinks {
   instagramLink?: string;
@@ -142,7 +128,7 @@ export type ParticipantUserBase = {
   images?: ImageData[];
   events?: Pick<Event, "eventId">[];
   description?: string;
-  visiting_hours?: VisitingHoursType;
+  visiting_hours?: VisitingHours;
   phone_number?: string[];
   visible_email?: string[];
   visible_website?: string[];
@@ -151,7 +137,7 @@ export type ParticipantUserBase = {
 };
 
 export type ParticipantUserWithMap = ParticipantUserBase & {
-  map_id: Pick<MapBoxPlace, "id">;
+  map_id: Pick<MapInfoAPICall, "id">;
   no_address?: never;
 };
 

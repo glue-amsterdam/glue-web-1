@@ -1,8 +1,4 @@
-import { users } from "@/lib/mockMembers";
-import {
-  CuratedParticipantWhitYear,
-  ParticipantUser,
-} from "@/schemas/usersSchemas";
+import { CuratedParticipantWithYear } from "@/schemas/usersSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -10,46 +6,79 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    const { data: curatedData } = await supabase
+    // Fetch curated about data
+    const { data: curatedData, error: curatedError } = await supabase
       .from("about_curated")
       .select("title,description")
       .single();
 
-    if (!curatedData) {
-      throw new Error("Failed to fetch curated about data in client api call");
+    if (curatedError) {
+      throw new Error("Failed to fetch curated about data");
     }
 
-    const filteredUsers = users.filter((user) => user.type === "participant");
+    // Fetch all participants
+    const { data: allParticipants, error: participantsError } =
+      await supabase.from("user_info").select(`
+        user_name,
+        participant_details (
+          slug,
+          is_sticky,
+          year
+        )
+      `);
 
-    const curatedUsers = filteredUsers.filter(
-      (user): user is ParticipantUser & { year: number } =>
-        user.is_sticky && user.year !== undefined
-    );
+    if (participantsError) {
+      throw new Error("Failed to fetch participants");
+    }
 
-    const groupedByYear = curatedUsers.reduce<
-      Record<string, CuratedParticipantWhitYear[]>
-    >((acc, user) => {
-      if (!acc[user.year]) {
-        acc[user.year] = [];
+    // Filter and transform participants
+    const curatedParticipants = allParticipants
+      .filter((participant) =>
+        participant.participant_details.some((detail) => detail.is_sticky)
+      )
+      .map((participant) => {
+        const stickyDetail = participant.participant_details.find(
+          (detail) => detail.is_sticky
+        );
+        return {
+          slug: stickyDetail?.slug,
+          userName: participant.user_name,
+          year: stickyDetail?.year,
+        };
+      })
+      .filter(
+        (participant): participant is CuratedParticipantWithYear =>
+          participant.slug !== undefined && participant.year !== undefined
+      );
+
+    // Group participants by year
+    const groupedByYear = curatedParticipants.reduce<
+      Record<number, CuratedParticipantWithYear[]>
+    >((acc, participant) => {
+      if (!acc[participant.year]) {
+        acc[participant.year] = [];
       }
-      acc[user.year].push({
-        slug: user.slug,
-        userName: user.user_name,
-        year: user.year,
-      });
+      acc[participant.year].push(participant);
       return acc;
     }, {});
+
+    // Sort each year's participants
+    Object.values(groupedByYear).forEach((yearGroup) => {
+      yearGroup.sort((a, b) => a.userName.localeCompare(b.userName));
+    });
 
     return NextResponse.json({
       curatedParticipants: groupedByYear,
       headerData: curatedData,
     });
   } catch (error) {
-    if (process.env.NODE_ENV === "production") {
-      return NextResponse.json(
-        { error: "Failed to fetch citizens section data" },
-        { status: 500 }
-      );
-    }
+    console.error("Error in curated participants API:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to fetch curated participants data",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
   }
 }
