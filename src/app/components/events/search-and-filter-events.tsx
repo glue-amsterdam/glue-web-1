@@ -14,9 +14,8 @@ import {
 import { useDebounce } from "use-debounce";
 import { motion } from "framer-motion";
 import { EVENT_TYPES } from "@/constants";
-import { DayID } from "@/utils/menu-types";
 import { useEventsDays } from "@/app/context/MainContext";
-import { EventType } from "@/schemas/eventSchemas";
+import { DayID, EventType } from "@/schemas/eventSchemas";
 
 const formatEventType = (type: string): string => {
   return type

@@ -7,6 +7,8 @@ import {
 } from "@/schemas/usersSchemas";
 import * as z from "zod";
 
+export type DayID = (typeof DAYS_IDS)[number];
+
 export const eventDaySchema = z.object({
   dayId: z.enum(DAYS_IDS),
   date: z.string().nullable(),

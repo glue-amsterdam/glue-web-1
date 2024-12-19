@@ -1,7 +1,6 @@
-import { DayID } from "@/utils/menu-types";
+import { DayID, EventType } from "@/schemas/eventSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
-import { EventType } from "react-hook-form";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
