@@ -20,7 +20,10 @@ export async function GET(
 
     if (error) {
       console.error("Error fetching events:", error);
-      return null;
+      return NextResponse.json(
+        { error: "Error fetching events" },
+        { status: 500 }
+      );
     }
 
     if (!events) {
