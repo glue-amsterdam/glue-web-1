@@ -10,7 +10,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { placeholderImage } from "@/mockConstants";
 import { ParticipantClient } from "@/schemas/participantsSchema";
 import { fadeInConfig } from "@/utils/animations";
 import Autoplay from "embla-carousel-autoplay";
@@ -98,7 +97,7 @@ export default function ParticipantsSection({
                       ) : (
                         <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
                           <img
-                            src={placeholderImage.image_url}
+                            src={"participant-placeholder.jpg"}
                             alt={`${participant.userName} profile image thumbnail`}
                             className="w-full h-full absolute object-cover"
                           />
