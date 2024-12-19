@@ -13,21 +13,18 @@ export const participantDetailsSchema = z
       .nullable(),
     slug: z.string().min(1, "Slug is required"),
     is_sticky: z.boolean().default(false),
-    year: z.number().nullable(),
+    year: z.number().nullable().optional(),
     status: z.enum(["pending", "accepted", "declined"]).default("pending"),
   })
-  .refine(
-    (data) => {
-      if (data.is_sticky) {
-        return data.year !== null && data.year > 1900;
-      }
-      return true;
-    },
-    {
-      message:
-        "Year is required and must be greater than 1900 when Is Sticky is true",
-      path: ["year"],
+  .superRefine((data, ctx) => {
+    if (data.is_sticky && (data.year == null || data.year <= 1900)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Year is required and must be greater than 1900 when Is Sticky is true",
+        path: ["year"],
+      });
     }
-  );
+  });
 
 export type ParticipantDetails = z.infer<typeof participantDetailsSchema>;
