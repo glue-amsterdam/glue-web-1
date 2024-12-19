@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useState } from "react";
 import { SheetClose } from "@/components/ui/sheet";
-import LoginForm from "../login-form/login-form";
 import { useAuth } from "@/app/context/AuthContext";
 import { User } from "@supabase/supabase-js";
+import LoginForm from "@/app/components/login-form/login-form";
 
 export default function UserMenuItems({
   setIsOpen,

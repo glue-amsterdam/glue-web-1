@@ -56,7 +56,7 @@ function transformApiData(data: ApiMainSectionData): MainSectionData {
 export async function fetchMain(): Promise<MainSectionData> {
   try {
     const response = await fetch(`${BASE_URL}/main`, {
-      next: { revalidate: 6 },
+      next: { revalidate: 3600 },
     });
 
     if (!response.ok) {

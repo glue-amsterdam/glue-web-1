@@ -215,3 +215,19 @@
   font-weight: 600;
   line-height: 1.25;
 }
+
+.mapboxgl-popup-content {
+  font-family: "Open Sans", sans-serif;
+  padding: 15px;
+  width: fit-content;
+}
+
+.mapboxgl-popup-content h3 {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.mapboxgl-popup-content p {
+  font-size: 14px;
+  margin-bottom: 10px;
+}

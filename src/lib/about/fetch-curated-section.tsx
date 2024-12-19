@@ -36,22 +36,22 @@ export async function fetchCuratedSection(): Promise<CuratedResponse> {
     });
 
     if (!res.ok) {
-      if (res.status === 404 || process.env.NODE_ENV === "development") {
-        console.warn("Using fallback data for curated section");
-        return CURATED_FALLBACK_DATA;
-      }
       throw new Error(
         `Failed to fetch curated section data: ${res.statusText}`
       );
     }
 
     const data = await res.json();
+
     const validatedData = curatedResponseSchema.parse(data);
 
     return validatedData;
   } catch (error) {
     console.error("Error fetching curated section data:", error);
-    if (process.env.NEXT_PHASE === "build") {
+    if (
+      process.env.NEXT_PHASE === "build" ||
+      process.env.NODE_ENV === "development"
+    ) {
       console.warn("Using fallback data for curated section due to error");
       return CURATED_FALLBACK_DATA;
     }

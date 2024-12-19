@@ -1,23 +1,20 @@
-import { OptimizedParticipant } from "@/app/api/participants/optimized/route";
-import Image from "next/image";
+import { ParticipantClient } from "@/lib/client/fetch-participants";
 import Link from "next/link";
 
 export default function ParticipantCard({
   participant,
 }: {
-  participant: OptimizedParticipant;
+  participant: ParticipantClient;
 }) {
   return (
     <Link href={`/participants/${participant.slug}`} className="block">
       <div className="bg-black rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
         <div className="relative h-48">
           {participant.image_url ? (
-            <Image
-              src={participant.image_url}
-              alt={participant.user_name}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover"
+            <img
+              src={participant.image_url || "/participant-placeholder.jpg"}
+              alt={`GLUE ${process.env.NEXT_PUBLIC_MAIN_CITY_GLUE_EVENT} participant ${participant.user_name} image`}
+              className="object-cover absolute inset-0 w-full h-full"
             />
           ) : (
             <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
@@ -31,9 +28,6 @@ export default function ParticipantCard({
           <h2 className="text-xl font-semibold mb-2">
             {participant.user_name}
           </h2>
-          <p className="text-gray-600 text-sm mb-2">
-            {participant.short_description}
-          </p>
           <div className="flex items-center justify-between">
             <span className="text-sm text-blue-500 hover:underline">
               View Profile

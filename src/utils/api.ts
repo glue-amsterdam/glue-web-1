@@ -8,33 +8,41 @@ import {
   UserWithPlanDetails,
 } from "@/schemas/usersSchemas";
 import { EnhancedUser, IndividualEventResponse } from "@/schemas/eventSchemas";
-import { MapLocationEnhaced, RouteValuesEnhanced } from "@/schemas/mapSchema";
-import { OptimizedParticipant } from "@/app/api/participants/optimized/route";
 import { BASE_URL } from "@/constants";
+import { RouteValues } from "@/schemas/mapSchema";
+import { ParticipantClientResponse } from "@/types/api-visible-user";
 
 /* EVENTS */
 export const fetchEvents = cache(
   async (searchParams: URLSearchParams): Promise<IndividualEventResponse[]> => {
-    const res = await fetch(`${BASE_URL}/events?${searchParams.toString()}`, {
-      next: { revalidate: 0 },
-    });
-    if (!res.ok) throw new Error("Failed to fetch events");
-    return res.json();
-  }
-);
-export const fetchFiveEvents = cache(
-  async (): Promise<IndividualEventResponse[]> => {
-    const res = await fetch(`${BASE_URL}/events?limit=5`, {
-      next: { revalidate: 0 },
-    });
+    try {
+      const res = await fetch(
+        `${BASE_URL}/events?${searchParams.toString()}`,
+        {}
+      );
 
-    if (!res.ok) throw new Error("Failed to fetch events");
-    return res.json();
+      if (!res.ok) {
+        throw new Error(
+          `Failed to fetch events: ${res.status} ${res.statusText}`
+        );
+      }
+
+      const data = await res.json();
+
+      if (!Array.isArray(data)) {
+        console.error("API returned non-array data:", data);
+        return [];
+      }
+
+      return data as IndividualEventResponse[];
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      return [];
+    }
   }
 );
 
 const eventCache = new Map<string, IndividualEventResponse>();
-const mapCache = new Map<string, MapLocationEnhaced>();
 
 export const fetchEventById = cache(
   async (eventId: string): Promise<IndividualEventResponse> => {
@@ -42,7 +50,7 @@ export const fetchEventById = cache(
       return eventCache.get(eventId)!;
     }
 
-    const res = await fetch(`${BASE_URL}/events/${eventId}`, {
+    const res = await fetch(`${BASE_URL}/events?=${eventId}`, {
       next: { revalidate: 60 }, // Cache for 1 minute
     });
     if (!res.ok) throw new Error("Failed to fetch event by ID");
@@ -61,59 +69,26 @@ export const fetchLocationGroups = cache(async (): Promise<LocationGroup[]> => {
   return res.json();
 });
 
-export const fetchAllRoutes = cache(
-  async (): Promise<RouteValuesEnhanced[]> => {
-    const res = await fetch(`${BASE_URL}/routes`, {
-      next: { revalidate: 0 },
-    });
-    if (!res.ok) throw new Error("Failed to fetch Routes");
-    return res.json();
-  }
-);
-
-export const fetchMapById = cache(
-  async (id: string): Promise<MapLocationEnhaced> => {
-    if (mapCache.has(id)) {
-      return mapCache.get(id)!;
-    }
-
-    const res = await fetch(`${BASE_URL}/mapbox-locations/${id}`, {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) {
-      if (res.status === 404) {
-        throw new Error("Map not found");
-      }
-      throw new Error("Failed to fetch Mapbox Location");
-    }
-    const data = await res.json();
-    mapCache.set(id, data);
-    return data;
-  }
-);
-
-export const fetchMapsIdandName = cache(
-  async (): Promise<MapLocationEnhaced[]> => {
-    const res = await fetch(`${BASE_URL}/mapbox-locations`, {
-      next: { revalidate: 0 },
-    });
-    if (!res.ok) throw new Error("Failed to fetch Mapbox Locations");
-    return res.json();
-  }
-);
-
+export const fetchAllRoutes = cache(async (): Promise<RouteValues[]> => {
+  const res = await fetch(`${BASE_URL}/routes`, {
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) throw new Error("Failed to fetch Routes");
+  return res.json();
+});
 /* <= MAP */
 
 /* PARTICIPANTS */
 export const fetchParticipant = cache(
-  async (slug: string): Promise<ParticipantUser> => {
-    const res = await fetch(`${BASE_URL}/participants/${slug}`, {
+  async (slug: string): Promise<ParticipantClientResponse> => {
+    const res = await fetch(`${BASE_URL}/client-user/${slug}`, {
       next: { revalidate: 3600 },
     });
     if (!res.ok) throw new Error("Failed to fetch participant");
     return res.json();
   }
 );
+
 export const fetchParticipantbyId = cache(
   async (userId: string): Promise<ParticipantUser> => {
     const res = await fetch(`${BASE_URL}/participants/userId/${userId}`, {
@@ -142,18 +117,6 @@ export const fetchAllParticipants = cache(
     return res.json();
   }
 );
-
-export async function getOptimizedParticipants(): Promise<
-  OptimizedParticipant[]
-> {
-  const res = await fetch(`${BASE_URL}/participants/optimized`, {
-    next: { revalidate: 3600 },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to fetch participants");
-  }
-  return res.json();
-}
 
 export async function fetchParticipantsIdandName(
   searchTerm: string

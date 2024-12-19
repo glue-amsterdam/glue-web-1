@@ -1,26 +1,20 @@
-import React, { Suspense } from "react";
-import { fetchLocationGroups } from "@/utils/api";
-import MapMain from "@/app/components/map/map-main";
-import { Metadata } from "next";
 import Background from "@/app/components/background";
+import { LoadingFallback } from "@/app/components/loading-fallback";
+import MapMain from "@/app/map/map-main";
+import { NAVBAR_HEIGHT } from "@/constants";
+import React, { Suspense } from "react";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "GLUE - Map",
 };
 
-async function MapPage() {
-  const locationGroups = await fetchLocationGroups();
-
+export default function MapPage() {
   return (
-    <>
-      <div className={`main-container mx-auto px-4 py-8 z-10`}>
-        <Suspense>
-          <MapMain locationGroups={locationGroups} />
-        </Suspense>
+    <Suspense fallback={<LoadingFallback />}>
+      <div style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}>
+        <MapMain />
+        <Background />
       </div>
-      <Background />
-    </>
+    </Suspense>
   );
 }
-
-export default MapPage;

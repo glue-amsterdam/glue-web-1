@@ -9,15 +9,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
 import Link from "next/link";
 import { fadeInConfig } from "@/utils/animations";
-import { CuratedParticipantWhitYear } from "@/schemas/usersSchemas";
+import { CuratedParticipantWithYear } from "@/schemas/usersSchemas";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface CuratedMembersSectionProps {
-  curatedParticipants: Record<number, CuratedParticipantWhitYear[]>;
+  curatedParticipants: Record<number, CuratedParticipantWithYear[]>;
   title: string;
   description: string;
 }
@@ -47,7 +48,7 @@ export default function CuratedMembersSection({
     participant,
     i,
   }: {
-    participant: CuratedParticipantWhitYear;
+    participant: CuratedParticipantWithYear;
     i: number;
   }) => (
     <Link
@@ -69,25 +70,44 @@ export default function CuratedMembersSection({
     </Link>
   );
 
+  const NoStickyMembersMessage = () => (
+    <motion.div
+      {...fadeInConfig}
+      className="flex items-center justify-center h-full"
+    >
+      <Alert variant="default" className="max-w-lg bg-uiwhite text-uiblack">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle className="text-lg font-semibold">
+          No Sticky Members Yet
+        </AlertTitle>
+        <AlertDescription className="text-md">
+          {`We’re currently preparing a list of outstanding members. Check back soon to meet these talented individuals.`}
+        </AlertDescription>
+      </Alert>
+    </motion.div>
+  );
+
+  const hasCuratedParticipants = years.length > 0;
+
   return (
     <motion.article
       {...fadeInConfig}
       className="z-20 mx-auto container h-full flex flex-col justify-between relative"
     >
-      <>
-        <div className="flex justify-between md:items-center my-4">
-          <motion.h1
-            initial={{ opacity: 0, y: -60 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.5,
-              delay: 0.8,
-            }}
-            viewport={{ once: true }}
-            className="h1-titles font-bold tracking-widest my-4"
-          >
-            {title}
-          </motion.h1>
+      <div className="flex justify-between md:items-center my-4">
+        <motion.h1
+          initial={{ opacity: 0, y: -60 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.5,
+            delay: 0.8,
+          }}
+          viewport={{ once: true }}
+          className="h1-titles font-bold tracking-widest my-4"
+        >
+          {title}
+        </motion.h1>
+        {hasCuratedParticipants && (
           <Select
             onValueChange={handleYearChange}
             value={selectedYear.toString()}
@@ -103,27 +123,31 @@ export default function CuratedMembersSection({
               ))}
             </SelectContent>
           </Select>
-        </div>
-        <motion.p
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 1.3 }}
-          className="mt-4 text-md md:text-lg text-uiwhite flex-grow-[0.3]"
-        >
-          {description}
-        </motion.p>
-      </>
-      <div className="grid grid-cols-2 md:grid-cols-4 place-content-start flex-grow">
-        {filteredCurated.map(
-          (participant: CuratedParticipantWhitYear, i: number) => (
-            <ParticipantCard
-              key={participant.slug}
-              participant={participant}
-              i={i}
-            />
-          )
         )}
       </div>
+      <motion.p
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 1.3 }}
+        className="mt-4 text-md md:text-lg text-uiwhite flex-grow-[0.3]"
+      >
+        {description}
+      </motion.p>
+      {hasCuratedParticipants ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 place-content-start flex-grow">
+          {filteredCurated.map(
+            (participant: CuratedParticipantWithYear, i: number) => (
+              <ParticipantCard
+                key={participant.slug}
+                participant={participant}
+                i={i}
+              />
+            )
+          )}
+        </div>
+      ) : (
+        <NoStickyMembersMessage />
+      )}
       <ScrollDown color="uiwhite" href="#info" className="py-2" />
     </motion.article>
   );

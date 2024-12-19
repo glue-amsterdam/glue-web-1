@@ -119,3 +119,14 @@ export interface IndividualEventResponse
   coOrganizers: EnhancedUser[] | null;
 }
 /* <= EVENT TYPES */
+
+export type MapBasicInfo = {
+  id: string;
+  formatted_address: string;
+  // Add any other fields that are returned by the API
+};
+
+// Extended type for individual event with map info
+export type IndividualEventWithMapResponse = IndividualEventResponse & {
+  mapInfo: MapBasicInfo;
+};

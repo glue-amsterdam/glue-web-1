@@ -8,7 +8,7 @@ export interface LoggedInUserType {
   userType: string;
 }
 
-export type CuratedParticipantWhitYear = {
+export type CuratedParticipantWithYear = {
   slug: string;
   userName: string;
   year: number;

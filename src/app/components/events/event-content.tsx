@@ -2,17 +2,18 @@
 
 import { Button } from "@/components/ui/button";
 import { getEventIcon, isRSVPRequiredEvent } from "@/constants";
-import { EnhancedUser, IndividualEventResponse } from "@/schemas/eventSchemas";
-import { MapLocationEnhaced } from "@/schemas/mapSchema";
+import {
+  EnhancedUser,
+  IndividualEventWithMapResponse,
+} from "@/schemas/eventSchemas";
 import { MapPinIcon as MapPinCheck } from "lucide-react";
 import Link from "next/link";
 
 interface EventContentProps {
-  event: IndividualEventResponse;
-  mapData: MapLocationEnhaced | null;
+  event: IndividualEventWithMapResponse;
 }
 
-export default function EventContent({ event, mapData }: EventContentProps) {
+export default function EventContent({ event }: EventContentProps) {
   const EventIcon = getEventIcon(event.type);
 
   return (
@@ -50,7 +51,7 @@ export default function EventContent({ event, mapData }: EventContentProps) {
           <figure className="relative w-full h-60 lg:h-[40vh] overflow-hidden">
             <img
               src={event.thumbnail.image_url}
-              alt={event.name}
+              alt={event.thumbnail.alt}
               className="rounded-md object-cover w-full h-full"
             />
           </figure>
@@ -108,15 +109,15 @@ export default function EventContent({ event, mapData }: EventContentProps) {
             </div>
           </div>
 
-          {mapData && (
+          {event.mapInfo && (
             <div>
               <a
                 className="flex gap-1"
                 target="_blank"
-                href={`/map?placeid=${mapData.mapbox_id}`}
+                href={`/map?place=${event.mapInfo.id}`}
               >
                 <MapPinCheck />
-                <p>{mapData.place_name}</p>
+                <p>{event.mapInfo.formatted_address}</p>
               </a>
             </div>
           )}

@@ -39,7 +39,7 @@ export default function EventCard({ event }: EventCardProps) {
           <div className="bg-black/20 group-hover:bg-background/80 transition-all duration-200 absolute inset-0 z-10" />
           <img
             src={event.thumbnail.image_url}
-            alt={event.name}
+            alt={event.thumbnail.alt}
             className="absolute rounded-md top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 object-cover w-full h-full"
           />
           <div className="absolute inset-0 flex flex-col justify-center px-2 md:px-10 z-20 group-hover:text-black text-background transition-all duration-200">
