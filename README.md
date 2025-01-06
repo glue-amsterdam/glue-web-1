@@ -38,7 +38,7 @@ GLUE V3 represents a new vision for the platform, delivering an improved user ex
 
 ## 📖 Documentation
 
-To get started with GLUE V3, visit our [Documentation](#) <!-- ON THE RUN -->.  
+To get started with GLUE V3, visit our [Documentation](#) (STILL WORKING ON IT)
 Stay tuned for upcoming guides and tutorials!
 
 ---
@@ -46,7 +46,7 @@ Stay tuned for upcoming guides and tutorials!
 ## 👨‍💻 Author
 
 This project was created by **Javier Azua**.  
-Find me on GitHub: [@JavierAzua](https://github.com/JavierAzua)
+Find me on GitHub: [@JavierAzua](https://github.com/JaviAzua)
 
 ---
 
