@@ -25,7 +25,7 @@ export const hubSchemaApiCall = z.object({
   hub_host: z.object({
     user_id: z.string(),
     user_name: z.string().optional(),
-    visible_emails: z.array(z.string()).optional(),
+    visible_emails: z.array(z.string()).optional().nullable(),
   }),
   participants: z.array(z.object({ user_id: z.string() })),
 });

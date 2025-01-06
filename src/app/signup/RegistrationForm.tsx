@@ -1,5 +1,6 @@
 "use client";
 
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import PlanPicker from "@/app/components/signup/plan-picker";
 import FreeUserRegistration from "@/app/signup/FreeUserRegistration";
 import MemberUserRegistration from "@/app/signup/MemberUserRegistration";
@@ -62,11 +63,20 @@ export default function RegistrationForm({ plansData }: RegistrationFormProps) {
       const result = await response.json();
 
       if (result.success) {
-        toast({
-          title: "User Created!",
-          description: "A moderator is going to confirm you as a participant.",
-          duration: 3000,
-        });
+        if (selectedPlan!.plan_type === "participant") {
+          toast({
+            title: "Registration Successful!",
+            description:
+              "A moderator is going to confirm you as a participant.",
+            duration: 3000,
+          });
+        } else {
+          toast({
+            title: "User Created!",
+            description: "Your account has been successfully created.",
+            duration: 3000,
+          });
+        }
         router.push("/");
       } else {
         setError(result.error || "Registration failed");
@@ -129,7 +139,7 @@ export default function RegistrationForm({ plansData }: RegistrationFormProps) {
         {loading && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
             <div className="bg-white p-4 rounded-lg shadow-lg">
-              <p className="text-lg font-semibold">Registering...</p>
+              <LoadingSpinner />
             </div>
           </div>
         )}

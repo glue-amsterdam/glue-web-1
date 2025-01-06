@@ -40,6 +40,7 @@ export function ParticipantDetailsForm({
   isMod: boolean;
   targetUserId: string | undefined;
 }) {
+  const isError = participantDetails && "error" in participantDetails;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [isSlugUnique, setIsSlugUnique] = useState<boolean | null>(null);
@@ -91,6 +92,8 @@ export function ParticipantDetailsForm({
 
   const isSticky = form.watch("is_sticky");
 
+  console.log(form.formState.errors);
+
   const onSubmit = createSubmitHandler<ParticipantDetails>(
     `/api/users/participants/${targetUserId}/details`,
     async () => {
@@ -109,7 +112,7 @@ export function ParticipantDetailsForm({
         variant: "destructive",
       });
     },
-    participantDetails ? "PUT" : "POST"
+    isError ? "POST" : "PUT"
   );
 
   const handleSubmit = async (values: ParticipantDetails) => {

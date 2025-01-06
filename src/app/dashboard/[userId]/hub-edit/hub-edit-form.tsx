@@ -41,6 +41,8 @@ export function EditHubForm({ hub, userInfoList, onSubmit }: EditHubFormProps) {
     defaultValues: hub,
   });
 
+  console.log(errors);
+
   const filteredUserInfoList = userInfoList.filter((userInfo) => {
     if (userInfo.plan_type !== "participant") return false;
     const searchLower = participantSearchTerm.toLowerCase();
@@ -82,8 +84,11 @@ export function EditHubForm({ hub, userInfoList, onSubmit }: EditHubFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <form
+      onSubmit={handleSubmit(onSubmitHandler)}
+      className="space-y-6 flex-grow overflow-auto"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 ">
         <div className="space-y-6">
           <div>
             <Input {...register("name")} placeholder="Hub Name" />
