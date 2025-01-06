@@ -16,6 +16,7 @@ const freeUserSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters long"),
   plan_id: z.string(),
+  user_name: z.string().min(1, "User name is required").max(50),
   plan_type: z.literal("free"),
 });
 
@@ -76,6 +77,15 @@ export default function FreeUserRegistration({
               </p>
             )}
           </div>
+          <div>
+            <Label htmlFor="user_name">User Name</Label>
+            <Input id="user_name" {...register("user_name")} />
+            {errors.user_name && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.user_name.message}
+              </p>
+            )}
+          </div>
           <input type="hidden" {...register("plan_id")} />
           <input type="hidden" {...register("plan_type")} />
         </CardContent>
@@ -83,7 +93,7 @@ export default function FreeUserRegistration({
           <Button type="button" variant="outline" onClick={onBack}>
             Back
           </Button>
-          <Button type="submit">Complete visitor Registration</Button>
+          <Button type="submit">Complete Visitor Registration</Button>
         </CardFooter>
       </form>
     </Card>
