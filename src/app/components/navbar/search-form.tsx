@@ -1,6 +1,8 @@
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
 import { CiSearch } from "react-icons/ci";
+import { Loader2 } from "lucide-react";
 
 interface SearchFormProps {
   onSearch: (query: string) => void;
@@ -12,22 +14,40 @@ export default function SearchForm({
   onSearchComplete,
 }: SearchFormProps): JSX.Element {
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSearch = async (
+    e: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLInputElement>
+  ) => {
     e.preventDefault();
-    onSearch(searchQuery);
-    onSearchComplete?.();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (searchQuery.trim()) {
+      setIsLoading(true);
       onSearch(searchQuery);
-      onSearchComplete?.();
+
+      try {
+        const response = await fetch(
+          `/api/search?q=${encodeURIComponent(searchQuery)}`
+        );
+        if (!response.ok) {
+          throw new Error("Search request failed");
+        }
+        const data = await response.json();
+        // Handle the search results here
+        console.log("Search results:", data);
+        router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+      } catch (error) {
+        console.error("Error performing search:", error);
+        // Handle error (e.g., show error message to user)
+      } finally {
+        setIsLoading(false);
+        onSearchComplete?.();
+      }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-md bg-gray">
+    <form onSubmit={handleSearch} className="w-full max-w-md bg-gray">
       <div className="relative">
         <CiSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -38,8 +58,15 @@ export default function SearchForm({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setSearchQuery(e.target.value)
           }
-          onKeyDown={handleKeyDown}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
+          disabled={isLoading}
+          aria-label="Search"
         />
+        {isLoading && (
+          <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+            <Loader2 className="size-4 animate-spin text-primary" />
+          </div>
+        )}
       </div>
     </form>
   );
