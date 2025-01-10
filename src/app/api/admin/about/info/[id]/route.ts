@@ -1,3 +1,4 @@
+import { config } from "@/env";
 import { infoItemSchema } from "@/schemas/infoSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
@@ -22,7 +23,7 @@ export async function PUT(
         .split("/")
         .pop();
       const { error: deleteError } = await supabase.storage
-        .from("amsterdam-assets")
+        .from(config.bucketName)
         .remove([`about/info-items/${oldImagePath}`]);
 
       if (deleteError) {

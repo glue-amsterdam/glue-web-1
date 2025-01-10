@@ -206,3 +206,7 @@ export function dotToHyphen(id: string): string {
 export function hyphenToDot(id: string): string {
   return id.replace("-", ".");
 }
+
+export function strToNumber(str: string) {
+  return Number(str);
+}

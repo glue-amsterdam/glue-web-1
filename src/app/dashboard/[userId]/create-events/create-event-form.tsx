@@ -36,6 +36,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, ImageIcon } from "lucide-react";
 import { CoOrganizerSearch } from "@/app/dashboard/components/co-organizers-search";
 import { Button } from "@/components/ui/button";
+import { config } from "@/env";
 
 interface EventFormProps {
   existingEventCount: number;
@@ -94,7 +95,7 @@ export function EventForm({
       if (data.file) {
         const { imageUrl, error } = await uploadImage({
           file: data.file,
-          bucket: "amsterdam-assets",
+          bucket: config.bucketName,
           folder: `events/${targetUserId}`,
         });
         if (error) {

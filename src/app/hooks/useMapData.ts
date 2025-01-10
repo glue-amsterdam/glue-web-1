@@ -1,12 +1,13 @@
+import { config } from "@/env";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useCallback, useMemo } from "react";
 
 // City bounding box from environment variables
 const CITY_BOUNDS: [number, number, number, number] = [
-  parseFloat(process.env.NEXT_PUBLIC_CITY_BOUNDS_WEST || "0"),
-  parseFloat(process.env.NEXT_PUBLIC_CITY_BOUNDS_SOUTH || "0"),
-  parseFloat(process.env.NEXT_PUBLIC_CITY_BOUNDS_EAST || "0"),
-  parseFloat(process.env.NEXT_PUBLIC_CITY_BOUNDS_NORTH || "0"),
+  parseFloat(config.cityBoundWest || "0"),
+  parseFloat(config.cityBoundSouth || "0"),
+  parseFloat(config.cityBoundEast || "0"),
+  parseFloat(config.cityBoundNorth || "0"),
 ];
 
 export interface Participant {

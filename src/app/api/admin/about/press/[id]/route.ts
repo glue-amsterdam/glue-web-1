@@ -1,3 +1,4 @@
+import { config } from "@/env";
 import { pressItemSchema } from "@/schemas/pressSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
@@ -22,7 +23,7 @@ export async function PUT(
         .split("/")
         .pop();
       const { error: deleteError } = await supabase.storage
-        .from("amsterdam-assets")
+        .from(config.bucketName)
         .remove([`about/press-items/${oldImagePath}`]);
 
       if (deleteError) {

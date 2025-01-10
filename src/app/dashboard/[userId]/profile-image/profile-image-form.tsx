@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ImageIcon } from "lucide-react";
 import { uploadImage } from "@/utils/supabase/storage/client";
 import { useToast } from "@/hooks/use-toast";
+import { config } from "@/env";
 
 const imageSchema = z.object({
   id: z.string().optional(),
@@ -96,7 +97,7 @@ export function ProfileImageForm({
       try {
         const { imageUrl, error } = await uploadImage({
           file,
-          bucket: "amsterdam-assets",
+          bucket: config.bucketName,
           folder: `profile-images/${targetUserId}`,
         });
 

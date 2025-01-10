@@ -1,3 +1,4 @@
+import { config } from "@/env";
 import {
   ParticipantClient,
   participantsResponseSchema,
@@ -59,8 +60,8 @@ export async function GET() {
             participant.participant_image?.[0]?.image_url ||
             "/participant-placeholder.jpg",
           alt:
-            `${participant.user_name} profile image - participant from GLUE desing routes in ${process.env.NEXT_PUBLIC_MAIN_CITY_GLUE_EVENT}` ||
-            `GLUE participant profile image from ${process.env.NEXT_PUBLIC_MAIN_CITY_GLUE_EVENT}`,
+            `${participant.user_name} profile image - participant from GLUE desing routes in ${config.cityName}` ||
+            `GLUE participant profile image from ${config.cityName}`,
         },
       })
     );

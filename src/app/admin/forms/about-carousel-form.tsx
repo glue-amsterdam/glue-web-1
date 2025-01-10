@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { config } from "@/env";
 
 interface CarouselFormProps {
   initialData: CarouselSection;
@@ -115,7 +116,7 @@ export default function AboutCarouselSectionForm({
           }
           const { imageUrl, error } = await uploadImage({
             file: slide.file,
-            bucket: "amsterdam-assets",
+            bucket: config.bucketName,
             folder: "about/carousel-images",
           });
           if (error) {

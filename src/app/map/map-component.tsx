@@ -29,17 +29,18 @@ import {
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
+import { config } from "@/env";
 
 const CITY_BOUNDS: [number, number, number, number] = [
-  parseFloat(process.env.NEXT_PUBLIC_CITY_BOUNDS_WEST || "0"),
-  parseFloat(process.env.NEXT_PUBLIC_CITY_BOUNDS_SOUTH || "0"),
-  parseFloat(process.env.NEXT_PUBLIC_CITY_BOUNDS_EAST || "0"),
-  parseFloat(process.env.NEXT_PUBLIC_CITY_BOUNDS_NORTH || "0"),
+  parseFloat(config.cityBoundWest || "0"),
+  parseFloat(config.cityBoundSouth || "0"),
+  parseFloat(config.cityBoundEast || "0"),
+  parseFloat(config.cityBoundNorth || "0"),
 ];
 
 const CITY_CENTER: [number, number] = [
-  parseFloat(process.env.NEXT_PUBLIC_CITY_CENTER_LNG || "0"),
-  parseFloat(process.env.NEXT_PUBLIC_CITY_CENTER_LAT || "0"),
+  parseFloat(config.cityCenterLng || "0"),
+  parseFloat(config.cityCenterLat || "0"),
 ];
 
 interface MapComponentProps {
@@ -199,7 +200,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   return (
     <Map
       ref={mapRef}
-      mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
+      mapboxAccessToken={config.mapboxAccesToken}
       initialViewState={{
         longitude: CITY_CENTER[0],
         latitude: CITY_CENTER[1],

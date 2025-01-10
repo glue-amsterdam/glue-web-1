@@ -9,6 +9,7 @@ import { generateAltText } from "./utils";
 import { CitizensSection } from "@/schemas/citizenSchema";
 import { uploadImage, deleteImage } from "@/utils/supabase/storage/client";
 import { useToast } from "@/hooks/use-toast";
+import { config } from "@/env";
 
 interface CitizenFormProps {
   control: Control<CitizensSection>;
@@ -64,7 +65,7 @@ export function CitizenForm({
       try {
         const { imageUrl, error } = await uploadImage({
           file,
-          bucket: "amsterdam-assets",
+          bucket: config.bucketName,
           folder: `about/citizens/${selectedYear}`,
         });
 

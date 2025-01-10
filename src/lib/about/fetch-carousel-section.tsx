@@ -1,4 +1,5 @@
 import { BASE_URL } from "@/constants";
+import { config } from "@/env";
 import {
   CarouselClientType,
   carouselSectionSchema,
@@ -6,11 +7,11 @@ import {
 
 const CAROUSEL_FALLBACK_DATA: CarouselClientType = {
   title: "Welcome to GLUE",
-  description: "Discover Amsterdam's vibrant design community",
+  description: `Discover ${config.cityName}'s vibrant design community`,
   slides: [
     {
       image_url: "/placeholder.jgp",
-      alt: "GLUE Amsterdam Design Community",
+      alt: `GLUE ${config.cityName} Design Community`,
     },
     {
       image_url: "/placeholder.jgp",
