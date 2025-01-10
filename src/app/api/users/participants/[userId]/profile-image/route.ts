@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import crypto from "crypto";
+import { config } from "@/env";
 
 const imageSchema = z.object({
   id: z.string().optional(),
@@ -104,7 +105,7 @@ export async function PUT(
           console.log(`Attempting to delete image: ${filePath}`);
 
           const { error: storageError } = await supabase.storage
-            .from("amsterdam-assets")
+            .from(config.bucketName)
             .remove([filePath]);
 
           if (storageError) {
@@ -158,14 +159,14 @@ export async function DELETE(
 
     // Delete corresponding images from the storage bucket
     const { data: images, error: fetchError } = await supabase.storage
-      .from("amsterdam-assets")
+      .from(config.bucketName)
       .list(`profile-images/${userId}`);
 
     if (fetchError) throw fetchError;
 
     if (images && images.length > 0) {
       const { error: storageError } = await supabase.storage
-        .from("amsterdam-assets")
+        .from(config.bucketName)
         .remove(images.map((img) => `${userId}/${img.name}`));
 
       if (storageError) throw storageError;

@@ -21,6 +21,7 @@ import { RichTextEditor } from "@/app/components/editor";
 import { Textarea } from "@/components/ui/textarea";
 import { InfoItem, InfoSection, infoSectionSchema } from "@/schemas/infoSchema";
 import { mutate } from "swr";
+import { config } from "@/env";
 
 interface InfoSectionFormProps {
   initialData: InfoSection;
@@ -140,7 +141,7 @@ export default function InfoSectionForm({ initialData }: InfoSectionFormProps) {
       if (infoItem.image.file) {
         const { imageUrl, error } = await uploadImage({
           file: infoItem.image.file,
-          bucket: "amsterdam-assets",
+          bucket: config.bucketName,
           folder: "about/info-items",
         });
         if (error) {

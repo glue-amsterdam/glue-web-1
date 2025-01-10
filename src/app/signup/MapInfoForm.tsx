@@ -7,9 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import mapboxSdk from "@mapbox/mapbox-sdk/services/geocoding";
 import { MapInfo, mapInfoSchema } from "@/schemas/mapInfoSchemas";
+import { config } from "@/env";
+import { strToNumber } from "@/constants";
 
 const mapboxClient = mapboxSdk({
-  accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN as string,
+  accessToken: config.mapboxAccesToken,
 });
 
 interface MapInfoFormProps {
@@ -35,7 +37,13 @@ export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
     },
   });
 
-  console.log(errors);
+  const westLimit = strToNumber(config.cityBoundWest);
+  const southLimit = strToNumber(config.cityBoundSouth);
+  const eastLimit = strToNumber(config.cityBoundEast);
+  const northLimit = strToNumber(config.cityBoundNorth);
+
+  const centerLng = strToNumber(config.cityCenterLng);
+  const centerLat = strToNumber(config.cityCenterLat);
 
   const hasAddress = !watch("no_address");
 
@@ -45,10 +53,10 @@ export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
         .forwardGeocode({
           query: input,
           limit: 5,
-          countries: ["NL"],
+          countries: [config.countryPreFix],
           types: ["address"],
-          bbox: [4.7287, 52.2784, 5.0679, 52.4311], // Bounding box for Amsterdam
-          proximity: [4.9041, 52.3676], // Center of Amsterdam
+          bbox: [westLimit, southLimit, eastLimit, northLimit], // Bounding box
+          proximity: [centerLng, centerLat], // Center
         })
         .send();
 
@@ -105,7 +113,7 @@ export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
       />
       {hasAddress && (
         <div>
-          <Label htmlFor="address">Address in Amsterdam</Label>
+          <Label htmlFor="address">{` Address in ${config.cityName}`}</Label>
           <Controller
             name="formatted_address"
             control={control}
@@ -118,7 +126,7 @@ export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
                   handleAddressChange(e.target.value);
                 }}
                 value={field.value ?? ""}
-                placeholder="Start typing an address in Amsterdam"
+                placeholder={`Start typing an address in ${config.cityName}`}
               />
             )}
           />

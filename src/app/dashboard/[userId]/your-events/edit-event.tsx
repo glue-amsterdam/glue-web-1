@@ -29,6 +29,7 @@ import { DAYS_IDS, EVENT_TYPES } from "@/constants";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { config } from "@/env";
 
 interface EditEventFormProps {
   event: EventType;
@@ -82,7 +83,7 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
         }
         const { imageUrl, error } = await uploadImage({
           file: data.file,
-          bucket: "amsterdam-assets",
+          bucket: config.bucketName,
           folder: `events/${targetUserId}`,
         });
         if (error) {

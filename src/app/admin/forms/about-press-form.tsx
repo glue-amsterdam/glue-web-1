@@ -26,6 +26,7 @@ import {
 } from "@/schemas/pressSchema";
 import { mutate } from "swr";
 import { Switch } from "@/components/ui/switch";
+import { config } from "@/env";
 
 interface PressItemFormProps {
   initialData: PressItemsSectionContent;
@@ -129,7 +130,7 @@ export default function PressSectionForm({ initialData }: PressItemFormProps) {
       if (pressItem.file) {
         const { imageUrl, error } = await uploadImage({
           file: pressItem.file,
-          bucket: "amsterdam-assets",
+          bucket: config.bucketName,
           folder: "about/press-items",
         });
         if (error) {

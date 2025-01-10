@@ -23,10 +23,12 @@ import {
 import { useAuth } from "@/app/context/AuthContext";
 import GlueLogoSVG from "@/app/components/glue-logo-svg";
 import { motion } from "framer-motion";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2, Settings } from "lucide-react";
 import { z } from "zod";
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
+import { getCookieConsent } from "@/app/actions/cookieConsent";
+import { CookieSettingsModal } from "@/components/cookies/cookies-modal";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -50,6 +52,8 @@ export default function LoginForm({
 }: LoginFormProps) {
   const { login, loginError, clearLoginError } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [cookieError, setCookieError] = useState<string | null>(null);
+  const [isCookieSettingsOpen, setIsCookieSettingsOpen] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(loginSchema),
@@ -62,7 +66,18 @@ export default function LoginForm({
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     clearLoginError();
+    setCookieError(null);
+
     try {
+      const hasConsent = await getCookieConsent();
+      if (!hasConsent) {
+        setCookieError(
+          "Cookie consent is required to log in. Please enable cookies."
+        );
+        setIsLoading(false);
+        return;
+      }
+
       const user = await login(data.email, data.password);
       onClose();
       onLoginSuccess(user);
@@ -98,102 +113,123 @@ export default function LoginForm({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-gradient-to-br from-primary/10 to-secondary/10 backdrop-blur-sm border border-primary/20 rounded-lg shadow-xl p-6 text-black">
-        <DialogHeader>
-          <DialogTitle className="text-3xl font-bold text-center text-primary">
-            Log In
-          </DialogTitle>
-          <DialogDescription className="text-center text-muted-foreground">
-            Enter your credentials to access your account.
-          </DialogDescription>
-        </DialogHeader>
-        <motion.div
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="flex justify-center w-full mb-6 text-black"
-        >
-          <GlueLogoSVG isVisible className="w-32 h-32" />
-        </motion.div>
-        {loginError && (
-          <div className="text-red-500 text-sm bg-red-100 p-2 rounded">
-            {loginError}
-          </div>
-        )}
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-primary">Email</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        placeholder="Enter your email"
-                        {...field}
-                        className="pl-10"
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-primary">Password</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        type="password"
-                        placeholder="Enter your password"
-                        {...field}
-                        className="pl-10"
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Logging in...
-                  </>
-                ) : (
-                  "Log In"
-                )}
-              </Button>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[425px] bg-gradient-to-br from-primary/10 to-secondary/10 backdrop-blur-sm border border-primary/20 rounded-lg shadow-xl p-6 text-black">
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-bold text-center text-primary">
+              Log In
+            </DialogTitle>
+            <DialogDescription className="text-center text-muted-foreground">
+              Enter your credentials to access your account.
+            </DialogDescription>
+          </DialogHeader>
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex justify-center w-full mb-6 text-black"
+          >
+            <GlueLogoSVG isVisible className="w-32 h-32" />
+          </motion.div>
+          {loginError && (
+            <div className="text-red-500 text-sm bg-red-100 p-2 rounded">
+              {loginError}
+            </div>
+          )}
+          {cookieError && (
+            <div className="text-red-500 text-sm bg-red-100 p-2 rounded flex flex-col flex-wrap">
+              <span>{cookieError}</span>
               <Button
                 type="button"
-                variant="outline"
-                className="w-full text-black"
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsCookieSettingsOpen(true)}
+                className="text-sm text-primary hover:underline"
               >
-                <Link href="signup/?step=1">Sign up</Link>
+                <Settings className="w-4 h-4 mr-2" />
+                Change Settings
               </Button>
             </div>
-            <div className="text-center">
-              <a
-                onClick={handlePasswordForgot}
-                className="text-sm text-primary hover:underline cursor-pointer"
-              >
-                Forgot your password?
-              </a>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          )}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-primary">Email</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          placeholder="Enter your email"
+                          {...field}
+                          className="pl-10"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-primary">Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          type="password"
+                          placeholder="Enter your password"
+                          {...field}
+                          className="pl-10"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Logging in...
+                    </>
+                  ) : (
+                    "Log In"
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full text-black"
+                >
+                  <Link href="signup/?step=1">Sign up</Link>
+                </Button>
+              </div>
+              <div className="flex justify-between items-center">
+                <a
+                  onClick={handlePasswordForgot}
+                  className="text-sm text-primary hover:underline cursor-pointer"
+                >
+                  Forgot your password?
+                </a>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      <CookieSettingsModal
+        isOpen={isCookieSettingsOpen}
+        onClose={() => setIsCookieSettingsOpen(false)}
+      />
+    </>
   );
 }

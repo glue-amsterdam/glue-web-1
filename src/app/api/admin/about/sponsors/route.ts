@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { sponsorSchema } from "@/schemas/sponsorsSchema";
 import { createClient } from "@/utils/supabase/server";
+import { config } from "@/env";
 
 export async function GET() {
   try {
@@ -97,7 +98,7 @@ export async function PUT(request: Request) {
         .pop();
       if (oldImagePath) {
         const { error: deleteError } = await supabase.storage
-          .from("amsterdam-assets")
+          .from(config.bucketName)
           .remove([`about/sponsors/${oldImagePath}`]);
 
         if (deleteError) {
@@ -170,7 +171,7 @@ export async function DELETE(request: Request) {
         .split("/")
         .pop();
       const { error: deleteImageError } = await supabase.storage
-        .from("amsterdam-assets")
+        .from(config.bucketName)
         .remove([`about/sponsors/${imagePath}`]);
 
       if (deleteImageError) {

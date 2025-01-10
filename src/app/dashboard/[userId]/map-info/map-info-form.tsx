@@ -19,9 +19,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { config } from "@/env";
+import { strToNumber } from "@/constants";
 
 const mapboxClient = mapboxSdk({
-  accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN as string,
+  accessToken: config.mapboxAccesToken,
 });
 
 interface MapInfoFormProps {
@@ -35,6 +37,14 @@ function FormFields() {
     Array<{ place_name: string; center: [number, number] }>
   >([]);
 
+  const westLimit = strToNumber(config.cityBoundWest);
+  const southLimit = strToNumber(config.cityBoundSouth);
+  const eastLimit = strToNumber(config.cityBoundEast);
+  const northLimit = strToNumber(config.cityBoundNorth);
+
+  const centerLng = strToNumber(config.cityCenterLng);
+  const centerLat = strToNumber(config.cityCenterLat);
+
   const noAddress = watch("no_address");
 
   const handleAddressChange = async (input: string) => {
@@ -43,10 +53,10 @@ function FormFields() {
         .forwardGeocode({
           query: input,
           limit: 5,
-          countries: ["NL"],
+          countries: [config.countryPreFix],
           types: ["address"],
-          bbox: [4.7287, 52.2784, 5.0679, 52.4311],
-          proximity: [4.9041, 52.3676],
+          bbox: [westLimit, southLimit, eastLimit, northLimit], // Bounding box
+          proximity: [centerLng, centerLat], // Center
         })
         .send();
 
@@ -100,7 +110,7 @@ function FormFields() {
 
       {!noAddress && (
         <div>
-          <Label htmlFor="address">Address in Amsterdam</Label>
+          <Label htmlFor="address">{`Address in ${config.cityName}`}</Label>
           <Controller
             name="formatted_address"
             control={control}
@@ -116,7 +126,7 @@ function FormFields() {
                   value={field.value || ""}
                   name={field.name}
                   ref={field.ref}
-                  placeholder="Start typing an address in Amsterdam"
+                  placeholder={`Start typing an address in ${config.cityName}`}
                 />
               </div>
             )}

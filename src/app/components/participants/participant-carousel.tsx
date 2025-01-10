@@ -7,6 +7,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { config } from "@/env";
 import { ClientUserImage } from "@/types/api-visible-user";
 
 export default function ImageCarousel({
@@ -25,7 +26,7 @@ export default function ImageCarousel({
               <img
                 src={image.image_url || "/participant-placeholder.jpg"}
                 alt={`GLUE ${
-                  process.env.NEXT_PUBLIC_MAIN_CITY_GLUE_EVENT
+                  config.cityName
                 } participant ${userName}, image number ${index + 1}`}
                 className="object-cover absolute inset-0 w-full h-full"
               />

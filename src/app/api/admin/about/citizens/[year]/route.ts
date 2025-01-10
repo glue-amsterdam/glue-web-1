@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { citizenSchema } from "@/schemas/citizenSchema";
 import { z } from "zod";
+import { config } from "@/env";
 
 export async function GET(
   request: Request,
@@ -103,7 +104,7 @@ export async function PUT(
           console.log(`Attempting to delete image: ${filePath}`);
 
           const { error: storageError } = await supabase.storage
-            .from("amsterdam-assets")
+            .from(config.bucketName)
             .remove([filePath]);
 
           if (storageError) {
@@ -152,14 +153,14 @@ export async function DELETE(
 
     // Delete corresponding images from the storage bucket
     const { data: images, error: fetchError } = await supabase.storage
-      .from("amsterdam-assets")
+      .from(config.bucketName)
       .list(`about/citizens/${year}`);
 
     if (fetchError) throw fetchError;
 
     if (images && images.length > 0) {
       const { error: storageError } = await supabase.storage
-        .from("amsterdam-assets")
+        .from(config.bucketName)
         .remove(images.map((img) => `about/citizens/${year}/${img.name}`));
 
       if (storageError) throw storageError;

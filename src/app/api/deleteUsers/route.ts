@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { SupabaseClient } from "@supabase/supabase-js";
+import { config } from "@/env";
 
 export async function POST(request: Request) {
   const supabase = await createAdminClient();
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
 
     // Delete storage items
     async function deleteUserStorage(supabase: SupabaseClient, userId: string) {
-      const bucketName = "amsterdam-assets";
+      const bucketName = config.bucketName;
       const folders = ["profile-images", "events"];
       const errors = [];
 

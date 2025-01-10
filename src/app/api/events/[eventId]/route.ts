@@ -1,3 +1,4 @@
+import { config } from "@/env";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -86,7 +87,7 @@ export async function GET(
       endTime: event.end_time || "",
       thumbnail: {
         image_url: event.image_url || "",
-        alt: `${event.title} - event from GLUE design routes in ${process.env.NEXT_PUBLIC_MAIN_CITY_GLUE_EVENT}`,
+        alt: `${event.title} - event from GLUE design routes in ${config.cityName}`,
       },
       organizer: {
         user_id: event.organizer?.user_id || "",

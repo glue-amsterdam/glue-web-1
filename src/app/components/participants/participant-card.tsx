@@ -1,3 +1,4 @@
+import { config } from "@/env";
 import { ParticipantClient } from "@/lib/client/fetch-participants";
 import Link from "next/link";
 
@@ -13,7 +14,7 @@ export default function ParticipantCard({
           {participant.image_url ? (
             <img
               src={participant.image_url || "/participant-placeholder.jpg"}
-              alt={`GLUE ${process.env.NEXT_PUBLIC_MAIN_CITY_GLUE_EVENT} participant ${participant.user_name} image`}
+              alt={`GLUE ${config.cityName} participant ${participant.user_name} image`}
               className="object-cover absolute inset-0 w-full h-full"
             />
           ) : (

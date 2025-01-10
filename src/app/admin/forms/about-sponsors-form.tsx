@@ -22,6 +22,7 @@ import { ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { uploadImage } from "@/utils/supabase/storage/client";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { config } from "@/env";
 
 interface SponsorFormProps {
   initialData?: Sponsor;
@@ -96,7 +97,7 @@ export default function SponsorForm({
       if (data.file) {
         const { imageUrl, error } = await uploadImage({
           file: data.file,
-          bucket: "amsterdam-assets",
+          bucket: config.bucketName,
           folder: "about/sponsors",
         });
         if (error) {

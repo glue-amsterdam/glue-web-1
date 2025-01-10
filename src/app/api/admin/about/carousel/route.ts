@@ -1,3 +1,4 @@
+import { config } from "@/env";
 import {
   CarouselSection,
   carouselSectionSchema,
@@ -123,7 +124,7 @@ export async function POST(request: Request) {
         console.log(`Attempting to delete image: ${filePath}`);
 
         const { error: storageError } = await supabase.storage
-          .from("amsterdam-assets")
+          .from(config.bucketName)
           .remove([filePath]);
 
         if (storageError) {
