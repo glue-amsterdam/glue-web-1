@@ -9,8 +9,8 @@ import { LoadingFallback } from "@/app/components/loading-fallback";
 import { CookieBanner } from "@/components/cookies/cookies-banner";
 
 export const metadata: Metadata = {
-  title: "GLUE - Home",
-  description: "GLUE connected by design",
+  title: `GLUE ${process.env.NEXT_PUBLIC_MAIN_CITY_GLUE_EVENT}`,
+  description: `GLUE ${process.env.NEXT_PUBLIC_MAIN_CITY_GLUE_EVENT} connected by design`,
   openGraph: {
     title: "GLUE",
     url: "",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   twitter: {
     title: "GLUE",
     card: "summary_large_image",
-    description: "GLUE connected by design",
+    description: `GLUE ${process.env.NEXT_PUBLIC_MAIN_CITY_GLUE_EVENT} connected by design`,
     site: "",
     images: "",
   },
