@@ -1,8 +1,8 @@
+import React, { Suspense } from "react";
 import Background from "@/app/components/background";
 import { LoadingFallback } from "@/app/components/loading-fallback";
-import MapMain from "@/app/map/map-main";
 import { NAVBAR_HEIGHT } from "@/constants";
-import React, { Suspense } from "react";
+import { MapWrapper } from "@/app/map/map-wrapper";
 
 export const metadata = {
   title: "GLUE - Map",
@@ -11,8 +11,11 @@ export const metadata = {
 export default function MapPage() {
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <div style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}>
-        <MapMain />
+      <div
+        style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+        className="relative h-screen"
+      >
+        <MapWrapper />
         <Background />
       </div>
     </Suspense>

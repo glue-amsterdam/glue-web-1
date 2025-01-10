@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Suspense } from "react";
 import { MainDataProvider } from "@/app/context/MainDataProvider";
 import { LoadingFallback } from "@/app/components/loading-fallback";
+import { CookieBanner } from "@/components/cookies/cookies-banner";
 
 export const metadata: Metadata = {
   title: "GLUE - Home",
@@ -50,6 +51,7 @@ export default async function RootLayout({
               <NavbarBurguer />
               <div className="flex-grow overflow-x-hidden">{children}</div>
               <Toaster />
+              <CookieBanner />
             </AuthProvider>
           </MainDataProvider>
         </Suspense>
