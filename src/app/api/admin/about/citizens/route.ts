@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -39,6 +40,41 @@ export async function GET() {
     return NextResponse.json(completeSection);
   } catch (error) {
     console.error("Error fetching citizens data:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: Request) {
+  const cookieStore = await cookies();
+  const adminToken = cookieStore.get("admin_token");
+
+  if (!adminToken) {
+    return NextResponse.json(
+      { error: "Unauthorized: Admin access required" },
+      { status: 403 }
+    );
+  }
+
+  try {
+    const supabase = await createClient();
+    const body = await request.json();
+
+    const { data, error } = await supabase
+      .from("about_citizens_section")
+      .update({
+        title: body.title,
+        description: body.description,
+      })
+      .eq("id", "about-citizens-section-56ca13952fcc")
+      .select();
+    if (error) throw error;
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Error updating citizens section data:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
