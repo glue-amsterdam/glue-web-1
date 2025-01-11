@@ -63,7 +63,7 @@ export default function UsersAdminPage({
       ) ||
       user.user_id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType =
-      selectedType === "all" || user.plan_type === selectedType;
+      selectedType === "all" || user.plan_type === selectedType.toLowerCase();
 
     return matchesSearch && matchesType;
   });
@@ -175,7 +175,7 @@ export default function UsersAdminPage({
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="participant">Participant</SelectItem>
                 <SelectItem value="member">Member</SelectItem>
-                <SelectItem value="visitor">Visitor</SelectItem>
+                <SelectItem value="free">Visitor</SelectItem>
               </SelectContent>
             </Select>
           </div>

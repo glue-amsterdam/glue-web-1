@@ -91,17 +91,48 @@ export function ParticipantDetailsForm({
   });
 
   const isSticky = form.watch("is_sticky");
-
-  console.log(form.formState.errors);
+  const status = form.watch("status");
 
   const onSubmit = createSubmitHandler<ParticipantDetails>(
     `/api/users/participants/${targetUserId}/details`,
-    async () => {
+    async (data) => {
       toast({
         title: "Success",
         description: "Participant details updated successfully.",
       });
       await mutate(`/api/users/participants/${targetUserId}/details`);
+
+      if (
+        data.status === "accepted" &&
+        participantDetails.status !== "accepted"
+      ) {
+        try {
+          const response = await fetch("/api/send-participant-accepted-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userId: targetUserId }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to send email notification");
+          }
+
+          toast({
+            title: "Email Sent",
+            description: "Participant acceptance email sent successfully.",
+          });
+        } catch (error) {
+          console.error("Error sending email:", error);
+          toast({
+            title: "Email Error",
+            description: "Failed to send participant acceptance email.",
+            variant: "destructive",
+          });
+        }
+      }
+
       router.refresh();
     },
     (error) => {
@@ -131,6 +162,15 @@ export function ParticipantDetailsForm({
         <CardTitle className="text-2xl font-bold">
           Participant Details
         </CardTitle>
+        {status === "pending" && (
+          <div
+            className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4"
+            role="alert"
+          >
+            <p className="font-bold">Pending Approval</p>
+            <p>This participant is waiting for approval.</p>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -269,17 +309,29 @@ export function ParticipantDetailsForm({
                               field.value === "accepted" ? "default" : "outline"
                             }
                             onClick={() => field.onChange("accepted")}
+                            className={
+                              field.value === "accepted"
+                                ? "bg-green-500 hover:bg-green-600"
+                                : ""
+                            }
                           >
-                            Accept
+                            {field.value === "accepted" ? "Accepted" : "Accept"}
                           </Button>
                           <Button
                             type="button"
                             variant={
                               field.value === "declined" ? "default" : "outline"
                             }
-                            onClick={() => field.onChange("rejected")}
+                            onClick={() => field.onChange("declined")}
+                            className={
+                              field.value === "declined"
+                                ? "bg-red-500 hover:bg-red-600"
+                                : ""
+                            }
                           >
-                            Reject
+                            {field.value === "declined"
+                              ? "Declined"
+                              : "Decline"}
                           </Button>
                         </div>
                         <FormMessage />
