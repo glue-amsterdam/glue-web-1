@@ -21,7 +21,7 @@ const baseUserSchema = z.object({
 
 const invoiceSchema = z.object({
   invoice_company_name: z.string().min(3),
-  invoice_zip_code: z.string().min(5),
+  invoice_zip_code: z.string().min(3),
   invoice_address: z.string().min(3),
   invoice_country: z.string().min(3),
   invoice_city: z.string().min(3),
