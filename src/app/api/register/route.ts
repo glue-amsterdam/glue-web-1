@@ -3,6 +3,11 @@ import { userSchema } from "@/schemas/authSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { z } from "zod";
 import { generateUniqueSlug } from "@/utils/slugUtils";
+import {
+  sendModeratorFreeUserNotification,
+  sendModeratorMemberNotification,
+  sendModeratorParticipantNotification,
+} from "@/lib/email";
 
 type UserData = z.infer<typeof userSchema>;
 
@@ -98,6 +103,36 @@ export async function POST(request: Request) {
         });
         if (mapError) throw new Error(`Map Error: ${mapError.message}`);
       }
+    }
+
+    // Send email notification to moderators based on plan type
+    switch (userData.plan_type) {
+      case "free":
+        await sendModeratorFreeUserNotification({
+          user_id: realUserId,
+          user_name: userData.user_name,
+          email: userData.email,
+        });
+        break;
+      case "member":
+        await sendModeratorMemberNotification({
+          user_id: realUserId,
+          user_name: userData.user_name,
+          email: userData.email,
+          invoice_company_name: userData.invoice_company_name,
+          invoice_address: userData.invoice_address,
+          invoice_city: userData.invoice_city,
+          invoice_zip_code: userData.invoice_zip_code,
+          invoice_country: userData.invoice_country,
+          invoice_extra: userData.invoice_extra,
+        });
+        break;
+      case "participant":
+        await sendModeratorParticipantNotification({
+          ...userData,
+          user_id: realUserId,
+        });
+        break;
     }
 
     return NextResponse.json(
