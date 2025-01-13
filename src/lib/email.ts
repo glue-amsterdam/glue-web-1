@@ -81,9 +81,9 @@ export async function sendModeratorParticipantNotification(
     invoice_zip_code: string;
     invoice_country: string;
     invoice_extra?: string;
-    formatted_address?: string;
-    latitude?: number;
-    longitude?: number;
+    formatted_address: string | null;
+    latitude: number | null;
+    longitude: number | null;
     no_address?: boolean;
     social_media?: Record<string, string>;
     visible_emails?: string[];

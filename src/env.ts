@@ -9,4 +9,5 @@ export const config = {
   cityCenterLat: process.env.NEXT_PUBLIC_CITY_CENTER_LAT as string,
   countryPreFix: process.env.NEXT_PUBLIC_COUNTRY_PRE_FIX as string,
   mapboxAccesToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN as string,
+  baseUrl: process.env.NEXT_PUBLIC_SITE_URL as string,
 };
