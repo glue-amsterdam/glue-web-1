@@ -41,10 +41,10 @@ const participantSchema = z.object({
 export type ParticipantAuthData = z.infer<typeof participantSchema>;
 
 const mapInfoSchema = z.object({
-  formatted_address: z.string().optional(),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
   no_address: z.boolean(),
+  formatted_address: z.string().nullable(),
+  latitude: z.number().nullable(),
+  longitude: z.number().nullable(),
 });
 
 export const userSchema = z.discriminatedUnion("plan_type", [
