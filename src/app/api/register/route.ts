@@ -22,9 +22,6 @@ export async function POST(request: Request) {
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: validatedData.email,
       password: validatedData.password,
-      options: {
-        data: { schema: process.env.SUPABASE_SCHEMA },
-      },
     });
 
     if (authError) throw new Error(`Auth Error: ${authError.message}`);
