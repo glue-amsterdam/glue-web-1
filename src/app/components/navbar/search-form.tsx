@@ -32,9 +32,6 @@ export default function SearchForm({
         if (!response.ok) {
           throw new Error("Search request failed");
         }
-        const data = await response.json();
-        // Handle the search results here
-        console.log("Search results:", data);
         router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
       } catch (error) {
         console.error("Error performing search:", error);

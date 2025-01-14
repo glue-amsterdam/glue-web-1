@@ -39,9 +39,8 @@ export async function PUT(
         title: validatedData.title,
         description: validatedData.description,
         image_url: validatedData.image_url,
-        alt: validatedData.alt,
         is_visible: validatedData.isVisible,
-        press_id: "about-press-56ca13952fcc",
+        press_id: "about-press",
       });
 
     if (itemError) throw itemError;

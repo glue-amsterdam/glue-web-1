@@ -28,11 +28,7 @@ export default function ParticipantsSection({
   description,
   title,
 }: ParticipantsSection) {
-  if (!participants || participants.length === 0) {
-    return <div className="text-center py-8">No Participants Data</div>;
-  }
-
-  const slicedParticipants = participants.slice(0, 10);
+  const slicedParticipants = participants?.slice(0, 10) || [];
 
   return (
     <motion.article
@@ -60,63 +56,71 @@ export default function ParticipantsSection({
         </Link>
       </div>
       <div className="h-[70%] flex items-start">
-        <Carousel
-          className="w-full h-full"
-          plugins={[
-            Autoplay({
-              stopOnMouseEnter: true,
-              delay: 2000,
-            }),
-          ]}
-        >
-          <CarouselContent className="h-full">
-            {slicedParticipants.map((participant, index) => (
-              <CarouselItem
-                key={index}
-                className="h-full basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 traslate-y-1/2"
-              >
-                <Link
-                  className="h-full"
-                  href={`/participants/${encodeURIComponent(participant.slug)}`}
+        {slicedParticipants.length > 0 ? (
+          <Carousel
+            className="w-full h-full"
+            plugins={[
+              Autoplay({
+                stopOnMouseEnter: true,
+                delay: 2000,
+              }),
+            ]}
+          >
+            <CarouselContent className="h-full">
+              {slicedParticipants.map((participant, index) => (
+                <CarouselItem
+                  key={index}
+                  className="h-full basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 traslate-y-1/2"
                 >
-                  <Card className="border-none shadow-sm bg-transparent h-full hover:shadow-md transition-shadow duration-300">
-                    <CardContent className="flex items-center justify-center p-0 h-full">
-                      {participant.image ? (
-                        <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
-                          <img
-                            src={participant.image.image_url}
-                            alt={`${participant.userName} profile image thumbnail`}
-                            className="w-full h-full absolute object-cover"
-                          />
-                          <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                            <p className="text-center font-semibold text-sm">
-                              {participant.userName}
-                            </p>
+                  <Link
+                    className="h-full"
+                    href={`/participants/${participant.slug}`}
+                  >
+                    <Card className="border-none shadow-sm bg-transparent h-full hover:shadow-md transition-shadow duration-300">
+                      <CardContent className="flex items-center justify-center p-0 h-full">
+                        {participant.image ? (
+                          <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
+                            <img
+                              src={participant.image.image_url}
+                              alt={`${participant.userName} profile image thumbnail`}
+                              className="w-full h-full absolute object-cover"
+                            />
+                            <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                              <p className="text-center font-semibold text-sm">
+                                {participant.userName}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
-                          <img
-                            src={"participant-placeholder.jpg"}
-                            alt={`${participant.userName} profile image thumbnail`}
-                            className="w-full h-full absolute object-cover"
-                          />
-                          <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                            <p className="text-center font-semibold text-sm">
-                              {participant.userName}
-                            </p>
+                        ) : (
+                          <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
+                            <img
+                              src={"participant-placeholder.jpg"}
+                              alt={`${participant.userName} profile image thumbnail`}
+                              className="w-full h-full absolute object-cover"
+                            />
+                            <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                              <p className="text-center font-semibold text-sm">
+                                {participant.userName}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Link>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="hidden md:flex text-uiblack" />
-          <CarouselNext className="hidden md:flex text-uiblack" />
-        </Carousel>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden md:flex text-uiblack" />
+            <CarouselNext className="hidden md:flex text-uiblack" />
+          </Carousel>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <p className="text-center text-lg text-uiblack opacity-70">
+              No participants found yet
+            </p>
+          </div>
+        )}
       </div>
       <motion.p
         initial={{ y: 20, opacity: 0 }}

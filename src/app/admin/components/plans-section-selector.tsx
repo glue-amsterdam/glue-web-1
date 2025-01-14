@@ -8,8 +8,9 @@ const planItems = [
   { name: "Plan 1", planId: "planId-1" },
   { name: "Plan 2", planId: "planId-2" },
   { name: "Plan 3", planId: "planId-3" },
-  { name: "Plan-4", planId: "planId-4" },
+  { name: "Plan 4", planId: "planId-4" },
   { name: "Plan 5", planId: "planId-5" },
+  { name: "Plan 6", planId: "planId-6" },
 ];
 
 interface PlanSelectorProps {

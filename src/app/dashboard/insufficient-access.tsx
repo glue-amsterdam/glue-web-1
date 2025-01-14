@@ -34,19 +34,33 @@ export default function InsufficientAccess({
   const router = useRouter();
   const { toast } = useToast();
 
-  const onContinueAction = () => {
-    /* API to send the Email */
-    console.log("Sending Email from:", userName, userId);
+  const onContinueAction = async () => {
+    try {
+      const response = await fetch("/api/upgrade-request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userName, userId }),
+      });
 
-    setTimeout(
-      () =>
-        toast({
-          title: "Thank you for your interest!",
-          description: "We'll be in touch by email or phone soon.",
-        }),
-      1000
-    );
-    router.push("/");
+      if (!response.ok) {
+        throw new Error("Failed to send upgrade request");
+      }
+
+      toast({
+        title: "Thank you for your interest!",
+        description: "We'll be in touch soon.",
+      });
+      router.push("/");
+    } catch (error) {
+      console.error("Error sending upgrade request:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send upgrade request. Please try again later.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

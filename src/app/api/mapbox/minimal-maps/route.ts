@@ -7,10 +7,16 @@ interface MapInfoRaw {
   formatted_address: string;
   latitude: number;
   longitude: number;
+  user_id: string;
   user_info: {
     user_id: string;
     user_name: string;
   };
+}
+
+interface ParticipantDetail {
+  user_id: string;
+  status: string;
 }
 
 interface HubParticipant {
@@ -55,13 +61,30 @@ export async function GET() {
         formatted_address,
         latitude,
         longitude,
+        user_id,
         user_info:user_id (
           user_id,
           user_name
         )
-      `)) as { data: MapInfoRaw[] | null; error: PostgrestError };
+      `)) as { data: MapInfoRaw[] | null; error: PostgrestError | null };
 
     if (mapInfoError) throw mapInfoError;
+
+    // Fetch participant details
+    const { data: participantData, error: participantError } = (await supabase
+      .from("participant_details")
+      .select(
+        `
+        user_id,
+        status
+      `
+      )
+      .eq("status", "accepted")) as {
+      data: ParticipantDetail[] | null;
+      error: PostgrestError | null;
+    };
+
+    if (participantError) throw participantError;
 
     // Fetch hubs data
     const { data: hubsData, error: hubsError } = (await supabase.from("hubs")
@@ -76,19 +99,27 @@ export async function GET() {
             user_name
           )
         )
-      `)) as { data: HubInfo[] | null; error: PostgrestError };
+      `)) as { data: HubInfo[] | null; error: PostgrestError | null };
 
     if (hubsError) throw hubsError;
 
-    if (!mapInfoData) {
-      throw new Error("No map info data returned from Supabase");
+    if (!mapInfoData || !participantData) {
+      throw new Error("No map info or participant data returned from Supabase");
     }
+
+    // Create a set of accepted user IDs for quick lookup
+    const acceptedUserIds = new Set(participantData.map((p) => p.user_id));
 
     // Create a map to store location data
     const locationMap = new Map<string, MapInfoTransformed>();
 
     // Process map_info data
     mapInfoData.forEach((item) => {
+      if (!acceptedUserIds.has(item.user_id)) {
+        // Skip this item if the user is not an accepted participant
+        return;
+      }
+
       if (!item.user_info || typeof item.user_info.user_name !== "string") {
         console.warn(
           `Missing or invalid user_info for map_info item with id: ${item.id}`
@@ -116,7 +147,7 @@ export async function GET() {
     if (hubsData) {
       hubsData.forEach((hub) => {
         const hostMapInfo = mapInfoData.find(
-          (info) => info.user_info.user_id === hub.hub_host_id
+          (info) => info.user_id === hub.hub_host_id
         );
         if (!hostMapInfo) {
           console.warn(
@@ -135,7 +166,10 @@ export async function GET() {
 
           // Add hub participants
           hub.hub_participants.forEach((participant) => {
-            if (participant.user_id !== hub.hub_host_id) {
+            if (
+              participant.user_id !== hub.hub_host_id &&
+              acceptedUserIds.has(participant.user_id)
+            ) {
               existingLocation.participants.push({
                 user_id: participant.user_id,
                 user_name: participant.user_info.user_name,

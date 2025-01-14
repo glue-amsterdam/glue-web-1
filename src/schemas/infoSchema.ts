@@ -29,7 +29,6 @@ export const infoItemClientSchema = z.object({
   description: z.string(),
   image: z.object({
     image_url: z.string(),
-    alt: z.string(),
   }),
 });
 

@@ -93,7 +93,7 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
                       >
                         <Image
                           src={slide.image_url}
-                          alt={slide.alt || "Slide from the GLUE Gallery"}
+                          alt={`Slide number ${index} from the GLUE Gallery`}
                           className="object-cover"
                           quality={100}
                           fill
@@ -121,10 +121,7 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
             <div className="relative w-full h-full">
               <Image
                 src={carouselData.slides[selectedImage].image_url}
-                alt={
-                  carouselData.slides[selectedImage].alt ||
-                  "Slide from the GLUE Gallery"
-                }
+                alt={"Slide from the GLUE Gallery"}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1024px) 90vw, 80vw"
                 className="object-cover"

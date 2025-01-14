@@ -1,10 +1,22 @@
 import { config } from "@/env";
-import {
-  ParticipantClient,
-  participantsResponseSchema,
-} from "@/schemas/participantsSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
+
+// Define a more flexible type that accounts for Supabase's inferred types
+type ParticipantRaw = {
+  id: string;
+  user_name: string;
+  participant_details:
+    | {
+        slug: string;
+        is_sticky: boolean;
+      }
+    | {
+        slug: string;
+        is_sticky: boolean;
+      }[];
+  participant_image: Array<{ image_url: string }>;
+};
 
 export async function GET() {
   try {
@@ -21,72 +33,72 @@ export async function GET() {
     }
 
     // Fetch participants
-    const { data: participants, error: participantsError } = await supabase
+    const { data, error: participantsError } = await supabase
       .from("user_info")
       .select(
         `
-        id,
-        user_name,
-        participant_details!inner (
-          slug,
-          is_sticky
-        ),
-        participant_image (
-          image_url
-        )
-      `
+    id,
+    user_name,
+    plan_type,
+    participant_details (
+      slug,
+      is_sticky,
+      status
+    ),
+    participant_image (
+      image_url
+    )
+  `
       )
+      .eq("plan_type", "participant")
+      .eq("participant_details.status", "accepted")
       .eq("participant_details.is_sticky", false)
-      .order("id")
-      .limit(100);
+      .limit(30);
 
     if (participantsError) {
       throw participantsError;
     }
 
+    // Assert the type of the data
+    const participantsRaw = data as ParticipantRaw[];
+
     // Randomize and limit to 15 participants
-    const randomParticipants = participants
+    const randomParticipants = participantsRaw
       .sort(() => 0.5 - Math.random())
       .slice(0, 15);
 
     // Transform participants data
-    const transformedParticipants: ParticipantClient[] = randomParticipants.map(
-      (participant) => ({
+    const transformedParticipants = randomParticipants.map((participant) => {
+      const details = Array.isArray(participant.participant_details)
+        ? participant.participant_details[0]
+        : participant.participant_details;
+
+      return {
         userId: participant.id,
-        slug: participant.participant_details?.[0]?.slug || "",
+        slug: details?.slug || "",
         userName: participant.user_name,
         image: {
           image_url:
-            participant.participant_image?.[0]?.image_url ||
+            participant.participant_image[0]?.image_url ||
             "/participant-placeholder.jpg",
           alt:
-            `${participant.user_name} profile image - participant from GLUE desing routes in ${config.cityName}` ||
+            `${participant.user_name} profile image - participant from GLUE design routes in ${config.cityName}` ||
             `GLUE participant profile image from ${config.cityName}`,
         },
-      })
-    );
+      };
+    });
 
     const response = {
       headerData,
       participants: transformedParticipants,
     };
 
-    // Validate response with client schema
-    const validatedResponse = participantsResponseSchema.parse(response);
-
-    return NextResponse.json(validatedResponse);
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching participants:", error);
-    if (process.env.NODE_ENV === "production") {
-      return NextResponse.json(
-        { error: "Failed to fetch participants section data" },
-        { status: 500 }
-      );
-    } else {
-      return NextResponse.json(
-        { error: "Failed to fetch participants section data", details: error },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json(
+      { error: "Failed to fetch participants section data" },
+      { status: 500 }
+    );
   }
 }

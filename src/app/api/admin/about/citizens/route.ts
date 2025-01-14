@@ -9,7 +9,7 @@ export async function GET() {
     const { data: sectionData, error: sectionError } = await supabase
       .from("about_citizens_section")
       .select("*")
-      .eq("id", "about-citizens-section-56ca13952fcc")
+      .eq("id", "about-citizens-section")
       .single();
 
     if (sectionError) throw sectionError;
@@ -68,7 +68,7 @@ export async function PUT(request: Request) {
         title: body.title,
         description: body.description,
       })
-      .eq("id", "about-citizens-section-56ca13952fcc")
+      .eq("id", "about-citizens-section")
       .select();
     if (error) throw error;
 

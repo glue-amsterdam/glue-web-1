@@ -49,7 +49,7 @@ export async function PUT(request: Request) {
         title: validatedData.title,
         description: validatedData.description,
       })
-      .eq("id", "about-participants-56ca13952fcc");
+      .eq("id", "about-participants");
 
     if (participantsError) throw participantsError;
 

@@ -1,7 +1,9 @@
 "use client";
 
+import { ParticipantClientResponse } from "@/types/api-visible-user";
 import { motion, Variants } from "framer-motion";
 import { MapPinOff } from "lucide-react";
+import Link from "next/link";
 import {
   FaFacebookF,
   FaInstagram,
@@ -24,32 +26,8 @@ const stagger: Variants = {
   },
 };
 
-interface ParticipantResponse {
-  user_id: string;
-  slug: string;
-  short_description: string;
-  description: string | null;
-  is_sticky: boolean;
-  year: number | null;
-  status: string;
-  user_info: {
-    is_mod: boolean;
-    plan_id: string;
-    plan_type: string;
-    user_name: string;
-    social_media: {
-      facebookLink?: string;
-      linkedinLink?: string;
-      instagramLink?: string;
-    };
-    phone_numbers: string[] | null;
-    visible_emails: string[] | null;
-    visible_websites: string[] | null;
-  };
-}
-
 interface ParticipantInfoProps {
-  participant: ParticipantResponse;
+  participant: ParticipantClientResponse;
 }
 
 function ParticipantInfo({ participant }: ParticipantInfoProps) {
@@ -85,10 +63,21 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
           <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
             Address
           </h2>
-          <div className="inline-flex gap-2 items-center text-gray-500">
-            <MapPinOff className="w-5 h-5" />
-            <span>No address provided</span>
-          </div>
+          {participant.user_info.map_info.length === 0 ? (
+            <div className="inline-flex gap-2 items-center text-gray-500">
+              <MapPinOff className="w-5 h-5" />
+              <span>No address provided</span>
+            </div>
+          ) : (
+            participant.user_info.map_info.map((map, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <MapPinOff className="w-5 h-5" />
+                <Link target="_blank" href={`/map?place=${map.id}`}>
+                  <span>{map.formatted_address}</span>
+                </Link>
+              </div>
+            ))
+          )}
         </motion.div>
         <motion.div className="space-y-3 mt-8" variants={fadeInUp}>
           {participant.user_info.phone_numbers &&

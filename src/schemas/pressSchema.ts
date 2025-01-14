@@ -5,7 +5,6 @@ export const pressItemSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   image_url: z.string(),
-  alt: z.string(),
   isVisible: z.boolean().default(false),
   file: z.any().optional(),
   oldImageUrl: z.string().optional(),

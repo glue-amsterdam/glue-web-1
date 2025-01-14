@@ -57,7 +57,7 @@ export default function InfoSection({
           <div className="relative w-full h-full">
             <Image
               src={info.image.image_url}
-              alt={info.title}
+              alt={info.title + "- Information about GLUE routes desing"}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
               className="object-cover group-hover:scale-105 transition-all duration-700"

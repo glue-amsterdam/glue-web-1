@@ -28,6 +28,7 @@ export default function CuratedMembersSection({
   title,
   description,
 }: CuratedMembersSectionProps) {
+  console.log(curatedParticipants);
   const years = Object.keys(curatedParticipants)
     .map(Number)
     .sort((a, b) => b - a);

@@ -39,9 +39,8 @@ export async function PUT(
         title: validatedData.title,
         description: validatedData.description,
         image_url: validatedData.image.image_url,
-        alt: validatedData.image.alt,
         image_name: validatedData.image.image_name,
-        info_id: "about-info-56ca13952fcc",
+        info_id: "about-info",
       });
 
     if (itemError) throw itemError;

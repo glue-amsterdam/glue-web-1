@@ -23,7 +23,6 @@ const SPONSORS_FALLBACK_DATA: SponsorsSection = {
       website: "https://www.placeholder.com",
       sponsor_type: "Gold",
       image_url: "/placeholder.jgp",
-      alt: "Placeholder 1",
     },
     {
       id: "placeholder-2",
@@ -31,7 +30,6 @@ const SPONSORS_FALLBACK_DATA: SponsorsSection = {
       website: "https://www.placeholder.com",
       sponsor_type: "Silver",
       image_url: "/placeholder.jgp",
-      alt: "Placeholder 2",
     },
     {
       id: "placeholder-3",
@@ -39,7 +37,6 @@ const SPONSORS_FALLBACK_DATA: SponsorsSection = {
       website: "https://www.placeholder.com",
       sponsor_type: "Bronze",
       image_url: "/placeholder.jgp",
-      alt: "Placeholder 3",
     },
   ],
 };

@@ -37,7 +37,12 @@ const loginSchema = z.object({
     .min(6, { message: "Password must be at least 6 characters" }),
 });
 
-type FormData = z.infer<typeof loginSchema>;
+const resetPasswordSchema = z.object({
+  email: z.string().email({ message: "Invalid email address" }),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 interface LoginFormProps {
   isOpen: boolean;
@@ -52,10 +57,12 @@ export default function LoginForm({
 }: LoginFormProps) {
   const { login, loginError, clearLoginError } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isResetLoading, setIsResetLoading] = useState(false);
   const [cookieError, setCookieError] = useState<string | null>(null);
   const [isCookieSettingsOpen, setIsCookieSettingsOpen] = useState(false);
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
 
-  const form = useForm<FormData>({
+  const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -63,7 +70,14 @@ export default function LoginForm({
     },
   });
 
-  const onSubmit = async (data: FormData) => {
+  const resetPasswordForm = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     clearLoginError();
     setCookieError(null);
@@ -88,27 +102,24 @@ export default function LoginForm({
     }
   };
 
-  const handlePasswordForgot = async () => {
-    const email = form.getValues("email");
-    if (!email) {
-      form.setError("email", {
-        type: "manual",
-        message: "Please enter your email",
-      });
-      return;
-    }
-
+  const handlePasswordForgot = async (data: ResetPasswordFormData) => {
+    setIsResetLoading(true);
     try {
       const response = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({
+          email: data.email,
+        }),
       });
       if (!response.ok) throw new Error("Failed to send reset email");
       alert("Password reset email sent. Please check your inbox.");
+      setIsResetPasswordOpen(false);
     } catch (error) {
       console.error("Error sending password reset email:", error);
       alert("Failed to send password reset email. Please try again.");
+    } finally {
+      setIsResetLoading(false);
     }
   };
 
@@ -152,10 +163,13 @@ export default function LoginForm({
               </Button>
             </div>
           )}
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <Form {...loginForm}>
+            <form
+              onSubmit={loginForm.handleSubmit(onSubmit)}
+              className="space-y-6"
+            >
               <FormField
-                control={form.control}
+                control={loginForm.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
@@ -175,7 +189,7 @@ export default function LoginForm({
                 )}
               />
               <FormField
-                control={form.control}
+                control={loginForm.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
@@ -215,13 +229,68 @@ export default function LoginForm({
                 </Button>
               </div>
               <div className="flex justify-between items-center">
-                <a
-                  onClick={handlePasswordForgot}
-                  className="text-sm text-primary hover:underline cursor-pointer"
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={() => setIsResetPasswordOpen(true)}
+                  className="text-sm text-primary hover:underline"
                 >
                   Forgot your password?
-                </a>
+                </Button>
               </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isResetPasswordOpen} onOpenChange={setIsResetPasswordOpen}>
+        <DialogContent className="sm:max-w-[425px] bg-gradient-to-br from-primary/10 to-secondary/10 backdrop-blur-sm border border-primary/20 rounded-lg shadow-xl p-6 text-black">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center text-primary">
+              Reset Password
+            </DialogTitle>
+            <DialogDescription className="text-center text-muted-foreground">
+              Enter your email to receive a password reset link.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...resetPasswordForm}>
+            <form
+              onSubmit={resetPasswordForm.handleSubmit(handlePasswordForgot)}
+              className="space-y-4"
+            >
+              <FormField
+                control={resetPasswordForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-primary">Email</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          placeholder="Enter your email"
+                          {...field}
+                          className="pl-10"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isResetLoading}
+              >
+                {isResetLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  "Send Reset Link"
+                )}
+              </Button>
             </form>
           </Form>
         </DialogContent>

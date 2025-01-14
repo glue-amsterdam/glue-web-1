@@ -73,7 +73,6 @@ export default function AboutCarouselSectionForm({
         // Add new image
         append({
           image_url: imageUrl,
-          alt: "",
           image_name: file.name,
           file: file,
         });
@@ -86,10 +85,7 @@ export default function AboutCarouselSectionForm({
     if (slide.image_url && !slide.file) {
       // Only delete from storage if it's an existing image (not a newly added file)
       const { error } = await deleteImage(slide.image_url);
-      toast({
-        title: "Succes",
-        description: "Carousel image deleted successfully.",
-      });
+
       if (error) {
         console.error("Failed to delete image:", error);
         toast({
@@ -137,8 +133,12 @@ export default function AboutCarouselSectionForm({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update carousel");
+        const errorData = await response.json();
+        throw new Error(`Failed to update carousel: ${errorData.error}`);
       }
+
+      const result = await response.json();
+      console.log("Server response:", result);
 
       toast({
         title: "Carousel updated",
@@ -190,7 +190,7 @@ export default function AboutCarouselSectionForm({
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       src={field.image_url}
-                      alt={field.alt || "Slide image"}
+                      alt={""}
                       className="object-cover rounded-md"
                     />
                   ) : (
@@ -199,16 +199,6 @@ export default function AboutCarouselSectionForm({
                     </div>
                   )}
                 </div>
-                <Input
-                  {...register(`slides.${index}.alt`)}
-                  placeholder="Image alt text"
-                  className="mb-2"
-                />
-                {errors.slides?.[index]?.alt && (
-                  <p className="text-red-500 text-sm mb-2">
-                    {errors.slides[index]?.alt?.message}
-                  </p>
-                )}
 
                 <div className="flex gap-2">
                   <Button

@@ -20,7 +20,6 @@ export const sponsorSchema = z.object({
   website: z.string().url("Invalid website URL"),
   sponsor_type: z.string().min(1, "Sponsor type is required"),
   image_url: z.string().min(1, "Image URL is required"),
-  alt: z.string().min(1, "Alt text is required"),
   file: z.any().optional(),
   oldImageUrl: z.string().optional(),
 });

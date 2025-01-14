@@ -13,7 +13,7 @@ export async function GET() {
       await supabase
         .from("about_sponsors_header")
         .select("*")
-        .eq("id", "about-sponsors-header-section-56ca13952fcc")
+        .eq("id", "about-sponsors-header-section")
         .single();
 
     const { data: sponsorsData, error: sponsorsError } = await supabase

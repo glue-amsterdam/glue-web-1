@@ -29,6 +29,7 @@ const mainSection: MainSectionData = {
         { title: "Citizens of Honour", href: "citizens" },
         { title: "Curated Members", href: "curated" },
         { title: "Information", href: "info" },
+        { title: "Press", href: "press" },
         { title: "GLUE international", href: "last" },
         { title: "Sponsors", href: "last" },
       ],

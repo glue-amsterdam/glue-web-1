@@ -16,12 +16,14 @@ interface Participant {
   id: string;
   user_name: string;
   plan_type: string;
-  short_description: string | null;
-  description: string | null;
-  slug: string | null;
-  is_sticky: boolean;
-  year: number | null;
-  status: string;
+  participant_details: {
+    short_description: string | null;
+    description: string | null;
+    slug: string | null;
+    is_sticky: boolean;
+    year: number | null;
+    status: string;
+  };
   image_url: string | null;
 }
 
@@ -46,19 +48,10 @@ export async function GET(request: Request) {
         `
         user_id,
         user_name,
-        plan_type,
-        participant_details!inner (
-          short_description,
-          description,
-          slug,
-          is_sticky,
-          year,
-          status
-        )
+        plan_type
       `
       )
       .filter("user_name", "ilike", `%${query}%`)
-      .filter("participant_details.status", "eq", "accepted")
       .limit(5);
 
     // Query events by title or description
@@ -101,15 +94,43 @@ export async function GET(request: Request) {
       );
     }
 
-    // Fetch participant images
+    // Fetch participant details
     const participantIds = participantsResult.data.map((p) => p.user_id);
+    const participantDetailsQuery = supabase
+      .from("participant_details")
+      .select(
+        `
+        user_id,
+        short_description,
+        description,
+        slug,
+        is_sticky,
+        year,
+        status
+      `
+      )
+      .in("user_id", participantIds)
+      .eq("status", "accepted");
+
+    // Fetch participant images
     const participantImagesQuery = supabase
       .from("participant_image")
       .select("user_id, image_url")
-      .in("user_id", participantIds)
-      .limit(1);
+      .in("user_id", participantIds);
 
-    const participantImagesResult = await participantImagesQuery;
+    const [participantDetailsResult, participantImagesResult] =
+      await Promise.all([participantDetailsQuery, participantImagesQuery]);
+
+    if (participantDetailsResult.error) {
+      console.error(
+        "Error fetching participant details:",
+        participantDetailsResult.error
+      );
+      return NextResponse.json(
+        { error: "Failed to fetch participant details" },
+        { status: 500 }
+      );
+    }
 
     if (participantImagesResult.error) {
       console.error(
@@ -122,26 +143,34 @@ export async function GET(request: Request) {
       );
     }
 
-    // Create a map of user_id to image_url
+    // Create maps for quick lookup
+    const participantDetailsMap = new Map(
+      participantDetailsResult.data.map((details) => [details.user_id, details])
+    );
     const participantImageMap = new Map(
       participantImagesResult.data.map((img) => [img.user_id, img.image_url])
     );
 
     // Reshape the participants data
-    const formattedParticipants: Participant[] = participantsResult.data.map(
-      (participant) => ({
-        id: participant.user_id,
-        user_name: participant.user_name,
-        plan_type: participant.plan_type,
-        short_description: participant.participant_details[0].short_description,
-        description: participant.participant_details[0].description,
-        slug: participant.participant_details[0].slug,
-        is_sticky: participant.participant_details[0].is_sticky,
-        year: participant.participant_details[0].year,
-        status: participant.participant_details[0].status,
-        image_url: participantImageMap.get(participant.user_id) ?? null,
-      })
-    );
+    const formattedParticipants: Participant[] = participantsResult.data
+      .filter((participant) => participantDetailsMap.has(participant.user_id))
+      .map((participant) => {
+        const details = participantDetailsMap.get(participant.user_id)!;
+        return {
+          id: participant.user_id,
+          user_name: participant.user_name,
+          plan_type: participant.plan_type,
+          participant_details: {
+            short_description: details.short_description,
+            description: details.description,
+            slug: details.slug,
+            is_sticky: details.is_sticky,
+            year: details.year,
+            status: details.status,
+          },
+          image_url: participantImageMap.get(participant.user_id) ?? null,
+        };
+      });
 
     // Fetch organizer and co-organizer names
     const allOrganizerIds = new Set([

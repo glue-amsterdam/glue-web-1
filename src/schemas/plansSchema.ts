@@ -13,6 +13,8 @@ export const PlanIdSchema = z.enum([
   "planId-3",
   "planId-4",
   "planId-5",
+  "planId-6",
+  "planId-7",
 ]);
 
 export const PlanCurrencyType = z.enum(["free", "member", "participant"]);

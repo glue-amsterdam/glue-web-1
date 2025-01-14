@@ -13,6 +13,5 @@ export type CarouselClientType = {
   description: string;
   slides: Array<{
     image_url: string;
-    alt: string;
   }>;
 };

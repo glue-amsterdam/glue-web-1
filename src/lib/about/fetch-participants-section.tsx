@@ -17,7 +17,6 @@ const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
       userName: "Loading Participant 1",
       image: {
         image_url: "/placeholder.jgp",
-        alt: "Loading participant 1",
       },
     },
     {
@@ -26,7 +25,6 @@ const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
       userName: "Loading Participant 2",
       image: {
         image_url: "/placeholder.jgp",
-        alt: "Loading participant 2",
       },
     },
     {
@@ -35,7 +33,6 @@ const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
       userName: "Loading Participant 3",
       image: {
         image_url: "/placeholder.jgp",
-        alt: "Loading participant 3",
       },
     },
   ],
@@ -45,7 +42,7 @@ export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
   try {
     const res = await fetch(`${BASE_URL}/about/participants`, {
       next: {
-        revalidate: 3600,
+        revalidate: 30,
         tags: ["participants"],
       },
     });

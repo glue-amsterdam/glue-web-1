@@ -23,12 +23,11 @@ export async function GET() {
       description: pressData.description,
       pressItems:
         pressItemsData?.map(
-          ({ id, title, description, image_url, alt, is_visible }) => ({
+          ({ id, title, description, image_url, is_visible }) => ({
             id,
             title,
             description,
             image_url,
-            alt,
             isVisible: is_visible,
           })
         ) || [],
@@ -57,7 +56,7 @@ export async function PUT(request: Request) {
         title: validatedData.title,
         description: validatedData.description,
       })
-      .eq("id", "about-press-56ca13952fcc");
+      .eq("id", "about-press");
 
     if (pressError) throw pressError;
 

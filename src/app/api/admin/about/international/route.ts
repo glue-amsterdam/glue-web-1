@@ -10,7 +10,7 @@ export async function GET() {
     const { data: internationalData, error } = await supabase
       .from("about_international")
       .select("title, subtitle, button_text, website, button_color")
-      .eq("id", "about-international-section-56ca13952fcc")
+      .eq("id", "about-international-section")
       .single();
 
     if (error) throw error;
@@ -51,7 +51,7 @@ export async function PUT(request: Request) {
         website: validatedData.website,
         button_color: validatedData.button_color,
       })
-      .eq("id", "about-international-section-56ca13952fcc")
+      .eq("id", "about-international-section")
       .select();
 
     if (error) throw error;

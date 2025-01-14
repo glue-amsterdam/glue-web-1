@@ -33,6 +33,42 @@ export async function GET(request: Request) {
   }
 }
 
+export async function POST(request: Request) {
+  const cookieStore = await cookies();
+  const adminToken = cookieStore.get("admin_token");
+  if (!adminToken) {
+    return NextResponse.json(
+      { error: "Unauthorized: Admin access required" },
+      { status: 403 }
+    );
+  }
+
+  const planData = await request.json();
+
+  try {
+    const supabase = await createClient();
+    const validatedPlan = PlanSchema.parse(planData);
+
+    const { data, error } = await supabase
+      .from("plans")
+      .insert(validatedPlan)
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data, { status: 201 });
+  } catch (validationError) {
+    console.error("Validation error:", validationError);
+    return NextResponse.json(
+      { error: "Data validation failed" },
+      { status: 400 }
+    );
+  }
+}
+
 export async function PUT(request: Request) {
   const cookieStore = await cookies();
   const adminToken = cookieStore.get("admin_token");

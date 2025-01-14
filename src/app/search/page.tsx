@@ -7,17 +7,20 @@ import { NAVBAR_HEIGHT } from "@/constants";
 import ParticipantCard from "@/app/search/participant-card";
 import EventCard from "@/app/search/event-card";
 
-type Participant = {
+interface Participant {
   id: string;
   user_name: string;
   plan_type: string;
-  short_description: string | null;
-  description: string | null;
-  slug: string | null;
-  is_sticky: boolean;
-  year: number | null;
-  status: string | null;
-};
+  participant_details: {
+    short_description: string | null;
+    description: string | null;
+    slug: string | null;
+    is_sticky: boolean;
+    year: number | null;
+    status: string;
+  };
+  image_url: string | null;
+}
 
 interface Event {
   id: string;
@@ -135,7 +138,7 @@ function NoResultsMessage({ query }: { query: string }) {
     <div className="text-center py-8">
       <p className="text-lg text-uiwhite mb-2">{`No results found for "${query}"`}</p>
       <p className="text-sm text-gray-600">
-        Try adjusting your search terms or browse our categories.
+        Try adjusting your search terms. Should be a participant or event name.
       </p>
     </div>
   );

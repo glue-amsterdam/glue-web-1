@@ -51,7 +51,12 @@ const CitizenCard = ({ citizen, openModal }: CitizenCardProps) => {
 
           <Image
             src={citizen.image_url}
-            alt={citizen.alt}
+            alt={
+              "Image of " +
+              citizen.name +
+              " citizen of honour from the GLUE desing routes, year" +
+              citizen.year
+            }
             fill
             quality={100}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
@@ -187,7 +192,11 @@ export default function CitizenOfHonourSection({
                 <div className="relative w-full h-full overflow-hidden">
                   <Image
                     src={selectedCitizen.image_url}
-                    alt={selectedCitizen.alt}
+                    alt={
+                      "Image of " +
+                      selectedCitizen.name +
+                      " citizen of honour from the GLUE desing routes"
+                    }
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
                     className="object-cover"

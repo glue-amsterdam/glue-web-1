@@ -63,7 +63,7 @@ export const fetchAllRoutes = cache(async (): Promise<RouteValues[]> => {
 export const fetchParticipant = cache(
   async (slug: string): Promise<ParticipantClientResponse> => {
     const res = await fetch(`${BASE_URL}/client-user/${slug}`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 300 },
     });
     if (!res.ok) throw new Error("Failed to fetch participant");
     return res.json();

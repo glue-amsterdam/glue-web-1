@@ -16,43 +16,6 @@ export async function POST(request: Request) {
   const errors = [];
 
   try {
-    // First, fetch all map_info_ids associated with the users
-    const { data: mapInfos, error: mapInfoError } = await supabase
-      .from("map_info")
-      .select("id")
-      .in("user_id", userIds);
-
-    if (mapInfoError) {
-      errors.push(`Error fetching map_info: ${mapInfoError.message}`);
-    }
-
-    const mapInfoIds = mapInfos?.map((info) => info.id) || [];
-
-    // Updated deletion order respecting foreign key constraints
-    const deletionOrder = [
-      { table: "route_dots", column: "map_info_id", ids: mapInfoIds },
-      { table: "participant_image", column: "user_id", ids: userIds }, // Dependent table
-      { table: "hub_participants", column: "user_id", ids: userIds },
-      { table: "participant_details", column: "user_id", ids: userIds },
-      { table: "visiting_hours", column: "user_id", ids: userIds },
-      { table: "invoice_data", column: "user_id", ids: userIds },
-      { table: "events", column: "organizer_id", ids: userIds },
-      { table: "map_info", column: "user_id", ids: userIds },
-      { table: "hubs", column: "hub_host_id", ids: userIds }, // Extra check
-      { table: "user_info", column: "user_id", ids: userIds }, // Delete last
-    ];
-
-    for (const { table, column, ids } of deletionOrder) {
-      if (ids.length > 0) {
-        const { error } = await supabase.from(table).delete().in(column, ids);
-
-        if (error) {
-          console.error(`Error deleting from ${table}:`, error.message);
-          errors.push(`Error deleting from ${table}: ${error.message}`);
-        }
-      }
-    }
-
     // Delete storage items
     async function deleteUserStorage(supabase: SupabaseClient, userId: string) {
       const bucketName = config.bucketName;
@@ -62,7 +25,6 @@ export async function POST(request: Request) {
       for (const folder of folders) {
         const path = `${folder}/${userId}`;
 
-        // List all objects in the folder
         const { data: files, error: listError } = await supabase.storage
           .from(bucketName)
           .list(path);
@@ -73,7 +35,6 @@ export async function POST(request: Request) {
         }
 
         if (files && files.length > 0) {
-          // Delete all files in the folder
           const filesToDelete = files.map(
             (file: { name: string }) => `${path}/${file.name}`
           );
@@ -88,7 +49,6 @@ export async function POST(request: Request) {
           }
         }
 
-        // Attempt to remove the empty folder
         const { error: folderDeleteError } = await supabase.storage
           .from(bucketName)
           .remove([path]);
@@ -104,21 +64,29 @@ export async function POST(request: Request) {
     }
 
     for (const userId of userIds) {
-      const storageErrors = await deleteUserStorage(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        supabase as SupabaseClient<any, "public", any>,
-        userId
-      );
-      errors.push(...storageErrors);
-    }
-
-    // Delete auth users
-    for (const userId of userIds) {
       try {
+        // Delete user's storage items
+        const storageErrors = await deleteUserStorage(
+          supabase as SupabaseClient,
+          userId
+        );
+        errors.push(...storageErrors);
+
+        // Delete user from user_info table
+        // This will trigger cascading deletes for all related tables
+        const { error: userInfoError } = await supabase
+          .from("user_info")
+          .delete()
+          .eq("user_id", userId);
+
+        if (userInfoError) throw userInfoError;
+
+        // Delete auth user
         const { error: authError } = await supabase.auth.admin.deleteUser(
           userId
         );
         if (authError) throw authError;
+
         deletedUsers.push(userId);
       } catch (error) {
         failedDeletions.push({

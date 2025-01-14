@@ -68,9 +68,9 @@ export async function GET(
         user_id: locationData.user_info.user_id,
         user_name: locationData.user_info.user_name,
         is_host: true,
-        slug: locationData.user_info.participant_details?.[0]?.slug || null,
+        slug: locationData.user_info.participant_details?.slug || null,
         image_url:
-          locationData.user_info.participant_image?.[0]?.image_url || null,
+          locationData.user_info.participant_image[0]?.image_url || null,
       },
     ];
 

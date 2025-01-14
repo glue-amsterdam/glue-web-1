@@ -1,3 +1,4 @@
+import { config } from "@/env";
 import { ImageData } from "@/schemas/baseSchema";
 import {
   Event,
@@ -104,8 +105,7 @@ export const ADMIN_DASHBOARD_SECTIONS = [
 ];
 
 export const NAVBAR_HEIGHT: number = 5;
-export const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+export const BASE_URL = config.baseApiUrl || "http://localhost:3000/api";
 
 export const DAYS_IDS = ["day-1", "day-2", "day-3", "day-4"] as const;
 
@@ -143,7 +143,6 @@ export const getEventIcon = (type: EventType) => {
 export const EMPTY_IMAGE: ImageData = {
   image_name: "",
   image_url: "",
-  alt: "",
 };
 
 export const DEFAULT_EMPTY_EVENT: Omit<Event, "date"> = {
@@ -152,7 +151,6 @@ export const DEFAULT_EMPTY_EVENT: Omit<Event, "date"> = {
   thumbnail: {
     image_name: "",
     image_url: "",
-    alt: "",
   },
   organizer: {
     user_id: "",

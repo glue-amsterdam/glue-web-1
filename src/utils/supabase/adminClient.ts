@@ -2,7 +2,6 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export async function createAdminClient() {
-  const supabaseSchema = process.env.SUPABASE_SCHEMA || "public";
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -10,9 +9,6 @@ export async function createAdminClient() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
 
     {
-      db: {
-        schema: supabaseSchema,
-      },
       cookies: {
         getAll() {
           return cookieStore.getAll();

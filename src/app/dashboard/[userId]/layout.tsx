@@ -1,4 +1,6 @@
 import { DashboardProvider } from "@/app/context/DashboardContext";
+import PendingApproval from "@/app/dashboard/[userId]/pending-approval";
+import RejectedAccess from "@/app/dashboard/[userId]/rejected-access";
 import DashboardMenu from "@/app/dashboard/components/dashboard-menu";
 import InsufficientAccess from "@/app/dashboard/insufficient-access";
 import WrongCredentials from "@/app/dashboard/wrong-credentials-access";
@@ -35,12 +37,44 @@ export default async function DashboardLayout({
   const isParticipant = loggedUserInfo?.plan_type === "participant";
   const isTargetUserSameAsLoggedInUser = loggedInUserId === targetUserId;
 
+  const { data: participantDetails } = await supabase
+    .from("participant_details")
+    .select("status")
+    .eq("user_id", loggedInUserId)
+    .single();
+
+  const participantStatus = participantDetails?.status;
+
+  console.log(loggedUserInfo);
+
   // If user is not a moderator and not a participant, show insufficient access
   if (!isModerator && !isParticipant) {
     return (
       <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
         <InsufficientAccess
           userId={loggedInUserId}
+          userName={user.email || loggedUserInfo?.user_name || ""}
+        />
+      </section>
+    );
+  }
+
+  // If user is a participant but status is pending
+  if (isParticipant && participantStatus === "pending") {
+    return (
+      <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
+        <PendingApproval
+          userName={user.email || loggedUserInfo?.user_name || ""}
+        />
+      </section>
+    );
+  }
+
+  // If user is a participant but status is rejected
+  if (isParticipant && participantStatus === "declined") {
+    return (
+      <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
+        <RejectedAccess
           userName={user.email || loggedUserInfo?.user_name || ""}
         />
       </section>

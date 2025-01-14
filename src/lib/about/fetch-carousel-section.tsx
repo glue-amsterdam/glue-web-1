@@ -11,15 +11,12 @@ const CAROUSEL_FALLBACK_DATA: CarouselClientType = {
   slides: [
     {
       image_url: "/placeholder.jgp",
-      alt: `GLUE ${config.cityName} Design Community`,
     },
     {
       image_url: "/placeholder.jgp",
-      alt: "GLUE Events and Activities",
     },
     {
       image_url: "/placeholder.jgp",
-      alt: "GLUE Community Members",
     },
   ],
 };

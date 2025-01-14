@@ -66,6 +66,7 @@ export default function SponsorsCarousel({
                     src={sponsor.image_url}
                     alt={sponsor.name}
                     fill
+                    sizes="100%"
                     className="object-contain transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
