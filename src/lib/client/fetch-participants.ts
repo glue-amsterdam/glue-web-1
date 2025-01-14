@@ -39,13 +39,24 @@ export async function fetchParticipants(): Promise<ParticipantClient[]> {
     });
 
     if (!response.ok) {
+      if (
+        process.env.NODE_ENV === "production" &&
+        process.env.NEXT_PHASE === "phase-production-build"
+      ) {
+        console.log("Build environment detected, using mock data");
+        return getMockData();
+      }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data: ParticipantsApiResponse = await response.json();
     return data.participants;
   } catch (error) {
-    console.error("Error fetching participants data: mock data is used", error);
+    console.error("Error fetching participants data", error);
     return mockParticipants;
   }
+}
+
+export function getMockData(): ParticipantClient[] {
+  return mockParticipants;
 }

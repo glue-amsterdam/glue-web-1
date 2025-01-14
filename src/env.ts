@@ -1,4 +1,6 @@
 export const config = {
+  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
   cityName: process.env.NEXT_PUBLIC_MAIN_CITY_GLUE_EVENT as string,
   bucketName: process.env.NEXT_PUBLIC_BUCKET as string,
   cityBoundWest: process.env.NEXT_PUBLIC_CITY_BOUNDS_WEST as string,

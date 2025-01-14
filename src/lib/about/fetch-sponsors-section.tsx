@@ -51,21 +51,26 @@ export async function fetchSponsorsData(): Promise<SponsorsSection> {
     });
 
     if (!res.ok) {
-      if (res.status === 404 || process.env.NODE_ENV === "development") {
-        console.warn("Using fallback data for sponsors section");
-        return SPONSORS_FALLBACK_DATA;
+      if (
+        process.env.NODE_ENV === "production" &&
+        process.env.NEXT_PHASE === "phase-production-build"
+      ) {
+        console.log("Build environment detected, using mock data");
+        return getMockData();
       }
-      throw new Error(
-        `Failed to fetch sponsors section data: ${res.statusText}`
-      );
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
 
-    const data = await res.json();
+    const data: SponsorsSection = await res.json();
     const validatedData = sponsorsSectionSchema.parse(data);
 
     return validatedData;
   } catch (error) {
     console.error("Error fetching sponsors data:", error);
-    return SPONSORS_FALLBACK_DATA;
+    return getMockData();
   }
+}
+
+export function getMockData(): SponsorsSection {
+  return SPONSORS_FALLBACK_DATA;
 }
