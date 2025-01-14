@@ -10,7 +10,6 @@ const FALLBACK_CITIZEN: ClientCitizen = {
   id: "placeholder",
   name: "Loading...",
   image_url: "/placeholder.jpg",
-  alt: "Loading placeholder",
   description: "Loading description...",
   year: "2024",
 };

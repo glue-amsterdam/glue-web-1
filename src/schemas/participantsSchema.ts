@@ -13,7 +13,6 @@ export const participantClientSchema = z.object({
   userName: z.string(),
   image: z.object({
     image_url: z.string(),
-    alt: z.string(),
   }),
 });
 

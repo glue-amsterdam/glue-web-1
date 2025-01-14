@@ -16,7 +16,6 @@ const INFO_FALLBACK_DATA: InfoSectionClient = {
         "<p>GLUE aspires to diversity and inclusivity, with a focus on sustainability and wellbeing.</p>",
       image: {
         image_url: "/placeholder.jpg",
-        alt: "GLUE Mission Statement",
       },
     },
     {
@@ -26,7 +25,6 @@ const INFO_FALLBACK_DATA: InfoSectionClient = {
         "<p>Our dedicated team works tirelessly to connect and promote the Amsterdam design community.</p>",
       image: {
         image_url: "/placeholder.jpg",
-        alt: "GLUE Team",
       },
     },
     {
@@ -36,7 +34,6 @@ const INFO_FALLBACK_DATA: InfoSectionClient = {
         "<p>The GLUE Foundation is responsible for cultural programs and initiatives within the GLUE community.</p>",
       image: {
         image_url: "/placeholder.jpg",
-        alt: "GLUE Foundation",
       },
     },
   ],
