@@ -835,7 +835,7 @@ CREATE POLICY "Allow delete for owners and mod" ON "public"."participant_details
 
 
 
-CREATE POLICY "Allow delete for owners and mod" ON "public"."user_info" FOR SELECT USING ((("auth"."uid"() = "user_id") OR ( SELECT "user_info_1"."is_mod"
+CREATE POLICY "Allow delete for owners and mod" ON "public"."user_info" FOR DELETE USING ((("auth"."uid"() = "user_id") OR ( SELECT "user_info_1"."is_mod"
    FROM "public"."user_info" "user_info_1"
   WHERE ("user_info_1"."user_id" = "auth"."uid"())
  LIMIT 1)));
@@ -945,6 +945,10 @@ CREATE POLICY "Allow insert for everyone" ON "public"."participant_image" FOR IN
 
 
 
+CREATE POLICY "Allow insert to everyone" ON "public"."user_info" FOR INSERT WITH CHECK (true);
+
+
+
 CREATE POLICY "Allow select for everyone" ON "public"."events" FOR SELECT USING (true);
 
 
@@ -961,11 +965,11 @@ CREATE POLICY "Allow select for everyone" ON "public"."participant_image" FOR SE
 
 
 
-CREATE POLICY "Allow select for everyone" ON "public"."user_info" FOR SELECT USING (true);
-
-
-
 CREATE POLICY "Allow select for everyone" ON "public"."visiting_hours" FOR SELECT USING (true);
+
+
+
+CREATE POLICY "Allow select to everyone" ON "public"."user_info" FOR SELECT USING (true);
 
 
 
@@ -990,7 +994,7 @@ CREATE POLICY "Allow update by owner or mod" ON "public"."user_info" FOR UPDATE 
 
 
 
-CREATE POLICY "Allow update for auth and mod" ON "public"."participant_image" FOR SELECT USING ((("auth"."uid"() = "user_id") OR ( SELECT "user_info_1"."is_mod"
+CREATE POLICY "Allow update for auth and mod" ON "public"."participant_image" FOR UPDATE USING ((("auth"."uid"() = "user_id") OR ( SELECT "user_info_1"."is_mod"
    FROM "public"."user_info" "user_info_1"
   WHERE ("user_info_1"."user_id" = "auth"."uid"())
  LIMIT 1)));
@@ -1016,10 +1020,6 @@ CREATE POLICY "Enable insert for everyone" ON "public"."invoice_data" FOR INSERT
 
 
 CREATE POLICY "Enable insert for everyone" ON "public"."participant_details" FOR INSERT WITH CHECK (true);
-
-
-
-CREATE POLICY "Enable insert for everyone" ON "public"."user_info" FOR INSERT WITH CHECK (true);
 
 
 
@@ -1566,5 +1566,3 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 
 
 RESET ALL;
-
-
