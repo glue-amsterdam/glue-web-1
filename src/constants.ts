@@ -143,7 +143,6 @@ export const getEventIcon = (type: EventType) => {
 export const EMPTY_IMAGE: ImageData = {
   image_name: "",
   image_url: "",
-  alt: "",
 };
 
 export const DEFAULT_EMPTY_EVENT: Omit<Event, "date"> = {
@@ -152,7 +151,6 @@ export const DEFAULT_EMPTY_EVENT: Omit<Event, "date"> = {
   thumbnail: {
     image_name: "",
     image_url: "",
-    alt: "",
   },
   organizer: {
     user_id: "",
