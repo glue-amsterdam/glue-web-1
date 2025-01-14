@@ -31,21 +31,31 @@ export async function fetchCitizensOfHonor(): Promise<ClientCitizensSection> {
     });
 
     if (!res.ok) {
-      if (res.status === 404 || process.env.NODE_ENV === "development") {
-        console.warn("Using fallback data for carousel section");
-        return CITIZENS_FALLBACK_DATA;
+      if (
+        process.env.NODE_ENV === "production" &&
+        process.env.NEXT_PHASE === "phase-production-build"
+      ) {
+        console.log("Build environment detected, using mock data");
+        return getMockData();
       }
-      throw new Error(`Failed to fetch carousel data: ${res.statusText}`);
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
 
-    const data = await res.json();
+    const data: ClientCitizensSection = await res.json();
     const validatedData = clientCitizensSectionSchema.parse(data);
 
     return validatedData;
   } catch (error) {
-    console.error("Error fetching citizens data:", error);
-    return CITIZENS_FALLBACK_DATA;
+    console.error(
+      "Error fetching citizens data on fetchCitizensOfHonor:",
+      error
+    );
+    return getMockData();
   }
+}
+
+export function getMockData(): ClientCitizensSection {
+  return CITIZENS_FALLBACK_DATA;
 }
 
 const caches = new Map<string, Promise<Citizen[]>>();

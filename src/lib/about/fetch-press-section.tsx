@@ -48,22 +48,26 @@ export async function fetchPressSection(): Promise<PressItemsSectionContent> {
     });
 
     if (!res.ok) {
-      console.error(
-        `Error fetching press section: ${res.status} ${res.statusText}`
-      );
-      if (res.status === 404 || process.env.NODE_ENV === "development") {
-        console.warn("Using fallback data for press section");
-        return DEFAULT_PRESS_ITEMS;
+      if (
+        process.env.NODE_ENV === "production" &&
+        process.env.NEXT_PHASE === "phase-production-build"
+      ) {
+        console.log("Build environment detected, using mock data");
+        return getMockData();
       }
-      throw new Error(`Failed to fetch press section data: ${res.statusText}`);
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
 
-    const data = await res.json();
+    const data: PressItemsSectionContent = await res.json();
     const validatedData = pressItemsSectionSchema.parse(data);
 
     return validatedData;
   } catch (error) {
-    console.error("Error in fetchPressSection:", error);
-    return DEFAULT_PRESS_ITEMS;
+    console.error("Error fetching press section:", error);
+    return getMockData();
   }
+}
+
+export function getMockData(): PressItemsSectionContent {
+  return DEFAULT_PRESS_ITEMS;
 }

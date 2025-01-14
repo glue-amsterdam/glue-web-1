@@ -48,13 +48,14 @@ export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
     });
 
     if (!res.ok) {
-      if (res.status === 404 || process.env.NODE_ENV === "development") {
-        console.warn("Using fallback data for participants section");
-        return PARTICIPANT_FALLBACK_DATA;
+      if (
+        process.env.NODE_ENV === "production" &&
+        process.env.NEXT_PHASE === "phase-production-build"
+      ) {
+        console.log("Build environment detected, using mock data");
+        return getMockData();
       }
-      throw new Error(
-        `Failed to fetch participants section data: ${res.statusText}`
-      );
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
 
     const data = await res.json();
@@ -65,4 +66,8 @@ export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
     console.error("Error fetching participants data:", error);
     return PARTICIPANT_FALLBACK_DATA;
   }
+}
+
+export function getMockData(): ParticipantsResponse {
+  return PARTICIPANT_FALLBACK_DATA;
 }

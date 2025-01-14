@@ -48,22 +48,26 @@ export async function fetchInfoSection(): Promise<InfoSectionClient> {
     });
 
     if (!res.ok) {
-      console.error(
-        `Error fetching info section: ${res.status} ${res.statusText}`
-      );
-      if (res.status === 404 || process.env.NODE_ENV === "development") {
-        console.warn("Using fallback data for info section");
-        return INFO_FALLBACK_DATA;
+      if (
+        process.env.NODE_ENV === "production" &&
+        process.env.NEXT_PHASE === "phase-production-build"
+      ) {
+        console.log("Build environment detected, using mock data");
+        return getMockData();
       }
-      throw new Error(`Failed to fetch info section data: ${res.statusText}`);
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
 
-    const data = await res.json();
+    const data: InfoSectionClient = await res.json();
     const validatedData = infoSectionClientSchema.parse(data);
 
     return validatedData;
   } catch (error) {
-    console.error("Error in fetchInfoSection:", error);
-    return INFO_FALLBACK_DATA;
+    console.error("Error fetching info section:", error);
+    return getMockData();
   }
+}
+
+export function getMockData(): InfoSectionClient {
+  return INFO_FALLBACK_DATA;
 }

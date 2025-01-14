@@ -36,9 +36,14 @@ export async function fetchCuratedSection(): Promise<CuratedResponse> {
     });
 
     if (!res.ok) {
-      throw new Error(
-        `Failed to fetch curated section data: ${res.statusText}`
-      );
+      if (
+        process.env.NODE_ENV === "production" &&
+        process.env.NEXT_PHASE === "phase-production-build"
+      ) {
+        console.log("Build environment detected, using mock data");
+        return getMockData();
+      }
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
 
     const data = await res.json();
@@ -48,13 +53,10 @@ export async function fetchCuratedSection(): Promise<CuratedResponse> {
     return validatedData;
   } catch (error) {
     console.error("Error fetching curated section data:", error);
-    if (
-      process.env.NEXT_PHASE === "build" ||
-      process.env.NODE_ENV === "development"
-    ) {
-      console.warn("Using fallback data for curated section due to error");
-      return CURATED_FALLBACK_DATA;
-    }
-    throw error;
+    return getMockData();
   }
+}
+
+export function getMockData(): CuratedResponse {
+  return CURATED_FALLBACK_DATA;
 }
