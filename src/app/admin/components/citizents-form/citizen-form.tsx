@@ -86,10 +86,6 @@ export function CitizenForm({
           `citizensByYear.${selectedYear}.${index}.image_name`,
           file.name
         );
-        setValue(
-          `citizensByYear.${selectedYear}.${index}.alt`,
-          generateAltText(selectedYear, citizen.name)
-        );
         fileField.onChange(file);
 
         toast({
@@ -124,7 +120,7 @@ export function CitizenForm({
         {citizen.image_url ? (
           <Image
             src={citizen.image_url}
-            alt={citizen.alt || generateAltText(selectedYear, citizen.name)}
+            alt={generateAltText(selectedYear, citizen.name)}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover rounded-md"

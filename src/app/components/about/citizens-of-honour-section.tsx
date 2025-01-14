@@ -54,7 +54,8 @@ const CitizenCard = ({ citizen, openModal }: CitizenCardProps) => {
             alt={
               "Image of " +
               citizen.name +
-              " citizen of honour from the GLUE desing routes"
+              " citizen of honour from the GLUE desing routes, year" +
+              citizen.year
             }
             fill
             quality={100}
