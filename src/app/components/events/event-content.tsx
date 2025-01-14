@@ -51,7 +51,7 @@ export default function EventContent({ event }: EventContentProps) {
           <figure className="relative w-full h-60 lg:h-[40vh] overflow-hidden">
             <img
               src={event.thumbnail.image_url}
-              alt={event.thumbnail.alt}
+              alt={`Event from the GLUE community: ${event.name} - ${event.type} type`}
               className="rounded-md object-cover w-full h-full"
             />
           </figure>
