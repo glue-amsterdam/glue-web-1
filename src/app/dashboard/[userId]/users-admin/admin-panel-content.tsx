@@ -84,6 +84,7 @@ export default function UsersAdminPage({
       const result = await response.json();
 
       if (response.ok) {
+        router.refresh();
         if (response.status === 207) {
           // Partial success
           toast({
@@ -99,7 +100,6 @@ export default function UsersAdminPage({
           });
         }
         setSelectedUsers(new Set());
-        router.refresh();
       } else {
         throw new Error(result.message || "Failed to delete users");
       }
