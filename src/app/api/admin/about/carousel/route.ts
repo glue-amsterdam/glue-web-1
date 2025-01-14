@@ -26,10 +26,9 @@ export async function GET() {
     > = {
       title: carouselData.title,
       description: carouselData.description,
-      slides: slidesData.map(({ id, image_url, alt, image_name }) => ({
+      slides: slidesData.map(({ id, image_url, image_name }) => ({
         id,
         image_url,
-        alt,
         image_name,
       })),
     };
@@ -67,26 +66,33 @@ export async function POST(request: Request) {
     const { error: carouselError } = await supabase
       .from("about_carousel")
       .upsert({
-        id: "about-carousel-56ca13952fcc",
+        id: "about-carousel",
         title: validatedData.title,
         description: validatedData.description,
       });
 
-    if (carouselError) throw carouselError;
+    if (carouselError) {
+      console.error("Error updating main carousel data:", carouselError);
+      throw new Error(
+        `Failed to update main carousel data: ${carouselError.message}`
+      );
+    }
 
     // Get existing slides
     const { data: existingSlides, error: fetchError } = await supabase
       .from("about_carousel_slides")
       .select("id, image_url")
-      .eq("carousel_id", "about-carousel-56ca13952fcc");
+      .eq("carousel_id", "about-carousel");
 
-    if (fetchError) throw fetchError;
+    if (fetchError) {
+      console.error("Error fetching existing slides:", fetchError);
+      throw new Error(`Failed to fetch existing slides: ${fetchError.message}`);
+    }
 
     // Prepare new slides data
     const newSlidesData = validatedData.slides.map((slide) => ({
-      carousel_id: "about-carousel-56ca13952fcc",
+      carousel_id: "about-carousel",
       image_url: slide.image_url,
-      alt: slide.alt,
       image_name: slide.image_name,
     }));
 
@@ -153,7 +159,7 @@ export async function POST(request: Request) {
           `Error upserting slide: ${JSON.stringify(slide)}`,
           upsertError
         );
-        throw upsertError;
+        throw new Error(`Failed to upsert slide: ${upsertError.message}`);
       }
     }
 

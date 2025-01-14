@@ -93,7 +93,7 @@ export async function GET(
         user_id: event.organizer?.user_id || "",
         user_name: event.organizer?.user_name || "Unknown",
         map_id: event.organizer?.map?.[0]?.id || event.organizer?.user_id || "",
-        slug: event.organizer?.participant_details?.[0]?.slug || "",
+        slug: event.organizer?.participant_details?.slug || "",
       },
       mapInfo: event.organizer?.map?.[0] || null,
       coOrganizers:

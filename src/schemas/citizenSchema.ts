@@ -6,7 +6,6 @@ export const citizenSchema = z.object({
   name: z.string().min(1, "Name is required"),
   image_url: z.string(),
   image_name: z.string().optional(),
-  alt: z.string().min(1, "Alt text is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   year: z.string(),
   file: z.any().optional(),
@@ -26,7 +25,6 @@ export const clientCitizenSchema = z.object({
   id: z.string(),
   name: z.string(),
   image_url: z.string(),
-  alt: z.string(),
   description: z.string(),
   year: z.string(),
 });

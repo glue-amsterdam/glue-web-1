@@ -1,23 +1,23 @@
 "use client";
 
-import SponsorModal from "@/app/admin/components/sponsors-form/sponsors-modal";
-import { SponsorsTable } from "@/app/admin/components/sponsors-form/sponsors-table";
-import SponsorForm from "@/app/admin/forms/about-sponsors-form";
-import SponsorsHeaderForm from "@/app/admin/forms/about-sponsors-header-form";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Sponsor, SponsorsHeader } from "@/schemas/sponsorsSchema";
-import { AlertCircle } from "lucide-react";
 import { useState } from "react";
 import useSWR, { mutate } from "swr";
+import { AlertCircle } from "lucide-react";
+import { Sponsor, SponsorsHeader } from "@/schemas/sponsorsSchema";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import SponsorsHeaderForm from "@/app/admin/forms/about-sponsors-header-form";
+import { SponsorsTable } from "@/app/admin/components/sponsors-form/sponsors-table";
+import SponsorForm from "@/app/admin/forms/about-sponsors-form";
+import SponsorModal from "@/app/admin/components/sponsors-form/sponsors-modal";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function AboutSponsorsSection() {
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
+
   const { data: sponsorsHeaderData, error: sponsorsHeaderError } =
     useSWR<SponsorsHeader>("/api/admin/about/sponsors/header", fetcher);
-
   const { data: sponsorsData, error: sponsorsError } = useSWR<Sponsor[]>(
     "/api/admin/about/sponsors",
     fetcher
@@ -38,6 +38,7 @@ export default function AboutSponsorsSection() {
   if (!sponsorsHeaderData || !sponsorsData) {
     return <Skeleton className="w-full h-[200px]" />;
   }
+
   const handleSponsorUpdate = () => {
     mutate("/api/admin/about/sponsors");
     setSelectedSponsor(null);
@@ -61,9 +62,9 @@ export default function AboutSponsorsSection() {
           onSponsorAdded={handleSponsorUpdate}
         />
       </div>
-
       {selectedSponsor && (
         <SponsorModal
+          key={selectedSponsor.id}
           sponsor={selectedSponsor}
           sponsorTypes={sponsorsHeaderData.sponsors_types}
           onClose={() => setSelectedSponsor(null)}

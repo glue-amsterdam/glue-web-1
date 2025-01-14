@@ -49,7 +49,7 @@ export async function PUT(request: Request) {
         title: validatedData.title,
         description: validatedData.description,
       })
-      .eq("id", "about-curated-56ca13952fcc");
+      .eq("id", "about-curated");
 
     if (curatedError) throw curatedError;
 

@@ -1,3 +1,4 @@
+import { config } from "@/env";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
@@ -38,8 +39,8 @@ export async function POST(request: Request) {
 
     try {
       await resend.emails.send({
-        from: "Acme <onboarding@resend.dev>",
-        to: "azua.javi@gmail.com",
+        from: `GLUE <${config.baseEmail}>`,
+        to: user.email,
         subject: "Your Participant Application Has Been Accepted",
         html: `
           <h1>Congratulations!${user.email}</h1>

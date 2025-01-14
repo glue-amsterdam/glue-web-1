@@ -52,7 +52,7 @@ export async function PUT(
       .from("about_citizens")
       .select("id, image_url")
       .eq("year", year)
-      .eq("section_id", "about-citizens-section-56ca13952fcc");
+      .eq("section_id", "about-citizens-section");
 
     if (fetchError) throw fetchError;
 
@@ -63,9 +63,8 @@ export async function PUT(
       description: citizen.description,
       image_url: citizen.image_url,
       image_name: citizen.image_name,
-      alt: citizen.alt,
       year,
-      section_id: "about-citizens-section-56ca13952fcc",
+      section_id: "about-citizens-section",
     }));
 
     // Update the citizens
@@ -147,7 +146,7 @@ export async function DELETE(
       .from("about_citizens")
       .delete()
       .eq("year", year)
-      .eq("section_id", "about-citizens-section-56ca13952fcc");
+      .eq("section_id", "about-citizens-section");
 
     if (deleteError) throw deleteError;
 

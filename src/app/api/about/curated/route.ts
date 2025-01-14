@@ -2,6 +2,17 @@ import { CuratedParticipantWithYear } from "@/schemas/usersSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
+type ParticipantDetails = {
+  slug: string;
+  is_sticky: boolean;
+  year: number;
+};
+
+type Participant = {
+  user_name: string;
+  participant_details: ParticipantDetails | ParticipantDetails[];
+};
+
 export async function GET() {
   try {
     const supabase = await createClient();
@@ -13,7 +24,9 @@ export async function GET() {
       .single();
 
     if (curatedError) {
-      throw new Error("Failed to fetch curated about data");
+      throw new Error(
+        `Failed to fetch curated about data: ${curatedError.message}`
+      );
     }
 
     // Fetch all participants
@@ -28,23 +41,34 @@ export async function GET() {
       `);
 
     if (participantsError) {
-      throw new Error("Failed to fetch participants");
+      throw new Error(
+        `Failed to fetch participants: ${participantsError.message}`
+      );
+    }
+
+    if (!Array.isArray(allParticipants)) {
+      throw new Error(
+        "Unexpected data structure: allParticipants is not an array"
+      );
     }
 
     // Filter and transform participants
     const curatedParticipants = allParticipants
-      .filter((participant) =>
-        participant.participant_details.some((detail) => detail.is_sticky)
-      )
-      .map((participant) => {
-        const stickyDetail = participant.participant_details.find(
-          (detail) => detail.is_sticky
-        );
-        return {
-          slug: stickyDetail?.slug,
-          userName: participant.user_name,
-          year: stickyDetail?.year,
-        };
+      .flatMap((participant: Participant) => {
+        const details = Array.isArray(participant.participant_details)
+          ? participant.participant_details
+          : [participant.participant_details];
+
+        return details
+          .filter(
+            (detail): detail is ParticipantDetails =>
+              detail && typeof detail === "object" && detail.is_sticky === true
+          )
+          .map((detail) => ({
+            slug: detail.slug,
+            userName: participant.user_name,
+            year: detail.year,
+          }));
       })
       .filter(
         (participant): participant is CuratedParticipantWithYear =>

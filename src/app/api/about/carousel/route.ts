@@ -13,12 +13,12 @@ export async function GET() {
       supabase
         .from("about_carousel")
         .select("title,description")
-        .eq("id", "about-carousel-56ca13952fcc")
+        .eq("id", "about-carousel")
         .single(),
       supabase
         .from("about_carousel_slides")
-        .select("image_url,alt")
-        .eq("carousel_id", "about-carousel-56ca13952fcc"),
+        .select("image_url")
+        .eq("carousel_id", "about-carousel"),
     ]);
 
     if (carouselError || slidesError) {
@@ -38,7 +38,6 @@ export async function GET() {
       description: carouselData.description,
       slides: slidesData.map((slide) => ({
         image_url: slide.image_url,
-        alt: slide.alt,
       })),
     };
 

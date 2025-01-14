@@ -45,7 +45,7 @@ export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
   try {
     const res = await fetch(`${BASE_URL}/about/participants`, {
       next: {
-        revalidate: 3600,
+        revalidate: 30,
         tags: ["participants"],
       },
     });

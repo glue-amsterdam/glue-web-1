@@ -69,6 +69,14 @@ export default function MainMenuForm({ initialData }: MainMenuFormProps) {
     }
   };
 
+  if (!initialData.mainMenu || initialData.mainMenu.length === 0) {
+    return (
+      <div className="p-4 border rounded-md">
+        <p>No menu items available. Please add some items to the main menu.</p>
+      </div>
+    );
+  }
+
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">

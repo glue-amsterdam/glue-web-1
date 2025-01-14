@@ -6,24 +6,25 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    const [{ data: infoData }, { data: infoItemsData }] = await Promise.all([
-      supabase
-        .from("about_info")
-        .select("*")
-        .eq("id", "about-info-56ca13952fcc")
-        .single(),
+    const [
+      { data: infoData, error: infoDataError },
+      { data: infoItemsData, error: InfoItemsError },
+    ] = await Promise.all([
+      supabase.from("about_info").select("*").eq("id", "about-info").single(),
       supabase
         .from("about_info_items")
-        .select("id, title, description, image_url, alt")
+        .select("id, title, description, image_url")
         .order("id"),
     ]);
 
-    if (!infoData || !infoItemsData) {
-      throw new Error("Failed to fetch info section data or items");
+    if (!infoData || infoDataError) {
+      throw new Error(
+        `Failed to fetch info section data or items: ${infoDataError?.message}`
+      );
     }
 
-    if (!infoData) {
-      throw new Error("Failed to fetch info section data");
+    if (!infoItemsData || InfoItemsError) {
+      throw new Error(`Failed to fetch info items: ${InfoItemsError.message}`);
     }
 
     const infoSection = {
@@ -35,7 +36,6 @@ export async function GET() {
         title: item.title,
         image: {
           image_url: item.image_url,
-          alt: item.alt,
         },
       })),
     };
@@ -44,11 +44,11 @@ export async function GET() {
 
     return NextResponse.json(validatedData);
   } catch (error) {
-    if (process.env.NODE_ENV === "production") {
-      return NextResponse.json(
-        { error: "Failed to fetch info section data" },
-        { status: 500 }
-      );
-    }
+    console.error("Error in GET /api/about/info:", error);
+
+    return NextResponse.json(
+      { error: "Failed to fetch info section data" },
+      { status: 500 }
+    );
   }
 }

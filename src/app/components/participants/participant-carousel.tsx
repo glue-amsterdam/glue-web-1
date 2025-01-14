@@ -20,11 +20,22 @@ export default function ImageCarousel({
   return (
     <Carousel className="h-full">
       <CarouselContent className="p-0 h-full">
+        {images.length === 0 && (
+          <CarouselItem className="h-full">
+            <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
+              <img
+                src="/participant-placeholder.jpg"
+                alt={`GLUE ${config.cityName} participant ${userName}, image number 1`}
+                className="object-cover absolute inset-0 w-full h-full"
+              />
+            </div>
+          </CarouselItem>
+        )}
         {images.map((image, index) => (
           <CarouselItem key={index} className="h-full">
             <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
               <img
-                src={image.image_url || "/participant-placeholder.jpg"}
+                src={image.image_url}
                 alt={`GLUE ${
                   config.cityName
                 } participant ${userName}, image number ${index + 1}`}

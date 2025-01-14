@@ -1,15 +1,24 @@
+import { config } from "@/env";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
+  const adminEmails = config.adminEmails
+    .split(",")
+    .filter((email) => email.trim() !== "");
+  if (adminEmails.length === 0) {
+    console.warn("No admin emails configured. Skipping notification.");
+    return;
+  }
+
   try {
     const { userName, userId } = await request.json();
 
     await resend.emails.send({
-      from: "Acme <onboarding@resend.dev>",
-      to: "azua.javi@gmail.com",
+      from: `GLUE <${config.baseEmail}>`,
+      to: adminEmails,
       subject: "User Upgrade Request to Participant",
       html: `
         <h1>User Upgrade Request</h1>

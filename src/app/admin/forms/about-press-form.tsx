@@ -38,7 +38,6 @@ const DEFAULT_PRESS_ITEMS: PressItem[] = [
     title: "",
     description: "",
     image_url: "",
-    alt: "",
     isVisible: false,
   },
   {
@@ -46,7 +45,6 @@ const DEFAULT_PRESS_ITEMS: PressItem[] = [
     title: "",
     description: "",
     image_url: "",
-    alt: "",
     isVisible: false,
   },
 ];
@@ -284,7 +282,7 @@ export default function PressSectionForm({ initialData }: PressItemFormProps) {
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     src={field.image_url}
-                    alt={field.alt || `Press item ${index + 1}`}
+                    alt={`Press item ${index + 1}`}
                     className="object-cover rounded-md"
                   />
                 ) : (

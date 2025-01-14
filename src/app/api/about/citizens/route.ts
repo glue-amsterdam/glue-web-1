@@ -8,7 +8,7 @@ export async function GET() {
 
     const { data: citizens, error } = await supabase
       .from("about_citizens")
-      .select("id, name, image_url, alt, description, year")
+      .select("id, name, image_url, description, year")
       .order("year", { ascending: false });
 
     if (error) {

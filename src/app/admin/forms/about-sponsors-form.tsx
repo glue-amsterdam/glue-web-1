@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
@@ -42,10 +42,6 @@ export default function SponsorForm({
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const getAlt = (name: string, sponsorType: string) => {
-    return `The logo of ${name}, one of our ${sponsorType}`;
-  };
-
   const methods = useForm<Sponsor>({
     resolver: zodResolver(sponsorSchema),
     defaultValues: initialData || {
@@ -53,7 +49,6 @@ export default function SponsorForm({
       website: "",
       sponsor_type: "",
       image_url: "",
-      alt: "",
     },
   });
 
@@ -73,22 +68,8 @@ export default function SponsorForm({
 
       setValue("image_url", imageUrl, { shouldDirty: true });
       setValue("file", file, { shouldDirty: true });
-
-      // Trigger rerender to show the new image immediately
-      setValue("alt", file.name, { shouldDirty: true });
     }
   };
-
-  const name = watch("name");
-  const sponsorType = watch("sponsor_type");
-  const imageUrl = watch("image_url");
-
-  useEffect(() => {
-    if (name && sponsorType && imageUrl) {
-      const generatedAlt = getAlt(name, sponsorType);
-      setValue("alt", generatedAlt, { shouldDirty: true });
-    }
-  }, [setValue, name, sponsorType, imageUrl]);
 
   const onSubmit = async (data: Sponsor) => {
     setIsSubmitting(true);
@@ -206,7 +187,7 @@ export default function SponsorForm({
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     src={watch("image_url")}
-                    alt={watch("alt") || "Sponsor logo"}
+                    alt={"Sponsor logo"}
                     className="object-cover rounded-md"
                   />
                 ) : (

@@ -46,7 +46,6 @@ export async function POST(request: Request) {
         website: validatedData.website,
         sponsor_type: validatedData.sponsor_type,
         image_url: validatedData.image_url,
-        alt: validatedData.alt,
       })
       .select();
 
@@ -115,7 +114,6 @@ export async function PUT(request: Request) {
         website: validatedData.website,
         sponsor_type: validatedData.sponsor_type,
         image_url: validatedData.image_url,
-        alt: validatedData.alt,
       })
       .eq("id", validatedData.id)
       .select();
@@ -163,19 +161,36 @@ export async function DELETE(request: Request) {
       .eq("id", id)
       .single();
 
-    if (fetchError) throw fetchError;
+    if (fetchError) {
+      console.error("Error fetching sponsor data:", fetchError);
+      throw new Error(`Failed to fetch sponsor data: ${fetchError.message}`);
+    }
 
     // Delete the image from storage if it exists
     if (sponsorData && sponsorData.image_url) {
-      const imagePath = new URL(sponsorData.image_url).pathname
-        .split("/")
-        .pop();
-      const { error: deleteImageError } = await supabase.storage
-        .from(config.bucketName)
-        .remove([`about/sponsors/${imagePath}`]);
+      try {
+        const imageUrl = new URL(sponsorData.image_url);
+        const pathParts = imageUrl.pathname.split("/");
+        const imagePath = pathParts[pathParts.length - 1];
+        const fullImagePath = `about/sponsors/${imagePath}`;
 
-      if (deleteImageError) {
-        console.error("Error deleting sponsor image:", deleteImageError);
+        console.log(`Attempting to delete image: ${fullImagePath}`);
+
+        const { error: deleteImageError } = await supabase.storage
+          .from(config.bucketName)
+          .remove([fullImagePath]);
+
+        if (deleteImageError) {
+          console.error("Error deleting sponsor image:", deleteImageError);
+          throw new Error(
+            `Failed to delete sponsor image: ${deleteImageError.message}`
+          );
+        } else {
+          console.log(`Successfully deleted image: ${fullImagePath}`);
+        }
+      } catch (error) {
+        console.error("Error processing image deletion:", error);
+        // Continue with sponsor deletion even if image deletion fails
       }
     }
 
@@ -185,13 +200,21 @@ export async function DELETE(request: Request) {
       .delete()
       .eq("id", id);
 
-    if (deleteError) throw deleteError;
+    if (deleteError) {
+      console.error("Error deleting sponsor from database:", deleteError);
+      throw new Error(
+        `Failed to delete sponsor from database: ${deleteError.message}`
+      );
+    }
 
     return NextResponse.json({ message: "Sponsor deleted successfully" });
   } catch (error) {
     console.error("Error in DELETE /api/admin/sponsors:", error);
     return NextResponse.json(
-      { error: "An error occurred while deleting the sponsor" },
+      {
+        error: "An error occurred while deleting the sponsor",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

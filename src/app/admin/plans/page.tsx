@@ -3,6 +3,7 @@ import PlanSelector from "@/app/admin/components/plans-section-selector";
 import PlanFifthSection from "@/app/admin/sections/plans-fifth-sections";
 import PlanFourSection from "@/app/admin/sections/plans-four-sections";
 import PlanOneSection from "@/app/admin/sections/plans-one-plan-sections";
+import PlanSixSection from "@/app/admin/sections/plans-six-sections";
 import PlanThreeSection from "@/app/admin/sections/plans-three-sections";
 import PlanTwoSection from "@/app/admin/sections/plans-two-plan-sections";
 import PlanZeroSection from "@/app/admin/sections/plans-zero-plan-sections";
@@ -61,6 +62,11 @@ export default async function PlansPage({ searchParams }: PlansPageProps) {
         {currentPlan === "planId-5" && (
           <Suspense fallback={<LoadingSpinner />}>
             <PlanFifthSection />
+          </Suspense>
+        )}
+        {currentPlan === "planId-6" && (
+          <Suspense fallback={<LoadingSpinner />}>
+            <PlanSixSection />
           </Suspense>
         )}
       </div>

@@ -19,11 +19,11 @@ export async function GET() {
       title: infoData.title,
       description: infoData.description,
       infoItems: infoItemsData.map(
-        ({ id, title, description, image_url, alt, image_name }) => ({
+        ({ id, title, description, image_url, image_name }) => ({
           id,
           title,
           description,
-          image: { image_url, alt, image_name: image_name || "" },
+          image: { image_url, image_name: image_name || "" },
         })
       ),
     };
@@ -50,7 +50,7 @@ export async function PUT(request: Request) {
         title: validatedData.title,
         description: validatedData.description,
       })
-      .eq("id", "about-info-56ca13952fcc");
+      .eq("id", "about-info");
 
     if (infoError) throw infoError;
 
