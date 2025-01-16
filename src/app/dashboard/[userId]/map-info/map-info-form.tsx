@@ -156,6 +156,8 @@ export function MapInfoForm({ initialData, targetUserId }: MapInfoFormProps) {
   const { toast } = useToast();
   const router = useRouter();
 
+  console.log(initialData);
+
   const form = useForm<MapInfo>({
     resolver: zodResolver(mapInfoSchema),
     defaultValues: {
@@ -165,7 +167,7 @@ export function MapInfoForm({ initialData, targetUserId }: MapInfoFormProps) {
         : initialData?.formatted_address || null,
       latitude: isError ? null : initialData?.latitude || null,
       longitude: isError ? null : initialData?.longitude || null,
-      no_address: isError ? false : initialData?.no_address || false,
+      no_address: isError ? true : initialData?.no_address || false,
     },
   });
 
