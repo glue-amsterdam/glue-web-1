@@ -37,6 +37,7 @@ import { AlertCircle, ImageIcon } from "lucide-react";
 import { CoOrganizerSearch } from "@/app/dashboard/components/co-organizers-search";
 import { Button } from "@/components/ui/button";
 import { config } from "@/env";
+import { LocationSelector } from "@/app/dashboard/[userId]/create-events/location-selector";
 
 interface EventFormProps {
   existingEventCount: number;
@@ -70,6 +71,7 @@ export function EventForm({
       rsvp_link: "",
       co_organizers: [],
       organizer_id: targetUserId,
+      location_id: "",
     },
   });
 
@@ -142,8 +144,9 @@ export function EventForm({
         rsvp: false,
         rsvp_message: "",
         rsvp_link: "",
-        co_organizers: [],
+        co_organizers: [], // Explicitly reset co-organizers to an empty array
         organizer_id: targetUserId,
+        location_id: "",
       });
       setImagePreview(null);
       router.refresh();
@@ -194,6 +197,25 @@ export function EventForm({
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="location_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Event Location</FormLabel>
+                  <FormControl>
+                    <LocationSelector
+                      targetUserId={targetUserId}
+                      onChange={field.onChange}
+                      value={field.value}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Separator />
             <FormField
               control={form.control}
               name="type"
@@ -248,7 +270,14 @@ export function EventForm({
                   {field.value && (
                     <p className="text-sm text-gray-500 mt-1">
                       Date:{" "}
-                      {eventDays.find((day) => day.dayId === field.value)?.date}
+                      {new Date(
+                        eventDays.find((day) => day.dayId === field.value)
+                          ?.date || new Date()
+                      ).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
                     </p>
                   )}
                   <FormMessage />
@@ -265,7 +294,7 @@ export function EventForm({
                   <div className="w-full h-80 overflow-hidden bg-gray object-cover rounded-md relative mb-2">
                     {imagePreview ? (
                       <img
-                        src={imagePreview}
+                        src={imagePreview || "/placeholder.svg"}
                         alt="Event image preview"
                         className="object-cover rounded-md"
                       />
@@ -403,7 +432,7 @@ export function EventForm({
                   <FormControl>
                     <CoOrganizerSearch
                       onSelect={(selectedIds) => field.onChange(selectedIds)}
-                      initialSelected={field.value || []}
+                      selectedParticipants={field.value || []}
                       maxSelections={4}
                     />
                   </FormControl>
@@ -428,6 +457,7 @@ export function EventForm({
                 "rsvp_message",
                 "rsvp_link",
                 "co_organizers",
+                "location_id",
               ]}
               isSubmitting={isSubmitting}
               isDirty={isDirty}

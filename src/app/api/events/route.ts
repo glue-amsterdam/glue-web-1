@@ -15,9 +15,6 @@ export async function GET(request: Request) {
     organizer:user_info!organizer_id (
       user_id,
       user_name,
-      map:map_info (
-        id
-      ),
       participant_details (
         slug
       )
@@ -25,6 +22,10 @@ export async function GET(request: Request) {
     event_day:events_days!dayId (
       label,
       date
+    ),
+    location:map_info!location_id (
+      id,
+      formatted_address
     )
   `);
 
@@ -81,8 +82,11 @@ export async function GET(request: Request) {
       organizer: {
         user_id: event.organizer?.user_id || "",
         user_name: event.organizer?.user_name || "Unknown",
-        map_id: event.organizer?.map?.[0]?.id || event.organizer?.user_id || "",
         slug: event.organizer?.participant_details?.[0]?.slug || "",
+      },
+      location: {
+        id: event.location?.id || "",
+        formatted_address: event.location?.formatted_address || "",
       },
       coOrganizers:
         coOrganizerResults[index].data?.map((co) => ({
@@ -94,7 +98,6 @@ export async function GET(request: Request) {
       rsvpMessage: event.rsvp_message || "",
       rsvpLink: event.rsvp_link || "",
       createdAt: event.created_at || "",
-      updatedAt: event.updated_at || "",
     }));
 
     return NextResponse.json(enhancedEvents);

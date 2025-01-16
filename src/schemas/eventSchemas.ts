@@ -43,6 +43,7 @@ export const baseEventSchema = z.object({
   organizer: enhancedOrganizerSchema,
   coOrganizers: z.array(enhancedUserSchema),
   date: eventDaySchema,
+  location_id: z.string(),
   startTime: z
     .string()
     .regex(/^\d{2}:\d{2}$/, "Please enter a valid time in HH:MM format"),
@@ -130,5 +131,5 @@ export type MapBasicInfo = {
 
 // Extended type for individual event with map info
 export type IndividualEventWithMapResponse = IndividualEventResponse & {
-  mapInfo: MapBasicInfo;
+  location: MapBasicInfo;
 };

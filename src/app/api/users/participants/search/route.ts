@@ -1,5 +1,4 @@
 import { createClient } from "@/utils/supabase/server";
-
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -9,41 +8,62 @@ export async function GET(request: Request) {
 
   try {
     const supabase = await createClient();
-    let query = supabase.from("user_info").select(`
-        user_id,
-        user_name,
-        participant_details (slug)
-      `);
+
+    // First query: Fetch user_info
+    let userQuery = supabase.from("user_info").select("user_id, user_name");
 
     if (term) {
-      query = query.filter("user_name", "ilike", `%${term}%`);
+      userQuery = userQuery.ilike("user_name", `%${term}%`);
     }
 
     if (ids) {
       const idArray = ids.split(",");
-      query = query.in("user_id", idArray);
+      userQuery = userQuery.in("user_id", idArray);
     }
 
-    const { data, error } = await query.limit(10);
+    const { data: userData, error: userError } = await userQuery;
 
-    if (error) {
-      console.error("Error fetching participants:", error);
+    if (userError) {
       return NextResponse.json(
-        { error: "Failed to fetch participants" },
+        { error: "Failed to fetch users" },
         { status: 500 }
       );
     }
 
-    // Reshape the data to match the expected format
-    const formattedData = data.map((participant) => ({
-      id: participant.user_id,
-      user_name: participant.user_name,
-      slug:
-        participant.participant_details &&
-        Array.isArray(participant.participant_details)
-          ? participant.participant_details[0].slug
-          : null,
-    }));
+    // Second query: Fetch participant_details
+    const userIds = userData.map((user) => user.user_id);
+
+    const { data: participantData, error: participantError } = await supabase
+      .from("participant_details")
+      .select("user_id, slug, status")
+      .in("user_id", userIds)
+      .eq("status", "accepted");
+
+    if (participantError) {
+      return NextResponse.json(
+        { error: "Failed to fetch participant details" },
+        { status: 500 }
+      );
+    }
+
+    // Combine the data
+    const formattedData = userData
+      .filter((user) =>
+        participantData.some(
+          (participant) => participant.user_id === user.user_id
+        )
+      )
+      .map((user) => {
+        const participantDetails = participantData.find(
+          (participant) => participant.user_id === user.user_id
+        );
+        return {
+          id: user.user_id,
+          user_name: user.user_name,
+          slug: participantDetails?.slug || null,
+        };
+      })
+      .slice(0, 10);
 
     return NextResponse.json(formattedData);
   } catch (error) {

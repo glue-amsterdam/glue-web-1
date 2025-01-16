@@ -15,7 +15,6 @@ interface EventContentProps {
 
 export default function EventContent({ event }: EventContentProps) {
   const EventIcon = getEventIcon(event.type);
-
   return (
     <>
       <div className="flex flex-col space-y-4 font-overpass">
@@ -109,15 +108,15 @@ export default function EventContent({ event }: EventContentProps) {
             </div>
           </div>
 
-          {event.mapInfo && (
+          {event.location && (
             <div>
               <a
                 className="flex gap-1"
                 target="_blank"
-                href={`/map?place=${event.mapInfo.id}`}
+                href={`/map?place=${event.location.id}`}
               >
                 <MapPinCheck />
-                <p>{event.mapInfo.formatted_address}</p>
+                <p>{event.location.formatted_address}</p>
               </a>
             </div>
           )}

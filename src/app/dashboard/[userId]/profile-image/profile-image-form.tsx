@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { ImageIcon } from "lucide-react";
-import { uploadImage } from "@/utils/supabase/storage/client";
+import { uploadImage, deleteImage } from "@/utils/supabase/storage/client";
 import { useToast } from "@/hooks/use-toast";
 import { config } from "@/env";
 
@@ -35,7 +35,7 @@ export function ProfileImageForm({
     if (planId === "planId-0" || planId === "planId-1") return 0;
     if (planId === "planId-2") return 1;
     if (planId === "planId-3") return 2;
-    return 3; // for plan_id 4 or more
+    return 3;
   };
 
   const maxImages = getMaxImages(planId);
@@ -53,7 +53,7 @@ export function ProfileImageForm({
 
   type FormData = z.infer<typeof formSchema>;
 
-  const { control, setValue, handleSubmit, watch } = useForm<FormData>({
+  const { control, setValue, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       images: initialImages,
@@ -65,10 +65,8 @@ export function ProfileImageForm({
     name: "images",
   });
 
-  // Watch for changes in the form's images
   const watchImages = watch("images");
 
-  // Update currentImages when form images change
   useEffect(() => {
     setCurrentImages(
       watchImages.map((image) => ({
@@ -86,50 +84,136 @@ export function ProfileImageForm({
     }
   }, [initialImages, maxImages, setValue]);
 
+  const handleImageUpload = async (
+    file: File,
+    index: number
+  ): Promise<{ id: string; image_url: string }> => {
+    setIsUploading(true);
+    try {
+      const existingImage = currentImages[index];
+
+      // Delete the old image if it exists
+      if (existingImage?.image_url) {
+        await deleteImage(existingImage.image_url);
+      }
+
+      const { imageUrl, error } = await uploadImage({
+        file,
+        bucket: config.bucketName,
+        folder: `profile-images/${targetUserId}`,
+      });
+
+      if (error) {
+        throw new Error(error);
+      }
+
+      // Update or create the database record
+      const method = existingImage?.id ? "PUT" : "POST";
+      const url = existingImage?.id
+        ? `/api/users/participants/${targetUserId}/profile-image/${existingImage.id}`
+        : `/api/users/participants/${targetUserId}/profile-image`;
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ image_url: imageUrl }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update profile image in database");
+      }
+
+      const { id } = await response.json();
+
+      toast({
+        title: "Image uploaded",
+        description: "The image has been successfully uploaded and saved.",
+      });
+
+      return { id: id || existingImage?.id || "", image_url: imageUrl };
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast({
+        title: "Error",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleImageChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
     index: number
   ) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setIsUploading(true);
-
       try {
-        const { imageUrl, error } = await uploadImage({
-          file,
-          bucket: config.bucketName,
-          folder: `profile-images/${targetUserId}`,
-        });
+        const { id, image_url } = await handleImageUpload(file, index);
 
-        if (error) {
-          throw new Error(error);
-        }
-
+        // Update the form state
         setValue(`images.${index}`, {
-          image_url: imageUrl,
+          id,
+          image_url,
         });
 
-        // Update currentImages state
+        // Update the currentImages state to trigger a re-render
         setCurrentImages((prevImages) => {
           const newImages = [...prevImages];
-          newImages[index] = { ...newImages[index], image_url: imageUrl };
+          newImages[index] = { id, image_url };
           return newImages;
         });
-
-        toast({
-          title: "Image uploaded",
-          description: "The image has been successfully uploaded.",
-        });
       } catch (error) {
-        console.error("Error uploading image:", error);
-        toast({
-          title: "Error",
-          description: "Failed to upload image. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsUploading(false);
+        console.error("Error handling image change:", error);
       }
+    }
+  };
+
+  const handleImageDelete = async (index: number) => {
+    const imageToDelete = currentImages[index];
+    if (!imageToDelete) return;
+
+    try {
+      // Delete from storage
+      await deleteImage(imageToDelete.image_url);
+
+      // Delete from database
+      const response = await fetch(
+        `/api/users/participants/${targetUserId}/profile-image/${imageToDelete.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete profile image from database");
+      }
+
+      // Remove the image from the form state
+      remove(index);
+
+      // Update the currentImages state to trigger a re-render
+      setCurrentImages((prevImages) => {
+        const newImages = [...prevImages];
+        newImages.splice(index, 1);
+        return newImages;
+      });
+
+      toast({
+        title: "Image deleted",
+        description: "The image has been successfully deleted.",
+      });
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete image. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -144,39 +228,6 @@ export function ProfileImageForm({
     }
   };
 
-  const onSubmit = async (data: FormData) => {
-    console.log(data);
-
-    try {
-      const response = await fetch(
-        `/api/users/participants/${targetUserId}/profile-image`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data.images),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to update profile images");
-      }
-
-      toast({
-        title: "Success",
-        description: "Profile images updated successfully.",
-      });
-    } catch (error) {
-      console.error("Error updating profile images:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update profile images. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const maxImagesText =
     maxImages === 0
       ? "Your current plan does not allow image uploads."
@@ -187,13 +238,13 @@ export function ProfileImageForm({
   return (
     <>
       <p className="mb-4 text-sm text-gray-600">{maxImagesText}</p>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-4">
         {fields.map((field, index) => (
           <div key={field.id} className="border p-4 rounded-md">
             <div className="w-full h-60 relative mb-2 overflow-hidden">
               {currentImages[index]?.image_url ? (
                 <img
-                  src={currentImages[index].image_url}
+                  src={currentImages[index].image_url || "/placeholder.svg"}
                   alt={`Profile image ${index + 1}`}
                   className="rounded-md absolute inset-0 w-full h-full object-cover"
                 />
@@ -220,14 +271,7 @@ export function ProfileImageForm({
               <Button
                 type="button"
                 variant="destructive"
-                onClick={() => {
-                  remove(index);
-                  setCurrentImages((prevImages) => {
-                    const newImages = [...prevImages];
-                    newImages.splice(index, 1);
-                    return newImages;
-                  });
-                }}
+                onClick={() => handleImageDelete(index)}
                 className="w-full"
               >
                 Delete Image
@@ -259,11 +303,7 @@ export function ProfileImageForm({
           className="hidden"
           aria-label="Upload profile image"
         />
-
-        <Button type="submit" className="w-full">
-          Save Changes
-        </Button>
-      </form>
+      </div>
     </>
   );
 }

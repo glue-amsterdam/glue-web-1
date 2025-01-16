@@ -21,22 +21,23 @@ export async function GET(
       .from("events")
       .select(
         `
-        *,
-        organizer:user_info!organizer_id (
-          user_id,
-          user_name,
-          map:map_info (
-           id, formatted_address
+          *,
+          organizer:user_info!organizer_id (
+            user_id,
+            user_name,
+            participant_details (
+              slug
+            )
           ),
-          participant_details (
-            slug
+          event_day:events_days!dayId (
+            label,
+            date
+          ),
+          location:map_info!location_id (
+            id,
+            formatted_address
           )
-        ),
-        event_day:events_days!dayId (
-          label,
-          date
-        )
-      `
+        `
       )
       .eq("id", eventId)
       .single();
@@ -55,12 +56,12 @@ export async function GET(
       .from("user_info")
       .select(
         `
-        user_id, 
-        user_name,
-        participant_details (
-          slug
-        )
-      `
+          user_id, 
+          user_name,
+          participant_details (
+            slug
+          )
+        `
       )
       .in("user_id", event.co_organizers || []);
 
@@ -92,10 +93,12 @@ export async function GET(
       organizer: {
         user_id: event.organizer?.user_id || "",
         user_name: event.organizer?.user_name || "Unknown",
-        map_id: event.organizer?.map?.[0]?.id || event.organizer?.user_id || "",
         slug: event.organizer?.participant_details?.slug || "",
       },
-      mapInfo: event.organizer?.map?.[0] || null,
+      location: {
+        id: event.location?.id || "",
+        formatted_address: event.location?.formatted_address || "",
+      },
       coOrganizers:
         coOrganizers?.map((co) => ({
           user_id: co.user_id || "",
@@ -118,7 +121,6 @@ export async function GET(
     );
   }
 }
-
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ eventId: string }> }
