@@ -12,7 +12,7 @@ interface Participant {
 
 interface CoOrganizerSearchProps {
   onSelect: (selectedIds: string[]) => void;
-  initialSelected?: string[];
+  selectedParticipants: string[];
   maxSelections?: number;
 }
 
@@ -20,25 +20,22 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export function CoOrganizerSearch({
   onSelect,
-  initialSelected = [],
+  selectedParticipants,
   maxSelections = 4,
 }: CoOrganizerSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedParticipants, setSelectedParticipants] = useState<
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<Participant[]>([]);
+  const [selectedParticipantDetails, setSelectedParticipantDetails] = useState<
     Participant[]
   >([]);
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const {
-    data: participants,
-    error,
-    isLoading,
-  } = useSWR(
+  const { data, error, isLoading } = useSWR(
     debouncedSearchTerm
       ? `/api/users/participants/search?term=${debouncedSearchTerm}`
       : null,
@@ -46,18 +43,35 @@ export function CoOrganizerSearch({
   );
 
   useEffect(() => {
-    if (initialSelected.length > 0) {
-      fetchInitialParticipants(initialSelected);
+    if (data) {
+      setSearchResults(
+        data.filter(
+          (participant: Participant) =>
+            !selectedParticipants.includes(participant.id)
+        )
+      );
     }
-  }, [initialSelected]);
+  }, [data, selectedParticipants]);
 
-  const fetchInitialParticipants = async (ids: string[]) => {
+  useEffect(() => {
+    if (selectedParticipants.length > 0) {
+      fetchSelectedParticipants(selectedParticipants);
+    } else {
+      setSelectedParticipantDetails([]);
+    }
+  }, [selectedParticipants]);
+
+  const fetchSelectedParticipants = async (ids: string[]) => {
+    if (ids.length === 0) {
+      setSelectedParticipantDetails([]);
+      return;
+    }
     const response = await fetch(
       `/api/users/participants/search?ids=${ids.join(",")}`
     );
     if (response.ok) {
       const data = await response.json();
-      setSelectedParticipants(data);
+      setSelectedParticipantDetails(data);
     }
   };
 
@@ -67,17 +81,17 @@ export function CoOrganizerSearch({
 
   const handleSelect = (participant: Participant) => {
     if (selectedParticipants.length < maxSelections) {
-      const updatedSelected = [...selectedParticipants, participant];
-      setSelectedParticipants(updatedSelected);
-      onSelect(updatedSelected.map((p) => p.id));
+      const updatedSelected = [...selectedParticipants, participant.id];
+      onSelect(updatedSelected);
+      setSelectedParticipantDetails((prev) => [...prev, participant]);
       setSearchTerm("");
     }
   };
 
   const handleRemove = (id: string) => {
-    const updatedSelected = selectedParticipants.filter((p) => p.id !== id);
-    setSelectedParticipants(updatedSelected);
-    onSelect(updatedSelected.map((p) => p.id));
+    const updatedSelected = selectedParticipants.filter((pId) => pId !== id);
+    onSelect(updatedSelected);
+    setSelectedParticipantDetails((prev) => prev.filter((p) => p.id !== id));
   };
 
   return (
@@ -91,21 +105,21 @@ export function CoOrganizerSearch({
       />
       {isLoading && <p>Loading...</p>}
       {error && <p>Error loading participants</p>}
-      {participants && participants.length > 0 && (
+      {searchTerm && searchResults.length > 0 && (
         <ul className="mt-2 border rounded-md shadow-sm">
-          {participants.map((participant: Participant) => (
+          {searchResults.map((participant: Participant) => (
             <li
               key={participant.id}
               className="p-2 hover:bg-gray-100 cursor-pointer"
               onClick={() => handleSelect(participant)}
             >
-              {participant.user_name} ({participant.slug})
+              {participant.user_name}
             </li>
           ))}
         </ul>
       )}
       <div className="mt-2 flex flex-wrap gap-2">
-        {selectedParticipants.map((participant) => (
+        {selectedParticipantDetails.map((participant) => (
           <div
             key={participant.id}
             className="flex items-center bg-gray-100 rounded-full px-3 py-1"
@@ -113,6 +127,7 @@ export function CoOrganizerSearch({
             <span>{participant.user_name}</span>
             <Button
               variant="ghost"
+              type="button"
               size="sm"
               className="ml-2 h-4 w-4 p-0"
               onClick={() => handleRemove(participant.id)}

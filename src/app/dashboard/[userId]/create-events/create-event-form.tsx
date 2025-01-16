@@ -142,7 +142,7 @@ export function EventForm({
         rsvp: false,
         rsvp_message: "",
         rsvp_link: "",
-        co_organizers: [],
+        co_organizers: [], // Explicitly reset co-organizers to an empty array
         organizer_id: targetUserId,
       });
       setImagePreview(null);
@@ -248,7 +248,14 @@ export function EventForm({
                   {field.value && (
                     <p className="text-sm text-gray-500 mt-1">
                       Date:{" "}
-                      {eventDays.find((day) => day.dayId === field.value)?.date}
+                      {new Date(
+                        eventDays.find((day) => day.dayId === field.value)
+                          ?.date || new Date()
+                      ).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
                     </p>
                   )}
                   <FormMessage />
@@ -265,7 +272,7 @@ export function EventForm({
                   <div className="w-full h-80 overflow-hidden bg-gray object-cover rounded-md relative mb-2">
                     {imagePreview ? (
                       <img
-                        src={imagePreview}
+                        src={imagePreview || "/placeholder.svg"}
                         alt="Event image preview"
                         className="object-cover rounded-md"
                       />
@@ -403,7 +410,7 @@ export function EventForm({
                   <FormControl>
                     <CoOrganizerSearch
                       onSelect={(selectedIds) => field.onChange(selectedIds)}
-                      initialSelected={field.value || []}
+                      selectedParticipants={field.value || []}
                       maxSelections={4}
                     />
                   </FormControl>

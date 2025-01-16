@@ -33,7 +33,7 @@ export function EventCard({ event, onEventUpdated }: EventCardProps) {
       <CardHeader>
         <div className="relative h-40 w-full overflow-hidden rounded-t-lg">
           <img
-            src={(event.image_url as string) || "/placeholder.svg"}
+            src={(event.image_url as string) || "/placeholder.jpg"}
             alt={event.title}
             className="absolute inset-0 object-cover w-full h-full"
           />

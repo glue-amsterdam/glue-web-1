@@ -10,6 +10,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { config } from "@/env";
+import { CoOrganizerSearch } from "@/app/dashboard/components/co-organizers-search";
 
 interface EditEventFormProps {
   event: EventType;
@@ -114,7 +116,7 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
 
       toast({
         title: "Success",
-        description: "Event created successfully.",
+        description: "Event updated successfully.",
       });
 
       const updatedEvent = await response.json();
@@ -288,6 +290,26 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
         )}
         <FormField
           control={form.control}
+          name="co_organizers"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Co-organizers</FormLabel>
+              <FormControl>
+                <CoOrganizerSearch
+                  onSelect={(selectedIds) => field.onChange(selectedIds)}
+                  selectedParticipants={field.value || []}
+                  maxSelections={4}
+                />
+              </FormControl>
+              <FormDescription>
+                Search and select up to 4 co-organizers
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="image_url"
           render={({}) => (
             <FormItem>
@@ -295,7 +317,7 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
               <div className="w-full h-80 overflow-hidden bg-gray-100 rounded-md relative mb-2">
                 {imagePreview ? (
                   <img
-                    src={imagePreview}
+                    src={imagePreview || "/placeholder.svg"}
                     alt="Event image preview"
                     className="w-full h-full object-cover rounded-md"
                   />
@@ -341,6 +363,7 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
             "rsvp",
             "rsvp_message",
             "rsvp_link",
+            "co_organizers",
           ]}
           className="w-full"
         >
