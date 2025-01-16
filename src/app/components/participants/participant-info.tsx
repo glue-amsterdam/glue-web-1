@@ -1,6 +1,7 @@
 "use client";
 
 import { ParticipantClientResponse } from "@/types/api-visible-user";
+import { formatUrl } from "@/utils/formatUrl";
 import { motion, Variants } from "framer-motion";
 import { MapPinOff } from "lucide-react";
 import Link from "next/link";
@@ -31,7 +32,10 @@ interface ParticipantInfoProps {
 }
 
 function ParticipantInfo({ participant }: ParticipantInfoProps) {
-  console.log(participant);
+  console.log(
+    formatUrl(participant.user_info.social_media.instagramLink || "")
+  );
+
   return (
     <motion.div
       className="h-full p-4 md:p-6 text-white"
@@ -124,7 +128,7 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
                   (website, index) => (
                     <motion.a
                       key={index}
-                      href={website}
+                      href={formatUrl(website)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm md:text-base hover:text-uiwhite transition-colors"
@@ -144,7 +148,9 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
           <motion.div className="flex space-x-6 mt-8" variants={fadeInUp}>
             {participant.user_info.social_media.instagramLink && (
               <motion.a
-                href={participant.user_info.social_media.instagramLink}
+                href={formatUrl(
+                  participant.user_info.social_media.instagramLink
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.2, rotate: 15 }}
@@ -155,7 +161,9 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
             )}
             {participant.user_info.social_media.facebookLink && (
               <motion.a
-                href={participant.user_info.social_media.facebookLink}
+                href={formatUrl(
+                  participant.user_info.social_media.facebookLink
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.2, rotate: -15 }}
@@ -166,7 +174,9 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
             )}
             {participant.user_info.social_media.linkedinLink && (
               <motion.a
-                href={participant.user_info.social_media.linkedinLink}
+                href={formatUrl(
+                  participant.user_info.social_media.linkedinLink
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.2, rotate: 15 }}
