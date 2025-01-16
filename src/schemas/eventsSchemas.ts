@@ -25,6 +25,7 @@ export const eventSchema = z
     rsvp: z.boolean().default(false),
     rsvp_message: z.string().optional(),
     rsvp_link: z.string().optional(),
+    location_id: z.string().min(1, "Location is needed"),
     co_organizers: z.array(z.string().uuid()).nullable(),
     dayId: z.enum(DAYS_IDS),
     file: z.any().optional(),

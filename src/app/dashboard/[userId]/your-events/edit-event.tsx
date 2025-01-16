@@ -32,6 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { config } from "@/env";
 import { CoOrganizerSearch } from "@/app/dashboard/components/co-organizers-search";
+import { LocationSelector } from "@/app/dashboard/[userId]/create-events/location-selector";
 
 interface EditEventFormProps {
   event: EventType;
@@ -58,6 +59,7 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
       rsvp: event.rsvp || false,
       rsvp_message: event.rsvp_message || "",
       rsvp_link: event.rsvp_link || "",
+      location_id: event.location_id || "",
     },
   });
 
@@ -99,6 +101,7 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
       const eventData = {
         ...restData,
         image_url: newImageUrl,
+        location_id: data.location_id,
       };
 
       // Send the updated data to your API
@@ -310,6 +313,23 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
         />
         <FormField
           control={form.control}
+          name="location_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Event Location</FormLabel>
+              <FormControl>
+                <LocationSelector
+                  targetUserId={targetUserId}
+                  onChange={field.onChange}
+                  value={field.value}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="image_url"
           render={({}) => (
             <FormItem>
@@ -364,6 +384,7 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
             "rsvp_message",
             "rsvp_link",
             "co_organizers",
+            "location_id",
           ]}
           className="w-full"
         >

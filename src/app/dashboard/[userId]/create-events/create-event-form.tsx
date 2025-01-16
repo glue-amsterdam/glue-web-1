@@ -37,6 +37,7 @@ import { AlertCircle, ImageIcon } from "lucide-react";
 import { CoOrganizerSearch } from "@/app/dashboard/components/co-organizers-search";
 import { Button } from "@/components/ui/button";
 import { config } from "@/env";
+import { LocationSelector } from "@/app/dashboard/[userId]/create-events/location-selector";
 
 interface EventFormProps {
   existingEventCount: number;
@@ -70,6 +71,7 @@ export function EventForm({
       rsvp_link: "",
       co_organizers: [],
       organizer_id: targetUserId,
+      location_id: "",
     },
   });
 
@@ -144,6 +146,7 @@ export function EventForm({
         rsvp_link: "",
         co_organizers: [], // Explicitly reset co-organizers to an empty array
         organizer_id: targetUserId,
+        location_id: "",
       });
       setImagePreview(null);
       router.refresh();
@@ -194,6 +197,25 @@ export function EventForm({
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="location_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Event Location</FormLabel>
+                  <FormControl>
+                    <LocationSelector
+                      targetUserId={targetUserId}
+                      onChange={field.onChange}
+                      value={field.value}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Separator />
             <FormField
               control={form.control}
               name="type"
@@ -435,6 +457,7 @@ export function EventForm({
                 "rsvp_message",
                 "rsvp_link",
                 "co_organizers",
+                "location_id",
               ]}
               isSubmitting={isSubmitting}
               isDirty={isDirty}
