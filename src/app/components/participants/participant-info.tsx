@@ -1,9 +1,11 @@
 "use client";
 
+import { ParticipantHubInfo } from "@/app/components/participants/participant-hub-info";
 import { ParticipantClientResponse } from "@/types/api-visible-user";
 import { formatUrl } from "@/utils/formatUrl";
 import { motion, Variants } from "framer-motion";
-import { MapPinOff } from "lucide-react";
+import { Clock, MapPinOff } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   FaFacebookF,
@@ -50,12 +52,14 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
         >
           {participant.user_info.user_name}
         </motion.h1>
-        <motion.p
-          className="text-sm md:text-base leading-relaxed mt-4"
-          variants={fadeInUp}
-        >
-          {participant.short_description}
-        </motion.p>
+        {participant.short_description && (
+          <motion.p
+            className="text-sm md:text-base leading-relaxed mt-4"
+            variants={fadeInUp}
+          >
+            {participant.short_description}
+          </motion.p>
+        )}
         {participant.description && (
           <motion.div
             className="text-sm md:text-base leading-relaxed mt-4"
@@ -63,6 +67,7 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
             dangerouslySetInnerHTML={{ __html: participant.description }}
           />
         )}
+
         <motion.div variants={fadeInUp} className="mt-8">
           <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
             Address
@@ -82,6 +87,7 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
               </div>
             ))
           )}
+          <ParticipantHubInfo userId={participant.user_id} />
         </motion.div>
         <motion.div className="space-y-3 mt-8" variants={fadeInUp}>
           {participant.user_info.phone_numbers &&
@@ -187,6 +193,66 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
             )}
           </motion.div>
         )}
+        {participant.user_info.visiting_hours &&
+          participant.user_info.visiting_hours.length > 0 && (
+            <motion.div className="mt-8" variants={fadeInUp}>
+              <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
+                Visiting Hours
+              </h2>
+              {participant.user_info.visiting_hours.map(
+                (visitingHour, index) => (
+                  <div key={index} className="mb-4">
+                    {Object.entries(visitingHour.hours).map(([day, times]) => (
+                      <div key={day} className="flex items-center gap-2 mb-2">
+                        <Clock className="w-4 h-4 md:w-5 md:h-5 text-uiwhite" />
+                        <span className="font-semibold">{day}:</span>
+                        {times.map((time, timeIndex) => (
+                          <span key={timeIndex}>
+                            {time.open} - {time.close}
+                            {timeIndex < times.length - 1 && ", "}
+                          </span>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )
+              )}
+            </motion.div>
+          )}
+        {participant.user_info.events &&
+          participant.user_info.events.length > 0 && (
+            <motion.div className="mt-8" variants={fadeInUp}>
+              <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
+                Events
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {participant.user_info.events.map((event) => (
+                  <Link
+                    key={event.id}
+                    href={`/events?eventId=${event.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <div className="relative aspect-video hover:scale-105 transition-all">
+                      <Image
+                        src={event.image_url || "/placeholder.svg"}
+                        alt={event.title}
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-lg"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                        <h3 className="text-white text-center text-xs font-semibold p-2">
+                          {event.title}
+                        </h3>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+          )}
       </div>
     </motion.div>
   );

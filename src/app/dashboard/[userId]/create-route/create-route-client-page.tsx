@@ -62,8 +62,7 @@ export default function CreateRouteClientPage({
 
   const onSubmit = createSubmitHandler<RouteValues>(
     `/api/maps/routes`,
-    async (data) => {
-      console.log(data);
+    async () => {
       toast({
         title: "Success",
         description: "Route created successfully.",

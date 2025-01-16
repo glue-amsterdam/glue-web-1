@@ -9,7 +9,7 @@ export const mapInfoSchemaApiCall = z.object({
   no_address: z.boolean().nullable().default(false),
   user_info: z.object({
     user_name: z.string(),
-    visible_emails: z.array(z.string().email()).nullable(),
+    visible_emails: z.array(z.string().email()).nullable().optional(),
   }),
 });
 

@@ -69,6 +69,8 @@ export function RouteForm({
     });
   };
 
+  console.log(form.formState.errors);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">

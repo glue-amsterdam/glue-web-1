@@ -43,7 +43,10 @@ export default function HubsList() {
     isLoading,
     mutate,
   } = useSWR<HubApiCall[]>("/api/hubs", fetcher);
-  const { data: userInfoList } = useSWR<UserInfo[]>("/api/users/list", fetcher);
+  const { data: userInfoList } = useSWR<UserInfo[]>(
+    "/api/users/participants/hub",
+    fetcher
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedHub, setSelectedHub] = useState<HubApiCall | null>(null);
   const [hubToDelete, setHubToDelete] = useState<HubApiCall | null>(null);

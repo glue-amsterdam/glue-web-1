@@ -197,6 +197,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
     );
   }, []);
 
+  console.log(popupInfo);
+
   return (
     <Map
       ref={mapRef}

@@ -13,7 +13,7 @@ function CreateHub() {
     data: userInfoList,
     error,
     isLoading,
-  } = useSWR<UserInfo[]>("/api/users/list", fetcher);
+  } = useSWR<UserInfo[]>("/api/users/participants/hub", fetcher);
 
   if (isLoading) return <LoadingFallbackMini />;
   if (error) return <div>Failed to load user data</div>;
