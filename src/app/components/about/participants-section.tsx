@@ -28,12 +28,12 @@ export default function ParticipantsSection({
   description,
   title,
 }: ParticipantsSection) {
-  const slicedParticipants = participants?.slice(0, 10) || [];
+  const slicedParticipants = participants?.slice(0, 20) || [];
 
   return (
     <motion.article
       {...fadeInConfig}
-      className="z-20 mx-auto about-w h-full flex flex-col justify-between relative"
+      className="z-20 mx-auto about-w h-full flex flex-col justify-between relative w-full"
     >
       <div className="flex items-center justify-between">
         <motion.h1
@@ -55,72 +55,51 @@ export default function ParticipantsSection({
           </Button>
         </Link>
       </div>
-      <div className="h-[70%] flex items-start">
-        {slicedParticipants.length > 0 ? (
-          <Carousel
-            className="w-full h-full"
-            plugins={[
-              Autoplay({
-                stopOnMouseEnter: true,
-                delay: 2000,
-              }),
-            ]}
-          >
-            <CarouselContent className="h-full">
-              {slicedParticipants.map((participant, index) => (
-                <CarouselItem
-                  key={index}
-                  className="h-full basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 traslate-y-1/2"
-                >
-                  <Link
-                    className="h-full"
-                    href={`/participants/${participant.slug}`}
-                  >
-                    <Card className="border-none shadow-sm bg-transparent h-full hover:shadow-md transition-shadow duration-300">
-                      <CardContent className="flex items-center justify-center p-0 h-full">
-                        {participant.image ? (
-                          <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
-                            <img
-                              src={participant.image.image_url}
-                              alt={`${participant.userName} profile image thumbnail`}
-                              className="w-full h-full absolute object-cover"
-                            />
-                            <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                              <p className="text-center font-semibold text-sm">
-                                {participant.userName}
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
-                            <img
-                              src={"participant-placeholder.jpg"}
-                              alt={`${participant.userName} profile image thumbnail`}
-                              className="w-full h-full absolute object-cover"
-                            />
-                            <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                              <p className="text-center font-semibold text-sm">
-                                {participant.userName}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </Link>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden md:flex text-uiblack" />
-            <CarouselNext className="hidden md:flex text-uiblack" />
-          </Carousel>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <p className="text-center text-lg text-uiblack opacity-70">
-              No participants found yet
-            </p>
-          </div>
-        )}
+      <div className="relative h-[70%] w-full">
+        <Carousel
+          plugins={[
+            Autoplay({
+              stopOnMouseEnter: true,
+              delay: 2000,
+            }),
+          ]}
+          opts={{
+            align: "start",
+            loop: true,
+            skipSnaps: false,
+            dragFree: false,
+          }}
+          className="w-full h-full"
+        >
+          <CarouselContent className="flex h-full z-10">
+            {slicedParticipants.map((participant, index) => (
+              <CarouselItem key={index} className="basis-48 md:basis-56 h-full">
+                <Link href={`/participants/${participant.slug}`}>
+                  <Card className="border-none shadow-sm bg-transparent hover:shadow-md transition-shadow duration-300 max-w-full h-full">
+                    <CardContent className="p-0 h-full w-full relative group">
+                      <img
+                        src={
+                          participant.image?.image_url ||
+                          "/participant-placeholder.jpg" ||
+                          "/placeholder.svg"
+                        }
+                        alt={`${participant.userName} profile image thumbnail`}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                      <div className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                        <p className="text-center font-semibold text-xs truncate px-2">
+                          {participant.userName}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="absolute -left-2 z-30 text-black" />
+          <CarouselNext className="absolute -right-2 z-30 text-black" />
+        </Carousel>
       </div>
       <motion.p
         initial={{ y: 20, opacity: 0 }}
