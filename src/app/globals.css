@@ -20,6 +20,9 @@
 }
 
 @layer components {
+  .about-w {
+    @apply max-w-[80%] sm:max-w-[80%];
+  }
   .h1-titles {
     @apply text-3xl md:text-4xl lg:text-5xl xl:text-6xl;
   }

@@ -103,7 +103,7 @@ export default function PressSection({
   return (
     <motion.article
       {...fadeInConfig}
-      className="z-20 mx-auto container h-full flex flex-col justify-between relative"
+      className="z-20 mx-auto about-w h-full flex flex-col justify-between relative"
     >
       <motion.h1
         initial={{ opacity: 0, y: -60 }}
