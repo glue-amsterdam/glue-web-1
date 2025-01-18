@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ userId: string }> }
-) {
+): Promise<Response> {
   const { userId } = await params;
   try {
     const supabase = await createClient();
@@ -46,7 +46,10 @@ export async function GET(
 
     if (visiting_error) {
       console.error("Error fetching visiting hours:", visiting_error);
-      return null;
+      return NextResponse.json(
+        { error: "Failed to fetch visiting hours" },
+        { status: 500 }
+      );
     }
 
     const formattedVisitingHours: VisitingHours[] = visiting_hours.map(
