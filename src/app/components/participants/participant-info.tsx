@@ -57,21 +57,19 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
         )}
 
         <motion.div variants={fadeInUp} className="mt-8">
-          <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
-            Address
-          </h2>
-          {participant.user_info.map_info.length === 0 ? (
-            <div className="inline-flex gap-2 items-center text-gray-500">
-              <span>No address provided</span>
-            </div>
-          ) : (
-            participant.user_info.map_info.map((map, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <Link target="_blank" href={`/map?place=${map.id}`}>
-                  <span>{map.formatted_address}</span>
-                </Link>
-              </div>
-            ))
+          {participant.user_info.map_info.length > 0 && (
+            <>
+              <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
+                Address
+              </h2>
+              {participant.user_info.map_info.map((map, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <Link target="_blank" href={`/map?place=${map.id}`}>
+                    <span>{map.formatted_address}</span>
+                  </Link>
+                </div>
+              ))}
+            </>
           )}
           <ParticipantHubInfo userId={participant.user_id} />
         </motion.div>

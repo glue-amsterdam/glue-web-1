@@ -59,7 +59,6 @@ export async function GET(
       .eq("slug", slug)
       .single()) as { data: ParticipantDetails | null; error: PostgrestError };
 
-    console.log(data);
     if (participantError) {
       if (participantError.code === "PGRST116") {
         return NextResponse.json(
@@ -76,8 +75,6 @@ export async function GET(
         { status: 404 }
       );
     }
-
-    console.log(data.user_info);
 
     const userData = data.user_info;
     const planId = userData.plan_id;

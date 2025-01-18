@@ -9,6 +9,7 @@ interface Hub {
   name: string;
   hub_host_id: string;
   mapInfoId: string | null;
+  hub_address: string | null;
 }
 
 interface ParticipantHubInfoProps {
@@ -34,22 +35,33 @@ export function ParticipantHubInfo({ userId }: ParticipantHubInfoProps) {
         HUBS
       </h2>
       {error && <p className="text-red-500">Error loading hub information</p>}
-      {!hubs && !error && <p>Loading hub information...</p>}
-      {hubs && hubs.length > 0 ? (
-        <div className="space-y-2">
+      {!hubs && !error ? (
+        <p>Loading hub information...</p>
+      ) : hubs && hubs.length > 0 ? (
+        <div className="space-y-4">
           {hubs.map((hub) => (
-            <div key={hub.id} className="flex items-center gap-2">
+            <div key={hub.id} className="flex flex-col">
               <Link
                 href={hub.mapInfoId ? `/map?place=${hub.mapInfoId}` : "#"}
                 target="_blank"
+                className="hover:underline flex flex-col"
               >
-                <span className="hover:underline">{hub.name}</span>
+                <span className="font-semibold">{hub.name}</span>
+                <span className="text-sm italic text-gray-600 mt-1">
+                  {hub.hub_host_id === userId ? (
+                    <span className="text-sm italic text-gray-600 mt-1">
+                      HUB Host
+                    </span>
+                  ) : (
+                    hub.hub_address || "No address available"
+                  )}
+                </span>
               </Link>
             </div>
           ))}
         </div>
       ) : (
-        <p>{""}</p>
+        <p>No hubs found</p>
       )}
     </motion.div>
   );
