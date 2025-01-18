@@ -4,17 +4,9 @@ import { ParticipantHubInfo } from "@/app/components/participants/participant-hu
 import { ParticipantClientResponse } from "@/types/api-visible-user";
 import { formatUrl } from "@/utils/formatUrl";
 import { motion, Variants } from "framer-motion";
-import { Clock, MapPinOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  FaFacebookF,
-  FaInstagram,
-  FaLinkedinIn,
-  FaEnvelope,
-  FaPhone,
-  FaGlobe,
-} from "react-icons/fa";
+import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 
 const fadeInUp: Variants = {
   initial: { opacity: 0, y: 40 },
@@ -74,13 +66,11 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
           </h2>
           {participant.user_info.map_info.length === 0 ? (
             <div className="inline-flex gap-2 items-center text-gray-500">
-              <MapPinOff className="w-5 h-5" />
               <span>No address provided</span>
             </div>
           ) : (
             participant.user_info.map_info.map((map, index) => (
               <div key={index} className="flex items-center gap-2">
-                <MapPinOff className="w-5 h-5" />
                 <Link target="_blank" href={`/map?place=${map.id}`}>
                   <span>{map.formatted_address}</span>
                 </Link>
@@ -93,7 +83,6 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
           {participant.user_info.phone_numbers &&
             participant.user_info.phone_numbers.length > 0 && (
               <div className="flex items-center gap-2">
-                <FaPhone className="w-4 h-4 md:w-5 md:h-5 mr-3 text-uiwhite" />
                 {participant.user_info.phone_numbers.map((phone, index) => (
                   <motion.a
                     key={index}
@@ -111,7 +100,6 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
           {participant.user_info.visible_emails &&
             participant.user_info.visible_emails.length > 0 && (
               <div className="flex items-center gap-2">
-                <FaEnvelope className="w-4 h-4 md:w-5 md:h-5 mr-3 text-uiwhite" />
                 {participant.user_info.visible_emails.map((email, index) => (
                   <motion.a
                     key={email + index}
@@ -129,7 +117,6 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
           {participant.user_info.visible_websites &&
             participant.user_info.visible_websites.length > 0 && (
               <div className="flex items-center gap-2">
-                <FaGlobe className="w-4 h-4 md:w-5 md:h-5 mr-3 text-uiwhite" />
                 {participant.user_info.visible_websites.map(
                   (website, index) => (
                     <motion.a
@@ -204,7 +191,6 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
                   <div key={index} className="mb-4">
                     {Object.entries(visitingHour.hours).map(([day, times]) => (
                       <div key={day} className="flex items-center gap-2 mb-2">
-                        <Clock className="w-4 h-4 md:w-5 md:h-5 text-uiwhite" />
                         <span className="font-semibold">{day}:</span>
                         {times.map((time, timeIndex) => (
                           <span key={timeIndex}>
