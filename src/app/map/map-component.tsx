@@ -197,8 +197,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
     );
   }, []);
 
-  console.log(popupInfo);
-
   return (
     <Map
       ref={mapRef}
@@ -370,8 +368,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
+                <CarouselPrevious className="absolute -left-2 z-30 text-black" />
+                <CarouselNext className="absolute -right-2 z-30 text-black" />
               </Carousel>
             )}
           </div>
