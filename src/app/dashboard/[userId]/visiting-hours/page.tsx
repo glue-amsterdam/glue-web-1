@@ -3,7 +3,7 @@
 import { LoadingFallbackMini } from "@/app/components/loading-fallback";
 import { useDashboardContext } from "@/app/context/DashboardContext";
 import { VisitingHoursForm } from "@/app/dashboard/[userId]/visiting-hours/visiting-hours-form";
-import { VisitingHours } from "@/schemas/visitingHoursSchema";
+import { VisitingHoursDays } from "@/schemas/visitingHoursSchema";
 import { motion } from "framer-motion";
 import useSWR from "swr";
 
@@ -14,7 +14,7 @@ export default function VisitingHoursPage() {
     data: visitingHours,
     error,
     isLoading,
-  } = useSWR<VisitingHours>(
+  } = useSWR<VisitingHoursDays[]>(
     `/api/users/participants/${targetUserId}/hours`,
     fetcher
   );

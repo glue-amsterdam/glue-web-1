@@ -34,8 +34,6 @@ export function VisitingHoursForm({
   const router = useRouter();
   const eventDays = useEventsDays();
 
-  console.log(eventDays);
-
   const form = useForm<{ visitingHours: VisitingHoursDays[] }>({
     resolver: zodResolver(visitingHoursDaysSchema),
     defaultValues: {
@@ -98,8 +96,6 @@ export function VisitingHoursForm({
       form.reset({ visitingHours: initialData as VisitingHoursDays[] });
     }
   }, [form, initialData, isError]);
-
-  console.log(form.formState.errors);
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
