@@ -28,12 +28,7 @@ export const metadata: Metadata = {
   },
   icons: [
     {
-      url: "/ligthFavicon.ico",
-      media: "(prefers-color-scheme: light)",
-    },
-    {
-      url: "/favicon.ico",
-      media: "(prefers-color-scheme: dark)",
+      url: `/favicons/${config.cityName}.ico`,
     },
   ],
 };
