@@ -1,20 +1,13 @@
 "use client";
 
 import { ParticipantHubInfo } from "@/app/components/participants/participant-hub-info";
+import { useEventsDays } from "@/app/context/MainContext";
 import { ParticipantClientResponse } from "@/types/api-visible-user";
 import { formatUrl } from "@/utils/formatUrl";
 import { motion, Variants } from "framer-motion";
-import { Clock, MapPinOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  FaFacebookF,
-  FaInstagram,
-  FaLinkedinIn,
-  FaEnvelope,
-  FaPhone,
-  FaGlobe,
-} from "react-icons/fa";
+import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 
 const fadeInUp: Variants = {
   initial: { opacity: 0, y: 40 },
@@ -34,18 +27,23 @@ interface ParticipantInfoProps {
 }
 
 function ParticipantInfo({ participant }: ParticipantInfoProps) {
-  console.log(
-    formatUrl(participant.user_info.social_media.instagramLink || "")
-  );
+  const eventDays = useEventsDays();
+  const visitingHours = participant.user_info.visiting_hours?.[0]?.hours;
 
+  const getDayLabel = (dayId: string) => {
+    const day = eventDays.find((day) => day.dayId === dayId);
+    return day ? day.label : dayId;
+  };
+
+  console.log(participant);
   return (
     <motion.div
-      className="h-full p-4 md:p-6 text-white"
+      className="h-full text-white overflow-y-auto p-4"
       initial="initial"
       animate="animate"
       variants={stagger}
     >
-      <div className="max-w-3xl mx-auto font-overpass">
+      <div className="mx-auto font-overpass">
         <motion.h1
           className="text-3xl md:text-4xl font-bold tracking-tight"
           variants={fadeInUp}
@@ -69,31 +67,27 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
         )}
 
         <motion.div variants={fadeInUp} className="mt-8">
-          <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
-            Address
-          </h2>
-          {participant.user_info.map_info.length === 0 ? (
-            <div className="inline-flex gap-2 items-center text-gray-500">
-              <MapPinOff className="w-5 h-5" />
-              <span>No address provided</span>
-            </div>
-          ) : (
-            participant.user_info.map_info.map((map, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <MapPinOff className="w-5 h-5" />
-                <Link target="_blank" href={`/map?place=${map.id}`}>
-                  <span>{map.formatted_address}</span>
-                </Link>
-              </div>
-            ))
+          {participant.user_info.map_info.length > 0 && (
+            <>
+              <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
+                Address
+              </h2>
+              {participant.user_info.map_info.map((map, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <Link target="_blank" href={`/map?place=${map.id}`}>
+                    <span>{map.formatted_address}</span>
+                  </Link>
+                </div>
+              ))}
+            </>
           )}
           <ParticipantHubInfo userId={participant.user_id} />
         </motion.div>
+
         <motion.div className="space-y-3 mt-8" variants={fadeInUp}>
           {participant.user_info.phone_numbers &&
             participant.user_info.phone_numbers.length > 0 && (
-              <div className="flex items-center gap-2">
-                <FaPhone className="w-4 h-4 md:w-5 md:h-5 mr-3 text-uiwhite" />
+              <div className="flex flex-wrap items-center gap-2">
                 {participant.user_info.phone_numbers.map((phone, index) => (
                   <motion.a
                     key={index}
@@ -110,8 +104,7 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
             )}
           {participant.user_info.visible_emails &&
             participant.user_info.visible_emails.length > 0 && (
-              <div className="flex items-center gap-2">
-                <FaEnvelope className="w-4 h-4 md:w-5 md:h-5 mr-3 text-uiwhite" />
+              <div className="flex flex-wrap items-center gap-2">
                 {participant.user_info.visible_emails.map((email, index) => (
                   <motion.a
                     key={email + index}
@@ -128,8 +121,7 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
             )}
           {participant.user_info.visible_websites &&
             participant.user_info.visible_websites.length > 0 && (
-              <div className="flex items-center gap-2">
-                <FaGlobe className="w-4 h-4 md:w-5 md:h-5 mr-3 text-uiwhite" />
+              <div className="flex items-center flex-wrap gap-2">
                 {participant.user_info.visible_websites.map(
                   (website, index) => (
                     <motion.a
@@ -199,13 +191,14 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
               <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
                 Visiting Hours
               </h2>
-              {participant.user_info.visiting_hours.map(
-                (visitingHour, index) => (
-                  <div key={index} className="mb-4">
-                    {Object.entries(visitingHour.hours).map(([day, times]) => (
-                      <div key={day} className="flex items-center gap-2 mb-2">
-                        <Clock className="w-4 h-4 md:w-5 md:h-5 text-uiwhite" />
-                        <span className="font-semibold">{day}:</span>
+              {visitingHours && Object.keys(visitingHours).length > 0 ? (
+                <div className="mb-4">
+                  {Object.entries(visitingHours).map(([dayId, times]) =>
+                    times.length > 0 ? (
+                      <div key={dayId} className="flex items-center gap-2 mb-2">
+                        <span className="font-semibold">
+                          {getDayLabel(dayId)}:
+                        </span>
                         {times.map((time, timeIndex) => (
                           <span key={timeIndex}>
                             {time.open} - {time.close}
@@ -213,40 +206,40 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
                           </span>
                         ))}
                       </div>
-                    ))}
-                  </div>
-                )
+                    ) : null
+                  )}
+                </div>
+              ) : (
+                <p>No visiting hours available.</p>
               )}
             </motion.div>
           )}
         {participant.user_info.events &&
           participant.user_info.events.length > 0 && (
-            <motion.div className="mt-8" variants={fadeInUp}>
+            <motion.div className="mt-8 pb-2" variants={fadeInUp}>
               <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
                 Events
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="flex flex-wrap items-center gap-4 py-4 overflow-x-hidden">
                 {participant.user_info.events.map((event) => (
                   <Link
                     key={event.id}
                     href={`/events?eventId=${event.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block"
+                    className="block h-24 w-full lg:w-48 relative aspect-video hover:scale-105 transition-all"
                   >
-                    <div className="relative aspect-video hover:scale-105 transition-all">
-                      <Image
-                        src={event.image_url || "/placeholder.svg"}
-                        alt={event.title}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-lg"
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
-                        <h3 className="text-white text-center text-xs font-semibold p-2">
-                          {event.title}
-                        </h3>
-                      </div>
+                    <Image
+                      src={event.image_url || "/placeholder.jpg"}
+                      alt={event.title + "- Event from GLUE"}
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-lg"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                      <h3 className="text-white text-center text-xs font-semibold p-2">
+                        {event.title}
+                      </h3>
                     </div>
                   </Link>
                 ))}

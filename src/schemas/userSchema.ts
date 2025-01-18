@@ -2,7 +2,7 @@ import { z } from "zod";
 import { imageDataSchema } from "./baseSchema";
 import { PlanSchema } from "@/schemas/plansSchema";
 import { invoiceDataCallSchema } from "@/schemas/invoiceSchemas";
-import { visitingHoursSchema } from "@/schemas/visitingHoursSchema";
+import { visitingHoursDaysSchema } from "@/schemas/visitingHoursSchema";
 
 // SocialMediaLinks schema
 const socialMediaLinksSchema = z.object({
@@ -56,7 +56,7 @@ const participantUserBaseSchema = z.object({
   images: z.array(imageDataSchema).optional(),
   events: z.array(z.object({ eventId: z.string() })).optional(),
   description: z.string().optional(),
-  visiting_hours: visitingHoursSchema.optional(),
+  visiting_hours: visitingHoursDaysSchema.optional(),
   status: statusTypeSchema,
 });
 

@@ -66,14 +66,14 @@ export default function EventCard({ event }: EventCardProps) {
             </time>
             <div>
               <div className="flex gap-2 items-center">
-                <span className="text-sm md:text-lg font-bold">Organizer:</span>
+                <span className="text-sm md:text-lg font-bold">Organiser:</span>
 
                 {event.organizer.user_name}
               </div>
               {event.coOrganizers && (
                 <div className="flex gap-2 items-center flex-wrap">
                   <span className="text-sm md:text-lg font-bold">
-                    Co organizers:
+                    Co-organisers:
                   </span>
                   {event.coOrganizers.map((contributor) => (
                     <p className="text-xs md:text-sm" key={contributor.user_id}>

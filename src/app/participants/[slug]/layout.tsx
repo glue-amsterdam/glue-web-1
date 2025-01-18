@@ -8,9 +8,7 @@ export default function ParticipantLayout({
 }) {
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <main className="bg-[var(--color-box1)] relative h-[100dvh] overflow-hidden">
-        {children}
-      </main>
+      <div className="bg-[var(--color-box1)] lg:h-screen">{children}</div>
     </Suspense>
   );
 }

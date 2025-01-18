@@ -61,7 +61,7 @@ export function EventForm({
     defaultValues: {
       title: "",
       type: EVENT_TYPES[0],
-      dayId: eventDays[0].dayId,
+      dayId: eventDays.length > 0 ? eventDays[0].dayId : "",
       image_url: "",
       start_time: "",
       end_time: "",
@@ -78,6 +78,19 @@ export function EventForm({
   const { isDirty } = useFormState({
     control: form.control,
   });
+
+  if (!eventDays || eventDays.length === 0) {
+    return (
+      <Alert variant="default" className=" mt-10">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>No Event Days Available</AlertTitle>
+        <AlertDescription>
+          There are currently no event days set up. Please contact an
+          administrator to set up event days before creating an event.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -250,24 +263,28 @@ export function EventForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Event Day</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select event day" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {eventDays.map((day) => (
-                        <SelectItem key={day.dayId} value={day.dayId}>
-                          {day.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {field.value && (
+                  {eventDays.length > 0 ? (
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select event day" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {eventDays.map((day) => (
+                          <SelectItem key={day.dayId} value={day.dayId}>
+                            {day.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input disabled value="No event days available" />
+                  )}
+                  {field.value && eventDays.length > 0 && (
                     <p className="text-sm text-gray-500 mt-1">
                       Date:{" "}
                       {new Date(
@@ -428,7 +445,7 @@ export function EventForm({
               name="co_organizers"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Co-organizers</FormLabel>
+                  <FormLabel>Co-organisers</FormLabel>
                   <FormControl>
                     <CoOrganizerSearch
                       onSelect={(selectedIds) => field.onChange(selectedIds)}
@@ -437,7 +454,7 @@ export function EventForm({
                     />
                   </FormControl>
                   <FormDescription>
-                    Search and select up to 4 co-organizers
+                    Search and select up to 4 co-organisers
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

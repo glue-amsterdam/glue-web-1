@@ -120,7 +120,7 @@ function transformApiData(data: ApiMainSectionData): MainSectionData {
 
   // Ensure eventDays exists and all items have required fields
   const transformedEventDays = (data.eventDays || []).map((day) => ({
-    dayId: (day.dayId as "day-1" | "day-2" | "day-3" | "day-4") || "day-1",
+    dayId: day.dayId as string,
     label: day.label || "",
     date: day.date || null,
   }));

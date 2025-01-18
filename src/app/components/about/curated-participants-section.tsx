@@ -93,7 +93,7 @@ export default function CuratedMembersSection({
   return (
     <motion.article
       {...fadeInConfig}
-      className="z-20 mx-auto container h-full flex flex-col justify-between relative"
+      className="z-20 mx-auto about-w h-full flex flex-col justify-between relative"
     >
       <div className="flex justify-between md:items-center my-4">
         <motion.h1

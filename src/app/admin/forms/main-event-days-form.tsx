@@ -13,7 +13,7 @@ import {
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, PlusCircle, MinusCircle } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { EventDay, eventDaysSchema } from "@/schemas/eventSchemas";
@@ -32,7 +32,8 @@ export default function EventDaysForm({ initialData }: EventDaysFormProps) {
 
   const methods = useForm<{ eventDays: EventDay[] }>({
     resolver: zodResolver(eventDaysSchema),
-    defaultValues: initialData,
+    defaultValues:
+      initialData.eventDays.length > 0 ? initialData : { eventDays: [] },
   });
 
   const {
@@ -46,7 +47,7 @@ export default function EventDaysForm({ initialData }: EventDaysFormProps) {
     reset,
   } = methods;
 
-  const { fields } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control,
     name: "eventDays",
   });
@@ -127,88 +128,127 @@ export default function EventDaysForm({ initialData }: EventDaysFormProps) {
     }, []);
   }, [watchEventDays]);
 
+  const addNewDay = useCallback(() => {
+    const newIndex = fields.length;
+    append({
+      dayId: `day-${newIndex + 1}`,
+      label: `Day ${newIndex + 1}`,
+      date: null,
+    });
+  }, [append, fields.length]);
+
+  const removeLastDay = useCallback(() => {
+    remove(fields.length - 1);
+  }, [remove, fields.length]);
+
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
-        {fields.map((field, index) => (
-          <div
-            key={field.id}
-            className="grid grid-cols-1 md:grid-cols-2 justify-center items-center gap-4"
+        <div className="flex justify-between mb-4">
+          <Button
+            type="button"
+            onClick={addNewDay}
+            className="flex items-center"
           >
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">
-                {`Event Day ${index + 1} Label`}
-              </label>
-              <Input
-                {...methods.register(`eventDays.${index}.label`)}
-                defaultValue={field.label}
-                placeholder="Event Day Label"
-                className="dashboard-input"
-              />
-              {errors.eventDays?.[index]?.label && (
-                <p className="text-red-500">
-                  {errors.eventDays[index]?.label?.message}
-                </p>
-              )}
-            </div>
-            <div>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Day
+          </Button>
+          <Button
+            type="button"
+            onClick={removeLastDay}
+            className="flex items-center"
+            disabled={fields.length === 0}
+          >
+            <MinusCircle className="mr-2 h-4 w-4" />
+            Remove Last Day
+          </Button>
+        </div>
+
+        {fields.length === 0 ? (
+          <p className="text-center text-gray-500">{`No event days defined. Click "Add Day" to create one.`}</p>
+        ) : (
+          fields.map((field, index) => (
+            <div
+              key={field.id}
+              className="grid grid-cols-1 md:grid-cols-2 justify-center items-center gap-4"
+            >
               <div className="space-y-2">
                 <label className="text-xs font-medium text-gray-700">
-                  {`Event Day ${index + 1} Date`}
+                  {`Event Day ${index + 1} Label`}
                 </label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !watchEventDays[index]?.date && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {watchEventDays[index]?.date ? (
-                        format(new Date(watchEventDays[index].date), "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={
-                        watchEventDays[index]?.date
-                          ? new Date(watchEventDays[index].date)
-                          : undefined
-                      }
-                      onSelect={(date) => handleDateSelect(index, date)}
-                      disabled={(date) =>
-                        disabledDates.some((disabledDate) =>
-                          isSameDay(date, disabledDate)
-                        ) &&
-                        !isSameDay(
-                          date,
-                          new Date(watchEventDays[index]?.date || "")
-                        )
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                {errors.eventDays?.[index]?.date && (
+                <Input
+                  {...methods.register(`eventDays.${index}.label`)}
+                  defaultValue={field.label}
+                  placeholder="Event Day Label"
+                  className="dashboard-input"
+                />
+                {errors.eventDays?.[index]?.label && (
                   <p className="text-red-500">
-                    {errors.eventDays[index]?.date?.message}
+                    {errors.eventDays[index]?.label?.message}
                   </p>
                 )}
               </div>
-              <input
-                type="hidden"
-                {...methods.register(`eventDays.${index}.dayId`)}
-              />
+              <div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-700">
+                    {`Event Day ${index + 1} Date`}
+                  </label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !watchEventDays[index]?.date &&
+                            "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {watchEventDays[index]?.date ? (
+                          format(new Date(watchEventDays[index].date), "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          watchEventDays[index]?.date
+                            ? new Date(watchEventDays[index].date)
+                            : undefined
+                        }
+                        onSelect={(date) => handleDateSelect(index, date)}
+                        disabled={(date) =>
+                          disabledDates.some((disabledDate) =>
+                            isSameDay(date, disabledDate)
+                          ) &&
+                          !isSameDay(
+                            date,
+                            new Date(watchEventDays[index]?.date || "")
+                          )
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {errors.eventDays?.[index]?.date && (
+                    <p className="text-red-500">
+                      {errors.eventDays[index]?.date?.message}
+                    </p>
+                  )}
+                </div>
+                <input
+                  type="hidden"
+                  {...methods.register(`eventDays.${index}.dayId`)}
+                  value={`day-${index + 1}`}
+                />
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
         {errors.eventDays && !Array.isArray(errors.eventDays) && (
           <p className="text-red-500">{errors.eventDays.message}</p>
         )}

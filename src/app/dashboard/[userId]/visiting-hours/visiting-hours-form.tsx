@@ -8,12 +8,11 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  visitingHoursSchema,
-  VisitingHours,
+  visitingHoursDaysSchema,
+  VisitingHoursDays,
 } from "@/schemas/visitingHoursSchema";
 import { PlusIcon, XIcon } from "lucide-react";
 import { useEventsDays } from "@/app/context/MainContext";
-import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { createSubmitHandler } from "@/utils/form-helpers";
@@ -22,7 +21,7 @@ import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 
 interface VisitingHoursFormProps {
   targetUserId: string | undefined;
-  initialData?: VisitingHours | { error: string } | undefined;
+  initialData?: VisitingHoursDays[] | { error: string } | undefined;
 }
 
 export function VisitingHoursForm({
@@ -34,23 +33,31 @@ export function VisitingHoursForm({
   const { toast } = useToast();
   const router = useRouter();
   const eventDays = useEventsDays();
-  const form = useForm<VisitingHours>({
-    resolver: zodResolver(visitingHoursSchema),
+
+  const form = useForm<{ visitingHours: VisitingHoursDays[] }>({
+    resolver: zodResolver(visitingHoursDaysSchema),
     defaultValues: {
-      user_id: targetUserId,
-      hours: isError
-        ? Object.fromEntries(eventDays.map((day) => [day.dayId, []]))
-        : initialData?.hours ||
-          Object.fromEntries(eventDays.map((day) => [day.dayId, []])),
+      visitingHours:
+        isError || !initialData
+          ? eventDays?.map((day) => ({
+              user_id: targetUserId || "",
+              day_id: day.dayId,
+              hours: [],
+            })) || []
+          : (initialData as VisitingHoursDays[]).map((day) => ({
+              ...day,
+              user_id: targetUserId || day.user_id,
+              day_id: day.day_id,
+            })),
     },
   });
 
-  const onSubmit = createSubmitHandler<VisitingHours>(
+  const onSubmit = createSubmitHandler<{ visitingHours: VisitingHoursDays[] }>(
     `/api/users/participants/${targetUserId}/hours`,
     async () => {
       toast({
         title: "Success",
-        description: "visiting hours updated successfully.",
+        description: "Visiting hours updated successfully.",
       });
       await mutate(`/api/users/participants/${targetUserId}/hours`);
       router.refresh();
@@ -66,15 +73,29 @@ export function VisitingHoursForm({
     isError ? "POST" : "PUT"
   );
 
-  const handleSubmit = async (values: VisitingHours) => {
+  useEffect(() => {
+    if (targetUserId) {
+      const currentValues = form.getValues().visitingHours;
+      form.setValue(
+        "visitingHours",
+        currentValues.map((day) => ({ ...day, user_id: targetUserId }))
+      );
+    }
+  }, [targetUserId, form]);
+
+  const handleSubmit = async (values: {
+    visitingHours: VisitingHoursDays[];
+  }) => {
     setIsSubmitting(true);
-    await onSubmit({ ...values, user_id: targetUserId! });
+    await onSubmit(values);
     setIsSubmitting(false);
   };
 
   useEffect(() => {
-    form.reset({ ...(initialData as VisitingHours), user_id: targetUserId });
-  }, [form, initialData, targetUserId]);
+    if (!isError && initialData) {
+      form.reset({ visitingHours: initialData as VisitingHoursDays[] });
+    }
+  }, [form, initialData, isError]);
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -87,87 +108,104 @@ export function VisitingHoursForm({
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6"
           >
-            {eventDays.map((day) => (
-              <div key={day.dayId} className="space-y-4">
-                <h3 className="font-semibold">{day.label}</h3>
-                <h2 className="font-light text-xs">
-                  {format(new Date(day.date as string), "EEEE, MMMM d, yyyy")}
-                </h2>
-                <FormField
-                  control={form.control}
-                  name={`hours.${day.dayId}`}
-                  render={({ field }) => (
-                    <FormItem>
-                      {field.value.map((_, rangeIndex) => (
-                        <div
-                          key={rangeIndex}
-                          className="grid grid-cols-1 md:grid-cols-3 items-center mt-2 gap-2"
+            {eventDays?.length > 0 ? (
+              eventDays.map((day, index) => (
+                <div key={day.dayId} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name={`visitingHours.${index}.hours`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <input
+                          type="hidden"
+                          {...form.register(`visitingHours.${index}.user_id`)}
+                          value={targetUserId || ""}
+                        />
+                        <input
+                          type="hidden"
+                          {...form.register(`visitingHours.${index}.day_id`)}
+                          value={day.dayId}
+                        />
+                        {Array.isArray(field.value) &&
+                        field.value.length > 0 ? (
+                          field.value.map((timeRange, rangeIndex) => (
+                            <div
+                              key={rangeIndex}
+                              className="grid grid-cols-1 md:grid-cols-3 items-center mt-2 gap-2"
+                            >
+                              <FormControl>
+                                <Input
+                                  className="w-[70%]"
+                                  type="time"
+                                  value={timeRange?.open || ""}
+                                  onChange={(e) => {
+                                    const newValue = [...field.value];
+                                    newValue[rangeIndex] = {
+                                      ...newValue[rangeIndex],
+                                      open: e.target.value,
+                                    };
+                                    field.onChange(newValue);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormControl>
+                                <Input
+                                  className="w-[70%]"
+                                  type="time"
+                                  value={timeRange?.close || ""}
+                                  onChange={(e) => {
+                                    const newValue = [...field.value];
+                                    newValue[rangeIndex] = {
+                                      ...newValue[rangeIndex],
+                                      close: e.target.value,
+                                    };
+                                    field.onChange(newValue);
+                                  }}
+                                />
+                              </FormControl>
+                              <Button
+                                type="button"
+                                className="bg-red-500 hover:bg-red-600 text-white size-8 md:size-10 m-2 order-first md:order-last"
+                                onClick={() => {
+                                  const newValue = [...field.value];
+                                  newValue.splice(rangeIndex, 1);
+                                  field.onChange(newValue);
+                                }}
+                              >
+                                <XIcon className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))
+                        ) : (
+                          <p>No visiting hours set for this day.</p>
+                        )}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            field.onChange([
+                              ...(Array.isArray(field.value)
+                                ? field.value
+                                : []),
+                              { open: "09:00", close: "17:00" },
+                            ])
+                          }
+                          className="mt-2"
                         >
-                          <FormControl>
-                            <Input
-                              className="w-[70%]"
-                              type="time"
-                              value={field.value[rangeIndex]?.open || ""}
-                              onChange={(e) => {
-                                const newValue = [...field.value];
-                                newValue[rangeIndex] = {
-                                  ...newValue[rangeIndex],
-                                  open: e.target.value,
-                                };
-                                field.onChange(newValue);
-                              }}
-                            />
-                          </FormControl>
-                          <FormControl>
-                            <Input
-                              className="w-[70%]"
-                              type="time"
-                              value={field.value[rangeIndex]?.close || ""}
-                              onChange={(e) => {
-                                const newValue = [...field.value];
-                                newValue[rangeIndex] = {
-                                  ...newValue[rangeIndex],
-                                  close: e.target.value,
-                                };
-                                field.onChange(newValue);
-                              }}
-                            />
-                          </FormControl>
-                          <Button
-                            type="button"
-                            className="bg-red-500 hover:bg-red-600 text-white size-8 md:size-10 m-2 order-first md:order-last"
-                            onClick={() => {
-                              const newValue = [...field.value];
-                              newValue.splice(rangeIndex, 1);
-                              field.onChange(newValue);
-                            }}
-                          >
-                            <XIcon className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          field.onChange([
-                            ...field.value,
-                            { open: "09:00", close: "17:00" },
-                          ])
-                        }
-                        className="mt-2"
-                      >
-                        <PlusIcon className="h-4 w-4 mr-2" />
-                        Add Time Range
-                      </Button>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            ))}
+                          <PlusIcon className="h-4 w-4 mr-2" />
+                          Add Time Range
+                        </Button>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              ))
+            ) : (
+              <p>No event days available. Please set up event days first.</p>
+            )}
             <SaveChangesButton
-              watchFields={["hours"]}
+              watchFields={["visitingHours"]}
               isSubmitting={isSubmitting}
               className="w-full"
             >

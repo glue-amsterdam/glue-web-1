@@ -11,7 +11,6 @@ interface ParticipantClientPageProps {
 export default function ParticipantClientPage({
   participant,
 }: ParticipantClientPageProps) {
-  console.log(participant);
   return (
     <section
       style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}

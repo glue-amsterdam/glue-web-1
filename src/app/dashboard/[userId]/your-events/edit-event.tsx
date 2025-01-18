@@ -26,13 +26,14 @@ import { ImageIcon } from "lucide-react";
 import { uploadImage, deleteImage } from "@/utils/supabase/storage/client";
 import { useDashboardContext } from "@/app/context/DashboardContext";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DAYS_IDS, EVENT_TYPES } from "@/constants";
+import { EVENT_TYPES } from "@/constants";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { config } from "@/env";
 import { CoOrganizerSearch } from "@/app/dashboard/components/co-organizers-search";
 import { LocationSelector } from "@/app/dashboard/[userId]/create-events/location-selector";
+import { useEventsDays } from "@/app/context/MainContext";
 
 interface EditEventFormProps {
   event: EventType;
@@ -48,6 +49,8 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
     typeof event.image_url === "string" ? event.image_url : null
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const eventDays = useEventsDays();
 
   const form = useForm<EventType>({
     resolver: zodResolver(eventSchema),
@@ -192,9 +195,9 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {DAYS_IDS.map((dayId) => (
-                    <SelectItem key={dayId} value={dayId}>
-                      {dayId}
+                  {eventDays.map((day) => (
+                    <SelectItem key={day.dayId} value={day.dayId}>
+                      {day.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -296,7 +299,7 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
           name="co_organizers"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Co-organizers</FormLabel>
+              <FormLabel>Co-organisers</FormLabel>
               <FormControl>
                 <CoOrganizerSearch
                   onSelect={(selectedIds) => field.onChange(selectedIds)}
@@ -305,7 +308,7 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
                 />
               </FormControl>
               <FormDescription>
-                Search and select up to 4 co-organizers
+                Search and select up to 4 co-organisers
               </FormDescription>
               <FormMessage />
             </FormItem>

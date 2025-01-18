@@ -1,3 +1,4 @@
+import { OpenCloseTime, VisitingHours } from "@/types/api-visible-user";
 import { createClient } from "@/utils/supabase/server";
 import { PostgrestError } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
@@ -59,7 +60,6 @@ export async function GET(
       .eq("slug", slug)
       .single()) as { data: ParticipantDetails | null; error: PostgrestError };
 
-    console.log(data);
     if (participantError) {
       if (participantError.code === "PGRST116") {
         return NextResponse.json(
@@ -77,8 +77,6 @@ export async function GET(
       );
     }
 
-    console.log(data.user_info);
-
     const userData = data.user_info;
     const planId = userData.plan_id;
 
@@ -87,7 +85,7 @@ export async function GET(
     }
 
     // Fetch additional related data
-    const [imageData, mapInfo, visitingHours, events] = await Promise.all([
+    const [imageData, mapInfo, visitingHoursData, events] = await Promise.all([
       supabase
         .from("participant_image")
         .select("image_url")
@@ -98,13 +96,21 @@ export async function GET(
         .eq("user_id", data.user_id),
       supabase
         .from("visiting_hours")
-        .select("hours")
+        .select("day_id, hours")
         .eq("user_id", data.user_id),
       supabase
         .from("events")
         .select("id, image_url, title")
         .eq("organizer_id", data.user_id),
     ]);
+
+    const transformedVisitingHours: VisitingHours = {
+      hours:
+        visitingHoursData.data?.reduce((acc, day) => {
+          acc[day.day_id] = day.hours;
+          return acc;
+        }, {} as { [key: string]: OpenCloseTime[] }) || {},
+    };
 
     let planData = null;
     if (planId) {
@@ -126,7 +132,7 @@ export async function GET(
       user_info: {
         ...userData,
         map_info: mapInfo.data || [],
-        visiting_hours: visitingHours.data || [],
+        visiting_hours: [transformedVisitingHours],
         events: events.data || [],
       },
       images: imageData.data || [],

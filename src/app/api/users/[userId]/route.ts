@@ -1,10 +1,11 @@
+import { OpenCloseTime, VisitingHours } from "@/types/combined-user-info";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ userId: string }> }
-) {
+): Promise<Response> {
   const { userId } = await params;
   try {
     const supabase = await createClient();
@@ -38,17 +39,31 @@ export async function GET(
       .single();
 
     // Fetch visiting hours
-    const { data: visiting_hours } = await supabase
+    const { data: visiting_hours, error: visiting_error } = await supabase
       .from("visiting_hours")
-      .select("*")
-      .eq("user_id", userId)
-      .single();
+      .select("day_id, hours")
+      .eq("user_id", userId);
+
+    if (visiting_error) {
+      console.error("Error fetching visiting hours:", visiting_error);
+      return NextResponse.json(
+        { error: "Failed to fetch visiting hours" },
+        { status: 500 }
+      );
+    }
+
+    const formattedVisitingHours: VisitingHours[] = visiting_hours.map(
+      (row) => ({
+        day_id: row.day_id,
+        hours: row.hours as OpenCloseTime[],
+      })
+    );
 
     const combinedUserInfo = {
       ...user_info,
       participantDetails: participant_details || undefined,
       invoiceData: invoice_data || undefined,
-      visitingHours: visiting_hours || undefined,
+      visitingHours: formattedVisitingHours || undefined,
     };
 
     return NextResponse.json(combinedUserInfo);

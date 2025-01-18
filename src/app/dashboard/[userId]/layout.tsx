@@ -45,8 +45,6 @@ export default async function DashboardLayout({
 
   const participantStatus = participantDetails?.status;
 
-  console.log(loggedUserInfo);
-
   // If user is not a moderator and not a participant, show insufficient access
   if (!isModerator && !isParticipant) {
     return (

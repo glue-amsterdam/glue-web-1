@@ -4,12 +4,20 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import DOMPurify from "dompurify";
 import { Clock, Globe, Phone, CreditCard, User } from "lucide-react";
+import { useEventsDays } from "@/app/context/MainContext";
 
 type Props = {
   selectedUser: CombinedUserInfo;
 };
 
 function UserFullViewContent({ selectedUser }: Props) {
+  const eventDays = useEventsDays();
+
+  const getDayLabel = (dayId: string) => {
+    const day = eventDays.find((day) => day.dayId === dayId);
+    return day ? day.label : dayId;
+  };
+
   return (
     <CardContent className="p-4 sm:p-6">
       <div className="space-y-4 sm:space-y-6">
@@ -147,32 +155,45 @@ function UserFullViewContent({ selectedUser }: Props) {
             </section>
           </>
         )}
-
-        {selectedUser.visitingHours && (
-          <>
-            <Separator />
-            <section>
-              <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 flex items-center">
-                <Clock className="w-5 h-5 mr-2" />
-                Visiting Hours
-              </h3>
-              <div className="flex flex-wrap gap-3">
-                {Object.entries(selectedUser.visitingHours.hours).map(
-                  ([day, schedules]) => (
-                    <div key={day} className="bg-muted p-3 rounded-md">
-                      <p className="font-medium mb-2">{day}</p>
-                      {schedules.map((schedule, index) => (
-                        <p key={index} className="text-sm sm:text-base">
-                          {schedule.open} - {schedule.close}
+        {selectedUser.visitingHours &&
+          Array.isArray(selectedUser.visitingHours) &&
+          selectedUser.visitingHours.length > 0 && (
+            <>
+              <Separator />
+              <section>
+                <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 flex items-center">
+                  <Clock className="w-5 h-5 mr-2" />
+                  Visiting Hours
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                  {selectedUser.visitingHours.map((visitingHour, index) => (
+                    <div key={index} className="bg-muted p-3 rounded-md">
+                      <p className="font-medium mb-2">
+                        {getDayLabel(visitingHour.day_id)}
+                      </p>
+                      {Array.isArray(visitingHour.hours) &&
+                      visitingHour.hours.length > 0 ? (
+                        visitingHour.hours.map(
+                          (
+                            time: { open: string; close: string },
+                            timeIndex: number
+                          ) => (
+                            <p key={timeIndex} className="text-sm sm:text-base">
+                              {time.open} - {time.close}
+                            </p>
+                          )
+                        )
+                      ) : (
+                        <p className="text-sm sm:text-base">
+                          No hours set for this day
                         </p>
-                      ))}
+                      )}
                     </div>
-                  )
-                )}
-              </div>
-            </section>
-          </>
-        )}
+                  ))}
+                </div>
+              </section>
+            </>
+          )}
 
         {selectedUser.phone_numbers &&
           selectedUser.phone_numbers.length > 0 && (

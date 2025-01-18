@@ -1,7 +1,6 @@
 "use client";
 
 import { motion, Variants } from "framer-motion";
-import { Users } from "lucide-react";
 import Link from "next/link";
 import useSWR from "swr";
 
@@ -10,6 +9,7 @@ interface Hub {
   name: string;
   hub_host_id: string;
   mapInfoId: string | null;
+  hub_address: string | null;
 }
 
 interface ParticipantHubInfoProps {
@@ -32,26 +32,36 @@ export function ParticipantHubInfo({ userId }: ParticipantHubInfoProps) {
   return (
     <motion.div variants={fadeInUp} className="mt-8">
       <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
-        Hub Membership
+        HUBS
       </h2>
       {error && <p className="text-red-500">Error loading hub information</p>}
-      {!hubs && !error && <p>Loading hub information...</p>}
-      {hubs && hubs.length > 0 ? (
-        <div className="space-y-2">
+      {!hubs && !error ? (
+        <p>Loading hub information...</p>
+      ) : hubs && hubs.length > 0 ? (
+        <div className="space-y-4">
           {hubs.map((hub) => (
-            <div key={hub.id} className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-uiwhite" />
+            <div key={hub.id} className="flex flex-col">
               <Link
                 href={hub.mapInfoId ? `/map?place=${hub.mapInfoId}` : "#"}
                 target="_blank"
+                className="hover:underline flex flex-col"
               >
-                <span className="hover:underline">{hub.name}</span>
+                <span className="font-semibold">{hub.name}</span>
+                <span className="text-sm italic text-gray-600 mt-1">
+                  {hub.hub_host_id === userId ? (
+                    <span className="text-sm italic text-gray-600 mt-1">
+                      HUB Host
+                    </span>
+                  ) : (
+                    hub.hub_address || "No address available"
+                  )}
+                </span>
               </Link>
             </div>
           ))}
         </div>
       ) : (
-        <p>{""}</p>
+        <p>No hubs found</p>
       )}
     </motion.div>
   );

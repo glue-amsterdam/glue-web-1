@@ -31,7 +31,7 @@ function LastPage({ glueInternational, sponsorsData }: Props) {
     >
       <motion.article
         {...fadeInConfig}
-        className="z-20 space-y-4 mx-auto container flex flex-col flex-grow justify-between py-8"
+        className="z-20 space-y-4 mx-auto about-w flex flex-col flex-grow justify-between py-8"
       >
         <GlueInternational glueInternational={glueInternational} />
         <SponsorsCarousel sponsorsData={sponsorsData} />

@@ -36,13 +36,17 @@ export async function GET(request: Request) {
       hubs.map(async (hub) => {
         const { data: mapInfo, error: mapInfoError } = await supabase
           .from("map_info")
-          .select("id")
+          .select("id, formatted_address")
           .eq("user_id", hub.hub_host_id)
           .single();
 
         if (mapInfoError) throw mapInfoError;
 
-        return { ...hub, mapInfoId: mapInfo?.id };
+        return {
+          ...hub,
+          mapInfoId: mapInfo?.id,
+          hub_address: mapInfo?.formatted_address,
+        };
       })
     );
 

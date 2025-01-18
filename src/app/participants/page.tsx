@@ -6,8 +6,11 @@ import { Suspense } from "react";
 
 export default function ParticipantsPage() {
   return (
-    <section style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}>
-      <article className="pt-8">
+    <section
+      className="flex flex-col h-screen overflow-y-auto"
+      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
+    >
+      <article className="pt-8 flex-grow">
         <ParticipantsPageHeader />
         <Suspense fallback={<ParticipantsListSkeleton />}>
           <ParticipantsList />

@@ -22,15 +22,15 @@ import {
   PencilOff,
   ChevronsLeftRightEllipsis,
   LucidePencilRuler,
-  Beer,
   Compass,
-  BookOpenText,
-  BicepsFlexed,
   CircleEllipsis,
   ClipboardPen,
   PanelTopDashed,
   Map,
   Clock8,
+  NotebookPen,
+  Speech,
+  Coffee,
 } from "lucide-react";
 
 export const USER_DASHBOARD_SECTIONS = [
@@ -107,20 +107,10 @@ export const ADMIN_DASHBOARD_SECTIONS = [
 export const NAVBAR_HEIGHT: number = 5;
 export const BASE_URL = config.baseApiUrl || "http://localhost:3000/api";
 
-export const DAYS_IDS = ["day-1", "day-2", "day-3", "day-4"] as const;
-
-export const DAYS = [
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-  "Other",
-] as const;
-
 export const EVENT_TYPES = [
   "Lecture",
   "Workshop",
-  "Drink",
+  "Drinks & Bites",
   "Guided Tour",
   "Other",
 ] as const;
@@ -128,11 +118,11 @@ export const EVENT_TYPES = [
 export const getEventIcon = (type: EventType) => {
   switch (type) {
     case "Lecture":
-      return BookOpenText;
+      return Speech;
     case "Workshop":
-      return BicepsFlexed;
-    case "Drink":
-      return Beer;
+      return NotebookPen;
+    case "Drinks & Bites":
+      return Coffee;
     case "Guided Tour":
       return Compass;
     default:
