@@ -26,13 +26,9 @@ interface ParticipantInfoProps {
 }
 
 function ParticipantInfo({ participant }: ParticipantInfoProps) {
-  console.log(
-    formatUrl(participant.user_info.social_media.instagramLink || "")
-  );
-
   return (
     <motion.div
-      className="h-full text-white"
+      className="h-full text-white overflow-y-auto p-4"
       initial="initial"
       animate="animate"
       variants={stagger}
@@ -79,6 +75,7 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
           )}
           <ParticipantHubInfo userId={participant.user_id} />
         </motion.div>
+
         <motion.div className="space-y-3 mt-8" variants={fadeInUp}>
           {participant.user_info.phone_numbers &&
             participant.user_info.phone_numbers.length > 0 && (
@@ -221,8 +218,8 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
                     className="block h-24 w-full lg:w-48 relative aspect-video hover:scale-105 transition-all"
                   >
                     <Image
-                      src={event.image_url || "/placeholder.svg"}
-                      alt={event.title}
+                      src={event.image_url || "/placeholder.jpg"}
+                      alt={event.title + "- Event from GLUE"}
                       layout="fill"
                       objectFit="cover"
                       className="rounded-lg"
