@@ -1,6 +1,15 @@
 import { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
 import { UserInfo } from "@/schemas/userInfoSchemas";
-import { VisitingHours } from "@/schemas/visitingHoursSchema";
+
+export interface OpenCloseTime {
+  open: string;
+  close: string;
+}
+
+export interface VisitingHours {
+  day_id: string;
+  hours: OpenCloseTime[];
+}
 
 export type CombinedUserInfo = UserInfo & {
   participantDetails?: ParticipantDetails;
