@@ -32,12 +32,12 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
 
   return (
     <motion.div
-      className="h-full p-4 md:p-6 text-white"
+      className="h-full text-white"
       initial="initial"
       animate="animate"
       variants={stagger}
     >
-      <div className="max-w-3xl mx-auto font-overpass">
+      <div className="mx-auto font-overpass">
         <motion.h1
           className="text-3xl md:text-4xl font-bold tracking-tight"
           variants={fadeInUp}
@@ -82,7 +82,7 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
         <motion.div className="space-y-3 mt-8" variants={fadeInUp}>
           {participant.user_info.phone_numbers &&
             participant.user_info.phone_numbers.length > 0 && (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {participant.user_info.phone_numbers.map((phone, index) => (
                   <motion.a
                     key={index}
@@ -99,7 +99,7 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
             )}
           {participant.user_info.visible_emails &&
             participant.user_info.visible_emails.length > 0 && (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {participant.user_info.visible_emails.map((email, index) => (
                   <motion.a
                     key={email + index}
@@ -116,7 +116,7 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
             )}
           {participant.user_info.visible_websites &&
             participant.user_info.visible_websites.length > 0 && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center flex-wrap gap-2">
                 {participant.user_info.visible_websites.map(
                   (website, index) => (
                     <motion.a
@@ -207,32 +207,30 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
           )}
         {participant.user_info.events &&
           participant.user_info.events.length > 0 && (
-            <motion.div className="mt-8" variants={fadeInUp}>
+            <motion.div className="mt-8 pb-2" variants={fadeInUp}>
               <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
                 Events
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="flex flex-wrap items-center gap-4 py-4 overflow-x-hidden">
                 {participant.user_info.events.map((event) => (
                   <Link
                     key={event.id}
                     href={`/events?eventId=${event.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block"
+                    className="block h-24 w-full lg:w-48 relative aspect-video hover:scale-105 transition-all"
                   >
-                    <div className="relative aspect-video hover:scale-105 transition-all">
-                      <Image
-                        src={event.image_url || "/placeholder.svg"}
-                        alt={event.title}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-lg"
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
-                        <h3 className="text-white text-center text-xs font-semibold p-2">
-                          {event.title}
-                        </h3>
-                      </div>
+                    <Image
+                      src={event.image_url || "/placeholder.svg"}
+                      alt={event.title}
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-lg"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                      <h3 className="text-white text-center text-xs font-semibold p-2">
+                        {event.title}
+                      </h3>
                     </div>
                   </Link>
                 ))}
