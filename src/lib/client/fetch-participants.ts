@@ -34,9 +34,7 @@ const mockParticipants: ParticipantClient[] = [
 
 export async function fetchParticipants(): Promise<ParticipantClient[]> {
   try {
-    const response = await fetch(`${BASE_URL}/client-user`, {
-      next: { revalidate: 60 },
-    });
+    const response = await fetch(`${BASE_URL}/client-user`);
 
     if (!response.ok) {
       if (
