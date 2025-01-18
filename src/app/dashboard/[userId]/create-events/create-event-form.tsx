@@ -445,7 +445,7 @@ export function EventForm({
               name="co_organizers"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Co-organizers</FormLabel>
+                  <FormLabel>Co-organisers</FormLabel>
                   <FormControl>
                     <CoOrganizerSearch
                       onSelect={(selectedIds) => field.onChange(selectedIds)}
@@ -454,7 +454,7 @@ export function EventForm({
                     />
                   </FormControl>
                   <FormDescription>
-                    Search and select up to 4 co-organizers
+                    Search and select up to 4 co-organisers
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

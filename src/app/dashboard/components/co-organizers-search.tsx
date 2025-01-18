@@ -98,7 +98,7 @@ export function CoOrganizerSearch({
     <div>
       <Input
         type="text"
-        placeholder="Search co-organizers..."
+        placeholder="Search co-organisers..."
         value={searchTerm}
         onChange={handleSearch}
         disabled={selectedParticipants.length >= maxSelections}

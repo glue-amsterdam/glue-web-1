@@ -22,7 +22,6 @@ import {
   PencilOff,
   ChevronsLeftRightEllipsis,
   LucidePencilRuler,
-  Beer,
   Compass,
   CircleEllipsis,
   ClipboardPen,
@@ -31,6 +30,7 @@ import {
   Clock8,
   NotebookPen,
   Speech,
+  Coffee,
 } from "lucide-react";
 
 export const USER_DASHBOARD_SECTIONS = [
@@ -122,7 +122,7 @@ export const getEventIcon = (type: EventType) => {
     case "Workshop":
       return NotebookPen;
     case "Drinks & Bites":
-      return Beer;
+      return Coffee;
     case "Guided Tour":
       return Compass;
     default:

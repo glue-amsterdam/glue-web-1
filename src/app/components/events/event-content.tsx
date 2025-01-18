@@ -71,7 +71,7 @@ export default function EventContent({ event }: EventContentProps) {
             </div>
             <div className="flex gap-8 text-black">
               <div className="text-center">
-                <h3 className="font-bold text-lg mb-1">Organizer</h3>
+                <h3 className="font-bold text-lg mb-1">Organiser</h3>
                 <div className="flex items-center justify-center gap-2">
                   <Link
                     href={`/participants/${event.organizer.slug}`}
@@ -84,7 +84,7 @@ export default function EventContent({ event }: EventContentProps) {
               </div>
               {event.coOrganizers && event.coOrganizers.length > 0 && (
                 <div className="text-center">
-                  <h3 className="font-bold text-lg mb-1">Co organizer</h3>
+                  <h3 className="font-bold text-lg mb-1">Co-organiser</h3>
                   <ul className="flex flex-col gap-2">
                     {event.coOrganizers.map((contributor: EnhancedUser) => (
                       <li
