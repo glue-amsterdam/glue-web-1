@@ -15,7 +15,7 @@ import { useDebounce } from "use-debounce";
 import { motion } from "framer-motion";
 import { EVENT_TYPES } from "@/constants";
 import { useEventsDays } from "@/app/context/MainContext";
-import { DayID, EventType } from "@/schemas/eventSchemas";
+import { EventType } from "@/schemas/eventSchemas";
 
 const formatEventType = (type: string): string => {
   return type
@@ -29,18 +29,12 @@ export default function SearchAndFilter() {
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [type, setType] = useState<EventType | "all">("all");
-  const [selectedDay, setSelectedDay] = useState<DayID | "all">(
-    (searchParams.get("day") as DayID) || "all"
+  const [selectedDay, setSelectedDay] = useState<string>(
+    searchParams.get("day") || "all"
   );
 
-  const [debouncedSearch] = useDebounce(search, 300);
   const eventsDays = useEventsDays();
-
-  const sortedEventDays = eventsDays.sort((a, b) => {
-    const numA = parseInt(a.dayId.split("-")[1], 10);
-    const numB = parseInt(b.dayId.split("-")[1], 10);
-    return numA - numB;
-  });
+  const [debouncedSearch] = useDebounce(search, 300);
 
   const updateSearchParams = useCallback(
     (newParams: { [key: string]: string | null }) => {
@@ -81,7 +75,7 @@ export default function SearchAndFilter() {
   };
 
   const handleDayChange = (value: string) => {
-    setSelectedDay(value as DayID | "all");
+    setSelectedDay(value);
     updateSearchParams({ day: value === "all" ? null : value });
   };
 
@@ -119,7 +113,7 @@ export default function SearchAndFilter() {
           </SelectTrigger>
           <SelectContent className="absolute bg-white z-50 max-h-60 overflow-auto">
             <SelectItem value="all">All Days</SelectItem>
-            {sortedEventDays.map((day) => (
+            {eventsDays.map((day) => (
               <SelectItem key={day.dayId} value={day.dayId}>
                 {day.label}
               </SelectItem>

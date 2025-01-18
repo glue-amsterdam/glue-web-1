@@ -1,4 +1,4 @@
-import { visitingHoursSchema } from "@/schemas/visitingHoursSchema";
+import { visitingHoursDaysSchema } from "@/schemas/visitingHoursSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -19,8 +19,7 @@ export async function GET(
     const { data, error } = await supabase
       .from("visiting_hours")
       .select("*")
-      .eq("user_id", userId)
-      .single();
+      .eq("user_id", userId);
 
     if (error) {
       console.error("Error fetching visiting hours:", error);
@@ -30,7 +29,7 @@ export async function GET(
       );
     }
 
-    if (!data) {
+    if (!data || data.length === 0) {
       console.log("No data found for userId:", userId);
       return NextResponse.json(
         { error: "Visiting hours not found" },
@@ -77,22 +76,23 @@ async function handleRequest(
     const supabase = await createClient();
 
     const body = await request.json();
-    const validatedData = visitingHoursSchema.parse(body);
+    const { visitingHours } = visitingHoursDaysSchema.parse(body);
 
     let result;
     if (action === "create") {
       result = await supabase
         .from("visiting_hours")
-        .insert({ ...validatedData, user_id: userId })
-        .select()
-        .single();
+        .insert(visitingHours.map((vh) => ({ ...vh, user_id: userId })))
+        .select();
     } else {
+      // For update, first delete existing records
+      await supabase.from("visiting_hours").delete().eq("user_id", userId);
+
+      // Then insert new records
       result = await supabase
         .from("visiting_hours")
-        .update(validatedData)
-        .eq("user_id", userId)
-        .select()
-        .single();
+        .insert(visitingHours.map((vh) => ({ ...vh, user_id: userId })))
+        .select();
     }
 
     const { data, error } = result;
@@ -110,9 +110,9 @@ async function handleRequest(
       );
     }
 
-    if (!data) {
+    if (!data || data.length === 0) {
       return NextResponse.json(
-        { error: "visiting hours not found" },
+        { error: "No visiting hours were created/updated" },
         { status: 404 }
       );
     }
@@ -121,7 +121,7 @@ async function handleRequest(
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Invalid visiting hours", details: error.errors },
+        { error: "Invalid visiting hours data", details: error.errors },
         { status: 400 }
       );
     }

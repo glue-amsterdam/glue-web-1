@@ -52,7 +52,14 @@ export const useLinks = () => {
 export const useEventsDays = () => {
   const context = useContext(MainContext);
   if (!context) {
-    throw new Error("useEventsDays must be used within a MainContextProvider");
+    throw new Error("useEventDays must be used within a MainContextProvider");
   }
-  return context.eventDays;
+
+  const sortedEventDays = [...context.eventDays].sort((a, b) => {
+    const numA = parseInt(a.dayId.split("-")[1], 10);
+    const numB = parseInt(b.dayId.split("-")[1], 10);
+    return numA - numB;
+  });
+
+  return sortedEventDays;
 };

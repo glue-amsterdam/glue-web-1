@@ -8,8 +8,8 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  visitingHoursSchema,
-  VisitingHours,
+  visitingHoursDaysSchema,
+  VisitingHoursDays,
 } from "@/schemas/visitingHoursSchema";
 import { PlusIcon, XIcon } from "lucide-react";
 import { useEventsDays } from "@/app/context/MainContext";
@@ -22,7 +22,7 @@ import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 
 interface VisitingHoursFormProps {
   targetUserId: string | undefined;
-  initialData?: VisitingHours | { error: string } | undefined;
+  initialData?: VisitingHoursDays[] | { error: string } | undefined;
 }
 
 export function VisitingHoursForm({
@@ -34,23 +34,31 @@ export function VisitingHoursForm({
   const { toast } = useToast();
   const router = useRouter();
   const eventDays = useEventsDays();
-  const form = useForm<VisitingHours>({
-    resolver: zodResolver(visitingHoursSchema),
+
+  const form = useForm<{ visitingHours: VisitingHoursDays[] }>({
+    resolver: zodResolver(visitingHoursDaysSchema),
     defaultValues: {
-      user_id: targetUserId,
-      hours: isError
-        ? Object.fromEntries(eventDays.map((day) => [day.dayId, []]))
-        : initialData?.hours ||
-          Object.fromEntries(eventDays.map((day) => [day.dayId, []])),
+      visitingHours: isError
+        ? eventDays.map((day) => ({
+            user_id: targetUserId!,
+            day_id: day.dayId,
+            hours: [],
+          }))
+        : initialData ||
+          eventDays.map((day) => ({
+            user_id: targetUserId!,
+            day_id: day.dayId,
+            hours: [],
+          })),
     },
   });
 
-  const onSubmit = createSubmitHandler<VisitingHours>(
+  const onSubmit = createSubmitHandler<{ visitingHours: VisitingHoursDays[] }>(
     `/api/users/participants/${targetUserId}/hours`,
     async () => {
       toast({
         title: "Success",
-        description: "visiting hours updated successfully.",
+        description: "Visiting hours updated successfully.",
       });
       await mutate(`/api/users/participants/${targetUserId}/hours`);
       router.refresh();
@@ -66,15 +74,19 @@ export function VisitingHoursForm({
     isError ? "POST" : "PUT"
   );
 
-  const handleSubmit = async (values: VisitingHours) => {
+  const handleSubmit = async (values: {
+    visitingHours: VisitingHoursDays[];
+  }) => {
     setIsSubmitting(true);
-    await onSubmit({ ...values, user_id: targetUserId! });
+    await onSubmit(values);
     setIsSubmitting(false);
   };
 
   useEffect(() => {
-    form.reset({ ...(initialData as VisitingHours), user_id: targetUserId });
-  }, [form, initialData, targetUserId]);
+    if (!isError && initialData) {
+      form.reset({ visitingHours: initialData as VisitingHoursDays[] });
+    }
+  }, [form, initialData, isError]);
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -87,7 +99,7 @@ export function VisitingHoursForm({
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6"
           >
-            {eventDays.map((day) => (
+            {eventDays.map((day, index) => (
               <div key={day.dayId} className="space-y-4">
                 <h3 className="font-semibold">{day.label}</h3>
                 <h2 className="font-light text-xs">
@@ -95,7 +107,7 @@ export function VisitingHoursForm({
                 </h2>
                 <FormField
                   control={form.control}
-                  name={`hours.${day.dayId}`}
+                  name={`visitingHours.${index}.hours`}
                   render={({ field }) => (
                     <FormItem>
                       {field.value.map((_, rangeIndex) => (
@@ -167,7 +179,7 @@ export function VisitingHoursForm({
               </div>
             ))}
             <SaveChangesButton
-              watchFields={["hours"]}
+              watchFields={["visitingHours"]}
               isSubmitting={isSubmitting}
               className="w-full"
             >

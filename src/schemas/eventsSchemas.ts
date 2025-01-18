@@ -1,4 +1,4 @@
-import { DAYS_IDS, EVENT_TYPES } from "@/constants";
+import { EVENT_TYPES } from "@/constants";
 import { z } from "zod";
 
 export const eventSchema = z
@@ -27,7 +27,7 @@ export const eventSchema = z
     rsvp_link: z.string().optional(),
     location_id: z.string().min(1, "Location is needed"),
     co_organizers: z.array(z.string().uuid()).nullable(),
-    dayId: z.enum(DAYS_IDS),
+    dayId: z.string(),
     file: z.any().optional(),
   })
   .superRefine((data, ctx) => {

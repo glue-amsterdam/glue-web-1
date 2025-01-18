@@ -107,16 +107,6 @@ export const ADMIN_DASHBOARD_SECTIONS = [
 export const NAVBAR_HEIGHT: number = 5;
 export const BASE_URL = config.baseApiUrl || "http://localhost:3000/api";
 
-export const DAYS_IDS = ["day-1", "day-2", "day-3", "day-4"] as const;
-
-export const DAYS = [
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-  "Other",
-] as const;
-
 export const EVENT_TYPES = [
   "Lecture",
   "Workshop",

@@ -46,7 +46,7 @@ export const apiParticipantSchema = z.object({
     .max(200, "Short description must be less than 200 characters"),
   description: z.string(),
   mapPlaceName: z.string(),
-  visitingHours: visitingHoursSchema,
+  visitingHours: visitingHoursDaysSchema,
   phoneNumber: z.array(z.string().min(1, "Phone number cannot be empty")),
   visibleEmail: z
     .array(z.string().email().or(z.string().length(0)))
@@ -78,11 +78,12 @@ import { InvoiceDataCall } from "@/schemas/invoiceSchemas";
 import { EnhancedOrganizer, EnhancedUser, Event } from "@/schemas/eventSchemas";
 
 import { PlanType } from "@/schemas/plansSchema";
-import {
-  VisitingHours,
-  visitingHoursSchema,
-} from "@/schemas/visitingHoursSchema";
+
 import { MapInfoAPICall } from "@/schemas/mapSchema";
+import {
+  VisitingHoursDays,
+  visitingHoursDaysSchema,
+} from "@/schemas/visitingHoursSchema";
 
 export interface SocialMediaLinks {
   instagramLink?: string;
@@ -128,7 +129,7 @@ export type ParticipantUserBase = {
   images?: ImageData[];
   events?: Pick<Event, "eventId">[];
   description?: string;
-  visiting_hours?: VisitingHours;
+  visiting_hours?: VisitingHoursDays[];
   phone_number?: string[];
   visible_email?: string[];
   visible_website?: string[];

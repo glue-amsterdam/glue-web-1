@@ -1,4 +1,4 @@
-import { DAYS_IDS, EVENT_TYPES } from "@/constants";
+import { EVENT_TYPES } from "@/constants";
 import { ImageData, imageDataSchema } from "@/schemas/baseSchema";
 import {
   enhancedOrganizerSchema,
@@ -7,10 +7,8 @@ import {
 } from "@/schemas/usersSchemas";
 import * as z from "zod";
 
-export type DayID = (typeof DAYS_IDS)[number];
-
 export const eventDaySchema = z.object({
-  dayId: z.enum(DAYS_IDS),
+  dayId: z.string(),
   date: z.string().nullable(),
   label: z.string().min(1, "Label is required"),
 });

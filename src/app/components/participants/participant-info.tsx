@@ -1,6 +1,7 @@
 "use client";
 
 import { ParticipantHubInfo } from "@/app/components/participants/participant-hub-info";
+import { useEventsDays } from "@/app/context/MainContext";
 import { ParticipantClientResponse } from "@/types/api-visible-user";
 import { formatUrl } from "@/utils/formatUrl";
 import { motion, Variants } from "framer-motion";
@@ -26,6 +27,15 @@ interface ParticipantInfoProps {
 }
 
 function ParticipantInfo({ participant }: ParticipantInfoProps) {
+  const eventDays = useEventsDays();
+  const visitingHours = participant.user_info.visiting_hours?.[0]?.hours;
+
+  const getDayLabel = (dayId: string) => {
+    const day = eventDays.find((day) => day.dayId === dayId);
+    return day ? day.label : dayId;
+  };
+
+  console.log(participant);
   return (
     <motion.div
       className="h-full text-white overflow-y-auto p-4"
@@ -181,12 +191,14 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
               <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
                 Visiting Hours
               </h2>
-              {participant.user_info.visiting_hours.map(
-                (visitingHour, index) => (
-                  <div key={index} className="mb-4">
-                    {Object.entries(visitingHour.hours).map(([day, times]) => (
-                      <div key={day} className="flex items-center gap-2 mb-2">
-                        <span className="font-semibold">{day}:</span>
+              {visitingHours && Object.keys(visitingHours).length > 0 ? (
+                <div className="mb-4">
+                  {Object.entries(visitingHours).map(([dayId, times]) =>
+                    times.length > 0 ? (
+                      <div key={dayId} className="flex items-center gap-2 mb-2">
+                        <span className="font-semibold">
+                          {getDayLabel(dayId)}:
+                        </span>
                         {times.map((time, timeIndex) => (
                           <span key={timeIndex}>
                             {time.open} - {time.close}
@@ -194,9 +206,11 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
                           </span>
                         ))}
                       </div>
-                    ))}
-                  </div>
-                )
+                    ) : null
+                  )}
+                </div>
+              ) : (
+                <p>No visiting hours available.</p>
               )}
             </motion.div>
           )}

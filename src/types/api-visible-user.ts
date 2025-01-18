@@ -36,16 +36,15 @@ interface MapInfo {
   id: string;
   no_address: boolean;
 }
+export interface OpenCloseTime {
+  open: string;
+  close: string;
+}
 
-interface VisitingHours {
+export interface VisitingHours {
   hours: {
     [key: string]: OpenCloseTime[];
   };
-}
-
-interface OpenCloseTime {
-  open: string;
-  close: string;
 }
 
 interface Event {
