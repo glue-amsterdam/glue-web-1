@@ -24,13 +24,13 @@ import {
   LucidePencilRuler,
   Beer,
   Compass,
-  BookOpenText,
-  BicepsFlexed,
   CircleEllipsis,
   ClipboardPen,
   PanelTopDashed,
   Map,
   Clock8,
+  NotebookPen,
+  Speech,
 } from "lucide-react";
 
 export const USER_DASHBOARD_SECTIONS = [
@@ -120,7 +120,7 @@ export const DAYS = [
 export const EVENT_TYPES = [
   "Lecture",
   "Workshop",
-  "Drink",
+  "Drinks & Bites",
   "Guided Tour",
   "Other",
 ] as const;
@@ -128,10 +128,10 @@ export const EVENT_TYPES = [
 export const getEventIcon = (type: EventType) => {
   switch (type) {
     case "Lecture":
-      return BookOpenText;
+      return Speech;
     case "Workshop":
-      return BicepsFlexed;
-    case "Drink":
+      return NotebookPen;
+    case "Drinks & Bites":
       return Beer;
     case "Guided Tour":
       return Compass;
