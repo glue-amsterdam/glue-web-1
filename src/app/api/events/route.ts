@@ -1,12 +1,12 @@
 import { config } from "@/env";
-import { DayID, EventType } from "@/schemas/eventSchemas";
+import { EventType } from "@/schemas/eventSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type") as EventType | null;
-  const day = searchParams.get("day") as DayID | null;
+  const day = searchParams.get("day");
 
   const supabase = await createClient();
 
