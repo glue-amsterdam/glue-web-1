@@ -51,12 +51,12 @@
     inset: 0;
   }
   .participants-bg {
-    clip-path: polygon(0 0, 0 85%, 100% 0);
+    clip-path: polygon(0 0, 100% 0, 100% 20%, 0 85%);
     position: absolute;
     inset: 0;
   }
   .participants-bg-r {
-    clip-path: polygon(100% 0, 0 0, 100% 50%);
+    clip-path: polygon(100% 0, 0 0, 0 20%, 100% 65%);
     position: absolute;
     inset: 0;
   }
