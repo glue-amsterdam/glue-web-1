@@ -2,91 +2,98 @@ import { config } from "@/env";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
-// Define a more flexible type that accounts for Supabase's inferred types
-type ParticipantRaw = {
-  id: string;
-  user_name: string;
-  participant_details:
-    | {
-        slug: string;
-        is_sticky: boolean;
-      }
-    | {
-        slug: string;
-        is_sticky: boolean;
-      }[];
-  participant_image: Array<{ image_url: string }>;
-};
-
 export async function GET() {
   try {
     const supabase = await createClient();
 
-    // Fetch header data
+    // First, fetch from participant_details
+    const { data: participantDetails, error: participantDetailsError } =
+      await supabase
+        .from("participant_details")
+        .select(
+          `
+        slug,
+        is_sticky,
+        status,
+        user_id
+      `
+        )
+        .eq("status", "accepted")
+        .eq("is_sticky", false)
+        .limit(30);
+
+    if (participantDetailsError) {
+      console.error(
+        "Error fetching participant details:",
+        participantDetailsError
+      );
+      throw participantDetailsError;
+    }
+
+    // Get the user_ids from the fetched participant_details
+    const userIds = participantDetails.map((detail) => detail.user_id);
+
+    // Now fetch the corresponding user_info
+    const { data: userData, error: userDataError } = await supabase
+      .from("user_info")
+      .select(
+        `
+        user_id,
+        user_name,
+        participant_image (
+          image_url
+        )
+      `
+      )
+      .in("user_id", userIds);
+
+    if (userDataError) {
+      console.error("Error fetching user data:", userDataError);
+      throw userDataError;
+    }
+
+    // Combine the data
+    const combinedData = participantDetails.map((detail) => {
+      const user = userData.find((u) => u.user_id === detail.user_id);
+      if (!user) {
+        console.warn(`No user found for user_id: ${detail.user_id}`);
+      }
+      return { ...detail, ...user };
+    });
+
+    // Randomize and limit to 15 participants
+    const randomParticipants = combinedData
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 15);
+
+    // Transform participants data
+    const transformedParticipants = randomParticipants.map((participant) => ({
+      userId: participant.user_id,
+      slug: participant.slug || "",
+      userName: participant.user_name || "Unknown User",
+      image: {
+        image_url:
+          participant.participant_image?.[0]?.image_url ||
+          "/participant-placeholder.jpg",
+        alt:
+          `${
+            participant.user_name || "Unknown User"
+          } profile image - participant from GLUE design routes in ${
+            config.cityName
+          }` || `GLUE participant profile image from ${config.cityName}`,
+      },
+    }));
+
+    // Fetch header data after processing participants
     const { data: headerData, error: headerError } = await supabase
       .from("about_participants")
       .select("title,description")
       .single();
 
     if (headerError) {
+      console.error("Error fetching header data:", headerError);
       throw headerError;
     }
-
-    // Fetch participants
-    const { data, error: participantsError } = await supabase
-      .from("user_info")
-      .select(
-        `
-    id,
-    user_name,
-    plan_type,
-    participant_details (
-      slug,
-      is_sticky,
-      status
-    ),
-    participant_image (
-      image_url
-    )
-  `
-      )
-      .eq("plan_type", "participant")
-      .eq("participant_details.status", "accepted")
-      .eq("participant_details.is_sticky", false)
-      .limit(30);
-
-    if (participantsError) {
-      throw participantsError;
-    }
-
-    // Assert the type of the data
-    const participantsRaw = data as ParticipantRaw[];
-
-    // Randomize and limit to 15 participants
-    const randomParticipants = participantsRaw
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 15);
-
-    // Transform participants data
-    const transformedParticipants = randomParticipants.map((participant) => {
-      const details = Array.isArray(participant.participant_details)
-        ? participant.participant_details[0]
-        : participant.participant_details;
-
-      return {
-        userId: participant.id,
-        slug: details?.slug || "",
-        userName: participant.user_name,
-        image: {
-          image_url:
-            participant.participant_image[0]?.image_url ||
-            "/participant-placeholder.jpg",
-          alt:
-            `${participant.user_name} profile image - participant from GLUE design routes in ${config.cityName}` ||
-            `GLUE participant profile image from ${config.cityName}`,
-        },
-      };
-    });
 
     const response = {
       headerData,
