@@ -16,6 +16,8 @@ function CreateRoute() {
   if (isLoading) return <LoadingFallbackMini />;
   if (error) return <div>Failed to load map data</div>;
 
+  console.log(mapInfoList);
+
   return (
     <>
       <CreateRouteClientPage mapInfoList={mapInfoList} />
