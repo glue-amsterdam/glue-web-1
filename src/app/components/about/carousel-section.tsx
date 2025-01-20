@@ -67,7 +67,7 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 1.3 }}
-          className="mt-4 text-md md:text-lg"
+          className="mt-4 text-sm md:text-base lg:text-lg"
         >
           {carouselData.description}
         </motion.p>
