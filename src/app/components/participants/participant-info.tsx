@@ -34,8 +34,6 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
     const day = eventDays.find((day) => day.dayId === dayId);
     return day ? day.label : dayId;
   };
-
-  console.log(participant);
   return (
     <motion.div
       className="h-full text-white overflow-y-auto p-4"

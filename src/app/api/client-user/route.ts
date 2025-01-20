@@ -28,16 +28,23 @@ export async function GET() {
     const supabase = await createClient();
 
     // Fetch all participants with user_name from user_info
-    const { data: participantData, error: participantError } =
-      (await supabase.from("participant_details").select(`
-        slug, 
-        user_id,
-        is_sticky,
-        status,
-        user_info (
-          user_name
-        )
-      `)) as { data: ParticipantDetails[] | null; error: PostgrestError };
+    const { data: participantData, error: participantError } = (await supabase
+      .from("participant_details")
+      .select(
+        `
+          slug, 
+          user_id,
+          is_sticky,
+          status,
+          user_info (
+            user_name
+          )
+        `
+      )
+      .eq("status", "accepted")) as {
+      data: ParticipantDetails[] | null;
+      error: PostgrestError;
+    };
 
     if (participantError) {
       throw participantError;
