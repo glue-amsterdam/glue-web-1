@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import {
   citizensSectionSchema,
-  CitizensSection,
+  type CitizensSection,
 } from "@/schemas/citizenSchema";
 import { EMPTY_CITIZEN } from "./constants";
 import { MainInfoForm } from "./main-info-form";
@@ -54,7 +54,7 @@ export default function CitizensForm({
 
   return (
     <FormProvider {...methods}>
-      <MainInfoForm />
+      <MainInfoForm initialData={initialData} />
 
       <div className="mt-8 space-y-4">
         <YearSelector

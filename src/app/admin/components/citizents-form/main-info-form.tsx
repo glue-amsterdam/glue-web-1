@@ -1,97 +1,110 @@
-import React, { useEffect, useState } from "react";
-import { useFormContext, FieldValues } from "react-hook-form";
+"use client";
+
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { createSubmitHandler } from "@/utils/form-helpers";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { CitizensSection } from "@/schemas/citizenSchema";
-import useSWR, { mutate } from "swr";
+import { useEffect, useState } from "react";
+import {
+  type CitizensSection,
+  citizensSectionSchema,
+} from "@/schemas/citizenSchema";
+import { mutate } from "swr";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+interface MainInfoFormProps {
+  initialData: {
+    title: string;
+    description: string;
+  };
+}
 
-export function MainInfoForm() {
+export function MainInfoForm({ initialData }: MainInfoFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const methods = useForm<CitizensSection>({
+    resolver: zodResolver(citizensSectionSchema),
+    defaultValues: initialData,
+  });
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
-  } = useFormContext<CitizensSection>();
-  const { toast } = useToast();
-  const [hasChanges, setHasChanges] = useState(false);
-
-  const { data: initialData } = useSWR<CitizensSection>(
-    "/api/admin/about/citizens",
-    fetcher
-  );
-
-  const watchedFields = watch(["title", "description"]);
+    reset,
+  } = methods;
 
   useEffect(() => {
-    if (initialData) {
-      const hasChanged =
-        watchedFields[0] !== initialData.title ||
-        watchedFields[1] !== initialData.description;
-      setHasChanges(hasChanged);
-    }
-  }, [watchedFields, initialData]);
+    reset(initialData);
+  }, [initialData, reset]);
 
-  const onSubmit = async (data: FieldValues) => {
-    try {
-      const mainInfo = {
-        title: data.title as string,
-        description: data.description as string,
-      };
-
-      const response = await fetch("/api/admin/about/citizens", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(mainInfo),
-      });
-
-      if (!response.ok) throw new Error("Failed to update main info");
-
-      await mutate("/api/admin/about/citizens");
-
+  const onSubmit = createSubmitHandler<CitizensSection>(
+    "/api/admin/about/citizens",
+    async () => {
       toast({
         title: "Citizens headers updated",
-        description: "The citizens headers has been successfully updated.",
+        description: "The citizens headers have been successfully updated.",
       });
-      setHasChanges(false);
-    } catch (error) {
-      console.error("citizens headers submission error:", error);
+      await mutate("/api/admin/about/citizens");
+      router.refresh();
+    },
+    (error) => {
       toast({
         title: "Error",
-        description: "Failed to update citizens headers. Please try again.",
+        description:
+          "Failed to update citizens headers. Please try again." + error,
         variant: "destructive",
       });
     }
+  );
+
+  const handleFormSubmit = async (data: CitizensSection) => {
+    setIsSubmitting(true);
+    await onSubmit(data);
+    setIsSubmitting(false);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div>
-        <Label htmlFor="title">Title</Label>
-        <Input id="title" {...register("title")} className="mt-1 bg-white" />
-        {errors.title && <p className="text-red-500">{errors.title.message}</p>}
-      </div>
-
-      <div>
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          {...register("description")}
-          className="mt-1"
-          rows={4}
+    <FormProvider {...methods}>
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              {...register("title")}
+              placeholder="Section Title"
+              defaultValue={initialData.title}
+            />
+            {errors.title && (
+              <p className="text-red-500">{errors.title.message}</p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              {...register("description")}
+              placeholder="Section Description"
+              defaultValue={initialData.description}
+            />
+            {errors.description && (
+              <p className="text-red-500">{errors.description.message}</p>
+            )}
+          </div>
+        </div>
+        <SaveChangesButton
+          isSubmitting={isSubmitting}
+          watchFields={["title", "description"]}
+          className="w-full"
         />
-        {errors.description && (
-          <p className="text-red-500">{errors.description.message}</p>
-        )}
-      </div>
-
-      <Button type="submit" disabled={!hasChanges}>
-        Save headers
-      </Button>
-    </form>
+      </form>
+    </FormProvider>
   );
 }
