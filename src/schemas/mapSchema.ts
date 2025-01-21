@@ -25,11 +25,16 @@ export const routeSchema = z.object({
     z.object({
       ...mapInfoSchemaApiCall.shape,
       route_step: z.number(),
+      user_id: z.string().uuid(), // Add this line to include user_id
     })
   ),
 });
 
-export type RouteStep = MapInfoAPICall & { route_step: number };
+export type RouteStep = MapInfoAPICall & {
+  route_step: number;
+  user_id: string;
+};
+
 export type RouteValues = z.infer<typeof routeSchema>;
 
 export const routeApiCallSchema = z.object({
@@ -41,6 +46,8 @@ export const routeApiCallSchema = z.object({
     z.object({
       id: z.string().uuid(),
       route_step: z.number(),
+      user_id: z.string().uuid(), // Add this line to include user_id
+      hub_id: z.string().uuid().nullable(), // Add this line to include hub_id
       map_info: z.object({
         id: z.string().uuid(),
         formatted_address: z.string(),
