@@ -1,13 +1,11 @@
 import { BASE_URL } from "@/constants";
 import { config } from "@/env";
-import {
-  CarouselClientType,
-  carouselSectionSchema,
-} from "@/schemas/carouselSchema";
+import { CarouselClientType } from "@/schemas/carouselSchema";
 
 const CAROUSEL_FALLBACK_DATA: CarouselClientType = {
   title: "Welcome to GLUE",
   description: `Discover ${config.cityName}'s vibrant design community`,
+  is_visible: false,
   slides: [
     {
       image_url: "/placeholder.jgp",
@@ -42,9 +40,8 @@ export async function fetchUserCarousel(): Promise<CarouselClientType> {
     }
 
     const data: CarouselClientType = await res.json();
-    const validatedData = carouselSectionSchema.parse(data);
 
-    return validatedData;
+    return data;
   } catch (error) {
     console.error("Error fetching carousel data:", error);
     return getMockData();

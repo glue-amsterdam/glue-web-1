@@ -6,6 +6,7 @@ const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
     title: "Participants Section!",
     description:
       "Discover all participating brands, designers, studio's and academies of GLUE amsterdam connected by design",
+    is_visible: false,
   },
   participants: [
     {

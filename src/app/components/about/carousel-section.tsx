@@ -36,6 +36,10 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
   if (!carouselData)
     return <div className="text-center py-8">No Carousel Data</div>;
 
+  if (!carouselData.is_visible) {
+    return null;
+  }
+
   if (carouselData.slides.length <= 0) return <NoDataAvailable />;
 
   return (

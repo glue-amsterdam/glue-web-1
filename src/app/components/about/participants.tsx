@@ -2,6 +2,7 @@
 import ParticipantsSection from "@/app/components/about/participants-section";
 
 import GlueLogo from "@/app/components/glue-logo";
+import { NoDataAvailable } from "@/app/components/no-data-available";
 import { useScroll } from "@/app/hooks/useScroll";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { ParticipantsSectionHeader } from "@/schemas/participantsAdminSchema";
@@ -19,6 +20,12 @@ export default function Participants({
 }: ParticipantsProps) {
   const sectionRef = useRef<HTMLElement>(null);
   useScroll();
+
+  if (!headerData.is_visible) {
+    return null;
+  }
+
+  if (participants.length <= 0) return <NoDataAvailable />;
 
   return (
     <section

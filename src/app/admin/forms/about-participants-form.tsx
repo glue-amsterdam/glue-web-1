@@ -5,7 +5,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useRouter } from "next/navigation";
@@ -16,6 +22,7 @@ import {
   participantsSectionSchema,
 } from "@/schemas/participantsAdminSchema";
 import { mutate } from "swr";
+import { Switch } from "@/components/ui/switch";
 
 function ParticipantsSectionForm({
   initialData,
@@ -72,6 +79,25 @@ function ParticipantsSectionForm({
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="space-y-4">
+          <FormField
+            name="is_visible"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">Visible</FormLabel>
+                  <FormDescription>
+                    Toggle to show or hide the carousel section
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
           <div>
             <Label htmlFor="title">Title</Label>
             <Input
@@ -100,7 +126,7 @@ function ParticipantsSectionForm({
         </p>
         <SaveChangesButton
           isSubmitting={isSubmitting}
-          watchFields={["title", "description"]}
+          watchFields={["title", "description", "is_visible"]}
           className="w-full"
         />
       </form>

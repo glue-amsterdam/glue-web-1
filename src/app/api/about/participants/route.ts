@@ -6,7 +6,29 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    // First, fetch from participant_details
+    // Fetch header data first
+    const { data: headerData, error: headerError } = await supabase
+      .from("about_participants")
+      .select("title,description,is_visible")
+      .single();
+
+    if (headerError) {
+      console.error("Error fetching header data:", headerError);
+      throw headerError;
+    }
+
+    // If not visible, return early with only header data
+    if (!headerData.is_visible) {
+      return NextResponse.json({
+        headerData: {
+          title: "",
+          description: "",
+          is_visible: false,
+        },
+        participants: [],
+      });
+    }
+
     const { data: participantDetails, error: participantDetailsError } =
       await supabase
         .from("participant_details")
@@ -83,17 +105,6 @@ export async function GET() {
           }` || `GLUE participant profile image from ${config.cityName}`,
       },
     }));
-
-    // Fetch header data after processing participants
-    const { data: headerData, error: headerError } = await supabase
-      .from("about_participants")
-      .select("title,description")
-      .single();
-
-    if (headerError) {
-      console.error("Error fetching header data:", headerError);
-      throw headerError;
-    }
 
     const response = {
       headerData,
