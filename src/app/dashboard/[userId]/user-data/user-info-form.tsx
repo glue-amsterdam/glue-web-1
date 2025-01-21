@@ -96,7 +96,21 @@ export function UserInfoForm({
 
   const handleSubmit = async (values: ExtendedUserInfo) => {
     setIsSubmitting(true);
-    onSubmit(values);
+    // Check if the plan has changed
+    if (values.plan_id !== userInfo.plan_id) {
+      const currentPlan = plans.find((p) => p.plan_id === userInfo.plan_id);
+      const newPlan = plans.find((p) => p.plan_id === values.plan_id);
+      const confirmed = window.confirm(
+        `Are you sure you want to change the user's plan from ${
+          currentPlan?.plan_label || "current plan"
+        } to ${newPlan?.plan_label || "new plan"}?`
+      );
+      if (!confirmed) {
+        setIsSubmitting(false);
+        return;
+      }
+    }
+    await onSubmit(values);
     setIsSubmitting(false);
   };
 
@@ -174,14 +188,12 @@ export function UserInfoForm({
                               (p) => p.plan_id === value
                             );
                             if (selectedPlan) {
-                              form.setValue("plan_id", selectedPlan.plan_id);
+                              form.setValue("plan_id", selectedPlan.plan_id, {
+                                shouldDirty: true,
+                              });
                               form.setValue(
                                 "plan_type",
-                                selectedPlan.plan_type
-                              );
-                              form.setValue(
-                                "plan_label",
-                                selectedPlan.plan_label,
+                                selectedPlan.plan_type,
                                 { shouldDirty: true }
                               );
                             }
@@ -202,13 +214,24 @@ export function UserInfoForm({
                                 {plan.plan_label}
                               </SelectItem>
                             ))}
+                            {!plans.some((p) => p.plan_id === field.value) && (
+                              <SelectItem value={field.value}>
+                                Unknown Plan
+                              </SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
                         <FormMessage />
+                        {!plans.some(
+                          (p) => p.plan_id === form.getValues("plan_id")
+                        ) && (
+                          <p className="text-red-500 text-xs mt-2">
+                            {` Warning: The user's current plan is not in the list of available plans.`}
+                          </p>
+                        )}
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="plan_type"
@@ -428,7 +451,6 @@ export function UserInfoForm({
                   "social_media.instagramLink",
                   "user_name",
                   "is_mod",
-                  "plan_label",
                 ]}
                 isSubmitting={isSubmitting}
                 className="w-full"

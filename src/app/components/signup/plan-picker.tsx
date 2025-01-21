@@ -12,9 +12,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlansArrayType } from "@/schemas/plansSchema";
+import type { PlansArrayType, PlanType } from "@/schemas/plansSchema";
 
-// Define the schema for the plan
 const planSchema = z.object({
   plan_id: z.string(),
   plan_type: z.enum(["free", "member", "participant"]),
@@ -24,7 +23,7 @@ type PlanFormData = z.infer<typeof planSchema>;
 
 interface PlanPickerProps {
   plansData: PlansArrayType;
-  onPlanSelected: (data: PlanFormData) => void;
+  onPlanSelected: (plan: PlanType) => void;
 }
 
 export default function PlanPicker({
@@ -34,24 +33,21 @@ export default function PlanPicker({
   const { control, handleSubmit, watch, setValue } = useForm<PlanFormData>({
     resolver: zodResolver(planSchema),
     defaultValues: {
-      plan_id: "planId-0",
-      plan_type: "free",
+      plan_id: plansData.plans[0].plan_id,
+      plan_type: plansData.plans[0].plan_type,
     },
   });
 
-  const selectedPlan = watch("plan_id");
+  const selectedPlanId = watch("plan_id");
 
   const onSubmit = (data: PlanFormData) => {
-    onPlanSelected(data);
+    const selectedPlan = plansData.plans.find(
+      (plan) => plan.plan_id === data.plan_id
+    );
+    if (selectedPlan) {
+      onPlanSelected(selectedPlan);
+    }
   };
-
-  const getPlanType = (planId: string): "free" | "member" | "participant" => {
-    if (planId === "planId-0") return "free";
-    if (planId === "planId-1") return "member";
-    return "participant";
-  };
-
-  console.log("Selected plan:", selectedPlan);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -67,11 +63,11 @@ export default function PlanPicker({
                   <Card
                     key={plan.plan_id}
                     className={`w-[350px] flex-shrink-0 cursor-pointer ${
-                      selectedPlan === plan.plan_id ? "border-primary" : ""
+                      selectedPlanId === plan.plan_id ? "border-primary" : ""
                     }`}
                     onClick={() => {
                       field.onChange(plan.plan_id);
-                      setValue("plan_type", getPlanType(plan.plan_id));
+                      setValue("plan_type", plan.plan_type);
                     }}
                   >
                     <CardHeader>
@@ -97,11 +93,13 @@ export default function PlanPicker({
                       <Button
                         type="button"
                         variant={
-                          selectedPlan === plan.plan_id ? "default" : "outline"
+                          selectedPlanId === plan.plan_id
+                            ? "default"
+                            : "outline"
                         }
                         className="w-full"
                       >
-                        {selectedPlan === plan.plan_id
+                        {selectedPlanId === plan.plan_id
                           ? "Selected"
                           : "Select plan"}
                       </Button>

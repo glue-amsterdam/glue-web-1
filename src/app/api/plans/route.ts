@@ -1,16 +1,30 @@
-import { PlanSchema } from "@/schemas/plansSchema";
 import { createClient } from "@/utils/supabase/server";
-
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
     const supabase = await createClient();
 
-    const { data: plans, error } = await supabase
-      .from("plans")
-      .select("*")
-      .order("plan_id");
+    // Check if the user is an admin
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const { data: userInfo } = await supabase
+      .from("user_info")
+      .select("is_mod")
+      .eq("user_id", user?.id)
+      .single();
+
+    const isAdmin = userInfo?.is_mod || false;
+
+    // Fetch plans based on user role
+    let query = supabase.from("plans").select("*").order("plan_id");
+
+    if (!isAdmin) {
+      query = query.eq("is_participant_enabled", true);
+    }
+
+    const { data: plans, error } = await query;
 
     if (error) {
       console.error("Error fetching plans:", error);
@@ -20,23 +34,7 @@ export async function GET() {
       );
     }
 
-    // Validate the data
-    const validatedPlans = plans
-      .map((plan) => {
-        try {
-          return PlanSchema.parse(plan);
-        } catch (validationError) {
-          console.error(
-            "Validation error for plan:",
-            plan.plan_id,
-            validationError
-          );
-          return null;
-        }
-      })
-      .filter(Boolean); // Remove any null values from failed validations
-
-    return NextResponse.json({ plans: validatedPlans });
+    return NextResponse.json({ plans: plans });
   } catch (error) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
