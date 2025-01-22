@@ -5,6 +5,7 @@ import {
 } from "@/schemas/internationalSchema";
 
 const INTERNATIONAL_FALLBACK_DATA: GlueInternationalContent = {
+  is_visible: false,
   title: "GLUE International",
   subtitle: "GLUE arround the world",
   button_text: "Visit GLUE International",
@@ -36,7 +37,7 @@ export async function fetchInternationalContent(): Promise<GlueInternationalCont
 
     return validatedData;
   } catch (error) {
-    console.error("Error fetching citizens data:", error);
+    console.error("Error fetching International data:", error);
     return getMockData();
   }
 }

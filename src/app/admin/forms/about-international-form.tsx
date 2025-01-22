@@ -8,12 +8,20 @@ import {
   GlueInternationalContent,
   glueInternationalSectionSchema,
 } from "@/schemas/internationalSchema";
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { Switch } from "@/components/ui/switch";
 
 export default function InternationalForm({
   initialData,
@@ -70,6 +78,25 @@ export default function InternationalForm({
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="space-y-4">
+          <FormField
+            name="is_visible"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">Visible</FormLabel>
+                  <FormDescription>
+                    Toggle to show or hide the international section part
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
           <div>
             <Label htmlFor="title">Title</Label>
             <Input id="title" {...register("title")} />
@@ -130,6 +157,7 @@ export default function InternationalForm({
             "button_text",
             "website",
             "button_color",
+            "is_visible",
           ]}
           className="w-full"
         />

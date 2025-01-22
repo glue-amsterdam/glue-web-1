@@ -9,26 +9,41 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    const { data: sponsorsHeaderData, error: sponsorsHeaderError } =
-      await supabase
-        .from("about_sponsors_header")
-        .select("*")
-        .eq("id", "about-sponsors-header-section")
-        .single();
+    const { data: headerData, error: headerError } = await supabase
+      .from("about_sponsors_header")
+      .select("*")
+      .eq("id", "about-sponsors-header-section")
+      .single();
+
+    if (headerError) {
+      console.error("Error fetching sponsors header data:", headerError);
+      throw headerError;
+    }
+
+    if (!headerData.is_visible) {
+      return NextResponse.json({
+        sponsorsHeaderSchema: {
+          id: "sponsors-section",
+          title: "Sponsor data is not yet available. ",
+          is_visible: false,
+          description: "Sponsor data is not yet available.",
+          sponsors_types: [],
+        },
+        sponsors: [],
+      });
+    }
 
     const { data: sponsorsData, error: sponsorsError } = await supabase
       .from("about_sponsors")
       .select("*");
 
-    if (sponsorsHeaderError || sponsorsError) {
-      return NextResponse.json(
-        { error: "Failed to fetch sponsors data" },
-        { status: 500 }
-      );
+    if (sponsorsError) {
+      console.error("Error fetching participant details:", sponsorsError);
+      throw sponsorsError;
     }
 
     const response: SponsorsSection = {
-      sponsorsHeaderSchema: sponsorsHeaderData,
+      sponsorsHeaderSchema: headerData,
       sponsors: sponsorsData,
     };
 

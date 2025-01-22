@@ -8,6 +8,7 @@ const SPONSORS_FALLBACK_DATA: SponsorsSection = {
   sponsorsHeaderSchema: {
     id: "sponsors-section",
     title: "Sponsors",
+    is_visible: false,
     description:
       "Discover the GLUE project, the GLUE Foundation, and the GLUE International initiative.",
     sponsors_types: [
