@@ -136,13 +136,16 @@ export default function CreateRouteClientPage({
                   {selectedDots.map((dot, index) => (
                     <Card key={index} className="bg-muted">
                       <CardContent className="flex justify-between items-center p-3">
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex flex-col gap-2 flex-wrap">
                           <Badge variant="secondary" className="text-xs">
                             <MapPin className="w-3 h-3 mr-1" />
                             Step {dot.route_step}
                           </Badge>
                           <span className="text-sm">
-                            {dot.formatted_address || "No Address"}
+                            {dot.user_info.user_name || "No user name"}
+                          </span>
+                          <span className="text-xs italic">
+                            {dot.formatted_address}
                           </span>
                         </div>
                         <Button
@@ -180,14 +183,13 @@ export default function CreateRouteClientPage({
               />
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             </div>
-            <ScrollArea className="h-[500px] pr-4">
+            <ScrollArea className="min-h-[500px] pr-4">
               <div className="space-y-4">
                 {filteredMapInfoList.map((mapInfo) => (
                   <Card key={mapInfo.id} className="bg-muted">
                     <CardHeader className="pb-2">
                       <p className=" text-muted-foreground">
                         {mapInfo.user_info.user_name ||
-                          mapInfo.user_info.visible_emails?.join(", ") ||
                           "No visible data provided yet"}
                       </p>
                       <CardTitle className="">

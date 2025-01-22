@@ -34,8 +34,6 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
     const day = eventDays.find((day) => day.dayId === dayId);
     return day ? day.label : dayId;
   };
-
-  console.log(participant);
   return (
     <motion.div
       className="h-full text-white overflow-y-auto p-4"
@@ -60,7 +58,7 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
         )}
         {participant.description && (
           <motion.div
-            className="text-sm md:text-base leading-relaxed mt-4"
+            className="text-sm md:text-base leading-relaxed mt-4 prose prose-sm md:prose-base dark:prose-invert max-w-none"
             variants={fadeInUp}
             dangerouslySetInnerHTML={{ __html: participant.description }}
           />

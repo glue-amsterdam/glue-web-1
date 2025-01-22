@@ -1,25 +1,21 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import useSWR from "swr";
+import { useMemo, useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { ZoneEnum, type MapInfoAPICall } from "@/schemas/mapSchema";
+import type { IndividualRoute, RouteDot } from "@/schemas/routeSchema";
+import { RouteIcon, MapPin, Search, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -28,321 +24,346 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { mutate } from "swr";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Loader2, Plus, MapPin, Search, XIcon } from "lucide-react";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import {
-  MapInfoAPICall,
-  RouteApiCall,
-  routeApiCallSchema,
-} from "@/schemas/mapSchema";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 interface EditRouteModalProps {
-  routeId: string;
-  locations: MapInfoAPICall[];
+  isOpen: boolean;
   onClose: () => void;
-  onSave: () => void;
+  route: IndividualRoute;
+  mapInfoList: MapInfoAPICall[];
+}
+
+interface FormValues {
+  name: string;
+  description: string;
+  zone: string;
+  route_dots: RouteDot[];
+  searchTerm: string;
 }
 
 export function EditRouteModal({
-  routeId,
-  locations,
+  isOpen,
   onClose,
-  onSave,
+  route,
+  mapInfoList,
 }: EditRouteModalProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [localRouteDots, setLocalRouteDots] = useState<
-    RouteApiCall["route_dots"]
-  >([]);
-  const { data: route, error } = useSWR<RouteApiCall>(
-    routeId !== "new" ? `/api/maps/routes/${routeId}` : null,
-    fetcher
-  );
   const { toast } = useToast();
-
-  const form = useForm<RouteApiCall>({
-    resolver: zodResolver(routeApiCallSchema),
-    defaultValues: route || {
-      name: "",
-      description: "",
-      zone: undefined,
-      route_dots: [],
-    },
-  });
-
-  useEffect(() => {
-    if (route) {
-      form.reset(route);
-      setLocalRouteDots(route.route_dots);
+  const { control, handleSubmit, watch, setValue, reset } = useForm<FormValues>(
+    {
+      defaultValues: {
+        name: route.name,
+        description: route.description,
+        zone: route.zone,
+        route_dots: route.route_dots.map((dot) => ({
+          ...dot,
+          map_info_id: dot.map_info_id || dot.map_info?.id || "",
+        })),
+        searchTerm: "",
+      },
     }
-  }, [route, form]);
+  );
 
-  const filteredLocations = useMemo(() => {
-    return locations.filter((location) => {
+  const searchTerm = watch("searchTerm");
+  const selectedDots = watch("route_dots");
+
+  const filteredMapInfoList = useMemo(() => {
+    if (!mapInfoList) return [];
+    return mapInfoList.filter((mapInfo) => {
       const searchLower = searchTerm.toLowerCase();
       return (
-        location.formatted_address?.toLowerCase().includes(searchLower) ||
-        location.user_info.user_name?.toLowerCase().includes(searchLower) ||
-        location.user_info.visible_emails?.some((email) =>
+        mapInfo.formatted_address?.toLowerCase().includes(searchLower) ||
+        mapInfo.user_info.user_name?.toLowerCase().includes(searchLower) ||
+        mapInfo.user_info.visible_emails?.some((email) =>
           email.toLowerCase().includes(searchLower)
         )
       );
     });
-  }, [locations, searchTerm]);
+  }, [mapInfoList, searchTerm]);
 
-  if (error) {
-    toast({
-      title: "Error",
-      description: "Failed to load route data",
-      variant: "destructive",
-    });
-    onClose();
-    return null;
-  }
-
-  if (routeId !== "new" && !route)
-    return <Loader2 className="h-8 w-8 animate-spin" />;
-
-  const onSubmit = async (data: RouteApiCall) => {
-    setIsSubmitting(true);
-    try {
-      const url =
-        routeId === "new" ? "/api/maps/routes" : `/api/maps/routes/${routeId}`;
-      const method = routeId === "new" ? "POST" : "PUT";
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, route_dots: localRouteDots }),
-      });
-      if (!response.ok) throw new Error("Failed to save route");
-      toast({
-        title: "Success",
-        description: `Route ${
-          routeId === "new" ? "created" : "updated"
-        } successfully.`,
-      });
-      onSave();
-    } catch (error) {
-      console.error("Error saving route:", error);
-      toast({
-        title: "Error",
-        description: `Failed to ${
-          routeId === "new" ? "create" : "update"
-        } route. Please try again.`,
-        variant: "destructive",
-      });
-    }
-    setIsSubmitting(false);
-  };
-
-  const addDotToRoute = (location: MapInfoAPICall) => {
-    setLocalRouteDots((prev) => [
-      ...prev,
-      {
-        id: location.id,
-        route_step: prev.length + 1,
-        map_info: {
-          id: location.id,
-          formatted_address: location.formatted_address || "",
-          latitude: location.latitude || 0,
-          longitude: location.longitude || 0,
-        },
+  const addDotToRoute = (mapInfo: MapInfoAPICall) => {
+    const newDot: RouteDot = {
+      map_info_id: mapInfo.id,
+      route_id: route.id,
+      user_id: mapInfo.user_id,
+      hub_id: null,
+      route_step: selectedDots.length + 1,
+      map_info: {
+        id: mapInfo.id,
+        formatted_address: mapInfo.formatted_address || "",
       },
-    ]);
+      route_dot_name: mapInfo.user_info.user_name,
+    };
+    setValue("route_dots", [...selectedDots, newDot]);
   };
 
   const removeDotFromRoute = (index: number) => {
-    setLocalRouteDots((prev) => {
-      const newDots = prev.filter((_, i) => i !== index);
-      return newDots.map((dot, i) => ({
-        ...dot,
-        route_step: i + 1,
-      }));
-    });
+    const newDots = selectedDots.filter((_, i) => i !== index);
+    setValue(
+      "route_dots",
+      newDots.map((dot, i) => ({ ...dot, route_step: i + 1 }))
+    );
   };
 
-  console.log(route);
+  const onSubmit = async (data: FormValues) => {
+    if (data.route_dots.length < 2) {
+      toast({
+        title: "Error",
+        description: "At least two locations must be selected for the route.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Ensure all route dots have a valid map_info_id
+    const validRouteDots = data.route_dots.filter((dot) => dot.map_info_id);
+    if (validRouteDots.length !== data.route_dots.length) {
+      toast({
+        title: "Error",
+        description:
+          "Some route dots are missing map information. Please remove and re-add them.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/maps/routes/${route.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: data.name,
+          description: data.description,
+          zone: data.zone,
+          route_dots: validRouteDots.map((dot, index) => ({
+            map_info_id: dot.map_info_id,
+            user_id: dot.user_id,
+            hub_id: dot.hub_id,
+            route_step: index + 1,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update route");
+      }
+
+      await mutate(`/api/maps/routes`);
+      await mutate(`/api/maps/routes/${route.id}`);
+      toast({
+        title: "Success",
+        description: "Route updated successfully.",
+      });
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to update route. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    reset({
+      name: route.name,
+      description: route.description,
+      zone: route.zone,
+      route_dots: route.route_dots.map((dot) => ({
+        ...dot,
+        map_info_id: dot.map_info_id || dot.map_info?.id || "",
+      })),
+      searchTerm: "",
+    });
+  }, [route, reset]);
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col text-black">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>
-            {routeId === "new" ? "Create New Route" : "Edit Route"}
+          <DialogTitle className="flex items-center gap-2">
+            <RouteIcon className="h-6 w-6" />
+            Edit Route
           </DialogTitle>
         </DialogHeader>
-        <div className="flex-grow overflow-auto">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Route Name</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Textarea {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="zone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Zone</FormLabel>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="col-span-1 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Edit Route Details</CardTitle>
+                  <CardDescription>
+                    Modify the route information
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Controller
+                      name="name"
+                      control={control}
+                      rules={{ required: "Name is required" }}
+                      render={({ field }) => <Input id="name" {...field} />}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Controller
+                      name="description"
+                      control={control}
+                      render={({ field }) => (
+                        <Textarea id="description" {...field} />
+                      )}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="zone">Zone</Label>
+                    <Controller
+                      name="zone"
+                      control={control}
+                      rules={{ required: "Zone is required" }}
+                      render={({ field }) => (
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                         >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a zone" />
-                            </SelectTrigger>
-                          </FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a zone" />
+                          </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="NORTH">North</SelectItem>
-                            <SelectItem value="SOUTH">South</SelectItem>
-                            <SelectItem value="EAST">East</SelectItem>
-                            <SelectItem value="WEST">West</SelectItem>
+                            {Object.values(ZoneEnum.enum).map((zone) => (
+                              <SelectItem key={zone} value={zone}>
+                                {zone}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Selected Locations</CardTitle>
-                      <CardDescription>Add or remove locations</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ScrollArea className="h-[300px] pr-4">
-                        <div className="space-y-2">
-                          {localRouteDots.map((dot, index) => (
-                            <Card key={dot.id + index} className="bg-muted">
-                              <CardContent className="flex justify-between items-center p-3">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-xs"
-                                  >
-                                    <MapPin className="w-3 h-3 mr-1" />
-                                    Step {index + 1}
-                                  </Badge>
-                                  <span className="text-sm">
-                                    {dot.map_info.formatted_address ||
-                                      "No Address"}
-                                  </span>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => removeDotFromRoute(index)}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <XIcon className="h-4 w-4" />
-                                  <span className="sr-only">
-                                    Remove location
-                                  </span>
-                                </Button>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    </CardContent>
-                  </Card>
-                </div>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Available Locations</CardTitle>
-                    <CardDescription>
-                      Search and add locations to your route
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="relative mb-4">
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Selected Locations</CardTitle>
+                  <CardDescription>
+                    Drag to reorder or remove locations
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-[300px] pr-4">
+                    <div className="space-y-2">
+                      {selectedDots.map((dot, index) => (
+                        <Card key={index} className="bg-muted">
+                          <CardContent className="flex justify-between items-center p-3">
+                            <div className="flex flex-col gap-2 flex-wrap">
+                              <Badge variant="secondary" className="text-xs">
+                                <MapPin className="w-3 h-3 mr-1" />
+                                Step {dot.route_step}
+                              </Badge>
+                              <span className="text-sm font-medium">
+                                {dot.route_dot_name}
+                              </span>
+                              <span className="text-xs italic">
+                                {dot.map_info?.formatted_address}
+                              </span>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              type="button"
+                              onClick={() => removeDotFromRoute(index)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Remove location</span>
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </div>
+            <Card className="col-span-1">
+              <CardHeader>
+                <CardTitle>Available Locations</CardTitle>
+                <CardDescription>
+                  Search and add locations to your route
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="relative mb-4">
+                  <Controller
+                    name="searchTerm"
+                    control={control}
+                    render={({ field }) => (
                       <Input
                         type="text"
                         placeholder="Search locations / participants..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        {...field}
                         className="pr-10"
                       />
-                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <ScrollArea className="h-[400px] pr-4">
-                      <div className="space-y-4">
-                        {filteredLocations.map((location, index) => (
-                          <Card key={index} className="bg-muted">
-                            <CardHeader className="pb-2">
-                              <p className="text-muted-foreground">
-                                {location.user_info.user_name ||
-                                  location.user_info.visible_emails?.join(
-                                    ", "
-                                  ) ||
-                                  "No visible data provided yet"}
-                              </p>
-                              <CardTitle className="text-sm">
-                                {location.formatted_address || "No Address"}
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <Button
-                                type="button"
-                                onClick={() => addDotToRoute(location)}
-                                size="sm"
-                                className="w-full"
-                              >
-                                <Plus className="mr-2 h-4 w-4" /> Add to Route
-                              </Button>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
-              </div>
-              <Separator />
-              <div className="flex justify-end">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Saving..." : "Save Route"}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </div>
+                    )}
+                  />
+                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                </div>
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="space-y-4">
+                    {filteredMapInfoList.map((mapInfo) => (
+                      <Card key={mapInfo.id} className="bg-muted">
+                        <CardHeader className="pb-2">
+                          <p className="text-muted-foreground">
+                            {mapInfo.user_info.user_name ||
+                              "No visible data provided yet"}
+                          </p>
+                          <CardTitle className="text-sm">
+                            {mapInfo.formatted_address || "No Address"}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <Button
+                            onClick={() => addDotToRoute(mapInfo)}
+                            size="sm"
+                            className="w-full"
+                            type="button"
+                          >
+                            <Plus className="mr-2 h-4 w-4" /> Add to Route
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button
+              type="button"
+              className="text-black"
+              variant="outline"
+              onClick={onClose}
+            >
+              Cancel
+            </Button>
+            <Button type="submit">Update Route</Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

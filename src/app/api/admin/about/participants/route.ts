@@ -9,7 +9,7 @@ export async function GET() {
 
     const { data: participantsData } = await supabase
       .from("about_participants")
-      .select("title,description")
+      .select("title,description,is_visible")
       .single();
 
     if (!participantsData) {
@@ -48,6 +48,7 @@ export async function PUT(request: Request) {
       .upsert({
         title: validatedData.title,
         description: validatedData.description,
+        is_visible: validatedData.is_visible,
       })
       .eq("id", "about-participants");
 

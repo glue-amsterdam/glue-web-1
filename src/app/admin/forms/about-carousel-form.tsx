@@ -18,6 +18,14 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { config } from "@/env";
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+import { Switch } from "@/components/ui/switch";
 
 interface CarouselFormProps {
   initialData: CarouselSection;
@@ -137,9 +145,6 @@ export default function AboutCarouselSectionForm({
         throw new Error(`Failed to update carousel: ${errorData.error}`);
       }
 
-      const result = await response.json();
-      console.log("Server response:", result);
-
       toast({
         title: "Carousel updated",
         description: "The carousel has been successfully updated.",
@@ -160,6 +165,26 @@ export default function AboutCarouselSectionForm({
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={control}
+          name="is_visible"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Visible</FormLabel>
+                <FormDescription>
+                  Toggle to show or hide the carousel section
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
         <div>
           <Label htmlFor="title">Title</Label>
           <Input {...register("title")} id="title" placeholder="Title" />
@@ -253,7 +278,7 @@ export default function AboutCarouselSectionForm({
           )}
           <SaveChangesButton
             isSubmitting={isSubmitting}
-            watchFields={["title", "description", "slides"]}
+            watchFields={["title", "description", "slides", "is_visible"]}
             className="flex-1"
           />
         </div>

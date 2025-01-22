@@ -10,7 +10,8 @@ import { PressItem } from "@/schemas/pressSchema";
 import Image from "next/image";
 import DOMPurify from "dompurify";
 import { DialogDescription } from "@radix-ui/react-dialog";
-import { NoDataAvailable } from "@/app/components/no-data-available";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface PressSectionProps {
   pressItems: PressItem[];
@@ -32,18 +33,26 @@ export default function PressSection({
     setModalOpen(true);
   };
 
-  const visiblePressItems = pressItems.filter((item) => item.isVisible);
-  const hasGlueTV = visiblePressItems.length === 2;
-
   const closeModal = () => {
     setModalOpen(false);
   };
 
-  if (visiblePressItems.length <= 0)
+  if (pressItems.length <= 0)
     return (
-      <div className="h-full">
-        <NoDataAvailable />
-      </div>
+      <motion.div
+        {...fadeInConfig}
+        className="flex items-center justify-center h-full z-10"
+      >
+        <Alert variant="default" className="max-w-lg bg-uiwhite text-uiblack">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle className="text-lg font-semibold">
+            No Press Items
+          </AlertTitle>
+          <AlertDescription className="text-md">
+            {`We’re currently preparing the Press Items. Check back soon.`}
+          </AlertDescription>
+        </Alert>
+      </motion.div>
     );
 
   const PressCard = ({ item, i }: { item: PressItem; i: number }) => {
@@ -90,15 +99,7 @@ export default function PressSection({
     );
   };
 
-  // Error handling for missing or invalid infoItems
-  if (!Array.isArray(pressItems) || pressItems.length === 0) {
-    console.error("Invalid or missing press Items:", pressItems);
-    return (
-      <div className="text-center text-red-500 p-4">
-        Error: Unable to load press infomation items. Please try again later.
-      </div>
-    );
-  }
+  const hasGlueTV = pressItems.length === 2;
 
   return (
     <motion.article

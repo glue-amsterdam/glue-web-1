@@ -5,6 +5,7 @@ import { z } from "zod";
 export const participantHeaderSchema = z.object({
   title: z.string(),
   description: z.string(),
+  is_visible: z.boolean(),
 });
 
 export const participantClientSchema = z.object({

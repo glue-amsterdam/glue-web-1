@@ -18,4 +18,5 @@ export const glueInternationalSectionSchema = z.object({
   button_text: z.string().min(1, "Button text is required"),
   website: z.string().min(1, "Website is required"),
   button_color: glueInternationalButtonColorSchema,
+  is_visible: z.boolean(),
 });

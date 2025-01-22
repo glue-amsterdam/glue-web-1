@@ -5,7 +5,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { SponsorsSection } from "@/schemas/sponsorsSchema";
+import type { SponsorsSection } from "@/schemas/sponsorsSchema";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -17,7 +17,7 @@ export default function SponsorsCarousel({
   sponsorsData: SponsorsSection;
 }) {
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-4 h-full">
+    <div className="w-full max-w-6xl mx-auto px-4 py-4">
       <motion.h1
         initial={{ opacity: 0, y: -60 }}
         animate={{ opacity: 1, y: 0 }}
@@ -38,19 +38,20 @@ export default function SponsorsCarousel({
       >
         {sponsorsData.sponsorsHeaderSchema.description}
       </motion.p>
+
       <Carousel
         opts={{
           align: "start",
           loop: true,
         }}
-        className="w-full h-full"
+        className="w-full"
         plugins={[
           Autoplay({
             delay: 3000,
           }),
         ]}
       >
-        <CarouselContent className="h-full">
+        <CarouselContent>
           {sponsorsData.sponsors.map((sponsor, index) => (
             <CarouselItem
               key={index}
@@ -59,14 +60,14 @@ export default function SponsorsCarousel({
               <Link
                 href={sponsor.website || "#"}
                 target={sponsor.website ? "_blank" : "_self"}
-                className="block w-full md:h-20 relative group h-44 lg:h-60"
+                className="block w-full aspect-square relative group"
               >
-                <div className="w-full relative h-full flex items-center justify-center">
+                <div className="w-full h-full relative flex items-center justify-center">
                   <Image
-                    src={sponsor.image_url}
+                    src={sponsor.image_url || "/placeholder.svg"}
                     alt={sponsor.name}
                     fill
-                    sizes="100%"
+                    sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
                     className="object-contain transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>

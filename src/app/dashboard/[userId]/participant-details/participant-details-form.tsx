@@ -27,7 +27,7 @@ import {
 import { RichTextEditor } from "@/app/components/editor";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useDebouncedCallback } from "use-debounce";
-import { CheckCircle2 } from "lucide-react";
+import { CalendarHeart, CheckCircle2 } from "lucide-react";
 import { mutate } from "swr";
 import { createSubmitHandler } from "@/utils/form-helpers";
 
@@ -86,6 +86,7 @@ export function ParticipantDetailsForm({
       year: participantDetails?.year || null,
       status: participantDetails?.status || "pending",
       user_id: targetUserId || "",
+      special_program: participantDetails?.special_program || false,
     },
     mode: "onBlur",
   });
@@ -246,6 +247,29 @@ export function ParticipantDetailsForm({
                 <Separator className="my-4" />
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Moderator Settings</h3>
+                  <Separator className="my-4" />
+                  <FormField
+                    name="special_program"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base flex gap-2 flex-wrap">
+                            <span>Special Program</span> <CalendarHeart />
+                          </FormLabel>
+                          <FormDescription>
+                            Enable the special program to display a special icon
+                            on the map.
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="is_sticky"
@@ -374,6 +398,7 @@ export function ParticipantDetailsForm({
                   "is_sticky",
                   "year",
                   "status",
+                  "special_program",
                 ]}
                 isSubmitting={isSubmitting}
                 className="w-full"

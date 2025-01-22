@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Card } from "@/components/ui/card";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import ScrollDown from "@/app/components/scroll-down";
 import { fadeInConfig } from "@/utils/animations";
 import DOMPurify from "dompurify";
-import { InfoItem, InfoItemClient } from "@/schemas/infoSchema";
+import { InfoItemClient } from "@/schemas/infoSchema";
 import Image from "next/image";
 import { DialogDescription } from "@radix-ui/react-dialog";
+import InfoCard from "@/app/components/about/info-card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface InfoSectionProps {
   infoItems: InfoItemClient[];
@@ -22,66 +24,32 @@ export default function InfoSection({
   title,
   description,
 }: InfoSectionProps) {
-  const [selectedInfo, setSelectedInfo] = useState<InfoItem | null>(null);
+  const [selectedInfo, setSelectedInfo] = useState<InfoItemClient | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const hasAnimatedRef = useRef(false);
-
-  const openModal = (info: InfoItem) => {
-    setSelectedInfo(info);
-    setModalOpen(true);
-  };
 
   const closeModal = () => {
     setModalOpen(false);
   };
 
-  const InfoCard = ({ info, i }: { info: InfoItem; i: number }) => {
-    const yOffset = i % 2 === 1 ? -150 : 150;
-
+  if (infoItems.length <= 0)
     return (
       <motion.div
-        initial={{
-          y: hasAnimatedRef.current ? 0 : yOffset,
-          opacity: hasAnimatedRef.current ? 1 : 0,
-        }}
-        whileInView={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, delay: i * 0.2 }}
-        viewport={{ once: true }}
-        className="relative shadow-md overflow-hidden h-full"
-        onViewportEnter={() => (hasAnimatedRef.current = true)}
+        {...fadeInConfig}
+        className="flex items-center justify-center h-full z-10"
       >
-        <Card
-          className="cursor-pointer rounded-none border-none group shadow-md h-full"
-          onClick={() => openModal(info)}
-        >
-          <div className="relative w-full h-full">
-            <Image
-              src={info.image.image_url}
-              alt={info.title + "- Information about GLUE routes desing"}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
-              className="object-cover group-hover:scale-105 transition-all duration-700"
-            />
-            <div className="absolute bottom-0 left-0 right-0 bg-uiblack/50 w-full text-uiwhite py-4 duration-300 group-hover:py-12 transition-all">
-              <h3 className="font-bold text-xl lg:text-3xl tracking-wider mb-2 text-center">
-                {info.title}
-              </h3>
-            </div>
-          </div>
-        </Card>
+        <Alert variant="default" className="max-w-lg bg-uiwhite text-uiblack">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle className="text-lg font-semibold">
+            No Press Items
+          </AlertTitle>
+          <AlertDescription className="text-md">
+            {`We’re currently preparing the Info Items. Check back soon.`}
+          </AlertDescription>
+        </Alert>
       </motion.div>
     );
-  };
 
-  // Error handling for missing or invalid infoItems
-  if (!Array.isArray(infoItems) || infoItems.length === 0) {
-    console.error("Invalid or missing infoItems:", infoItems);
-    return (
-      <div className="text-center text-red-500 p-4">
-        Error: Unable to load information items. Please try again later.
-      </div>
-    );
-  }
+  const infoLength = infoItems.length;
 
   return (
     <motion.article
@@ -108,9 +76,20 @@ export default function InfoSection({
       >
         {description || "No description available."}
       </motion.p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[80%]">
+      <div
+        className={`grid grid-cols-1 gap-6 h-[80%]
+        ${infoLength === 2 && "md:grid-cols-2"}
+        ${infoLength === 3 && "md:grid-cols-3"} 
+        `}
+      >
         {infoItems.map((info, index) => (
-          <InfoCard key={info.id} i={index} info={info} />
+          <InfoCard
+            key={info.id}
+            i={index}
+            info={info}
+            setSelectedInfo={setSelectedInfo}
+            setModalOpen={setModalOpen}
+          />
         ))}
       </div>
 
@@ -123,7 +102,7 @@ export default function InfoSection({
             <div className="relative w-full h-full flex flex-col">
               <div className="relative w-full h-1/2">
                 <Image
-                  src={selectedInfo.image.image_url}
+                  src={selectedInfo.image_url}
                   alt={selectedInfo.title}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"

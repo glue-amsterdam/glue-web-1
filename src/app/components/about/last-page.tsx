@@ -7,9 +7,9 @@ import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import { fadeInConfig } from "@/utils/animations";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { GlueInternationalContent } from "@/schemas/internationalSchema";
-import { SponsorsSection } from "@/schemas/sponsorsSchema";
+import type { SponsorsSection } from "@/schemas/sponsorsSchema";
 import SponsorsCarousel from "@/app/components/about/sponsors-carousel";
+import type { GlueInternationalContent } from "@/schemas/internationalSchema";
 
 type Props = {
   glueInternational: GlueInternationalContent;
@@ -19,6 +19,14 @@ type Props = {
 function LastPage({ glueInternational, sponsorsData }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
   useScroll();
+
+  // Check if both sections are not visible
+  if (
+    !glueInternational.is_visible &&
+    !sponsorsData.sponsorsHeaderSchema.is_visible
+  ) {
+    return null; // Return null if both sections are not visible
+  }
 
   return (
     <section
@@ -31,10 +39,14 @@ function LastPage({ glueInternational, sponsorsData }: Props) {
     >
       <motion.article
         {...fadeInConfig}
-        className="z-20 space-y-4 mx-auto about-w flex flex-col flex-grow justify-between py-8"
+        className="z-20 space-y-4 w-full mx-auto about-w flex flex-col flex-grow justify-between py-8"
       >
-        <GlueInternational glueInternational={glueInternational} />
-        <SponsorsCarousel sponsorsData={sponsorsData} />
+        {glueInternational.is_visible && (
+          <GlueInternational glueInternational={glueInternational} />
+        )}
+        {sponsorsData.sponsorsHeaderSchema.is_visible && (
+          <SponsorsCarousel sponsorsData={sponsorsData} />
+        )}
         <ScrollUp color="uiblack" href="#main" />
       </motion.article>
     </section>

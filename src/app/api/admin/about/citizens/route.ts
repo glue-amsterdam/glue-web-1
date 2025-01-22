@@ -67,6 +67,7 @@ export async function PUT(request: Request) {
       .update({
         title: body.title,
         description: body.description,
+        is_visible: body.is_visible,
       })
       .eq("id", "about-citizens-section")
       .select();

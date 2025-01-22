@@ -4,6 +4,7 @@ import { PlansArraySchema, PlansArrayType } from "@/schemas/plansSchema";
 const PLANS_MOCK_DATA: PlansArrayType = {
   plans: [
     {
+      is_participant_enabled: true,
       plan_id: "planId-0",
       plan_label: "FREE PLAN",
       plan_price: "0",
@@ -18,6 +19,7 @@ const PLANS_MOCK_DATA: PlansArrayType = {
       ],
     },
     {
+      is_participant_enabled: true,
       plan_id: "planId-1",
       plan_label: "MEMBERSHIP ONLY",
       plan_price: "250",
@@ -41,6 +43,7 @@ const PLANS_MOCK_DATA: PlansArrayType = {
       ],
     },
     {
+      is_participant_enabled: true,
       plan_id: "planId-2",
       plan_label: "STICKY",
       plan_price: "450",
@@ -77,6 +80,7 @@ const PLANS_MOCK_DATA: PlansArrayType = {
       ],
     },
     {
+      is_participant_enabled: true,
       plan_id: "planId-3",
       plan_label: "BINDER",
       plan_price: "950",
@@ -113,6 +117,7 @@ const PLANS_MOCK_DATA: PlansArrayType = {
       ],
     },
     {
+      is_participant_enabled: true,
       plan_id: "planId-4",
       plan_label: "CEMENT",
       plan_price: "1950",
@@ -152,6 +157,7 @@ const PLANS_MOCK_DATA: PlansArrayType = {
       ],
     },
     {
+      is_participant_enabled: true,
       plan_id: "planId-5",
       plan_label: "SUPER GLUE",
       plan_price: "4000",

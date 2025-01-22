@@ -1,14 +1,12 @@
 import { BASE_URL } from "@/constants";
-import {
-  ParticipantsResponse,
-  participantsResponseSchema,
-} from "@/schemas/participantsSchema";
+import { ParticipantsResponse } from "@/schemas/participantsSchema";
 
 const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
   headerData: {
     title: "Participants Section!",
     description:
       "Discover all participating brands, designers, studio's and academies of GLUE amsterdam connected by design",
+    is_visible: false,
   },
   participants: [
     {
@@ -59,9 +57,8 @@ export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
     }
 
     const data = await res.json();
-    const validatedData = participantsResponseSchema.parse(data);
 
-    return validatedData;
+    return data;
   } catch (error) {
     console.error("Error fetching participants data:", error);
     return PARTICIPANT_FALLBACK_DATA;

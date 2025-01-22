@@ -65,12 +65,33 @@ export async function POST(req: Request) {
       );
     }
 
+    // Fetch hub data to determine if a user is a hub host
+    const { data: hubsData, error: hubsError } = await supabase
+      .from("hubs")
+      .select("hub_host_id, id");
+
+    if (hubsError) {
+      console.error("Error fetching hubs data:", hubsError);
+      return NextResponse.json(
+        { error: "Failed to fetch hubs data" },
+        { status: 500 }
+      );
+    }
+
+    // Create a map for quick lookup
+    const hubMap = new Map(hubsData.map((hub) => [hub.hub_host_id, hub.id]));
+
     // Prepare the route dots
-    const routeDots = dots.map((dot) => ({
-      route_id: routeData.id,
-      map_info_id: dot.id,
-      route_step: dot.route_step,
-    }));
+    const routeDots = dots.map((dot) => {
+      const hubId = hubMap.get(dot.user_id);
+      return {
+        route_id: routeData.id,
+        map_info_id: dot.id,
+        route_step: dot.route_step,
+        user_id: dot.user_id,
+        hub_id: hubId || null, // Use hub_id if the user is a hub host, otherwise null
+      };
+    });
 
     // Insert the route dots
     const { error: dotsError } = await supabase

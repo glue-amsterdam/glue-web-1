@@ -20,13 +20,24 @@ export async function GET() {
     // Fetch curated about data
     const { data: curatedData, error: curatedError } = await supabase
       .from("about_curated")
-      .select("title,description")
+      .select("title,description,is_visible")
       .single();
 
     if (curatedError) {
       throw new Error(
         `Failed to fetch curated about data: ${curatedError.message}`
       );
+    }
+
+    if (!curatedData.is_visible) {
+      return NextResponse.json({
+        headerData: {
+          title: "",
+          description: "",
+          is_visible: false,
+        },
+        curatedParticipants: {},
+      });
     }
 
     // Fetch all participants
@@ -92,8 +103,8 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      curatedParticipants: groupedByYear,
       headerData: curatedData,
+      curatedParticipants: groupedByYear,
     });
   } catch (error) {
     console.error("Error in curated participants API:", error);

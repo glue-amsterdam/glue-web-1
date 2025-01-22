@@ -6,26 +6,45 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    const [{ data: pressData }, { data: pressItemsData }] = await Promise.all([
-      supabase.from("about_press").select("*").single(),
-      supabase.from("about_press_items").select("*").order("created_at"),
-    ]);
+    const { data: pressData, error: headerError } = await supabase
+      .from("about_press")
+      .select("*")
+      .single();
 
-    if (!pressData) {
-      throw new Error("Failed to fetch press section data");
+    if (headerError) {
+      throw new Error("Failed to fetch press header section data");
+    }
+
+    if (!pressData.is_visible) {
+      return NextResponse.json({
+        title: "No press items",
+        description: "Press items not visible by now",
+        is_visible: false,
+        pressItems: [],
+      });
+    }
+
+    const { data: pressItemsData, error: pressItemError } = await supabase
+      .from("about_press_items")
+      .select("*")
+      .eq("is_visible", true)
+      .order("id");
+
+    if (pressItemError) {
+      throw new Error(`Failed to fetch info items: ${pressItemError.message}`);
     }
 
     const pressSection: PressItemsSectionContent = {
       title: pressData.title,
       description: pressData.description,
+      is_visible: pressData.is_visible,
       pressItems:
         pressItemsData?.map(
-          ({ id, title, description, image_url, alt, is_visible }) => ({
+          ({ id, title, description, image_url, is_visible }) => ({
             id,
             title,
             description,
             image_url,
-            alt,
             isVisible: is_visible,
           })
         ) || [],

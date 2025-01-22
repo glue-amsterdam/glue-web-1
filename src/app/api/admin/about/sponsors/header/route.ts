@@ -48,6 +48,7 @@ export async function PUT(request: Request) {
         title: validatedData.title,
         description: validatedData.description,
         sponsors_types: validatedData.sponsors_types,
+        is_visible: validatedData.is_visible,
       })
       .eq("id", "about-sponsors-header-section")
       .select();

@@ -17,6 +17,7 @@ const FALLBACK_CITIZEN: ClientCitizen = {
 const CITIZENS_FALLBACK_DATA: ClientCitizensSection = {
   title: "Creative Citizens of Honour",
   description: "Loading citizens of honor information...",
+  is_visible: false,
   citizensByYear: {
     "2024": Array(3).fill(FALLBACK_CITIZEN),
   },
