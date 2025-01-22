@@ -11,13 +11,11 @@ export const infoItemSchema = z.object({
 export const infoSectionHeaderSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
+  is_visible: z.boolean(),
 });
 
 export const infoSectionSchema = infoSectionHeaderSchema.extend({
-  infoItems: z
-    .array(infoItemSchema)
-    .min(3, "At least 1 info item is required")
-    .max(3, "Maximum 2 info items allowed"),
+  infoItems: z.array(infoItemSchema).max(3, "Maximum 2 info items allowed"),
 });
 
 export type InfoSection = z.infer<typeof infoSectionSchema>;
@@ -35,6 +33,7 @@ export const infoItemClientSchema = z.object({
 export const infoSectionClientSchema = z.object({
   title: z.string(),
   description: z.string(),
+  is_visible: z.boolean(),
   infoItems: z.array(infoItemClientSchema).min(3).max(3),
 });
 

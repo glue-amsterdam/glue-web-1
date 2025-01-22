@@ -15,6 +15,10 @@ function Press({ pressItemsSection }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
   useScroll();
 
+  if (!pressItemsSection.is_visible) {
+    return null;
+  }
+
   return (
     <section
       ref={sectionRef}
@@ -22,7 +26,7 @@ function Press({ pressItemsSection }: Props) {
       aria-label="press-content"
       aria-labelledby="press-heading"
       style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
-      className={`h-dvh snap-start relative bg-[var(--color-box2)] `}
+      className={`h-dvh snap-start relative bg-[var(--color-box2)] z-0`}
     >
       <PressSection
         pressItems={pressItemsSection.pressItems}
@@ -37,7 +41,7 @@ function Press({ pressItemsSection }: Props) {
 function PressBackground() {
   return (
     <>
-      <div className="press-bg rotate-180 bg-uiwhite" />
+      <div className="press-bg rotate-180 bg-uiwhite -z-10" />
       <GlueConectedImage
         width={250}
         height={100}

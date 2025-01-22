@@ -63,7 +63,7 @@ function ParticipantsSectionForm({
       toast({
         title: "Error",
         description:
-          "Failed to update articipants header. Please try again." + error,
+          "Failed to update participants header. Please try again." + error,
         variant: "destructive",
       });
     }
