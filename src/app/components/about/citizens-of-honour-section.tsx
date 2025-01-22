@@ -121,8 +121,8 @@ export default function CitizenOfHonourSection({
     <section
       ref={sectionRef}
       id="citizens"
-      aria-labelledby="press-heading"
-      aria-label="main-content"
+      aria-labelledby="citizens-content"
+      aria-label="citizens-heading"
       style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
       className={`h-dvh snap-start relative`}
     >
