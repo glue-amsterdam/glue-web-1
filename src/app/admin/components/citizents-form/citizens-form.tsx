@@ -32,10 +32,7 @@ export default function CitizensForm({
     mode: "onChange",
   });
 
-  const {
-    setValue,
-    formState: { isValid, errors },
-  } = methods;
+  const { setValue } = methods;
 
   const handleYearChange = (year: string) => {
     setSelectedYear(year === "0" ? null : year);
@@ -71,13 +68,6 @@ export default function CitizensForm({
           selectedYear={selectedYear}
           isNewYear={isNewYear}
         />
-      )}
-
-      {!isValid && (
-        <div className="mt-4 text-red-500">
-          <p>Please fix the following errors:</p>
-          <pre>{JSON.stringify(errors, null, 2)}</pre>
-        </div>
       )}
     </FormProvider>
   );

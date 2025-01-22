@@ -15,6 +15,7 @@ export const citizenSchema = z.object({
 export const citizensSectionSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
+  is_visible: z.boolean(),
   citizensByYear: z.record(z.array(citizenSchema).length(3)),
 });
 
@@ -32,6 +33,7 @@ export const clientCitizenSchema = z.object({
 export const clientCitizensSectionSchema = z.object({
   title: z.string(),
   description: z.string(),
+  is_visible: z.boolean(),
   citizensByYear: z.record(z.array(clientCitizenSchema).length(3)),
 });
 
