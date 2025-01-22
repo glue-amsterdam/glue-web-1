@@ -145,9 +145,6 @@ export default function AboutCarouselSectionForm({
         throw new Error(`Failed to update carousel: ${errorData.error}`);
       }
 
-      const result = await response.json();
-      console.log("Server response:", result);
-
       toast({
         title: "Carousel updated",
         description: "The carousel has been successfully updated.",

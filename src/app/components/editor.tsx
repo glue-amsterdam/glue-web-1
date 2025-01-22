@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useEditor, Editor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
 import {
   Bold,
   Italic,
@@ -15,21 +16,16 @@ import {
   Redo,
   Heading1,
   Heading2,
+  LinkIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-const MenuBar = ({
-  editor,
-  showPreview,
-  setShowPreview,
-}: {
-  editor: Editor | null;
-  showPreview: boolean;
-  setShowPreview: (show: boolean) => void;
-}) => {
-  if (!editor) return null;
+const MenuBar = ({ editor }: { editor: ReturnType<typeof useEditor> }) => {
+  if (!editor) {
+    return null;
+  }
 
   return (
     <div className="bg-gray flex flex-wrap gap-1 pb-2 bg-gray-200 border-b">
@@ -84,6 +80,25 @@ const MenuBar = ({
         )}
       >
         <Code className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={() => {
+          const url = window.prompt("Enter the URL");
+          if (url) {
+            editor.chain().focus().setLink({ href: url }).run();
+          } else {
+            editor.chain().focus().unsetLink().run();
+          }
+        }}
+        className={cn(
+          "text-black hover:bg-uiblack/30",
+          editor.isActive("link") && "bg-uiblack/20"
+        )}
+      >
+        <LinkIcon className="h-4 w-4" />
       </Button>
       <Separator orientation="vertical" className="mx-1 h-6 bg-gray-400" />
       <Button
@@ -170,13 +185,6 @@ const MenuBar = ({
           <Redo className="h-4 w-4" />
         </Button>
       </div>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={() => setShowPreview(!showPreview)}
-        className="text-black hover:bg-uiblack/30 ml-auto"
-      ></Button>
     </div>
   );
 };
@@ -189,20 +197,25 @@ export const RichTextEditor = ({
   onChange: (content: string) => void;
 }) => {
   const [isMounted, setIsMounted] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
 
   const editor = useEditor({
-    extensions: [StarterKit],
-    immediatelyRender: false,
+    extensions: [
+      StarterKit,
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: "text-blue-500 underline",
+        },
+      }),
+    ],
     content: value,
     onUpdate: ({ editor }) => {
-      const content = editor.getHTML();
-      onChange(content);
+      onChange(editor.getHTML());
     },
     editorProps: {
       attributes: {
         class:
-          "min-h-[200px] bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none",
+          "min-h-[200px] bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm max-w-none",
       },
     },
   });
@@ -223,21 +236,8 @@ export const RichTextEditor = ({
 
   return (
     <div className="border rounded-md overflow-hidden">
-      {editor && (
-        <MenuBar
-          editor={editor}
-          showPreview={showPreview}
-          setShowPreview={setShowPreview}
-        />
-      )}
-      {showPreview ? (
-        <div
-          className="min-h-[200px] bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none"
-          dangerouslySetInnerHTML={{ __html: editor?.getHTML() || "" }}
-        />
-      ) : (
-        <EditorContent editor={editor} />
-      )}
+      {editor && <MenuBar editor={editor} />}
+      <EditorContent editor={editor} />
     </div>
   );
 };
