@@ -13,6 +13,7 @@ export const participantDetailsSchema = z
       .nullable(),
     slug: z.string().min(1, "Slug is required"),
     is_sticky: z.boolean().default(false),
+    special_program: z.boolean(),
     year: z.number().nullable().optional(),
     status: z.enum(["pending", "accepted", "declined"]).default("pending"),
   })
