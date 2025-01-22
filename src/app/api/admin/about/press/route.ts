@@ -1,9 +1,10 @@
-import { PressItemsSectionContent } from "@/schemas/pressSchema";
+import type { PressItemsSectionContent } from "@/schemas/pressSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-export const pressHeader = z.object({
+// Move the schema definition outside of any exported function
+const pressHeaderSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   is_visible: z.boolean(),
@@ -58,7 +59,7 @@ export async function PUT(request: Request) {
   try {
     const body = await request.json();
 
-    const validatedData = pressHeader.parse(body);
+    const validatedData = pressHeaderSchema.parse(body);
 
     const { error: pressError } = await supabase
       .from("about_press")
