@@ -15,6 +15,11 @@ type Props = {
 function CuratedMembers({ headerData, curatedParticipants }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
   useScroll();
+
+  if (!headerData.is_visible) {
+    return null;
+  }
+
   return (
     <section
       ref={sectionRef}

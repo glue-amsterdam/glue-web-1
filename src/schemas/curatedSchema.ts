@@ -4,6 +4,7 @@ import { z } from "zod";
 export const curatedMembersSectionSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
+  is_visible: z.boolean(),
 });
 
 export type CuratedMemberSectionHeader = z.infer<
@@ -19,6 +20,7 @@ export const curatedParticipantSchema = z.object({
 export const curatedHeaderSchema = z.object({
   title: z.string(),
   description: z.string(),
+  is_visible: z.boolean(),
 });
 
 export const curatedResponseSchema = z.object({

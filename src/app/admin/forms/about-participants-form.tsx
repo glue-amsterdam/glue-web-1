@@ -86,7 +86,7 @@ function ParticipantsSectionForm({
                 <div className="space-y-0.5">
                   <FormLabel className="text-base">Visible</FormLabel>
                   <FormDescription>
-                    Toggle to show or hide the carousel section
+                    Toggle to show or hide the participants section
                   </FormDescription>
                 </div>
                 <FormControl>
