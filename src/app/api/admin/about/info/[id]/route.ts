@@ -16,10 +16,10 @@ export async function PUT(
 
     // Delete old image if a new one is uploaded
     if (
-      validatedData.image.oldImageUrl &&
-      validatedData.image.image_url !== validatedData.image.oldImageUrl
+      validatedData.oldImageUrl &&
+      validatedData.image_url !== validatedData.oldImageUrl
     ) {
-      const oldImagePath = new URL(validatedData.image.oldImageUrl).pathname
+      const oldImagePath = new URL(validatedData.oldImageUrl).pathname
         .split("/")
         .pop();
       const { error: deleteError } = await supabase.storage
@@ -38,8 +38,8 @@ export async function PUT(
         id: params.id,
         title: validatedData.title,
         description: validatedData.description,
-        image_url: validatedData.image.image_url,
-        image_name: validatedData.image.image_name,
+        image_url: validatedData.image_url,
+        is_visible: validatedData.is_visible,
         info_id: "about-info",
       });
 

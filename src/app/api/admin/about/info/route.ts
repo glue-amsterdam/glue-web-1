@@ -6,26 +6,34 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    const [{ data: infoData }, { data: infoItemsData }] = await Promise.all([
-      supabase.from("about_info").select("*").single(),
-      supabase.from("about_info_items").select("*").order("created_at"),
-    ]);
+    const { data: infoData, error: headerError } = await supabase
+      .from("about_info")
+      .select("*")
+      .single();
 
-    if (!infoData || !infoItemsData) {
-      throw new Error("Failed to fetch info section data or items");
+    if (!infoData || headerError) {
+      throw new Error("Failed to fetch press section data");
     }
+
+    const { data: infoItemsData } = await supabase
+      .from("about_info_items")
+      .select("*")
+      .order("id");
 
     const infoSection: InfoSection = {
       title: infoData.title,
       description: infoData.description,
-      infoItems: infoItemsData.map(
-        ({ id, title, description, image_url, image_name }) => ({
-          id,
-          title,
-          description,
-          image: { image_url, image_name: image_name || "" },
-        })
-      ),
+      is_visible: infoData.is_visible,
+      infoItems:
+        infoItemsData?.map(
+          ({ id, title, description, image_url, is_visible }) => ({
+            id,
+            title,
+            description,
+            image_url,
+            is_visible,
+          })
+        ) || [],
     };
 
     return NextResponse.json(infoSection);
@@ -49,6 +57,7 @@ export async function PUT(request: Request) {
       .upsert({
         title: validatedData.title,
         description: validatedData.description,
+        is_visible: validatedData.is_visible,
       })
       .eq("id", "about-info");
 

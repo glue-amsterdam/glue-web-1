@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useRef, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
@@ -12,21 +10,21 @@ import Image from "next/image";
 import { uploadImage } from "@/utils/supabase/storage/client";
 import {
   Form,
-  FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
+  FormControl,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { RichTextEditor } from "@/app/components/editor";
-import { Switch } from "@/components/ui/switch";
 import { config } from "@/env";
-import { z } from "zod";
-import type { PressItem } from "@/schemas/pressSchema";
+import { type InfoItem } from "@/schemas/infoSchema";
 import { mutate } from "swr";
+import { Switch } from "@/components/ui/switch";
+import { z } from "zod";
 
-const pressItemSchema = z.object({
+const infoItemSchema = z.object({
   id: z.string(),
   title: z.string().min(1, "Title is required"),
   description: z.string(),
@@ -36,50 +34,57 @@ const pressItemSchema = z.object({
   oldImageUrl: z.string().optional(),
 });
 
-const pressItemsSchema = z.array(pressItemSchema);
+const infoItemsSchema = z.array(infoItemSchema);
 
-const DEFAULT_PRESS_ITEMS: PressItem[] = [
+interface InfoItemFormProps {
+  initialItems: InfoItem[];
+}
+
+const DEFAULT_INFO_ITEMS = [
   {
-    id: "press-item-1",
+    id: "mission-statement",
     title: "",
     description: "",
+    is_visible: false,
     image_url: "",
-    isVisible: false,
   },
   {
-    id: "press-item-2",
+    id: "meet-the-team",
     title: "",
     description: "",
+    is_visible: false,
     image_url: "",
-    isVisible: false,
+  },
+  {
+    id: "glue-foundation",
+    title: "",
+    description: "",
+    is_visible: false,
+    image_url: "",
   },
 ];
 
-interface PressItemsFormProps {
-  initialItems: PressItem[];
-}
-
-export function PressItemsForm({ initialItems }: PressItemsFormProps) {
+export function InfoItemForm({ initialItems }: InfoItemFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const form = useForm<{ pressItems: PressItem[] }>({
-    resolver: zodResolver(z.object({ pressItems: pressItemsSchema })),
+  const form = useForm<{ infoItems: InfoItem[] }>({
+    resolver: zodResolver(z.object({ infoItems: infoItemsSchema })),
     defaultValues: {
-      pressItems: mergePressItems(initialItems, DEFAULT_PRESS_ITEMS),
+      infoItems: mergeInfoItems(initialItems, DEFAULT_INFO_ITEMS),
     },
   });
 
   useEffect(() => {
-    const mergedItems = mergePressItems(initialItems, DEFAULT_PRESS_ITEMS);
-    form.reset({ pressItems: mergedItems });
+    const mergedItems = mergeInfoItems(initialItems, DEFAULT_INFO_ITEMS);
+    form.reset({ infoItems: mergedItems });
   }, [initialItems, form]);
 
-  function mergePressItems(
-    initialItems: PressItem[],
-    defaultItems: PressItem[]
-  ): PressItem[] {
+  function mergeInfoItems(
+    initialItems: InfoItem[],
+    defaultItems: InfoItem[]
+  ): InfoItem[] {
     const mergedItems = [...defaultItems];
     initialItems.forEach((item) => {
       const index = mergedItems.findIndex(
@@ -100,32 +105,32 @@ export function PressItemsForm({ initialItems }: PressItemsFormProps) {
       const file = e.target.files[0];
       const imageUrl = URL.createObjectURL(file);
 
-      const oldImageUrl = form.getValues(`pressItems.${index}.image_url`);
+      const oldImageUrl = form.getValues(`infoItems.${index}.image_url`);
 
-      form.setValue(`pressItems.${index}.image_url`, imageUrl, {
+      form.setValue(`infoItems.${index}.image_url`, imageUrl, {
         shouldDirty: true,
       });
-      form.setValue(`pressItems.${index}.file`, file, {
+      form.setValue(`infoItems.${index}.file`, file, {
         shouldDirty: true,
       });
-      form.setValue(`pressItems.${index}.oldImageUrl`, oldImageUrl, {
+      form.setValue(`infoItems.${index}.oldImageUrl`, oldImageUrl, {
         shouldDirty: true,
       });
 
-      form.trigger(`pressItems.${index}.image_url`);
+      form.trigger(`infoItems.${index}.image_url`);
     }
   };
 
-  const onSubmitPressItem = async (index: number) => {
+  const onSubmitInfoItem = async (index: number) => {
     setIsSubmitting(true);
-    const pressItem = form.getValues(`pressItems.${index}`);
+    const infoItem = form.getValues(`infoItems.${index}`);
     try {
-      let newImageUrl = pressItem.image_url;
-      if (pressItem.file) {
+      let newImageUrl = infoItem.image_url;
+      if (infoItem.file) {
         const { imageUrl, error } = await uploadImage({
-          file: pressItem.file,
+          file: infoItem.file,
           bucket: config.bucketName,
-          folder: "about/press-items",
+          folder: "about/info-items",
         });
         if (error) {
           throw new Error(`Failed to upload image: ${error}`);
@@ -133,37 +138,37 @@ export function PressItemsForm({ initialItems }: PressItemsFormProps) {
         newImageUrl = imageUrl;
       }
 
-      const response = await fetch(`/api/admin/about/press/${pressItem.id}`, {
+      const response = await fetch(`/api/admin/about/info/${infoItem.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...pressItem,
+          ...infoItem,
           image_url: newImageUrl,
-          oldImageUrl: pressItem.oldImageUrl,
+          oldImageUrl: infoItem.oldImageUrl,
         }),
       });
 
-      mutate("/api/admin/about/press");
+      mutate("/api/admin/about/info");
 
       if (!response.ok) {
-        throw new Error("Failed to update press item");
+        throw new Error("Failed to update info item");
       }
 
       toast({
-        title: "Press item updated",
-        description: `${pressItem.title} has been successfully updated.`,
+        title: "info item updated",
+        description: `${infoItem.title} has been successfully updated.`,
       });
 
-      form.setValue(`pressItems.${index}.image_url`, newImageUrl);
-      form.setValue(`pressItems.${index}.oldImageUrl`, undefined);
-      form.setValue(`pressItems.${index}.file`, undefined);
+      form.setValue(`infoItems.${index}.image_url`, newImageUrl);
+      form.setValue(`infoItems.${index}.oldImageUrl`, undefined);
+      form.setValue(`infoItems.${index}.file`, undefined);
     } catch (error) {
-      console.error(`${pressItem.title} submission error:`, error);
+      console.error(`${infoItem.title} submission error:`, error);
       toast({
         title: "Error",
-        description: `Failed to update press item ${
+        description: `Failed to update info item ${
           index + 1
         }. Please try again.`,
         variant: "destructive",
@@ -175,19 +180,19 @@ export function PressItemsForm({ initialItems }: PressItemsFormProps) {
 
   return (
     <Form {...form}>
-      <div className="mt-2 grid grid-cols-1 lg:grid-cols-2 gap-5 justify-around">
-        {form.watch("pressItems").map((field, index) => (
+      <div className="mt-2 grid grid-cols-1 lg:grid-cols-3 gap-5 justify-around">
+        {form.watch("infoItems").map((field, index) => (
           <form
             key={field.id}
             onSubmit={(e) => {
               e.preventDefault();
-              onSubmitPressItem(index);
+              onSubmitInfoItem(index);
             }}
             className="border p-4 rounded-md w-full"
           >
             <FormField
               control={form.control}
-              name={`pressItems.${index}.isVisible`}
+              name={`infoItems.${index}.is_visible`}
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 mb-4">
                   <div className="space-y-0.5">
@@ -208,11 +213,15 @@ export function PressItemsForm({ initialItems }: PressItemsFormProps) {
 
             <FormField
               control={form.control}
-              name={`pressItems.${index}.title`}
+              name={`infoItems.${index}.title`}
               render={({ field }) => (
-                <FormItem className="flex-grow mr-2 mb-4">
+                <FormItem>
                   <FormControl>
-                    <Input {...field} placeholder="Item Title" />
+                    <Input
+                      {...field}
+                      placeholder="Item Title"
+                      className="mb-2"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -225,7 +234,7 @@ export function PressItemsForm({ initialItems }: PressItemsFormProps) {
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   src={field.image_url || "/placeholder.jpg"}
-                  alt={`Press item ${index + 1}`}
+                  alt={`Info item ${index + 1}`}
                   className="object-cover rounded-md"
                 />
               ) : (
@@ -242,15 +251,16 @@ export function PressItemsForm({ initialItems }: PressItemsFormProps) {
             >
               {field.image_url ? "Change Image" : "Upload Image"}
             </Button>
+
             <FormField
               control={form.control}
-              name={`pressItems.${index}.description`}
+              name={`infoItems.${index}.description`}
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="max-h-[80vh] overflow-y-scroll">
                   <FormLabel>Item Description</FormLabel>
                   <FormControl>
                     <RichTextEditor
-                      value={field.value || ""}
+                      value={field.value}
                       onChange={field.onChange}
                     />
                   </FormControl>
@@ -272,12 +282,12 @@ export function PressItemsForm({ initialItems }: PressItemsFormProps) {
             <SaveChangesButton
               isSubmitting={isSubmitting}
               watchFields={[
-                `pressItems.${index}.title`,
-                `pressItems.${index}.description`,
-                `pressItems.${index}.image_url`,
-                `pressItems.${index}.file`,
-                `pressItems.${index}.oldImageUrl`,
-                `pressItems.${index}.isVisible`,
+                `infoItems.${index}.title`,
+                `infoItems.${index}.description`,
+                `infoItems.${index}.image_url`,
+                `infoItems.${index}.file`,
+                `infoItems.${index}.oldImageUrl`,
+                `infoItems.${index}.is_visible`,
               ]}
               className="w-full mt-4"
             />

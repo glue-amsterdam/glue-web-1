@@ -9,6 +9,10 @@ import React, { useRef } from "react";
 function Info({ infoItemsSection }: { infoItemsSection: InfoSectionClient }) {
   const sectionRef = useRef<HTMLElement>(null);
   useScroll();
+
+  if (!infoItemsSection.is_visible) {
+    return null;
+  }
   return (
     <section
       ref={sectionRef}

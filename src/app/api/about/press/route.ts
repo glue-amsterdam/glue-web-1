@@ -12,7 +12,7 @@ export async function GET() {
       .single();
 
     if (headerError) {
-      throw new Error("Failed to fetch press section data");
+      throw new Error("Failed to fetch press header section data");
     }
 
     if (!pressData.is_visible) {
@@ -24,11 +24,15 @@ export async function GET() {
       });
     }
 
-    const { data: pressItemsData } = await supabase
+    const { data: pressItemsData, error: pressItemError } = await supabase
       .from("about_press_items")
       .select("*")
       .eq("is_visible", true)
-      .order("created_at");
+      .order("id");
+
+    if (pressItemError) {
+      throw new Error(`Failed to fetch info items: ${pressItemError.message}`);
+    }
 
     const pressSection: PressItemsSectionContent = {
       title: pressData.title,
