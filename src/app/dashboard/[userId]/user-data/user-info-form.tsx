@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import useSWR, { mutate } from "swr";
+import { mutate } from "swr";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -39,27 +39,20 @@ const extendedUserInfoSchema = userInfoSchema.extend({
 
 type ExtendedUserInfo = z.infer<typeof extendedUserInfoSchema>;
 
-// Define the fetcher function
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
 export function UserInfoForm({
   userInfo,
   isMod,
   targetUserId,
+  plans,
 }: {
   userInfo: UserInfo;
   isMod: boolean;
   targetUserId: string | undefined;
+  plans: PlanType[];
 }) {
-  const { data, error: plansError } = useSWR<{ plans: PlanType[] }>(
-    "/api/plans",
-    fetcher
-  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-
-  const plans = data?.plans || [];
 
   const form = useForm<ExtendedUserInfo>({
     resolver: zodResolver(extendedUserInfoSchema),
@@ -177,11 +170,7 @@ export function UserInfoForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Plan</FormLabel>
-                        {plansError && (
-                          <p className="text-red-500 text-xs">
-                            Error fetching plans, try again later
-                          </p>
-                        )}
+
                         <Select
                           onValueChange={(value) => {
                             const selectedPlan = plans.find(
