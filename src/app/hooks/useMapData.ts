@@ -1,6 +1,6 @@
 import { config } from "@/env";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 
 // City bounding box from environment variables
 const CITY_BOUNDS: [number, number, number, number] = [
@@ -14,8 +14,8 @@ export interface Participant {
   user_id: string;
   user_name: string;
   is_host: boolean;
-  slug: string | null;
-  image_url: string | null;
+  slug?: string | null;
+  image_url?: string | null;
 }
 
 export interface MapInfo {
@@ -27,6 +27,8 @@ export interface MapInfo {
   is_hub: boolean;
   hub_name?: string;
   hub_description?: string | null;
+  is_collective: boolean;
+  is_special_program: boolean;
 }
 
 export enum RouteZone {
@@ -48,12 +50,16 @@ export interface Route {
     latitude: number;
     longitude: number;
     formatted_address: string;
+    user_name: string;
   }[];
 }
 
-export function useMapData() {
-  const [mapInfo, setMapInfo] = useState<MapInfo[]>([]);
-  const [routes, setRoutes] = useState<Route[]>([]);
+export function useMapData(initialData: {
+  mapInfo: MapInfo[];
+  routes: Route[];
+}) {
+  const [mapInfo, setMapInfo] = useState<MapInfo[]>(initialData.mapInfo);
+  const [routes] = useState<Route[]>(initialData.routes); // Remove setRoutes since we don't need it anymore
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +88,26 @@ export function useMapData() {
       route.dots.every((dot) => isWithinBounds(dot.longitude, dot.latitude))
     );
   }, [routes, isWithinBounds]);
+
+  const updateURL = useCallback(
+    (params: { place?: string; route?: string }) => {
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+
+      if (params.place) {
+        newSearchParams.set("place", params.place);
+        newSearchParams.delete("route");
+      } else if (params.route) {
+        newSearchParams.set("route", params.route);
+        newSearchParams.delete("place");
+      } else {
+        newSearchParams.delete("place");
+        newSearchParams.delete("route");
+      }
+
+      router.push(`/map?${newSearchParams.toString()}`, { scroll: false });
+    },
+    [router, searchParams]
+  );
 
   const fetchLocationData = useCallback(async (locationId: string) => {
     setIsLoading(true);
@@ -112,26 +138,6 @@ export function useMapData() {
     }
   }, []);
 
-  const updateURL = useCallback(
-    (params: { place?: string; route?: string }) => {
-      const newSearchParams = new URLSearchParams(searchParams.toString());
-
-      if (params.place) {
-        newSearchParams.set("place", params.place);
-        newSearchParams.delete("route");
-      } else if (params.route) {
-        newSearchParams.set("route", params.route);
-        newSearchParams.delete("place");
-      } else {
-        newSearchParams.delete("place");
-        newSearchParams.delete("route");
-      }
-
-      router.push(`/map?${newSearchParams.toString()}`, { scroll: false });
-    },
-    [router, searchParams]
-  );
-
   const handleParticipantSelect = useCallback(
     (locationId: string) => {
       setSelectedLocation(locationId);
@@ -149,53 +155,6 @@ export function useMapData() {
     },
     [updateURL]
   );
-
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      if (mapInfo.length > 0 && routes.length > 0) return; // Skip if data is already loaded
-
-      setIsLoading(true);
-      try {
-        const [mapInfoResponse, routesResponse] = await Promise.all([
-          fetch("/api/mapbox/minimal-maps"),
-          fetch("/api/routes"),
-        ]);
-
-        if (!mapInfoResponse.ok || !routesResponse.ok) {
-          throw new Error("Failed to fetch initial data");
-        }
-
-        const mapInfoData: MapInfo[] = await mapInfoResponse.json();
-        const routesData: Route[] = await routesResponse.json();
-
-        setMapInfo(mapInfoData);
-        setRoutes(routesData);
-
-        // Handle URL parameters after initial data load
-        const placeId = searchParams.get("place");
-        const routeId = searchParams.get("route");
-
-        if (placeId) {
-          handleParticipantSelect(placeId);
-        } else if (routeId) {
-          handleRouteSelect(routeId);
-        }
-      } catch (err) {
-        setError("Failed to load initial map data");
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchInitialData();
-  }, [
-    searchParams,
-    handleParticipantSelect,
-    handleRouteSelect,
-    mapInfo.length,
-    routes.length,
-  ]);
 
   return {
     mapInfo: filteredMapInfo,

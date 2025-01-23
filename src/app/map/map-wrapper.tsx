@@ -6,8 +6,16 @@ import { LoadingFallback } from "@/app/components/loading-fallback";
 import { getCookieConsent } from "@/app/actions/cookieConsent";
 import { Button } from "@/components/ui/button";
 import { CookieSettingsModal } from "@/components/cookies/cookies-modal";
+import { MapInfo, Route } from "@/app/hooks/useMapData";
 
-export function MapWrapper() {
+interface MapWrapperProps {
+  initialData: {
+    mapInfo: MapInfo[];
+    routes: Route[];
+  };
+}
+
+export function MapWrapper({ initialData }: MapWrapperProps) {
   const [mapConsent, setMapConsent] = useState<boolean | null>(null);
   const [showConsentDialog, setShowConsentDialog] = useState(false);
 
@@ -29,7 +37,7 @@ export function MapWrapper() {
   return (
     <>
       {mapConsent ? (
-        <MapMain />
+        <MapMain initialData={initialData} />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
           <div className="text-center">
