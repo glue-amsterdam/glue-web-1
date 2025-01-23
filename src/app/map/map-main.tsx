@@ -10,14 +10,21 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { MenuIcon } from "lucide-react";
-import { useMapData } from "@/app/hooks/useMapData";
+import { MapInfo, Route, useMapData } from "@/app/hooks/useMapData";
 import { InfoPanel } from "@/app/map/info-panel";
 import MapComponent from "@/app/map/map-component";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
 import { useSearchParams } from "next/navigation";
 import CenteredLoader from "@/app/components/centered-loader";
 
-export default function MapMain() {
+interface MapMainProps {
+  initialData: {
+    mapInfo: MapInfo[];
+    routes: Route[];
+  };
+}
+
+export default function MapMain({ initialData }: MapMainProps) {
   const {
     mapInfo,
     routes,
@@ -29,7 +36,8 @@ export default function MapMain() {
     setSelectedRoute,
     updateURL,
     fetchLocationData,
-  } = useMapData();
+  } = useMapData(initialData);
+
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const searchParams = useSearchParams();
@@ -47,48 +55,26 @@ export default function MapMain() {
 
   const handleParticipantSelect = useCallback(
     (locationId: string) => {
-      if (selectedLocation !== locationId) {
-        setSelectedLocation(locationId);
-        setSelectedRoute("");
-        updateURL({ place: locationId });
-      } else {
-        setSelectedLocation("");
-        updateURL({});
-      }
+      setSelectedLocation(locationId);
+      setSelectedRoute("");
+      updateURL({ place: locationId });
       if (!isLargeScreen) {
         setIsSheetOpen(false);
       }
     },
-    [
-      selectedLocation,
-      setSelectedLocation,
-      setSelectedRoute,
-      updateURL,
-      isLargeScreen,
-    ]
+    [setSelectedLocation, setSelectedRoute, updateURL, isLargeScreen]
   );
 
   const handleRouteSelect = useCallback(
     (routeId: string) => {
-      if (selectedRoute !== routeId) {
-        setSelectedRoute(routeId);
-        setSelectedLocation("");
-        updateURL({ route: routeId });
-      } else {
-        setSelectedRoute("");
-        updateURL({});
-      }
+      setSelectedRoute(routeId);
+      setSelectedLocation("");
+      updateURL({ route: routeId });
       if (!isLargeScreen) {
         setIsSheetOpen(false);
       }
     },
-    [
-      selectedRoute,
-      setSelectedRoute,
-      setSelectedLocation,
-      updateURL,
-      isLargeScreen,
-    ]
+    [setSelectedRoute, setSelectedLocation, updateURL, isLargeScreen]
   );
 
   if (error) {

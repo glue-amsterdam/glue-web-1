@@ -1,46 +1,37 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-} from "react";
+import type React from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Map, {
   Marker,
-  Popup,
   NavigationControl,
-  MapRef,
+  type MapRef,
   Source,
   Layer,
 } from "react-map-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Home, MapPin, User } from "lucide-react";
-import { MapInfo, Route } from "@/app/hooks/useMapData";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
-import LoadingSpinner from "@/app/components/LoadingSpinner";
+  MapPin,
+  MapPinPlus,
+  MapPinHouse,
+  MapPinMinusInside,
+} from "lucide-react";
+import type { MapInfo, Route } from "@/app/hooks/useMapData";
 import { config } from "@/env";
 
+import PopUpComponent from "@/app/map/pop-up-component";
+import { useLocationData } from "@/app/hooks/useLocationData";
+
 const CITY_BOUNDS: [number, number, number, number] = [
-  parseFloat(config.cityBoundWest || "0"),
-  parseFloat(config.cityBoundSouth || "0"),
-  parseFloat(config.cityBoundEast || "0"),
-  parseFloat(config.cityBoundNorth || "0"),
+  Number.parseFloat(config.cityBoundWest || "0"),
+  Number.parseFloat(config.cityBoundSouth || "0"),
+  Number.parseFloat(config.cityBoundEast || "0"),
+  Number.parseFloat(config.cityBoundNorth || "0"),
 ];
 
 const CITY_CENTER: [number, number] = [
-  parseFloat(config.cityCenterLng || "0"),
-  parseFloat(config.cityCenterLat || "0"),
+  Number.parseFloat(config.cityCenterLng || "0"),
+  Number.parseFloat(config.cityCenterLat || "0"),
 ];
 
 interface MapComponentProps {
@@ -54,12 +45,14 @@ interface MapComponentProps {
   fetchLocationData: (locationId: string) => Promise<void>;
 }
 
-interface PopupInfo {
+export interface PopupInfo {
   id: string;
   formatted_address: string;
   latitude: number;
   longitude: number;
   is_hub: boolean;
+  is_collective: boolean;
+  is_special_program: boolean;
   hub_name: string | null;
   hub_description: string | null;
   participants: {
@@ -81,7 +74,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   updateURL,
 }) => {
   const [popupInfo, setPopupInfo] = useState<PopupInfo | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const { locationData, isLoading } = useLocationData(selectedLocation);
   const mapRef = useRef<MapRef>(null);
   const lastFetchedLocationRef = useRef<string | null>(null);
 
@@ -98,52 +91,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
     []
   );
 
-  const fetchLocationData = useCallback(
-    async (locationId: string) => {
-      if (lastFetchedLocationRef.current === locationId) return;
-      setIsLoading(true);
-      try {
-        const response = await fetch(`/api/mapbox/location/${locationId}`);
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch location data: ${response.status} ${response.statusText}`
-          );
-        }
-        const data: PopupInfo = await response.json();
-        setPopupInfo(data);
-        flyToLocation(data);
-        lastFetchedLocationRef.current = locationId;
-      } catch (error) {
-        console.error("Error fetching location data:", error);
-        setPopupInfo(null);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [flyToLocation]
-  );
-
-  const routeGeoJSON = useMemo(() => {
-    if (!selectedRoute) return null;
-    const route = routes.find((r) => r.id === selectedRoute);
-    if (!route) return null;
-
-    return {
-      type: "Feature",
-      properties: {},
-      geometry: {
-        type: "LineString",
-        coordinates: route.dots.map((dot) => [dot.longitude, dot.latitude]),
-      },
-    };
-  }, [selectedRoute, routes]);
-
   useEffect(() => {
-    if (
-      selectedLocation &&
-      selectedLocation !== lastFetchedLocationRef.current
-    ) {
-      fetchLocationData(selectedLocation);
+    if (locationData && selectedLocation !== lastFetchedLocationRef.current) {
+      setPopupInfo(locationData);
+      flyToLocation(locationData);
+      lastFetchedLocationRef.current = selectedLocation;
     } else if (selectedRoute) {
       const route = routes.find((r) => r.id === selectedRoute);
       if (route && route.dots.length > 0) {
@@ -152,49 +104,56 @@ const MapComponent: React.FC<MapComponentProps> = ({
         lastFetchedLocationRef.current = null;
       }
     }
-  }, [
-    selectedLocation,
-    selectedRoute,
-    routes,
-    flyToLocation,
-    fetchLocationData,
-  ]);
+  }, [locationData, selectedLocation, selectedRoute, routes, flyToLocation]);
+
+  const routeGeoJSON = useMemo(() => {
+    if (!selectedRoute) return null;
+    const route = routes.find((r) => r.id === selectedRoute);
+    if (!route) return null;
+    return {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: route.dots.map((dot) => [dot.longitude, dot.latitude]),
+          },
+        },
+      ],
+    };
+  }, [selectedRoute, routes]);
+
+  useEffect(() => {
+    if (locationData && selectedLocation !== lastFetchedLocationRef.current) {
+      flyToLocation(locationData);
+      setPopupInfo(locationData);
+      lastFetchedLocationRef.current = selectedLocation;
+    } else if (selectedRoute) {
+      const route = routes.find((r) => r.id === selectedRoute);
+      if (route && route.dots.length > 0) {
+        flyToLocation(route.dots[0]);
+        setPopupInfo(null);
+        lastFetchedLocationRef.current = null;
+      }
+    }
+  }, [locationData, selectedLocation, selectedRoute, routes, flyToLocation]);
 
   const handleMarkerClick = useCallback(
     (location: MapInfo) => {
       if (lastFetchedLocationRef.current !== location.id) {
         setSelectedLocation(location.id, "");
-        fetchLocationData(location.id);
         updateURL({ place: location.id });
         if (selectedRoute) {
-          setSelectedRoute(""); // Deselect any route when a location is selected
+          setSelectedRoute("");
         }
       }
     },
-    [
-      setSelectedLocation,
-      fetchLocationData,
-      updateURL,
-      setSelectedRoute,
-      selectedRoute,
-    ]
+    [setSelectedLocation, updateURL, setSelectedRoute, selectedRoute]
   );
 
   const handlePopupClose = useCallback(() => {
     setPopupInfo(null);
-    if (selectedLocation) {
-      setSelectedLocation("", "");
-      lastFetchedLocationRef.current = null;
-      updateURL({});
-    }
-  }, [setSelectedLocation, updateURL, selectedLocation]);
-
-  const handleGoogleMapsRedirect = useCallback((address: string) => {
-    const encodedAddress = encodeURIComponent(address);
-    window.open(
-      `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`,
-      "_blank"
-    );
   }, []);
 
   return (
@@ -208,7 +167,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
         bearing: 0,
       }}
       style={{ width: "100%", height: "100%" }}
-      mapStyle="mapbox://styles/mapbox/streets-v12"
+      mapStyle="mapbox://styles/mapbox/dark-v11"
       maxBounds={CITY_BOUNDS}
       onClick={handlePopupClose}
     >
@@ -228,14 +187,24 @@ const MapComponent: React.FC<MapComponentProps> = ({
             >
               <div className="relative cursor-pointer">
                 <div
-                  className={`w-8 h-8 rounded-full ${
-                    location.is_hub ? "bg-green-500" : "bg-blue-500"
-                  } flex items-center justify-center shadow-md transition-transform hover:scale-110`}
+                  className={`size-7 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110 ${
+                    location.is_hub
+                      ? "bg-green-500 opacity-70 hover:opacity-100"
+                      : location.is_collective
+                      ? "bg-yellow-500 opacity-70 hover:opacity-100"
+                      : location.is_special_program
+                      ? "bg-purple-500 opacity-70 hover:opacity-100"
+                      : "bg-blue-500 opacity-70 hover:opacity-100"
+                  }`}
                 >
                   {location.is_hub ? (
-                    <Home className="w-5 h-5 text-white" />
+                    <MapPinHouse className="w-5 h-5 text-white" />
+                  ) : location.is_collective ? (
+                    <MapPinPlus className="w-5 h-5 text-white" />
+                  ) : location.is_special_program ? (
+                    <MapPinMinusInside className="w-5 h-5 text-white" />
                   ) : (
-                    <User className="w-5 h-5 text-white" />
+                    <MapPin className="w-5 h-5 text-white" />
                   )}
                 </div>
               </div>
@@ -280,100 +249,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
       )}
 
       {popupInfo && (
-        <Popup
-          anchor="bottom-right"
-          longitude={popupInfo.longitude}
-          latitude={popupInfo.latitude}
-          onClose={handlePopupClose}
-          closeButton={false}
-          closeOnClick={false}
-        >
-          <div className="w-72 overflow-hidden rounded-lg shadow-md bg-white">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-48">
-                <LoadingSpinner />
-              </div>
-            ) : (
-              <Carousel
-                plugins={[
-                  Autoplay({
-                    delay: 2000,
-                  }),
-                ]}
-                className="w-full bg-[var(--color-box1)]"
-                key={popupInfo.id}
-              >
-                <CarouselContent>
-                  {popupInfo.participants.map((participant, index) => (
-                    <CarouselItem key={`${participant.user_id}-${index}`}>
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/95 to-transparent z-10"></div>
-                        <img
-                          src={
-                            participant.image_url ||
-                            "/participant-placeholder.jpg"
-                          }
-                          alt={`Image of ${participant.user_name}`}
-                          className="w-full h-48 object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src =
-                              "/participant-placeholder.jpg";
-                          }}
-                        />
-                        <div className="absolute bottom-0 left-0 right-0 p-4 z-20">
-                          <h3 className="font-semibold text-lg leading-tight text-white mb-1">
-                            {participant.user_name}
-                          </h3>
-                          <p className="text-xs text-white/80 line-clamp-2">
-                            {popupInfo.formatted_address}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        {popupInfo.is_hub && (
-                          <p className="text-sm font-medium text-emerald-600 mb-2">
-                            Hub: {popupInfo.hub_name}
-                            {participant.is_host && " (Host)"}
-                          </p>
-                        )}
-                        <div className="flex space-x-2 items-center flex-wrap">
-                          <Link
-                            target="_blank"
-                            href={`/participants/${participant.slug}`}
-                            passHref
-                            className="flex-1"
-                          >
-                            <Button
-                              type="button"
-                              variant="default"
-                              className="w-full bg-[var(--color-triangle)] hover:bg-orange-600 text-white transition-colors duration-200"
-                            >
-                              View Profile
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="outline"
-                            className="flex-1 bg-white text-[var(--color-triangle)] border-[var(--color-triangle)] hover:bg-orange-600 hover:text-white transition-colors duration-200"
-                            onClick={() =>
-                              handleGoogleMapsRedirect(
-                                popupInfo.formatted_address
-                              )
-                            }
-                          >
-                            <MapPin className="w-4 h-4 mr-2" />
-                            Map
-                          </Button>
-                        </div>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="absolute -left-2 z-30 text-black" />
-                <CarouselNext className="absolute -right-2 z-30 text-black" />
-              </Carousel>
-            )}
-          </div>
-        </Popup>
+        <PopUpComponent
+          handlePopupClose={handlePopupClose}
+          isLoading={isLoading}
+          popupInfo={popupInfo}
+        />
       )}
     </Map>
   );
