@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
-import {
+import type {
   MainColors,
   MainLinks,
   MainMenuItem,
   MainSectionData,
+  SubItem,
 } from "@/schemas/mainSchema";
-import { EventDay } from "@/schemas/eventSchemas";
+import type { EventDay } from "@/schemas/eventSchemas";
 
 export async function GET() {
   try {
@@ -36,7 +37,7 @@ export async function GET() {
 
     const mainColorsData = mainColors.data?.[0] as MainColors;
     const eventsDaysData = eventsDays.data;
-    const mainMenuData = mainMenu.data as MainMenuItem[];
+    const mainMenuData = mainMenu.data;
 
     const events_days: EventDay[] = eventsDaysData.map((day) => ({
       dayId: day.dayId,
@@ -51,10 +52,15 @@ export async function GET() {
       })),
     };
 
+    const parsedMainMenuData: MainMenuItem[] = mainMenuData.map((item) => ({
+      ...item,
+      subItems: item.subItems ? (JSON.parse(item.subItems) as SubItem[]) : null,
+    }));
+
     const formattedData: MainSectionData = {
       mainColors: mainColorsData,
       mainLinks: formattedMainLinks,
-      mainMenu: mainMenuData,
+      mainMenu: parsedMainMenuData,
       eventDays: events_days,
     };
 

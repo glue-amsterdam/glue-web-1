@@ -2,8 +2,10 @@ import { eventDaySchema } from "@/schemas/eventSchemas";
 import { z } from "zod";
 
 export const subMenuItemSchema = z.object({
-  title: z.string().min(1, "Title is required"),
   href: z.string(),
+  title: z.string(),
+  is_visible: z.boolean().default(true),
+  place: z.number().int().positive(),
 });
 
 export const mainMenuItemSchema = z.object({
@@ -55,3 +57,4 @@ export type LinkItem = z.infer<typeof linkItemSchema>;
 export type MainLinks = z.infer<typeof mainLinksSchema>;
 export type MainColors = z.infer<typeof mainColorsSchema>;
 export type MainLink = z.infer<typeof linkItemSchema>;
+export type SubItem = z.infer<typeof subMenuItemSchema>;
