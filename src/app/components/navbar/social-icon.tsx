@@ -1,10 +1,10 @@
 import Link from "next/link";
 import React from "react";
-import { IconType } from "react-icons/lib";
+import type { IconType } from "react-icons/lib";
 import { CiInstagram, CiLinkedin, CiYoutube } from "react-icons/ci";
 import { IoNewspaperOutline } from "react-icons/io5";
 import { useLinks } from "@/app/context/MainContext";
-import { LinkItem } from "@/schemas/mainSchema";
+import type { LinkItem } from "@/schemas/mainSchema";
 
 const iconMap: Record<string, IconType> = {
   linkedin: CiLinkedin,
@@ -20,6 +20,8 @@ type Props = LinkItem;
 export default function SocialIcons(): JSX.Element {
   const { mainLinks } = useLinks();
 
+  console.log(mainLinks);
+
   return (
     <div className="flex items-center space-x-4 justify-center">
       {mainLinks.map(({ platform, link }) => (
@@ -34,7 +36,7 @@ export default function SocialIcons(): JSX.Element {
 }
 
 function SocialIcon({ link, platform }: Props) {
-  if (!link) return null;
+  if (!link || link === "javascript:void(0)") return null;
   const Icon: IconType = iconMap[platform];
   if (!Icon) return null;
 
