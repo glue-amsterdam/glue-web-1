@@ -1,14 +1,16 @@
 "use client";
 
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
-import { MainMenuData, mainMenuSchema } from "@/schemas/mainSchema";
+import { type MainMenuData, mainMenuSchema } from "@/schemas/mainSchema";
 import { mutate } from "swr";
 
 interface MainMenuFormProps {
@@ -30,6 +32,7 @@ export default function MainMenuForm({ initialData }: MainMenuFormProps) {
     handleSubmit,
     reset,
     formState: { errors },
+    control,
   } = methods;
 
   useEffect(() => {
@@ -62,8 +65,6 @@ export default function MainMenuForm({ initialData }: MainMenuFormProps) {
     setIsSubmitting(true);
     try {
       await onSubmit(data);
-    } catch (error) {
-      console.error("Error in handleFormSubmit:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -96,17 +97,63 @@ export default function MainMenuForm({ initialData }: MainMenuFormProps) {
             </div>
             <div className="hidden">
               <Input {...register(`mainMenu.${index}.section`)} readOnly />
-            </div>
-            <div className="hidden">
               <Input {...register(`mainMenu.${index}.className`)} readOnly />
-            </div>
-            <div className="hidden">
               <Input {...register(`mainMenu.${index}.menu_id`)} readOnly />
             </div>
+
+            {item.section === "about" &&
+              item.subItems &&
+              Array.isArray(item.subItems) && (
+                <div className="mt-4">
+                  <h3 className="text-lg font-semibold mb-2">Sub Items</h3>
+                  {item.subItems?.map((subItem, subIndex) => (
+                    <div
+                      key={subIndex}
+                      className="flex items-center space-x-4 mb-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <Label
+                          htmlFor={`subItem-${subIndex}-visible`}
+                          className="text-sm font-medium"
+                        >
+                          Show
+                        </Label>
+                        <Controller
+                          name={`mainMenu.${index}.subItems.${subIndex}.is_visible`}
+                          control={control}
+                          render={({ field }) => (
+                            <Switch
+                              id={`subItem-${subIndex}-visible`}
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          )}
+                        />
+                      </div>
+                      <div className="flex-grow">
+                        <Label
+                          htmlFor={`subItem-${subIndex}-title`}
+                          className="text-sm font-medium sr-only"
+                        >
+                          Title
+                        </Label>
+                        <Input
+                          id={`subItem-${subIndex}-title`}
+                          {...register(
+                            `mainMenu.${index}.subItems.${subIndex}.title`
+                          )}
+                          placeholder="Title"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
           </div>
         ))}
         <SaveChangesButton
-          watchFields={["mainMenu"]}
+          watchFields={["mainMenu", "mainMenu.3.subItems"]}
           isSubmitting={isSubmitting}
           className="w-full"
         />

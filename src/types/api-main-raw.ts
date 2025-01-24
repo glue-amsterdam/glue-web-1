@@ -13,7 +13,9 @@ export type ApiMainMenuItem = {
   label?: string;
   section?: string;
   className?: string;
-  subItems?: { title?: string; href?: string }[] | null;
+  subItems?:
+    | { title?: string; href?: string; is_visible?: boolean; place: number }[]
+    | null;
 };
 
 export type ApiMainColors = {

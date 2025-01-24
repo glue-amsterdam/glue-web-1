@@ -2,7 +2,7 @@
 
 import GlueLogoSVG from "@/app/components/glue-logo-svg";
 import HomePageLogo from "@/app/components/navbar/home-page-logo";
-import { MainMenuItem } from "@/schemas/mainSchema";
+import { MainMenuItem, SubItem } from "@/schemas/mainSchema";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -55,13 +55,26 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
     };
   }, [pathname]);
 
+  const aboutSection = sorteredNavItems.find(
+    (item) => item.section === "about"
+  );
+  const visibleAboutSubItems =
+    aboutSection?.subItems?.filter((subItem) => subItem.is_visible) || [];
+
+  const shouldDisplayLogo = visibleAboutSubItems.length >= 5;
+
+  const sortSubItems = (subItems: SubItem[]): SubItem[] => {
+    if (!subItems) return [];
+    return [...subItems].sort((a, b) => a.place - b.place);
+  };
+
   return (
     <nav className="flex items-center justify-start gap-4 px-2">
       <div
         ref={buttonRef}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className=" md:hover:scale-105 md:transition-all"
+        className="md:hover:scale-105 md:transition-all"
       >
         {isMenuOpen ? (
           <ImMenu4 className="size-10" />
@@ -83,9 +96,11 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
           >
             <ul className="flex relative bg-uiwhite pb-5 pt-2 shadow-lg">
               <div className="flex justify-center gap-4 px-2">
-                <div className="size-36 opacity-20 text-white absolute right-20 bottom-10 z-10  md:hover:scale-105 md:transition-all">
-                  <GlueLogoSVG isVisible className="invert" />
-                </div>
+                {shouldDisplayLogo && (
+                  <div className="size-36 opacity-20 text-white absolute right-20 bottom-10 z-10 md:hover:scale-105 md:transition-all">
+                    <GlueLogoSVG isVisible className="invert" />
+                  </div>
+                )}
                 {sorteredNavItems.map((item) => (
                   <li
                     className="flex flex-col px-2 flex-1 space-y-2"
@@ -99,16 +114,19 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
                       {item.label}
                     </Link>
                     {item.subItems &&
-                      item.subItems.map((subItem, index) => (
-                        <Link
-                          onClick={() => setIsMenuOpen(false)}
-                          key={(subItem.href + index) as string}
-                          href={`/${item.section}#${subItem.href}`}
-                          className="text-uiblack hover:underline text-xs tracking-wider hover:text-uiblack/50 md:hover:scale-105 md:transition-all"
-                        >
-                          · {subItem.title}
-                        </Link>
-                      ))}
+                      sortSubItems(item.subItems).map(
+                        (subItem, index) =>
+                          subItem.is_visible && (
+                            <Link
+                              onClick={() => setIsMenuOpen(false)}
+                              key={`${subItem.href}-${index}`}
+                              href={`/${item.section}#${subItem.href}`}
+                              className="text-uiblack hover:underline text-xs tracking-wider hover:text-uiblack/50 md:hover:scale-105 md:transition-all"
+                            >
+                              · {subItem.title}
+                            </Link>
+                          )
+                      )}
                   </li>
                 ))}
               </div>
@@ -117,7 +135,7 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
         )}
       </AnimatePresence>
       <HomePageLogo
-        className=" md:hover:scale-110 md:transition-all"
+        className="md:hover:scale-110 md:transition-all"
         onClick={() => setIsMenuOpen(true)}
       />
     </nav>

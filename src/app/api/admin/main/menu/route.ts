@@ -20,7 +20,12 @@ export async function GET() {
     return NextResponse.json({ error: "Main menu not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ mainMenu });
+  const parsedMainMenu = mainMenu.map((item) => ({
+    ...item,
+    subItems: item.subItems ? JSON.parse(item.subItems) : null,
+  }));
+
+  return NextResponse.json({ mainMenu: parsedMainMenu });
 }
 
 export async function PUT(request: Request) {
@@ -44,11 +49,18 @@ export async function PUT(request: Request) {
         label: string;
         section: string;
         className: string;
+        subItems?: Array<{
+          href: string;
+          title: string;
+          is_visible: boolean;
+          place: number;
+        }>;
       }) => ({
         menu_id: item.menu_id,
         label: item.label,
         section: item.section,
         className: item.className,
+        subItems: item.subItems ? JSON.stringify(item.subItems) : null,
       })
     );
 
@@ -65,7 +77,12 @@ export async function PUT(request: Request) {
       );
     }
 
-    return NextResponse.json({ mainMenu: data });
+    const parsedData = data.map((item) => ({
+      ...item,
+      subItems: item.subItems ? JSON.parse(item.subItems) : null,
+    }));
+
+    return NextResponse.json({ mainMenu: parsedData });
   } catch (error) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
