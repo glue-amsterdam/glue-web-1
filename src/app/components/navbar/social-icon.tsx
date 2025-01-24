@@ -20,8 +20,6 @@ type Props = LinkItem;
 export default function SocialIcons(): JSX.Element {
   const { mainLinks } = useLinks();
 
-  console.log(mainLinks);
-
   return (
     <div className="flex items-center space-x-4 justify-center">
       {mainLinks.map(({ platform, link }) => (
