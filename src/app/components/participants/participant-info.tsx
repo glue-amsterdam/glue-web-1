@@ -2,6 +2,7 @@
 
 import { ParticipantHubInfo } from "@/app/components/participants/participant-hub-info";
 import { useEventsDays } from "@/app/context/MainContext";
+import { Separator } from "@/components/ui/separator";
 import { ParticipantClientResponse } from "@/types/api-visible-user";
 import { formatUrl } from "@/utils/formatUrl";
 import { motion, Variants } from "framer-motion";
@@ -48,6 +49,7 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
         >
           {participant.user_info.user_name}
         </motion.h1>
+
         {participant.short_description && (
           <motion.p
             className="text-sm md:text-base leading-relaxed mt-4"
@@ -56,18 +58,22 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
             {participant.short_description}
           </motion.p>
         )}
+        <Separator className="opacity-50 max-w-[90%] mx-auto" />
         {participant.description && (
-          <motion.div
-            className="text-sm md:text-base leading-relaxed mt-4 prose prose-sm md:prose-base dark:prose-invert max-w-none"
-            variants={fadeInUp}
-            dangerouslySetInnerHTML={{ __html: participant.description }}
-          />
+          <>
+            <motion.div
+              className="text-sm md:text-base leading-relaxed mt-4 prose prose-sm md:prose-base max-w-none text-white dark:text-white"
+              variants={fadeInUp}
+              dangerouslySetInnerHTML={{ __html: participant.description }}
+            />
+            <Separator className="opacity-50 max-w-[90%] mx-auto" />
+          </>
         )}
 
         <motion.div variants={fadeInUp} className="mt-8">
           {participant.user_info.map_info.length > 0 && (
             <>
-              <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-700">
+              <h2 className="text-xl md:text-2xl font-semibold mb-3 text-white">
                 Address
               </h2>
               {participant.user_info.map_info.map((map, index) => (

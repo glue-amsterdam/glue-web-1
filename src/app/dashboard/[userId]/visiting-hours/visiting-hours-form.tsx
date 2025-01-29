@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { mutate } from "swr";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { Label } from "@/components/ui/label";
 
 interface VisitingHoursFormProps {
   targetUserId: string | undefined;
@@ -111,6 +112,7 @@ export function VisitingHoursForm({
             {eventDays?.length > 0 ? (
               eventDays.map((day, index) => (
                 <div key={day.dayId} className="space-y-4">
+                  <Label className="font-bold font-overpass">{day.label}</Label>
                   <FormField
                     control={form.control}
                     name={`visitingHours.${index}.hours`}

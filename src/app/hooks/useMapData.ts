@@ -1,6 +1,7 @@
 import { config } from "@/env";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
+import { useDebouncedCallback } from "use-debounce";
 
 // City bounding box from environment variables
 const CITY_BOUNDS: [number, number, number, number] = [
@@ -58,12 +59,10 @@ export function useMapData(initialData: {
   mapInfo: MapInfo[];
   routes: Route[];
 }) {
-  const [mapInfo, setMapInfo] = useState<MapInfo[]>(initialData.mapInfo);
+  const mapInfo = initialData.mapInfo;
   const [routes] = useState<Route[]>(initialData.routes); // Remove setRoutes since we don't need it anymore
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -77,22 +76,24 @@ export function useMapData(initialData: {
     );
   }, []);
 
-  const filteredMapInfo = useMemo(() => {
-    return mapInfo.filter((location) =>
-      isWithinBounds(location.longitude, location.latitude)
-    );
-  }, [mapInfo, isWithinBounds]);
+  const filteredMapInfo = useMemo(
+    () =>
+      mapInfo.filter((location) =>
+        isWithinBounds(location.longitude, location.latitude)
+      ),
+    [mapInfo, isWithinBounds]
+  );
+  const filteredRoutes = useMemo(
+    () =>
+      routes.filter((route) =>
+        route.dots.every((dot) => isWithinBounds(dot.longitude, dot.latitude))
+      ),
+    [routes, isWithinBounds]
+  );
 
-  const filteredRoutes = useMemo(() => {
-    return routes.filter((route) =>
-      route.dots.every((dot) => isWithinBounds(dot.longitude, dot.latitude))
-    );
-  }, [routes, isWithinBounds]);
-
-  const updateURL = useCallback(
+  const debouncedUpdateURL = useDebouncedCallback(
     (params: { place?: string; route?: string }) => {
       const newSearchParams = new URLSearchParams(searchParams.toString());
-
       if (params.place) {
         newSearchParams.set("place", params.place);
         newSearchParams.delete("route");
@@ -103,70 +104,45 @@ export function useMapData(initialData: {
         newSearchParams.delete("place");
         newSearchParams.delete("route");
       }
-
       router.push(`/map?${newSearchParams.toString()}`, { scroll: false });
     },
-    [router, searchParams]
+    150
   );
 
-  const fetchLocationData = useCallback(async (locationId: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`/api/mapbox/location/${locationId}`);
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch location data: ${response.status} ${response.statusText}`
-        );
-      }
-      const data: MapInfo = await response.json();
-      setMapInfo((prevMapInfo) => {
-        const index = prevMapInfo.findIndex((info) => info.id === locationId);
-        if (index !== -1) {
-          return [
-            ...prevMapInfo.slice(0, index),
-            data,
-            ...prevMapInfo.slice(index + 1),
-          ];
-        }
-        return [...prevMapInfo, data];
-      });
-    } catch (err) {
-      setError("Failed to load location data");
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
+  // Cleanup logic in a useEffect hook
+  useEffect(() => {
+    const abortController = new AbortController();
+    return () => {
+      abortController.abort(); // Cleanup on unmount
+    };
   }, []);
 
   const handleParticipantSelect = useCallback(
     (locationId: string) => {
       setSelectedLocation(locationId);
       setSelectedRoute(null);
-      updateURL({ place: locationId });
+      debouncedUpdateURL({ place: locationId });
     },
-    [updateURL]
+    [debouncedUpdateURL]
   );
 
   const handleRouteSelect = useCallback(
     (routeId: string) => {
       setSelectedRoute(routeId);
       setSelectedLocation(null);
-      updateURL({ route: routeId });
+      debouncedUpdateURL({ route: routeId });
     },
-    [updateURL]
+    [debouncedUpdateURL]
   );
 
   return {
     mapInfo: filteredMapInfo,
     routes: filteredRoutes,
-    error,
-    isLoading,
     selectedLocation,
     selectedRoute,
     setSelectedLocation: handleParticipantSelect,
     setSelectedRoute: handleRouteSelect,
-    updateURL,
+    updateURL: debouncedUpdateURL,
     isWithinBounds,
-    fetchLocationData,
   };
 }

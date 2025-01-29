@@ -10,27 +10,69 @@ import { CookieBanner } from "@/components/cookies/cookies-banner";
 import { config } from "@/env";
 
 export const metadata: Metadata = {
-  title: `GLUE ${config.cityName}`,
-  description: `GLUE ${config.cityName} connected by design`,
+  title: `GLUE ${config.cityName} | Connected by Design`,
+  description: `Discover GLUE ${config.cityName}, where innovation meets creativity. Explore our events, design routes, and join a community connected by design.`,
   openGraph: {
-    title: "GLUE",
-    url: "",
-    description: "",
-    images: "",
+    title: `GLUE ${config.cityName} | Connected by Design`,
+    url: config.baseUrl,
+    description: `Join GLUE ${config.cityName} and experience a world of design-driven innovation. Connect with us today!`,
+    images: [
+      {
+        url: `${config.baseUrl}/${config.cityName}/og-image.jpg`,
+        width: 1200,
+        height: 630,
+        alt: `GLUE ${config.cityName} - Connected by Design`,
+      },
+    ],
     type: "website",
+    siteName: `GLUE ${config.cityName}`,
   },
   twitter: {
-    title: "GLUE",
+    title: `GLUE ${config.cityName} | Connected by Design`,
     card: "summary_large_image",
-    description: `GLUE ${config.cityName} connected by design`,
-    site: "",
-    images: "",
+    description: `Discover GLUE ${config.cityName}, where innovation meets creativity. Explore our events, design routes, and join a community connected by design.`,
+    images: `${config.baseUrl}/${config.cityName}/tw-image.jpg`,
+    site: config.cityName,
   },
   icons: [
     {
-      url: `/favicons/${config.cityName}.ico`,
+      url: `${config.baseUrl}/${config.cityName}/favicon.ico`,
+      media: "(prefers-color-scheme: light)",
+    },
+    {
+      url: `${config.baseUrl}/${config.cityName}/favicon.ico`,
+      media: "(prefers-color-scheme: dark)",
     },
   ],
+
+  keywords: [
+    "GLUE",
+    config.cityName,
+    "design",
+    "design routes",
+    "design community",
+    "innovation",
+    "connected by design",
+    "creative events",
+    "urban design",
+  ],
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  metadataBase: new URL(config.baseUrl),
+  alternates: {
+    canonical: config.baseUrl,
+  },
 };
 
 export default async function RootLayout({

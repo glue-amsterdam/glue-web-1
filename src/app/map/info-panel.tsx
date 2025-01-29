@@ -36,17 +36,21 @@ interface InfoPanelProps {
   routes: RouteType[];
   selectedLocation: string | null;
   selectedRoute: string | null;
+  setSelectedLocation: (locationId: string) => void;
+  setSelectedRoute: (routeId: string) => void;
   onParticipantSelect: (locationId: string) => void;
   onRouteSelect: (routeId: string) => void;
   updateURL: (params: { place?: string; route?: string }) => void;
   className?: string;
 }
 
-export function InfoPanel({
+function InfoPanel({
   mapInfo,
   routes,
   selectedLocation,
   selectedRoute,
+  setSelectedLocation,
+  setSelectedRoute,
   onParticipantSelect,
   onRouteSelect,
   updateURL,
@@ -60,14 +64,34 @@ export function InfoPanel({
   const [openAccordions, setOpenAccordions] = useState<string[]>([
     "participants",
   ]);
-  const [openLocation, setOpenLocation] = useState<string | null>(null);
-  const [openRoute, setOpenRoute] = useState<string | null>(null);
+
+  useEffect(() => {
+    const placeId = searchParams.get("place");
+    const routeId = searchParams.get("route");
+
+    if (placeId) {
+      setOpenAccordions((prev) =>
+        prev.includes("participants") ? prev : [...prev, "participants"]
+      );
+      setSelectedLocation(placeId);
+    } else {
+      setOpenAccordions((prev) =>
+        prev.filter((item) => item !== "participants")
+      );
+    }
+
+    if (routeId) {
+      const routeZone = routeId.split("-")[0];
+      setOpenAccordions((prev) =>
+        prev.includes(routeZone) ? prev : [...prev, routeZone]
+      );
+      setSelectedRoute(routeId);
+    }
+  }, [searchParams, setSelectedLocation, setSelectedRoute]);
 
   const groupedRoutes = useMemo(() => {
     return routes.reduce((acc, route) => {
-      if (!acc[route.zone]) {
-        acc[route.zone] = [];
-      }
+      if (!acc[route.zone]) acc[route.zone] = [];
       acc[route.zone].push(route);
       return acc;
     }, {} as Record<RouteZone, RouteType[]>);
@@ -87,17 +111,6 @@ export function InfoPanel({
     );
   }, []);
 
-  const handleLoginModalOpen = () => {
-    if (!user) {
-      setIsLoginModalOpen(true);
-    }
-  };
-
-  const handleLoginSuccess = () => {
-    setIsLoginModalOpen(false);
-    router.refresh();
-  };
-
   const redirectRouteToGoogleMaps = useCallback((route: RouteType) => {
     const waypoints = route.dots
       .map((dot) => `${dot.latitude},${dot.longitude}`)
@@ -112,9 +125,8 @@ export function InfoPanel({
 
   const handleLocationSelect = useCallback(
     (locationId: string) => {
+      updateURL({ place: locationId, route: undefined });
       onParticipantSelect(locationId);
-      setOpenLocation(locationId);
-      setOpenRoute(null);
       setOpenAccordions((prev) => {
         const newAccordions = prev.filter(
           (item) => item === "participants" || item === locationId
@@ -123,50 +135,30 @@ export function InfoPanel({
           ? newAccordions
           : ["participants", ...newAccordions];
       });
-      updateURL({ place: locationId, route: undefined });
     },
     [onParticipantSelect, updateURL]
   );
 
   const handleRouteSelect = useCallback(
     (routeId: string) => {
+      updateURL({ place: undefined, route: routeId });
       onRouteSelect(routeId);
-      setOpenRoute(routeId);
       setOpenAccordions((prev) => {
         const newAccordions = prev.filter((item) => item !== "participants");
         return [...newAccordions, routeId.split("-")[0]];
       });
-      updateURL({ place: undefined, route: routeId });
     },
     [onRouteSelect, updateURL]
   );
 
-  useEffect(() => {
-    const placeId = searchParams.get("place");
-    const routeId = searchParams.get("route");
+  const handleLoginModalOpen = () => {
+    if (!user) setIsLoginModalOpen(true);
+  };
 
-    if (placeId) {
-      setOpenLocation(placeId);
-      setOpenAccordions((prev) =>
-        prev.includes("participants") ? prev : [...prev, "participants"]
-      );
-    } else {
-      setOpenLocation(null);
-      setOpenAccordions((prev) =>
-        prev.filter((item) => item !== "participants")
-      );
-    }
-
-    if (routeId) {
-      setOpenRoute(routeId);
-      const routeZone = routeId.split("-")[0];
-      setOpenAccordions((prev) =>
-        prev.includes(routeZone) ? prev : [...prev, routeZone]
-      );
-    } else {
-      setOpenRoute(null);
-    }
-  }, [searchParams]);
+  const handleLoginSuccess = () => {
+    setIsLoginModalOpen(false);
+    router.refresh();
+  };
 
   return (
     <ScrollArea className={`h-[calc(100vh-5rem)] ${className} text-black`}>
@@ -188,123 +180,13 @@ export function InfoPanel({
               ) : (
                 <div className="space-y-2">
                   {mapInfo.map((location) => (
-                    <div
+                    <LocationItem
                       key={location.id}
-                      className="border rounded-lg overflow-hidden mb-2"
-                    >
-                      {location.is_hub || location.is_collective ? (
-                        <Accordion
-                          type="single"
-                          value={openLocation || ""}
-                          onValueChange={setOpenLocation}
-                        >
-                          <AccordionItem value={location.id}>
-                            <AccordionTrigger
-                              className={`p-2 text-sm hover:bg-gray/50 ${
-                                selectedLocation === location.id
-                                  ? location.is_hub
-                                    ? "bg-green-500/50"
-                                    : "bg-yellow-500/50"
-                                  : ""
-                              }`}
-                              onClick={() => handleLocationSelect(location.id)}
-                            >
-                              <div className="flex items-center w-full">
-                                {location.is_hub ? (
-                                  <MapPinHouse
-                                    className="mr-2 h-4 w-4 text-green-500"
-                                    aria-hidden="true"
-                                  />
-                                ) : (
-                                  <MapPinPlus
-                                    className="mr-2 h-4 w-4 text-yellow-500"
-                                    aria-hidden="true"
-                                  />
-                                )}
-                                <div className="flex-grow flex text-left text-sm gap-2">
-                                  <span>{location.hub_name}</span>-
-                                  <span>
-                                    {location.is_hub ? "HUB" : "Collective"}
-                                  </span>
-                                </div>
-
-                                <div
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    redirectToGoogleMaps(
-                                      location.latitude,
-                                      location.longitude
-                                    );
-                                  }}
-                                  className="ml-2 cursor-pointer"
-                                >
-                                  <ExternalLink className="h-3 w-3" />
-                                </div>
-                              </div>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                              <div className="pl-4 space-y-1">
-                                {location.participants.map((participant) => (
-                                  <div
-                                    key={participant.user_id}
-                                    className="flex items-center py-1 text-xs"
-                                  >
-                                    <span>{participant.user_name}</span>
-                                    {participant.is_host && (
-                                      <span className="ml-2 text-xs bg-black/50 text-white px-1 py-0.5 rounded-full">
-                                        Host
-                                      </span>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        </Accordion>
-                      ) : (
-                        <div
-                          className={`p-2 text-sm hover:bg-gray/50 cursor-pointer ${
-                            selectedLocation === location.id
-                              ? location.is_special_program
-                                ? "bg-purple-500/50"
-                                : "bg-blue-500/50"
-                              : ""
-                          }`}
-                          onClick={() => handleLocationSelect(location.id)}
-                        >
-                          <div className="flex items-center w-full">
-                            {location.is_special_program ? (
-                              <MapPinMinusInside
-                                className="mr-2 h-4 w-4 text-purple-500"
-                                aria-hidden="true"
-                              />
-                            ) : (
-                              <MapPin
-                                className="mr-2 h-4 w-4 text-blue-500"
-                                aria-hidden="true"
-                              />
-                            )}
-                            <span className="flex-grow text-left text-sm">
-                              {location.is_special_program
-                                ? `${location.participants[0].user_name} - Special Program`
-                                : `${location.participants[0].user_name} - Participant`}
-                            </span>
-                            <div
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                redirectToGoogleMaps(
-                                  location.latitude,
-                                  location.longitude
-                                );
-                              }}
-                              className="ml-2 cursor-pointer"
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                      location={location}
+                      selectedLocation={selectedLocation}
+                      onSelect={handleLocationSelect}
+                      redirectToGoogleMaps={redirectToGoogleMaps}
+                    />
                   ))}
                 </div>
               )}
@@ -332,67 +214,13 @@ export function InfoPanel({
                   {user ? (
                     <div className="space-y-2">
                       {zoneRoutes.map((route) => (
-                        <Accordion
+                        <RouteItem
                           key={route.id}
-                          type="single"
-                          collapsible
-                          value={openRoute || ""}
-                          onValueChange={setOpenRoute}
-                          className="border rounded-lg overflow-hidden mb-2"
-                        >
-                          <AccordionItem value={route.id}>
-                            <AccordionTrigger
-                              className={`p-2 text-sm hover:bg-gray/50 ${
-                                selectedRoute === route.id
-                                  ? "bg-red-500/10"
-                                  : ""
-                              }`}
-                              onClick={() => handleRouteSelect(route.id)}
-                            >
-                              <div className="flex items-center w-full">
-                                <RouteIcon
-                                  className="mr-2 h-4 w-4 text-red-500"
-                                  aria-hidden="true"
-                                />
-                                <span className="flex-grow text-left text-sm">
-                                  {route.name}
-                                </span>
-                                <div
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    redirectRouteToGoogleMaps(route);
-                                  }}
-                                  className="ml-2 cursor-pointer"
-                                >
-                                  <ExternalLink className="h-3 w-3" />
-                                </div>
-                              </div>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                              <div className="pl-4 space-y-1">
-                                {route.dots.map((dot, index) => (
-                                  <div
-                                    key={dot.id}
-                                    className="flex items-center text-xs py-1 hover:bg-gray-50"
-                                  >
-                                    <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center mr-2 text-[10px]">
-                                      {index + 1}
-                                    </span>
-                                    <div className="">
-                                      <div className="flex gap-2">
-                                        <User className="size-3" />
-                                        {dot.user_name}
-                                      </div>
-                                      <div className="text-gray-500">
-                                        {dot.formatted_address}
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        </Accordion>
+                          route={route}
+                          selectedRoute={selectedRoute}
+                          onSelect={handleRouteSelect}
+                          redirectRouteToGoogleMaps={redirectRouteToGoogleMaps}
+                        />
                       ))}
                     </div>
                   ) : (
@@ -416,3 +244,205 @@ export function InfoPanel({
     </ScrollArea>
   );
 }
+
+const LocationItem = React.memo(
+  ({
+    location,
+    selectedLocation,
+    onSelect,
+    redirectToGoogleMaps,
+  }: {
+    location: MapInfo;
+    selectedLocation: string | null;
+    onSelect: (locationId: string) => void;
+    redirectToGoogleMaps: (lat: number, lng: number) => void;
+  }) => {
+    return (
+      <div className="border rounded-lg overflow-hidden mb-2">
+        {location.is_hub || location.is_collective ? (
+          <Accordion
+            type="single"
+            value={selectedLocation || ""}
+            onValueChange={onSelect}
+          >
+            <AccordionItem value={location.id}>
+              <AccordionTrigger
+                className={`p-2 text-sm hover:bg-gray/50 ${
+                  selectedLocation === location.id
+                    ? location.is_hub
+                      ? "bg-green-500/50"
+                      : "bg-yellow-500/50"
+                    : ""
+                }`}
+                onClick={() => onSelect(location.id)}
+              >
+                <div className="flex items-center w-full">
+                  {location.is_hub ? (
+                    <MapPinHouse
+                      className="mr-2 h-4 w-4 text-green-500"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <MapPinPlus
+                      className="mr-2 h-4 w-4 text-yellow-500"
+                      aria-hidden="true"
+                    />
+                  )}
+                  <div className="flex-grow flex text-left text-sm gap-2">
+                    <span>{location.hub_name}</span>-
+                    <span>{location.is_hub ? "HUB" : "Collective"}</span>
+                  </div>
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      redirectToGoogleMaps(
+                        location.latitude,
+                        location.longitude
+                      );
+                    }}
+                    className="ml-2 cursor-pointer"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="pl-4 space-y-1">
+                  {location.participants.map((participant) => (
+                    <div
+                      key={participant.user_id}
+                      className="flex items-center py-1 text-xs"
+                    >
+                      <span>{participant.user_name}</span>
+                      {participant.is_host && (
+                        <span className="ml-2 text-xs bg-black/50 text-white px-1 py-0.5 rounded-full">
+                          Host
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        ) : (
+          <div
+            className={`p-2 text-sm hover:bg-gray/50 cursor-pointer ${
+              selectedLocation === location.id
+                ? location.is_special_program
+                  ? "bg-purple-500/50"
+                  : "bg-blue-500/50"
+                : ""
+            }`}
+            onClick={() => onSelect(location.id)}
+          >
+            <div className="flex items-center w-full">
+              {location.is_special_program ? (
+                <MapPinMinusInside
+                  className="mr-2 h-4 w-4 text-purple-500"
+                  aria-hidden="true"
+                />
+              ) : (
+                <MapPin
+                  className="mr-2 h-4 w-4 text-blue-500"
+                  aria-hidden="true"
+                />
+              )}
+              <span className="flex-grow text-left text-sm">
+                {location.is_special_program
+                  ? `${location.participants[0].user_name} - Special Program`
+                  : `${location.participants[0].user_name} - Participant`}
+              </span>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  redirectToGoogleMaps(location.latitude, location.longitude);
+                }}
+                className="ml-2 cursor-pointer"
+              >
+                <ExternalLink className="h-3 w-3" />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+);
+LocationItem.displayName = "LocationItem";
+
+const RouteItem = React.memo(
+  ({
+    route,
+    selectedRoute,
+    onSelect,
+    redirectRouteToGoogleMaps,
+  }: {
+    route: RouteType;
+    selectedRoute: string | null;
+    onSelect: (routeId: string) => void;
+    redirectRouteToGoogleMaps: (route: RouteType) => void;
+  }) => {
+    return (
+      <Accordion
+        type="single"
+        collapsible
+        value={selectedRoute || ""}
+        onValueChange={onSelect}
+        className="border rounded-lg overflow-hidden mb-2"
+      >
+        <AccordionItem value={route.id}>
+          <AccordionTrigger
+            className={`p-2 text-sm hover:bg-gray/50 ${
+              selectedRoute === route.id ? "bg-red-500/10" : ""
+            }`}
+            onClick={() => onSelect(route.id)}
+          >
+            <div className="flex items-center w-full">
+              <RouteIcon
+                className="mr-2 h-4 w-4 text-red-500"
+                aria-hidden="true"
+              />
+              <span className="flex-grow text-left text-sm">{route.name}</span>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  redirectRouteToGoogleMaps(route);
+                }}
+                className="ml-2 cursor-pointer"
+              >
+                <ExternalLink className="h-3 w-3" />
+              </div>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="pl-4 space-y-1">
+              {route.dots.map((dot, index) => (
+                <div
+                  key={dot.id}
+                  className="flex items-center text-xs py-1 hover:bg-gray-50"
+                >
+                  <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center mr-2 text-[10px]">
+                    {index + 1}
+                  </span>
+                  <div className="">
+                    <div className="flex gap-2">
+                      <User className="size-3" />
+                      {dot.user_name}
+                    </div>
+                    <div className="text-gray-500">{dot.formatted_address}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    );
+  }
+);
+RouteItem.displayName = "RouteItem";
+
+const Memoinfo = React.memo(InfoPanel);
+
+export default Memoinfo;

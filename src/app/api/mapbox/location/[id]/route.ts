@@ -18,7 +18,6 @@ export async function GET(
       .single();
 
     if (locationError) throw locationError;
-
     if (!locationData) {
       return NextResponse.json(
         { error: "Location not found" },
@@ -26,34 +25,7 @@ export async function GET(
       );
     }
 
-    // Fetch user info for the location owner
-    const { data: userData, error: userError } = await supabase
-      .from("user_info")
-      .select("user_id, user_name")
-      .eq("user_id", locationData.user_id)
-      .single();
-
-    if (userError) throw userError;
-
-    // Fetch participant details for the location owner
-    const { data: participantData, error: participantError } = await supabase
-      .from("participant_details")
-      .select("slug, status")
-      .eq("user_id", locationData.user_id)
-      .single();
-
-    if (participantError) throw participantError;
-
-    // Fetch participant image for the location owner
-    const { data: imageData, error: imageError } = await supabase
-      .from("participant_image")
-      .select("image_url")
-      .eq("user_id", locationData.user_id)
-      .single();
-
-    if (imageError && imageError.code !== "PGRST116") throw imageError;
-
-    // Fetch hub information if it exists
+    // Check if the location is a hub
     const { data: hubData, error: hubError } = await supabase
       .from("hubs")
       .select("*")
@@ -61,16 +33,6 @@ export async function GET(
       .single();
 
     if (hubError && hubError.code !== "PGRST116") throw hubError;
-
-    let participants = [
-      {
-        user_id: userData.user_id,
-        user_name: userData.user_name,
-        is_host: true,
-        slug: participantData?.slug || null,
-        image_url: imageData?.image_url || null,
-      },
-    ];
 
     if (hubData) {
       // Fetch hub participants
@@ -82,64 +44,114 @@ export async function GET(
 
       if (hubParticipantsError) throw hubParticipantsError;
 
-      // Fetch user info, participant details, and images for hub participants
-      const hubParticipantPromises = hubParticipants.map(
-        async (participant) => {
-          const [userInfo, participantDetails, participantImage] =
-            await Promise.all([
-              supabase
-                .from("user_info")
-                .select("user_name")
-                .eq("user_id", participant.user_id)
-                .single(),
-              supabase
-                .from("participant_details")
-                .select("slug, status")
-                .eq("user_id", participant.user_id)
-                .eq("status", "accepted")
-                .single(),
-              supabase
-                .from("participant_image")
-                .select("image_url")
-                .eq("user_id", participant.user_id)
-                .single(),
-            ]);
+      const userIds = hubParticipants.map((p) => p.user_id);
 
-          if (participantDetails.data) {
-            return {
-              user_id: participant.user_id,
-              user_name: userInfo.data?.user_name || "",
-              is_host: false,
-              slug: participantDetails.data.slug || null,
-              image_url: participantImage.data?.image_url || null,
-            };
+      // Bulk fetch related data
+      const [
+        { data: userInfos },
+        { data: participantDetails },
+        { data: participantImages },
+      ] = await Promise.all([
+        supabase
+          .from("user_info")
+          .select("user_id, user_name")
+          .in("user_id", userIds),
+        supabase
+          .from("participant_details")
+          .select("user_id, slug")
+          .in("user_id", userIds)
+          .eq("status", "accepted"),
+        supabase
+          .from("participant_image")
+          .select("user_id, image_url")
+          .in("user_id", userIds)
+          .order("id", { ascending: true }),
+      ]);
+
+      // Create lookup maps
+      const imageMap = new Map(
+        participantImages?.reduce((acc, image) => {
+          if (!acc.some(([uid]) => uid === image.user_id)) {
+            acc.push([image.user_id, image.image_url]);
           }
-          return null;
-        }
+          return acc;
+        }, [] as [string, string][]) || []
       );
 
-      const hubParticipantsData = (
-        await Promise.all(hubParticipantPromises)
-      ).filter(Boolean);
-      participants = participants.concat(
-        hubParticipantsData.filter((participant) => participant !== null)
+      const userMap = new Map(userInfos?.map((u) => [u.user_id, u]) || []);
+      const detailsMap = new Map(
+        participantDetails?.map((d) => [d.user_id, d]) || []
       );
+
+      // Build participants array
+      const participants = userIds
+        .map((userId) => {
+          const user = userMap.get(userId);
+          const detail = detailsMap.get(userId);
+          if (!user || !detail) return null;
+
+          return {
+            user_id: userId,
+            user_name: user.user_name,
+            is_host: userId === locationData.user_id,
+            slug: detail.slug,
+            image_url: imageMap.get(userId) || null,
+          };
+        })
+        .filter(Boolean);
+
+      return NextResponse.json({
+        id: locationData.id,
+        formatted_address: locationData.formatted_address,
+        latitude: locationData.latitude,
+        longitude: locationData.longitude,
+        is_hub: true,
+        hub_name: hubData.name,
+        hub_description: hubData.description,
+        participants,
+      });
     }
 
-    const transformedData = {
+    // Handle non-hub case
+    const [{ data: userData }, { data: participantData }, { data: imageData }] =
+      await Promise.all([
+        supabase
+          .from("user_info")
+          .select("user_id, user_name")
+          .eq("user_id", locationData.user_id)
+          .single(),
+        supabase
+          .from("participant_details")
+          .select("slug, status")
+          .eq("user_id", locationData.user_id)
+          .single(),
+        supabase
+          .from("participant_image")
+          .select("image_url")
+          .eq("user_id", locationData.user_id)
+          .limit(1),
+      ]);
+
+    return NextResponse.json({
       id: locationData.id,
       formatted_address: locationData.formatted_address,
       latitude: locationData.latitude,
       longitude: locationData.longitude,
-      is_hub: !!hubData,
-      hub_name: hubData?.name,
-      hub_description: hubData?.description,
-      participants: participants,
-    };
-
-    return NextResponse.json(transformedData);
+      is_hub: false,
+      hub_name: null,
+      hub_description: null,
+      participants: [
+        {
+          user_id: locationData.user_id,
+          user_name: userData?.user_name || "",
+          is_host: true,
+          slug: participantData?.slug || null,
+          image_url: imageData?.[0]?.image_url || null,
+        },
+      ],
+    });
   } catch (error) {
-    console.error("Error fetching detailed location information:", error);
+    console.error("Error fetching location information:", error);
     return NextResponse.json(
       { error: "Internal Server Error", details: error },
       { status: 500 }
