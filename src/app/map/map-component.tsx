@@ -1,7 +1,13 @@
 "use client";
 
-import type React from "react";
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  memo,
+} from "react";
 import Map, {
   Marker,
   NavigationControl,
@@ -10,17 +16,12 @@ import Map, {
   Layer,
 } from "react-map-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import {
-  MapPin,
-  MapPinPlus,
-  MapPinHouse,
-  MapPinMinusInside,
-} from "lucide-react";
-import type { MapInfo, Route } from "@/app/hooks/useMapData";
+import { type MapInfo, type Route as RouteType } from "@/app/hooks/useMapData";
 import { config } from "@/env";
-
-import PopUpComponent from "@/app/map/pop-up-component";
 import { useLocationData } from "@/app/hooks/useLocationData";
+import { MemoizedMarker } from "@/app/map/memorized-marker";
+import MemoizedPopUpComponent from "@/app/map/pop-up-component";
+import { useDebouncedCallback } from "use-debounce";
 
 const CITY_BOUNDS: [number, number, number, number] = [
   Number.parseFloat(config.cityBoundWest || "0"),
@@ -36,13 +37,15 @@ const CITY_CENTER: [number, number] = [
 
 interface MapComponentProps {
   mapInfo: MapInfo[];
-  routes: Route[];
-  selectedRoute: string | null;
+  routes: RouteType[];
   selectedLocation: string | null;
-  setSelectedLocation: (locationId: string, userId: string) => void;
+  selectedRoute: string | null;
+  setSelectedLocation: (locationId: string) => void;
   setSelectedRoute: (routeId: string) => void;
+  onParticipantSelect: (locationId: string) => void;
+  onRouteSelect: (routeId: string) => void;
   updateURL: (params: { place?: string; route?: string }) => void;
-  fetchLocationData: (locationId: string) => Promise<void>;
+  className?: string;
 }
 
 export interface PopupInfo {
@@ -74,11 +77,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
   updateURL,
 }) => {
   const [popupInfo, setPopupInfo] = useState<PopupInfo | null>(null);
-  const { locationData, isLoading } = useLocationData(selectedLocation);
+  const { locationData, isLoading, isError } =
+    useLocationData(selectedLocation);
   const mapRef = useRef<MapRef>(null);
   const lastFetchedLocationRef = useRef<string | null>(null);
 
-  const flyToLocation = useCallback(
+  // Debounced fly-to function
+  const debouncedFlyToLocation = useDebouncedCallback(
     (location: { longitude: number; latitude: number }) => {
       if (mapRef.current) {
         mapRef.current.flyTo({
@@ -88,24 +93,32 @@ const MapComponent: React.FC<MapComponentProps> = ({
         });
       }
     },
-    []
+    150 // Debounce delay
   );
 
+  // Update popup and fly to location when locationData changes
   useEffect(() => {
     if (locationData && selectedLocation !== lastFetchedLocationRef.current) {
       setPopupInfo(locationData);
-      flyToLocation(locationData);
+      debouncedFlyToLocation(locationData);
       lastFetchedLocationRef.current = selectedLocation;
     } else if (selectedRoute) {
       const route = routes.find((r) => r.id === selectedRoute);
       if (route && route.dots.length > 0) {
-        flyToLocation(route.dots[0]);
+        debouncedFlyToLocation(route.dots[0]);
         setPopupInfo(null);
         lastFetchedLocationRef.current = null;
       }
     }
-  }, [locationData, selectedLocation, selectedRoute, routes, flyToLocation]);
+  }, [
+    locationData,
+    selectedLocation,
+    selectedRoute,
+    routes,
+    debouncedFlyToLocation,
+  ]);
 
+  // Memoized GeoJSON for the selected route
   const routeGeoJSON = useMemo(() => {
     if (!selectedRoute) return null;
     const route = routes.find((r) => r.id === selectedRoute);
@@ -124,26 +137,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
     };
   }, [selectedRoute, routes]);
 
-  useEffect(() => {
-    if (locationData && selectedLocation !== lastFetchedLocationRef.current) {
-      flyToLocation(locationData);
-      setPopupInfo(locationData);
-      lastFetchedLocationRef.current = selectedLocation;
-    } else if (selectedRoute) {
-      const route = routes.find((r) => r.id === selectedRoute);
-      if (route && route.dots.length > 0) {
-        flyToLocation(route.dots[0]);
-        setPopupInfo(null);
-        lastFetchedLocationRef.current = null;
-      }
-    }
-  }, [locationData, selectedLocation, selectedRoute, routes, flyToLocation]);
-
+  // Handle marker click
   const handleMarkerClick = useCallback(
     (location: MapInfo) => {
       if (lastFetchedLocationRef.current !== location.id) {
-        setSelectedLocation(location.id, "");
         updateURL({ place: location.id });
+        setSelectedLocation(location.id);
         if (selectedRoute) {
           setSelectedRoute("");
         }
@@ -152,6 +151,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     [setSelectedLocation, updateURL, setSelectedRoute, selectedRoute]
   );
 
+  // Handle popup close
   const handlePopupClose = useCallback(() => {
     setPopupInfo(null);
   }, []);
@@ -172,47 +172,17 @@ const MapComponent: React.FC<MapComponentProps> = ({
       onClick={handlePopupClose}
     >
       <NavigationControl />
-      {!selectedRoute && (
-        <>
-          {mapInfo.map((location) => (
-            <Marker
-              key={location.id}
-              longitude={location.longitude}
-              latitude={location.latitude}
-              anchor="top"
-              onClick={(e) => {
-                e.originalEvent.stopPropagation();
-                handleMarkerClick(location);
-              }}
-            >
-              <div className="relative cursor-pointer">
-                <div
-                  className={`size-7 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110 ${
-                    location.is_hub
-                      ? "bg-green-500 opacity-70 hover:opacity-100"
-                      : location.is_collective
-                      ? "bg-yellow-500 opacity-70 hover:opacity-100"
-                      : location.is_special_program
-                      ? "bg-purple-500 opacity-70 hover:opacity-100"
-                      : "bg-blue-500 opacity-70 hover:opacity-100"
-                  }`}
-                >
-                  {location.is_hub ? (
-                    <MapPinHouse className="w-5 h-5 text-white" />
-                  ) : location.is_collective ? (
-                    <MapPinPlus className="w-5 h-5 text-white" />
-                  ) : location.is_special_program ? (
-                    <MapPinMinusInside className="w-5 h-5 text-white" />
-                  ) : (
-                    <MapPin className="w-5 h-5 text-white" />
-                  )}
-                </div>
-              </div>
-            </Marker>
-          ))}
-        </>
-      )}
-
+      {!selectedRoute &&
+        mapInfo.map((location) => (
+          <MemoizedMarker
+            key={location.id}
+            location={location}
+            onClick={(e) => {
+              e.originalEvent.stopPropagation();
+              handleMarkerClick(location);
+            }}
+          />
+        ))}
       {selectedRoute && routeGeoJSON && (
         <>
           <Source id="selected-route" type="geojson" data={routeGeoJSON}>
@@ -247,16 +217,18 @@ const MapComponent: React.FC<MapComponentProps> = ({
             ))}
         </>
       )}
-
       {popupInfo && (
-        <PopUpComponent
+        <MemoizedPopUpComponent
           handlePopupClose={handlePopupClose}
           isLoading={isLoading}
           popupInfo={popupInfo}
+          isError={isError}
         />
       )}
     </Map>
   );
 };
 
-export default MapComponent;
+const MemoizedMapComponent = memo(MapComponent);
+
+export default MemoizedMapComponent;

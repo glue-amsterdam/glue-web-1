@@ -1,5 +1,5 @@
-import { createClient } from "@/utils/supabase/server";
 import { type MapInfo, type Route } from "@/app/hooks/useMapData";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 // Utility type to handle both single item and array
 type MaybeArray<T> = T | T[];
@@ -64,9 +64,7 @@ interface RouteDot {
     | null;
 }
 
-async function fetchMapInfo(): Promise<MapInfo[]> {
-  const supabase = await createClient();
-
+async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]> {
   // Fetch all required data in parallel
   const [mapInfoResult, participantResult, hubsResult] = await Promise.all([
     supabase.from("map_info").select(`
@@ -201,9 +199,7 @@ async function fetchMapInfo(): Promise<MapInfo[]> {
   return Array.from(locationMap.values());
 }
 
-async function fetchRoutes(): Promise<Route[]> {
-  const supabase = await createClient();
-
+async function fetchRoutes(supabase: SupabaseClient): Promise<Route[]> {
   const [routesResult, routeDotsResult] = await Promise.all([
     supabase.from("routes").select(`
         id,
@@ -271,11 +267,11 @@ async function fetchRoutes(): Promise<Route[]> {
   return transformedRoutes;
 }
 
-export async function getServerSideData() {
+export async function getServerSideData(supabase: SupabaseClient) {
   try {
     const [mapInfo, routes] = await Promise.all([
-      fetchMapInfo(),
-      fetchRoutes(),
+      fetchMapInfo(supabase),
+      fetchRoutes(supabase),
     ]);
 
     return { mapInfo, routes };

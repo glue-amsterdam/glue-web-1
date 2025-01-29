@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, memo } from "react";
 import {
   Sheet,
   SheetContent,
@@ -11,11 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { MenuIcon } from "lucide-react";
 import { MapInfo, Route, useMapData } from "@/app/hooks/useMapData";
-import { InfoPanel } from "@/app/map/info-panel";
-import MapComponent from "@/app/map/map-component";
+import Memoinfo from "@/app/map/info-panel";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
-import { useSearchParams } from "next/navigation";
-import CenteredLoader from "@/app/components/centered-loader";
+import MemoizedMapComponent from "@/app/map/map-component";
 
 interface MapMainProps {
   initialData: {
@@ -24,34 +22,19 @@ interface MapMainProps {
   };
 }
 
-export default function MapMain({ initialData }: MapMainProps) {
+function MapMain({ initialData }: MapMainProps) {
   const {
     mapInfo,
     routes,
-    error,
-    isLoading,
     selectedLocation,
     selectedRoute,
     setSelectedLocation,
     setSelectedRoute,
     updateURL,
-    fetchLocationData,
   } = useMapData(initialData);
 
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const placeId = searchParams.get("place");
-    const routeId = searchParams.get("route");
-
-    if (placeId) {
-      setSelectedLocation(placeId);
-    } else if (routeId) {
-      setSelectedRoute(routeId);
-    }
-  }, [searchParams, setSelectedLocation, setSelectedRoute]);
 
   const handleParticipantSelect = useCallback(
     (locationId: string) => {
@@ -77,16 +60,6 @@ export default function MapMain({ initialData }: MapMainProps) {
     [setSelectedRoute, setSelectedLocation, updateURL, isLargeScreen]
   );
 
-  if (error) {
-    return (
-      <div className="p-4 text-red-500">Failed to load map data: {error}</div>
-    );
-  }
-
-  if (isLoading) {
-    return <CenteredLoader />;
-  }
-
   return (
     <div className="flex flex-col h-[calc(100vh-5rem)]">
       <h1 className="sr-only">City Map</h1>
@@ -96,9 +69,11 @@ export default function MapMain({ initialData }: MapMainProps) {
             className="w-1/3 bg-card h-full overflow-auto"
             aria-label="Participant and route list"
           >
-            <InfoPanel
+            <Memoinfo
               mapInfo={mapInfo}
               routes={routes}
+              setSelectedLocation={setSelectedLocation}
+              setSelectedRoute={setSelectedRoute}
               selectedLocation={selectedLocation}
               selectedRoute={selectedRoute}
               onParticipantSelect={handleParticipantSelect}
@@ -107,15 +82,16 @@ export default function MapMain({ initialData }: MapMainProps) {
             />
           </aside>
           <main className="w-2/3 relative h-full" aria-label="Map">
-            <MapComponent
+            <MemoizedMapComponent
               mapInfo={mapInfo}
               routes={routes}
-              selectedRoute={selectedRoute}
+              setSelectedLocation={setSelectedLocation}
+              setSelectedRoute={setSelectedRoute}
               selectedLocation={selectedLocation}
-              setSelectedLocation={handleParticipantSelect}
-              setSelectedRoute={handleRouteSelect}
+              selectedRoute={selectedRoute}
+              onParticipantSelect={handleParticipantSelect}
+              onRouteSelect={handleRouteSelect}
               updateURL={updateURL}
-              fetchLocationData={fetchLocationData}
             />
           </main>
         </div>
@@ -144,9 +120,11 @@ export default function MapMain({ initialData }: MapMainProps) {
                 Open Participant and Route List
               </SheetDescription>
               <nav aria-label="Participant and route list">
-                <InfoPanel
+                <Memoinfo
                   mapInfo={mapInfo}
                   routes={routes}
+                  setSelectedLocation={setSelectedLocation}
+                  setSelectedRoute={setSelectedRoute}
                   selectedLocation={selectedLocation}
                   selectedRoute={selectedRoute}
                   onParticipantSelect={handleParticipantSelect}
@@ -158,15 +136,16 @@ export default function MapMain({ initialData }: MapMainProps) {
             </SheetContent>
           </Sheet>
           <main className="flex-1 relative w-full h-full" aria-label="Map">
-            <MapComponent
+            <MemoizedMapComponent
               mapInfo={mapInfo}
               routes={routes}
-              selectedRoute={selectedRoute}
+              setSelectedLocation={setSelectedLocation}
+              setSelectedRoute={setSelectedRoute}
               selectedLocation={selectedLocation}
-              setSelectedLocation={handleParticipantSelect}
-              setSelectedRoute={handleRouteSelect}
+              selectedRoute={selectedRoute}
+              onParticipantSelect={handleParticipantSelect}
+              onRouteSelect={handleRouteSelect}
               updateURL={updateURL}
-              fetchLocationData={fetchLocationData}
             />
           </main>
         </>
@@ -174,3 +153,7 @@ export default function MapMain({ initialData }: MapMainProps) {
     </div>
   );
 }
+
+const MemoMapMain = memo(MapMain);
+
+export default MemoMapMain;
