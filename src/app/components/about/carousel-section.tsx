@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -16,12 +16,12 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import ScrollDown from "@/app/components/scroll-down";
 import { useScroll } from "@/app/hooks/useScroll";
 import { fadeInConfig } from "@/utils/animations";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { NoDataAvailable } from "@/app/components/no-data-available";
-import { CarouselClientType } from "@/schemas/carouselSchema";
+import type { CarouselClientType } from "@/schemas/carouselSchema";
+import { ScrollableText } from "@/app/components/about/scrolleable-text";
 
 interface MainSectionProps {
   carouselData: CarouselClientType | undefined;
@@ -30,13 +30,24 @@ interface MainSectionProps {
 export default function CarouselSection({ carouselData }: MainSectionProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
-  const sectionRef = useRef<HTMLElement>(null);
+  const autoplay = useRef(
+    Autoplay({
+      delay: 3000,
+      stopOnInteraction: false,
+    })
+  );
+
+  useEffect(() => {
+    if (modalOpen) {
+      autoplay.current.stop();
+    } else {
+      autoplay.current.reset();
+    }
+  }, [modalOpen]);
+
   useScroll();
 
-  if (!carouselData)
-    return <div className="text-center py-8">No Carousel Data</div>;
-
-  if (!carouselData.is_visible) {
+  if (!carouselData || !carouselData.is_visible) {
     return null;
   }
 
@@ -44,7 +55,6 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
 
   return (
     <section
-      ref={sectionRef}
       id="main"
       aria-labelledby="press-heading"
       aria-label="main-content"
@@ -53,7 +63,7 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
     >
       <motion.article
         {...fadeInConfig}
-        className="z-20 mx-auto about-w h-full flex flex-col justify-between relative "
+        className="z-20 mx-auto about-w h-full flex flex-col justify-evenly relative"
       >
         <motion.h1
           initial={{ opacity: 0, y: -60 }}
@@ -67,24 +77,21 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
         >
           {carouselData.title}
         </motion.h1>
-        <motion.p
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 1.3 }}
-          className="mt-4 text-sm md:text-base lg:text-lg"
+        <ScrollableText
+          containerClassName="max-h-[25%] lg:max-h-[40%] mb-4 lg:mb-0"
+          className="h-full text-sm md:text-base lg:text-lg pr-4"
         >
-          {carouselData.description}
-        </motion.p>
+          <p className="">{carouselData.description}</p>
+        </ScrollableText>
         <div className="flex-grow h-full">
           <Carousel
             className="w-[90%] h-full mx-auto"
-            plugins={[
-              Autoplay({
-                delay: 4000,
-              }),
-            ]}
+            plugins={[autoplay.current]}
+            opts={{
+              loop: true,
+            }}
           >
-            <CarouselContent className="h-full">
+            <CarouselContent className="h-full py-4">
               {carouselData.slides.map((slide, index) => (
                 <CarouselItem className="h-full" key={index}>
                   <Card className="border-none bg-transparent h-full">
@@ -96,7 +103,7 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
                         className="relative w-full h-full cursor-pointer transition-transform hover:scale-105"
                       >
                         <Image
-                          src={slide.image_url}
+                          src={slide.image_url || "/placeholder.svg"}
                           alt={`Slide number ${index} from the GLUE Gallery`}
                           className="object-cover"
                           quality={100}
@@ -112,19 +119,27 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="hidden md:flex text-uiblack" />
-            <CarouselNext className="hidden md:flex text-uiblack" />
+            {!modalOpen && (
+              <>
+                <CarouselPrevious className="hidden md:flex text-uiblack" />
+                <CarouselNext className="hidden md:flex text-uiblack" />
+              </>
+            )}
           </Carousel>
         </div>
 
         <Dialog open={modalOpen} onOpenChange={setModalOpen}>
           <DialogContent className="w-full p-0 h-full max-h-[90%] max-w-[90vw] md:max-w-[70vw] ">
             <DialogTitle className="sr-only">
-              Photo galery from the GLUE desing route
+              Photo gallery from the GLUE design route
             </DialogTitle>
             <div className="relative w-full h-full">
               <Image
-                src={carouselData.slides[selectedImage].image_url}
+                src={
+                  carouselData.slides[selectedImage].image_url ||
+                  "/placeholder.jpg" ||
+                  "/placeholder.svg"
+                }
                 alt={"Slide from the GLUE Gallery"}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1024px) 90vw, 80vw"
@@ -159,8 +174,6 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
             </div>
           </DialogContent>
         </Dialog>
-
-        <ScrollDown color="uiwhite" href="#participants" className="py-2" />
       </motion.article>
     </section>
   );

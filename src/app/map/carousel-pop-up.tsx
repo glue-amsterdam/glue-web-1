@@ -151,7 +151,7 @@ function CarouselPopUp({ popupInfo }: Props) {
                     }
                   >
                     <MapPin className="w-4 h-4 mr-2" />
-                    View on Map
+                    Google map view
                   </Button>
                 </div>
               </div>

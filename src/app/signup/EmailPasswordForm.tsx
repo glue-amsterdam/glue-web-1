@@ -63,7 +63,12 @@ export function EmailPasswordForm({
             Back
           </Button>
         )}
-        <Button type="submit" className={onBack ? "" : "w-full"}>
+        <Button
+          type="submit"
+          className={`${
+            onBack ? "" : "w-full"
+          } bg-[var(--color-box1)] hover:bg-[var(--color-box1)] hover:opacity-75`}
+        >
           {submitButtonText}
         </Button>
       </div>

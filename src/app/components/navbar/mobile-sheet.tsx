@@ -10,10 +10,10 @@ import UserMenuItems from "./user-menu-items";
 import SearchForm from "@/app/components/navbar/search-form";
 import { MobileNavMenu } from "@/app/components/navbar/mobile-nav-menu";
 import SocialIcons from "@/app/components/navbar/social-icon";
-import { Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import HomePageLogo from "@/app/components/navbar/home-page-logo";
 import { MdMenu } from "react-icons/md";
-import { MainMenuItem } from "@/schemas/mainSchema";
+import type { MainMenuItem } from "@/schemas/mainSchema";
 
 type Props = {
   isOpen: boolean;
@@ -51,8 +51,7 @@ export default function MobileSheet({
             onSearch={handleSearch}
             onSearchComplete={() => setIsOpen(false)}
           />
-          <MobileNavMenu navItems={navItems} />
-
+          <MobileNavMenu navItems={navItems} setIsOpen={setIsOpen} />
           <UserMenuItems setIsOpen={setIsOpen} />
           <div className="pt-4 border-t">
             <SocialIcons />

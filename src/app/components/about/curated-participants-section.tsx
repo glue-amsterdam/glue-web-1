@@ -10,12 +10,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
-import ScrollDown from "@/app/components/scroll-down";
 import Link from "next/link";
 import { fadeInConfig } from "@/utils/animations";
 import { CuratedParticipantWithYear } from "@/schemas/usersSchemas";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { ScrollableText } from "@/app/components/about/scrolleable-text";
 
 interface CuratedMembersSectionProps {
   curatedParticipants: Record<number, CuratedParticipantWithYear[]>;
@@ -125,14 +125,19 @@ export default function CuratedMembersSection({
           </Select>
         )}
       </div>
-      <motion.p
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 1.3 }}
-        className="mt-4 text-md md:text-lg text-uiwhite flex-grow-[0.3]"
+      <ScrollableText
+        containerClassName="h-full"
+        className="text-sm md:text-base p-4"
       >
-        {description}
-      </motion.p>
+        <motion.p
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 1.3 }}
+          className="mt-4 text-md md:text-lg text-uiwhite flex-grow-[0.3]"
+        >
+          {description}
+        </motion.p>
+      </ScrollableText>
       {hasCuratedParticipants ? (
         <div className="grid grid-cols-2 md:grid-cols-4 place-content-start flex-grow">
           {filteredCurated.map(
@@ -148,7 +153,6 @@ export default function CuratedMembersSection({
       ) : (
         <NoStickyMembersMessage />
       )}
-      <ScrollDown color="uiwhite" href="#info" className="py-2" />
     </motion.article>
   );
 }
