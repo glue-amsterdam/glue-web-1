@@ -24,7 +24,7 @@
     @apply max-w-[80%] sm:max-w-[80%];
   }
   .h1-titles {
-    @apply text-3xl md:text-4xl lg:text-5xl xl:text-6xl;
+    @apply text-2xl md:text-4xl lg:text-5xl xl:text-6xl;
   }
   .h2-titles {
     @apply text-2xl md:text-3xl lg:text-4xl xl:text-5xl tracking-widest uppercase font-bold;

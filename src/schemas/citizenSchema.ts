@@ -34,7 +34,7 @@ export const clientCitizensSectionSchema = z.object({
   title: z.string(),
   description: z.string(),
   is_visible: z.boolean(),
-  citizensByYear: z.record(z.array(clientCitizenSchema).length(3)),
+  citizensByYear: z.record(z.array(clientCitizenSchema)),
 });
 
 export type ClientCitizen = z.infer<typeof clientCitizenSchema>;

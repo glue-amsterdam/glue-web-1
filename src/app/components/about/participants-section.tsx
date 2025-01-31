@@ -1,6 +1,6 @@
 "use client";
 
-import ScrollDown from "@/app/components/scroll-down";
+import { ScrollableText } from "@/app/components/about/scrolleable-text";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -10,7 +10,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { ParticipantClient } from "@/schemas/participantsSchema";
+import type { ParticipantClient } from "@/schemas/participantsSchema";
 import { fadeInConfig } from "@/utils/animations";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
@@ -33,9 +33,9 @@ export default function ParticipantsSection({
   return (
     <motion.article
       {...fadeInConfig}
-      className="z-20 mx-auto about-w h-full flex flex-col justify-between relative w-full"
+      className="z-20 mx-auto about-w h-full flex flex-col gap-2 justify-around py-4"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <motion.h1
           initial={{ opacity: 0, y: -60 }}
           animate={{ opacity: 1, y: 0 }}
@@ -44,72 +44,86 @@ export default function ParticipantsSection({
             delay: 0.8,
           }}
           viewport={{ once: true }}
-          className="h1-titles font-bold tracking-widest my-4"
+          className="h1-titles font-bold tracking-widest"
         >
           {title}
         </motion.h1>
         <Link href={"/participants"}>
-          <Button type="button" variant="ghost">
-            <UserPlusIcon />
-            <span className="text-lg">View All</span>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full sm:w-auto bg-gray text-black"
+          >
+            <UserPlusIcon className="mr-2 h-4 w-4" />
+            <span className="text-base sm:text-lg">View All</span>
           </Button>
         </Link>
       </div>
-      <div className="relative h-[70%] w-full">
-        <Carousel
-          plugins={[
-            Autoplay({
-              stopOnMouseEnter: true,
-              delay: 2000,
-            }),
-          ]}
-          opts={{
-            align: "start",
-            loop: true,
-            skipSnaps: false,
-            dragFree: false,
-          }}
-          className="w-full h-full"
+      <>
+        <div className="relative flex-grow w-full">
+          <Carousel
+            plugins={[
+              Autoplay({
+                stopOnMouseEnter: true,
+                delay: 2000,
+              }),
+            ]}
+            opts={{
+              align: "start",
+              loop: true,
+              skipSnaps: false,
+              dragFree: false,
+            }}
+            className="w-full h-full"
+          >
+            <CarouselContent className="flex h-full z-10">
+              {slicedParticipants.map((participant, index) => (
+                <CarouselItem
+                  key={index}
+                  className="basis-36 sm:basis-48 md:basis-56 h-full"
+                >
+                  <Link href={`/participants/${participant.slug}`}>
+                    <Card className="border-none shadow-sm bg-transparent hover:shadow-md transition-shadow duration-300 max-w-full h-full">
+                      <CardContent className="p-0 h-full w-full relative group">
+                        <img
+                          src={
+                            participant.image?.image_url ||
+                            "/participant-placeholder.jpg" ||
+                            "/placeholder.svg" ||
+                            "/placeholder.svg"
+                          }
+                          alt={`${participant.userName} profile image thumbnail`}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                        <div className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                          <p className="text-center font-semibold text-xs sm:text-sm truncate px-2">
+                            {participant.userName}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="absolute -left-2 z-30 text-black" />
+            <CarouselNext className="absolute -right-2 z-30 text-black" />
+          </Carousel>
+        </div>
+        <ScrollableText
+          containerClassName="max-h-[10%] overflow-hidden"
+          className="mt-4 text-sm sm:text-base md:text-lg pr-4"
         >
-          <CarouselContent className="flex h-full z-10">
-            {slicedParticipants.map((participant, index) => (
-              <CarouselItem key={index} className="basis-48 md:basis-56 h-full">
-                <Link href={`/participants/${participant.slug}`}>
-                  <Card className="border-none shadow-sm bg-transparent hover:shadow-md transition-shadow duration-300 max-w-full h-full">
-                    <CardContent className="p-0 h-full w-full relative group">
-                      <img
-                        src={
-                          participant.image?.image_url ||
-                          "/participant-placeholder.jpg" ||
-                          "/placeholder.svg"
-                        }
-                        alt={`${participant.userName} profile image thumbnail`}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                      <div className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                        <p className="text-center font-semibold text-xs truncate px-2">
-                          {participant.userName}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="absolute -left-2 z-30 text-black" />
-          <CarouselNext className="absolute -right-2 z-30 text-black" />
-        </Carousel>
-      </div>
-      <motion.p
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 1.3 }}
-        className="opacity-90 mt-4 text-md md:text-lg text-uiblack flex-grow-[0.3]"
-      >
-        {description}
-      </motion.p>
-      <ScrollDown href="#citizens" color="uiblack" className="py-2" />
+          <motion.p
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 1.3 }}
+            className="text-uiblack pb-4"
+          >
+            {description}
+          </motion.p>
+        </ScrollableText>
+      </>
     </motion.article>
   );
 }

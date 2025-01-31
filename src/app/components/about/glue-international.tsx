@@ -19,15 +19,16 @@ export default function GlueInternational({
       initial={{ x: 80, y: 20 }}
       whileInView={{ x: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full mx-auto rounded-lg flex flex-col justify-between h-full items-center p-4"
+      viewport={{ once: true }}
+      className="w-full mx-auto rounded-lg flex flex-col h-full items-center justify-center p-1 md:p-4"
     >
       <motion.div
         initial={{ x: -120, opacity: 0 }}
         whileInView={{ x: 0, opacity: 1 }}
         transition={{ delay: 0.4, duration: 0.5 }}
-        className="flex py-4 flex-col bg-uiwhite text-uiblack w-full rounded-lg shadow-md mx-auto border border-uiblack"
+        className="py-4 h-full flex flex-col justify-center bg-uiwhite text-uiblack w-full rounded-lg shadow-md mx-auto border border-uiblack"
       >
-        <div className="mx-auto text-center px-4">
+        <div className="mx-auto text-center">
           <motion.h1
             initial={{ opacity: 0, y: -60 }}
             animate={{ opacity: 1, y: 0 }}
@@ -36,7 +37,7 @@ export default function GlueInternational({
               delay: 0.8,
             }}
             viewport={{ once: true }}
-            className="h1-titles font-bold tracking-widest text-2xl md:text-3xl lg:text-4xl"
+            className="h1-titles font-bold tracking-widest text-2xl md:text-4xl lg:text-6xl"
           >
             {title}
           </motion.h1>
@@ -44,12 +45,12 @@ export default function GlueInternational({
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 1.3 }}
-            className="opacity-90 mt-4 text-sm md:text-md lg:text-lg"
+            viewport={{ once: true }}
+            className="opacity-90 mt-4 text-md md:text-xl lg:text-2xl"
           >
             {subtitle}
           </motion.p>
         </div>
-
         <Link
           style={{ backgroundColor: button_color }}
           href={website}

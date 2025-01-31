@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
-import ScrollDown from "@/app/components/scroll-down";
 import { fadeInConfig } from "@/utils/animations";
 import DOMPurify from "dompurify";
 import { InfoItemClient } from "@/schemas/infoSchema";
@@ -12,6 +11,7 @@ import { DialogDescription } from "@radix-ui/react-dialog";
 import InfoCard from "@/app/components/about/info-card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { ScrollableText } from "@/app/components/about/scrolleable-text";
 
 interface InfoSectionProps {
   infoItems: InfoItemClient[];
@@ -54,7 +54,7 @@ export default function InfoSection({
   return (
     <motion.article
       {...fadeInConfig}
-      className="z-20 mx-auto about-w h-full flex flex-col justify-between relative"
+      className="z-20 mx-auto about-w h-full flex flex-col justify-around relative"
     >
       <motion.h1
         initial={{ opacity: 0, y: -60 }}
@@ -64,20 +64,25 @@ export default function InfoSection({
           delay: 0.8,
         }}
         viewport={{ once: true }}
-        className="h1-titles font-bold tracking-widest my-4"
+        className="h1-titles font-bold tracking-widest"
       >
         {title || "Information"}
       </motion.h1>
-      <motion.p
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 1.3 }}
-        className="mt-4 text-md md:text-lg text-uiwhite flex-grow-[0.3]"
+      <ScrollableText
+        containerClassName="max-h-[15%] overflow-hidden"
+        className="mt-4 text-sm sm:text-base md:text-lg pr-4"
       >
-        {description || "No description available."}
-      </motion.p>
+        <motion.p
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 1.3 }}
+          className="text-uiwhite pb-4"
+        >
+          {description || "No description available."}
+        </motion.p>
+      </ScrollableText>
       <div
-        className={`grid grid-cols-1 gap-6 h-[80%]
+        className={`grid grid-cols-1 gap-6 h-[80%] pb-10
         ${infoLength === 2 && "md:grid-cols-2"}
         ${infoLength === 3 && "md:grid-cols-3"} 
         `}
@@ -136,7 +141,6 @@ export default function InfoSection({
           )}
         </DialogContent>
       </Dialog>
-      <ScrollDown color="uiwhite" href="#press" className="py-2" />
     </motion.article>
   );
 }

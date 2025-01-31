@@ -1,7 +1,6 @@
 "use client";
 
 import GlueInternational from "@/app/components/about/glue-international";
-import ScrollUp from "@/app/components/scroll-up";
 import { useScroll } from "@/app/hooks/useScroll";
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
@@ -18,14 +17,13 @@ type Props = {
 
 function LastPage({ glueInternational, sponsorsData }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
-  useScroll();
 
-  // Check if both sections are not visible
+  useScroll();
   if (
     !glueInternational.is_visible &&
     !sponsorsData.sponsorsHeaderSchema.is_visible
   ) {
-    return null; // Return null if both sections are not visible
+    return null;
   }
 
   return (
@@ -35,11 +33,11 @@ function LastPage({ glueInternational, sponsorsData }: Props) {
       aria-label="last-page-content"
       aria-labelledby="last-page-heading"
       style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
-      className="min-h-screen bg-[var(--color-triangle)] snap-start relative overflow-y-auto flex flex-col"
+      className="h-screen bg-[var(--color-triangle)] snap-start"
     >
       <motion.article
         {...fadeInConfig}
-        className="z-20 space-y-4 w-full mx-auto about-w flex flex-col flex-grow justify-between py-8"
+        className="z-20 w-full mx-auto about-w flex flex-col flex-grow justify-around h-full"
       >
         {glueInternational.is_visible && (
           <GlueInternational glueInternational={glueInternational} />
@@ -47,7 +45,6 @@ function LastPage({ glueInternational, sponsorsData }: Props) {
         {sponsorsData.sponsorsHeaderSchema.is_visible && (
           <SponsorsCarousel sponsorsData={sponsorsData} />
         )}
-        <ScrollUp color="uiblack" href="#main" />
       </motion.article>
     </section>
   );

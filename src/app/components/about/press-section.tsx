@@ -4,7 +4,6 @@ import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
-import ScrollDown from "@/app/components/scroll-down";
 import { fadeInConfig } from "@/utils/animations";
 import { PressItem } from "@/schemas/pressSchema";
 import Image from "next/image";
@@ -12,6 +11,7 @@ import DOMPurify from "dompurify";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { ScrollableText } from "@/app/components/about/scrolleable-text";
 
 interface PressSectionProps {
   pressItems: PressItem[];
@@ -118,16 +118,21 @@ export default function PressSection({
       >
         {title || "Press"}
       </motion.h1>
-      <motion.p
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 1.3 }}
-        className="mt-4 text-md md:text-lg text-uiwhite flex-grow-[0.3]"
+      <ScrollableText
+        containerClassName="max-h-[10%] overflow-hidden"
+        className="mt-4 text-sm sm:text-base md:text-lg pr-4"
       >
-        {description || "No description available."}
-      </motion.p>
+        <motion.p
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 1.3 }}
+          className="pb-4 text-uiwhite"
+        >
+          {description || "No description available."}
+        </motion.p>
+      </ScrollableText>
       <div
-        className={`grid grid-cols-1 gap-6 h-[80%] ${
+        className={`grid grid-cols-1 gap-6 h-[80%] pb-10 ${
           hasGlueTV && "md:grid-cols-2"
         }`}
       >
@@ -167,19 +172,21 @@ export default function PressSection({
                   </DialogDescription>
                 </div>
               </div>
-              <div className="flex-grow overflow-y-auto p-6 bg-white">
-                <div
-                  className="text-sm md:text-base prose max-w-none font-overpass"
+              <ScrollableText
+                containerClassName="overflow-hidden px-4 py-10"
+                className="text-sm sm:text-base md:text-lg pr-4 h-full overflow-y-auto"
+              >
+                <p
+                  className="font-overpass"
                   dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(selectedItem.description || ""),
                   }}
                 />
-              </div>
+              </ScrollableText>
             </div>
           )}
         </DialogContent>
       </Dialog>
-      <ScrollDown color="uiblack" href="#last" className="py-2" />
     </motion.article>
   );
 }
