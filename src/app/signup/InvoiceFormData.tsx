@@ -23,7 +23,10 @@ export function InvoiceForm({ onSubmit, onBack }: InvoiceFormProps) {
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex flex-col justify-between h-full"
+    >
       <div>
         <Label htmlFor="invoice_company_name">Company Name</Label>
         <Input
@@ -81,11 +84,16 @@ export function InvoiceForm({ onSubmit, onBack }: InvoiceFormProps) {
           </p>
         )}
       </div>
-      <div className="flex justify-between">
+      <div className="flex flex-wrap gap-3 justify-between">
         <Button type="button" variant="outline" onClick={onBack}>
           Back to Plan Selection
         </Button>
-        <Button type="submit">Next: Account Information</Button>
+        <Button
+          type="submit"
+          className="bg-[var(--color-box1)] hover:bg-[var(--color-box1)] hover:opacity-75"
+        >
+          Next: Account Information
+        </Button>
       </div>
     </form>
   );

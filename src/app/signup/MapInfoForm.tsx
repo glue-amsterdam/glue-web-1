@@ -154,7 +154,12 @@ export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
         <Button type="button" variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button type="submit">Next: Account Information</Button>
+        <Button
+          className="bg-[var(--color-box1)] hover:bg-[var(--color-box1)] hover:opacity-75"
+          type="submit"
+        >
+          Next: Account Information
+        </Button>
       </div>
     </form>
   );

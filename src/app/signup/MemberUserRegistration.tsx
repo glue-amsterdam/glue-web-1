@@ -62,7 +62,7 @@ export default function MemberUserRegistration({
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full lg:w-[80%] mx-auto flex-grow mb-5 flex flex-col justify-between">
       <CardHeader>
         <CardTitle>
           {step === 1
@@ -70,7 +70,7 @@ export default function MemberUserRegistration({
             : "Step 2: Account Information"}
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-grow">
         {step === 1 ? (
           <InvoiceForm onSubmit={handleInvoiceSubmit} onBack={onBack} />
         ) : (

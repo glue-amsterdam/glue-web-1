@@ -30,7 +30,6 @@ export default function RegistrationForm({ plansData }: RegistrationFormProps) {
     plan_type: string;
   }) => {
     setSelectedPlan(planData);
-    console.log("Selected plan:", planData.plan_type, planData.plan_id);
     setStep(2);
   };
 
@@ -89,61 +88,56 @@ export default function RegistrationForm({ plansData }: RegistrationFormProps) {
   };
 
   return (
-    <main className="flex-grow container mx-auto px-4">
-      <div className="container mx-auto p-4">
-        {error && (
-          <div
-            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
-            role="alert"
-          >
-            <span className="block sm:inline">{error}</span>
+    <main>
+      {error && (
+        <div
+          className="bg-red-100 border border-red-500 text-red-700 px-4 py-3 rounded relative mb-4"
+          role="alert"
+        >
+          <span className="block sm:inline">{error}</span>
+        </div>
+      )}
+      {step === 1 && (
+        <PlanPicker plansData={plansData} onPlanSelected={handlePlanSelected} />
+      )}
+      {step === 2 && selectedPlan && (
+        <div className="w-[90%] md:main-container mx-auto flex flex-col">
+          <h2 className="text-2xl font-bold mb-4 mt-2">
+            Complete Your Registration
+          </h2>
+          {selectedPlan.plan_type === "free" && (
+            <FreeUserRegistration
+              onSubmit={handleSubmit}
+              plan_id={selectedPlan.plan_id}
+              plan_type="free"
+              onBack={handleBack}
+            />
+          )}
+          {selectedPlan.plan_type === "member" && (
+            <MemberUserRegistration
+              onSubmit={handleSubmit}
+              plan_id={selectedPlan.plan_id}
+              plan_type="member"
+              onBack={handleBack}
+            />
+          )}
+          {selectedPlan.plan_type === "participant" && (
+            <ParticipantRegistration
+              onSubmit={handleSubmit}
+              plan_id={selectedPlan.plan_id}
+              plan_type="participant"
+              onBack={handleBack}
+            />
+          )}
+        </div>
+      )}
+      {loading && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-4 rounded-lg shadow-lg">
+            <LoadingSpinner />
           </div>
-        )}
-        {step === 1 && (
-          <PlanPicker
-            plansData={plansData}
-            onPlanSelected={handlePlanSelected}
-          />
-        )}
-        {step === 2 && selectedPlan && (
-          <div>
-            <h2 className="text-2xl font-bold mb-4">
-              Complete Your Registration
-            </h2>
-            {selectedPlan.plan_type === "free" && (
-              <FreeUserRegistration
-                onSubmit={handleSubmit}
-                plan_id={selectedPlan.plan_id}
-                plan_type="free"
-                onBack={handleBack}
-              />
-            )}
-            {selectedPlan.plan_type === "member" && (
-              <MemberUserRegistration
-                onSubmit={handleSubmit}
-                plan_id={selectedPlan.plan_id}
-                plan_type="member"
-                onBack={handleBack}
-              />
-            )}
-            {selectedPlan.plan_type === "participant" && (
-              <ParticipantRegistration
-                onSubmit={handleSubmit}
-                plan_id={selectedPlan.plan_id}
-                plan_type="participant"
-                onBack={handleBack}
-              />
-            )}
-          </div>
-        )}
-        {loading && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-4 rounded-lg shadow-lg">
-              <LoadingSpinner />
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </main>
   );
 }
