@@ -1,53 +1,101 @@
 "use client";
 
-import { SheetClose } from "@/components/ui/sheet";
+import { useAuth } from "@/app/context/AuthContext";
 import type { MainMenuItem, SubItem } from "@/schemas/mainSchema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React from "react";
+import type React from "react";
+import {
+  useState,
+  useCallback,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
+import LoginForm from "@/app/components/login-form/login-form";
+import type { User } from "@supabase/supabase-js";
 
-export function MobileNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
+type Props = {
+  navItems: MainMenuItem[];
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+};
+
+export function MobileNavMenu({ navItems, setIsOpen }: Props) {
   const router = useRouter();
+  const { user } = useAuth();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  const handleRedirect = (section: string) => {
-    router.push(`/${section}`);
-  };
+  const handleRedirect = useCallback(
+    (e: React.MouseEvent, section: string) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-  const sortSubItems = (subItems: SubItem[] | null | undefined): SubItem[] => {
-    if (!subItems) return [];
-    return [...subItems].sort((a, b) => a.place - b.place);
-  };
+      if (section === "dashboard") {
+        if (user) {
+          setIsOpen(false);
+          setTimeout(() => {
+            router.push(`/dashboard/${user.id}/user-data`);
+          }, 100);
+        } else {
+          setIsLoginModalOpen(true);
+        }
+      } else {
+        setIsOpen(false);
+        router.push(`/${section}`);
+      }
+    },
+    [user, router, setIsOpen]
+  );
 
-  const filteredNav = navItems.filter((s) => s.section !== "dashboard");
+  const sortSubItems = useCallback(
+    (subItems: SubItem[] | null | undefined): SubItem[] => {
+      if (!subItems) return [];
+      return [...subItems].sort((a, b) => a.place - b.place);
+    },
+    []
+  );
+
+  const handleLoginSuccess = useCallback(
+    (loggedInUser: User) => {
+      setIsLoginModalOpen(false);
+      setIsOpen(false);
+      setTimeout(() => {
+        router.push(`/dashboard/${loggedInUser.id}/user-data`);
+      }, 100);
+    },
+    [router, setIsOpen]
+  );
+
+  const handleCloseLoginModal = useCallback(() => {
+    setIsLoginModalOpen(false);
+  }, []);
 
   return (
     <div className="relative">
       <ul className="space-y-2">
-        {filteredNav.map((item, i) => (
+        {navItems.map((item, i) => (
           <li key={item.section + i}>
-            <SheetClose asChild>
-              <button
-                type="button"
-                onClick={() => handleRedirect(item.section)}
-                className="text-lg px-2 w-full py-1 hover:bg-accent rounded-md text-left"
-              >
-                {item.label}
-              </button>
-            </SheetClose>
+            <button
+              type="button"
+              onClick={(e) => handleRedirect(e, item.section)}
+              className="text-lg px-2 w-full py-1 hover:bg-accent rounded-md text-left"
+            >
+              {item.label}
+            </button>
             {item.subItems && (
               <ul className="ml-4 mt-1 space-y-1">
                 {sortSubItems(item.subItems).map(
                   (subItem, j) =>
                     subItem.is_visible && (
                       <li key={subItem.href + j}>
-                        <SheetClose asChild>
-                          <Link
-                            href={`/${item.section}#${subItem.href}`}
-                            className="block text-xs px-2 py-1 hover:bg-accent rounded-md"
-                          >
-                            {subItem.title}
-                          </Link>
-                        </SheetClose>
+                        <Link
+                          href={`/${item.section}#${subItem.href}`}
+                          className="block text-xs px-2 py-1 hover:bg-accent rounded-md"
+                          onClick={() => {
+                            setIsOpen(false);
+                          }}
+                        >
+                          {subItem.title}
+                        </Link>
                       </li>
                     )
                 )}
@@ -56,6 +104,11 @@ export function MobileNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
           </li>
         ))}
       </ul>
+      <LoginForm
+        isOpen={isLoginModalOpen}
+        onClose={handleCloseLoginModal}
+        onLoginSuccess={handleLoginSuccess}
+      />
     </div>
   );
 }

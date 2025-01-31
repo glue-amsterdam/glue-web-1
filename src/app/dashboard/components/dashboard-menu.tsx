@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import {
   ADMIN_DASHBOARD_SECTIONS,
   NAVBAR_HEIGHT,
@@ -101,7 +101,7 @@ export default function DashboardMenu({
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="fixed top-0 left-0 right-0 z-50 md:hidden"
+        className="fixed top-0 left-0 right-0 z-50 md:hidden w-fit"
       >
         <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
           <SheetTrigger asChild>
@@ -111,7 +111,7 @@ export default function DashboardMenu({
               className="m-4 bg-[var(--color-box2)] text-white hover:bg-[var(--color-box3)]"
               aria-label="Toggle menu"
             >
-              <Menu className="h-6 w-6" />
+              <Menu className="size-6" />
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-80 p-0 bg-[var(--color-box1)]">
@@ -122,9 +122,7 @@ export default function DashboardMenu({
               className="absolute right-4 top-4 text-white hover:bg-[var(--color-box2)]"
               onClick={() => setIsSidebarOpen(false)}
               aria-label="Close menu"
-            >
-              <X className="h-6 w-6" />
-            </Button>
+            ></Button>
             <div className="p-6">
               <h2 className="text-white text-xl font-bold mb-2">
                 Hello, {userName || user.email}
