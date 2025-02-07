@@ -150,7 +150,7 @@ export default function PlanPicker({
                       {plan.currency_logo}
                       {plan.plan_price}
                     </CardDescription>
-                    <CardContent className="text-sm pb-1">
+                    <CardContent className="text-sm pb-1 max-h-[20%] overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-uiwhite">
                       {plan.plan_description}
                     </CardContent>
                     <CardContent
