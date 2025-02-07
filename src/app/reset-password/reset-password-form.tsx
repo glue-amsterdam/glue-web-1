@@ -55,20 +55,17 @@ export default function ResetPasswordForm() {
     setIsLoading(true);
     setError(null);
 
-    const access_token = searchParams.get("token");
+    const code = searchParams.get("code");
 
-    if (!access_token) {
-      setError("Invalid or missing reset token.");
+    if (!code) {
+      setError("Invalid or missing reset code.");
       setIsLoading(false);
       return;
     }
 
     try {
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token,
-        refresh_token: "",
-      });
-
+      const { error: sessionError } =
+        await supabase.auth.exchangeCodeForSession(code);
       if (sessionError) throw sessionError;
 
       const { error } = await supabase.auth.updateUser({
