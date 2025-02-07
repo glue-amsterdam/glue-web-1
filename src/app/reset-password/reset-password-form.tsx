@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -37,6 +37,7 @@ export default function ResetPasswordForm() {
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const searchParams = useSearchParams();
 
   const form = useForm<FormData>({
     resolver: zodResolver(resetPasswordSchema),
@@ -54,11 +55,28 @@ export default function ResetPasswordForm() {
     setIsLoading(true);
     setError(null);
 
+    const access_token = searchParams.get("token");
+
+    if (!access_token) {
+      setError("Invalid or missing reset token.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token,
+        refresh_token: "",
+      });
+
+      if (sessionError) throw sessionError;
+
       const { error } = await supabase.auth.updateUser({
         password: data.password,
       });
+
       if (error) throw error;
+
       alert("Password updated successfully");
       router.push("/");
     } catch (error) {
