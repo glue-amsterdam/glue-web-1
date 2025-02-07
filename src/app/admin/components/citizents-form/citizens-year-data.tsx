@@ -1,18 +1,22 @@
 "use client";
 
+import { useState, useCallback, useEffect } from "react";
 import useSWR from "swr";
 import { CitizensYearForm } from "./citizens-year-form";
-
-import { useFormContext, FieldValues } from "react-hook-form";
+import {
+  useFormContext,
+  useFieldArray,
+  type FieldValues,
+} from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
-import { Citizen } from "@/schemas/citizenSchema";
-
+import type { Citizen, CitizensSection } from "@/schemas/citizenSchema";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
@@ -20,13 +24,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { AlertDialogContent } from "@radix-ui/react-alert-dialog";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchCitizensByYear } from "@/lib/about/fetch-citizens-section";
 
-interface CitizensYearFormWrapperProps {
+interface CitizensYearDataProps {
   selectedYear: string;
   isNewYear: boolean;
 }
@@ -34,13 +36,20 @@ interface CitizensYearFormWrapperProps {
 export default function CitizensYearData({
   selectedYear,
   isNewYear,
-}: CitizensYearFormWrapperProps) {
-  const { getValues, handleSubmit } = useFormContext();
+}: CitizensYearDataProps) {
+  const { control, handleSubmit, setValue } = useFormContext<CitizensSection>();
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `citizensByYear.${selectedYear}`,
+  });
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
-  const fetcher = () => fetchCitizensByYear(selectedYear);
+  const fetcher = useCallback(
+    () => fetchCitizensByYear(selectedYear),
+    [selectedYear]
+  );
   const {
     data: citizens,
     error,
@@ -50,6 +59,15 @@ export default function CitizensYearData({
     fetcher
   );
 
+  useEffect(() => {
+    if (citizens) {
+      const sortedCitizens = [...citizens].sort((a, b) =>
+        a.id.localeCompare(b.id)
+      );
+      setValue(`citizensByYear.${selectedYear}`, sortedCitizens);
+    }
+  }, [citizens, selectedYear, setValue]);
+
   if (error) {
     toast({
       title: "Error",
@@ -58,32 +76,85 @@ export default function CitizensYearData({
     });
   }
 
-  if (!isNewYear && !citizens && !error) {
-    return <LoadingSpinner />;
-  }
+  const handleAddCitizen = useCallback(() => {
+    if (fields.length < 4) {
+      const newCitizen: Citizen = {
+        id: `${selectedYear}-${Date.now()}-${fields.length + 1}`,
+        section_id: "about-citizens-section",
+        name: "",
+        image_url: "",
+        description: "",
+        year: selectedYear,
+      };
+      append(newCitizen);
+    } else {
+      toast({
+        title: "Maximum citizens reached",
+        description: "You can't add more than 4 citizens per year.",
+        variant: "destructive",
+      });
+    }
+  }, [fields.length, selectedYear, append, toast]);
 
-  const displayedCitizens = isNewYear
-    ? getValues(`citizensByYear.${selectedYear}`) || []
-    : citizens || [];
+  const handleRemoveCitizen = useCallback(
+    (index: number) => {
+      if (index === fields.length - 1) {
+        remove(index);
+      } else {
+        toast({
+          title: "Cannot remove citizen",
+          description: "Only the last citizen can be removed.",
+          variant: "destructive",
+        });
+      }
+    },
+    [fields.length, remove, toast]
+  );
 
   const onSubmit = async (data: FieldValues) => {
     try {
       const citizensToSubmit = data.citizensByYear[selectedYear] as Citizen[];
 
+      if (citizensToSubmit.length < 3 || citizensToSubmit.length > 4) {
+        toast({
+          title: "Invalid number of citizens",
+          description: "You must have 3 or 4 citizens per year.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Prepare citizens data for submission
+      const preparedCitizens = citizensToSubmit.map((citizen, index) => ({
+        ...citizen,
+        id: citizen.id.startsWith(selectedYear)
+          ? `${selectedYear}-${Date.now()}-${index + 1}`
+          : citizen.id,
+        oldImageUrl: citizen.oldImageUrl || citizen.image_url, // Preserve the old image URL
+      }));
+
+      // Sort citizens by their IDs to maintain order
+      preparedCitizens.sort((a, b) => a.id.localeCompare(b.id));
+
       // Optimistically update the local data
-      mutate(citizensToSubmit, false);
+      mutate(preparedCitizens, false);
 
       const response = await fetch(
         `/api/admin/about/citizens/${selectedYear}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(citizensToSubmit),
+          body: JSON.stringify(preparedCitizens),
         }
       );
 
       if (!response.ok)
         throw new Error(`Failed to update citizens for year ${selectedYear}`);
+
+      const result = await response.json();
+
+      // Update the form with the new data from the server
+      setValue(`citizensByYear.${selectedYear}`, result.citizens);
 
       // Trigger a revalidation to make sure our local data is correct
       mutate();
@@ -138,14 +209,20 @@ export default function CitizensYearData({
     }
   };
 
+  if (!isNewYear && !citizens && !error) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <CitizensYearForm
         selectedYear={selectedYear}
-        initialCitizens={displayedCitizens}
+        onAddCitizen={handleAddCitizen}
+        onRemoveCitizen={handleRemoveCitizen}
+        fields={fields}
       />
       <SaveChangesButton
-        className="mt-2"
+        className="mt-4"
         watchFields={[`citizensByYear.${selectedYear}`]}
       >
         Save Citizens for {selectedYear}
@@ -167,7 +244,7 @@ export default function CitizensYearData({
             className={cn(
               "fixed top-[50%] left-[50%] z-50 translate-x-[-50%] translate-y-[-50%]",
               "w-full max-w-lg rounded-lg p-6 shadow-lg",
-              "bg-background"
+              "bg-background text-black"
             )}
           >
             <AlertDialogHeader>

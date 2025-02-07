@@ -147,7 +147,7 @@ export default function SponsorsHeaderForm({
                 : errors.sponsors_types.message}
             </p>
           )}
-          {fields.length <= 8 && (
+          {fields.length && (
             <Button
               type="button"
               variant="outline"

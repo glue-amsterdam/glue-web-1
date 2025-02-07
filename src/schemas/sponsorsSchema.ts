@@ -9,9 +9,7 @@ export const sponsorsHeaderSchema = z.object({
   is_visible: z.boolean(),
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
-  sponsors_types: z
-    .array(sponsorTypeSchema)
-    .max(8, "Maximum 8 sponsor types allowed"),
+  sponsors_types: z.array(sponsorTypeSchema),
 });
 
 export const sponsorSchema = z.object({

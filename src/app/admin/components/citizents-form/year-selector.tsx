@@ -66,7 +66,7 @@ export function YearSelector({
           ))
         ) : (
           <option value="" disabled>
-            Loading years...
+            Add a year to get started
           </option>
         )}
       </select>

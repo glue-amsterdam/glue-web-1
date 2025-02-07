@@ -1,13 +1,20 @@
-import React, { useRef, useState } from "react";
-import { useController, Control, UseFormSetValue } from "react-hook-form";
+"use client";
+
+import type React from "react";
+import { useRef, useState } from "react";
+import {
+  useController,
+  type Control,
+  type UseFormSetValue,
+} from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RichTextEditor } from "@/app/components/editor";
 import Image from "next/image";
 import { ImageIcon } from "lucide-react";
 import { generateAltText } from "./utils";
-import { CitizensSection } from "@/schemas/citizenSchema";
-import { uploadImage, deleteImage } from "@/utils/supabase/storage/client";
+import type { CitizensSection } from "@/schemas/citizenSchema";
+import { uploadImage } from "@/utils/supabase/storage/client";
 import { useToast } from "@/hooks/use-toast";
 import { config } from "@/env";
 
@@ -49,11 +56,17 @@ export function CitizenForm({
     control,
   });
 
+  const { field: oldImageUrlField } = useController({
+    name: `citizensByYear.${selectedYear}.${index}.oldImageUrl`,
+    control,
+  });
+
   const citizen = {
     name: nameField.value,
     description: descriptionField.value,
     image_url: imageUrlField.value,
     file: fileField.value,
+    oldImageUrl: oldImageUrlField.value,
     alt: nameField.value ? generateAltText(selectedYear, nameField.value) : "",
   };
 
@@ -73,14 +86,10 @@ export function CitizenForm({
           throw new Error(error);
         }
 
-        // If there's an existing image, delete it
-        if (citizen.image_url) {
-          const { error: deleteError } = await deleteImage(citizen.image_url);
-          if (deleteError) {
-            console.error("Error deleting old image:", deleteError);
-          }
-        }
+        // Store the current image_url as oldImageUrl
+        oldImageUrlField.onChange(citizen.image_url);
 
+        // Update the image_url with the new URL
         imageUrlField.onChange(imageUrl);
         setValue(
           `citizensByYear.${selectedYear}.${index}.image_name`,
@@ -90,7 +99,8 @@ export function CitizenForm({
 
         toast({
           title: "Image uploaded",
-          description: "The image has been successfully uploaded.",
+          description:
+            "The image has been successfully uploaded, please save the changes",
         });
       } catch (error) {
         console.error("Error uploading image:", error);
@@ -119,7 +129,7 @@ export function CitizenForm({
       <div className="w-full h-40 relative mb-2">
         {citizen.image_url ? (
           <Image
-            src={citizen.image_url}
+            src={citizen.image_url || "/placeholder.svg"}
             alt={generateAltText(selectedYear, citizen.name)}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

@@ -62,6 +62,9 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
         {participant.description && (
           <>
             <motion.div
+              style={{
+                color: "white",
+              }}
               className="text-sm md:text-base leading-relaxed mt-4 prose prose-sm md:prose-base max-w-none text-white dark:text-white"
               variants={fadeInUp}
               dangerouslySetInnerHTML={{ __html: participant.description }}

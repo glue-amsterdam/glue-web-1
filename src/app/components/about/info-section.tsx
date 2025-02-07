@@ -129,9 +129,9 @@ export default function InfoSection({
                   </DialogDescription>
                 </div>
               </div>
-              <div className="flex-grow overflow-y-auto p-6 bg-white">
+              <div className="flex-grow overflow-y-auto p-6 bg-white ">
                 <div
-                  className="text-sm md:text-base prose max-w-none font-overpass"
+                  className="text-sm md:text-base prose max-w-none font-overpas text-black"
                   dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(selectedInfo.description || ""),
                   }}
