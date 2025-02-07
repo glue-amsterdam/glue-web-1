@@ -201,9 +201,15 @@
   border-radius: 20px;
   border: transparent;
 }
-.prose * {
+.prose.text-black * {
+  color: black !important;
+}
+.prose {
   max-width: none;
-  color: #fff;
+}
+
+.prose * {
+  color: inherit;
 }
 
 .prose strong {
