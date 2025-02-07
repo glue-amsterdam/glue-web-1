@@ -21,7 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import {
-  ParticipantDetails,
+  type ParticipantDetails,
   participantDetailsSchema,
 } from "@/schemas/participantDetailsSchemas";
 import { RichTextEditor } from "@/app/components/editor";
@@ -30,6 +30,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { CalendarHeart, CheckCircle2 } from "lucide-react";
 import { mutate } from "swr";
 import { createSubmitHandler } from "@/utils/form-helpers";
+import { ConfirmationDialog } from "@/app/dashboard/[userId]/participant-details/confirmation-dialog";
 
 export function ParticipantDetailsForm({
   participantDetails,
@@ -44,6 +45,7 @@ export function ParticipantDetailsForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [isSlugUnique, setIsSlugUnique] = useState<boolean | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -96,43 +98,12 @@ export function ParticipantDetailsForm({
 
   const onSubmit = createSubmitHandler<ParticipantDetails>(
     `/api/users/participants/${targetUserId}/details`,
-    async (data) => {
+    async () => {
       toast({
         title: "Success",
         description: "Participant details updated successfully.",
       });
       await mutate(`/api/users/participants/${targetUserId}/details`);
-
-      if (
-        data.status === "accepted" &&
-        participantDetails.status !== "accepted"
-      ) {
-        try {
-          const response = await fetch("/api/send-participant-accepted-email", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ userId: targetUserId }),
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to send email notification");
-          }
-
-          toast({
-            title: "Email Sent",
-            description: "Participant acceptance email sent successfully.",
-          });
-        } catch (error) {
-          console.error("Error sending email:", error);
-          toast({
-            title: "Email Error",
-            description: "Failed to send participant acceptance email.",
-            variant: "destructive",
-          });
-        }
-      }
 
       router.refresh();
     },
@@ -149,8 +120,54 @@ export function ParticipantDetailsForm({
 
   const handleSubmit = async (values: ParticipantDetails) => {
     setIsSubmitting(true);
-    onSubmit({ ...values, user_id: targetUserId! });
+    if (
+      values.status === "accepted" &&
+      participantDetails.status !== "accepted"
+    ) {
+      setIsDialogOpen(true);
+    } else {
+      await onSubmit({ ...values, user_id: targetUserId! });
+    }
     setIsSubmitting(false);
+  };
+
+  const handleConfirmSendEmail = async () => {
+    await onSubmit({ ...form.getValues(), user_id: targetUserId! });
+    setIsDialogOpen(false);
+    await sendAcceptanceEmail();
+  };
+
+  const handleCancelSendEmail = async () => {
+    await onSubmit({ ...form.getValues(), user_id: targetUserId! });
+    setIsDialogOpen(false);
+  };
+
+  const sendAcceptanceEmail = async () => {
+    try {
+      const response = await fetch("/api/send-participant-accepted-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: targetUserId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send email notification");
+      }
+
+      toast({
+        title: "Email Sent",
+        description: "Participant acceptance email sent successfully.",
+      });
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast({
+        title: "Email Error",
+        description: "Failed to send participant acceptance email.",
+        variant: "destructive",
+      });
+    }
   };
 
   useEffect(() => {
@@ -410,6 +427,12 @@ export function ParticipantDetailsForm({
           </form>
         </Form>
       </CardContent>
+      <ConfirmationDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onConfirm={handleConfirmSendEmail}
+        onCancel={handleCancelSendEmail}
+      />
     </Card>
   );
 }
