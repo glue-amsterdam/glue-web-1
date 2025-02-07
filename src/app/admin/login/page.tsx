@@ -10,13 +10,19 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { data, error, isLoading } = useSWR("/api/admin/check-auth", fetcher);
+  const { data, error, isLoading } = useSWR("/api/admin/check-auth", fetcher, {
+    revalidateOnFocus: true,
+    revalidateIfStale: true,
+    revalidateOnReconnect: true,
+  });
 
   useEffect(() => {
-    if (data?.isAdmin) {
-      router.push("/admin");
+    if (error || (data && !data.isAdmin)) {
+      router.replace("/admin/login");
+    } else if (data?.isAdmin) {
+      router.replace("/admin");
     }
-  }, [data, router]);
+  }, [data, error, router]);
 
   if (isLoading) {
     return (
