@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
@@ -32,7 +32,12 @@ export default function CitizensForm({
     mode: "onChange",
   });
 
-  const { setValue } = methods;
+  const { setValue, reset } = methods;
+
+  // Use effect to update form values when initialData changes
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
 
   const handleYearChange = (year: string) => {
     setSelectedYear(year === "0" ? null : year);

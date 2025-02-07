@@ -31,7 +31,7 @@ export async function GET(
   }
 }
 
-const yearCitizensSchema = z.array(citizenSchema).length(3);
+const yearCitizensSchema = z.array(citizenSchema).min(3).max(4);
 
 export async function PUT(
   request: Request,
@@ -68,20 +68,30 @@ export async function PUT(
     }));
 
     // Update the citizens
-    const { error: citizensError } = await supabase
+    const { error: citizensError, data: upsertedCitizens } = await supabase
       .from("about_citizens")
       .upsert(citizensToUpsert);
 
     if (citizensError) throw citizensError;
 
     // Identify citizens to be deleted (if any)
-    const currentCitizenIds = citizensToUpsert.map((citizen) => citizen.id);
+    const currentCitizenIds = validatedData
+      .map((citizen) => citizen.id)
+      .filter(Boolean);
     const citizensToDelete = existingCitizens?.filter(
       (citizen) => !currentCitizenIds.includes(citizen.id)
     );
 
+    // Identify images to be deleted
+    const imagesToDelete = validatedData
+      .filter(
+        (citizen) =>
+          citizen.oldImageUrl && citizen.oldImageUrl !== citizen.image_url
+      )
+      .map((citizen) => citizen.oldImageUrl);
+
+    // Delete citizens from the database
     if (citizensToDelete && citizensToDelete.length > 0) {
-      // Delete citizens from the database
       const { error: deleteError } = await supabase
         .from("about_citizens")
         .delete()
@@ -91,11 +101,13 @@ export async function PUT(
         );
 
       if (deleteError) throw deleteError;
+    }
 
-      // Delete corresponding images from the storage bucket
-      for (const citizen of citizensToDelete) {
+    // Delete old images from the storage bucket
+    for (const imageUrl of imagesToDelete) {
+      if (imageUrl) {
         try {
-          const url = new URL(citizen.image_url);
+          const url = new URL(imageUrl);
           const pathParts = url.pathname.split("/");
           const filename = pathParts[pathParts.length - 1];
           const filePath = `about/citizens/${year}/${filename}`;
@@ -112,16 +124,14 @@ export async function PUT(
             console.log(`Successfully deleted image: ${filePath}`);
           }
         } catch (error) {
-          console.error(
-            `Error processing image deletion for citizen ${citizen.id}:`,
-            error
-          );
+          console.error(`Error processing image deletion: ${imageUrl}`, error);
         }
       }
     }
 
     return NextResponse.json({
       message: `Citizens for year ${year} updated successfully`,
+      citizens: upsertedCitizens,
     });
   } catch (error) {
     console.error(`Error in PUT /admin/about/citizens/${year}:`, error);
@@ -131,7 +141,6 @@ export async function PUT(
     );
   }
 }
-
 export async function DELETE(
   request: Request,
   props: { params: Promise<{ year: string }> }
