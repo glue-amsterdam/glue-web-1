@@ -19,6 +19,8 @@ import { createClient } from "@/utils/supabase/client";
 
 const resetPasswordSchema = z
   .object({
+    email: z.string().email({ message: "Invalid email address" }),
+    token: z.string().length(6, { message: "Token must be 6 digits" }),
     password: z
       .string()
       .min(6, { message: "Password must be at least 6 characters" }),
@@ -34,59 +36,57 @@ type FormData = z.infer<typeof resetPasswordSchema>;
 export default function ResetPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
   const searchParams = useSearchParams();
+  const supabase = createClient();
 
   const form = useForm<FormData>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
+      email: "",
+      token: "",
       password: "",
       confirmPassword: "",
     },
   });
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    const token = searchParams.get("token");
+    if (token) {
+      form.setValue("token", token);
+    }
+  }, [searchParams, form]);
 
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     setError(null);
 
-    const code = searchParams.get("code");
-
-    if (!code) {
-      setError("Invalid or missing reset code.");
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const { error: sessionError } =
-        await supabase.auth.exchangeCodeForSession(code);
-      if (sessionError) throw sessionError;
-
-      const { error } = await supabase.auth.updateUser({
-        password: data.password,
+      const { error } = await supabase.auth.verifyOtp({
+        email: data.email,
+        token: data.token,
+        type: "recovery",
       });
 
       if (error) throw error;
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: data.password,
+      });
+
+      if (updateError) throw updateError;
 
       alert("Password updated successfully");
       router.push("/");
     } catch (error) {
       console.error("Error resetting password:", error);
-      setError("Failed to reset password. Please try again.");
+      setError(
+        "Failed to reset password. Please check your email and token, then try again."
+      );
     } finally {
       setIsLoading(false);
     }
   };
-
-  if (!isClient) {
-    return null;
-  }
 
   return (
     <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-xl">
@@ -99,6 +99,36 @@ export default function ResetPasswordForm() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="token"
+            render={({ field }) => (
+              <FormItem className="hidden">
+                <FormLabel>Reset Token</FormLabel>
+                <FormControl>
+                  <Input type="text" {...field} readOnly />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
             name="password"
             render={({ field }) => (
               <FormItem>
@@ -108,7 +138,6 @@ export default function ResetPasswordForm() {
                     type="password"
                     placeholder="Enter new password"
                     {...field}
-                    suppressHydrationWarning
                   />
                 </FormControl>
                 <FormMessage />
@@ -126,7 +155,6 @@ export default function ResetPasswordForm() {
                     type="password"
                     placeholder="Confirm new password"
                     {...field}
-                    suppressHydrationWarning
                   />
                 </FormControl>
                 <FormMessage />
