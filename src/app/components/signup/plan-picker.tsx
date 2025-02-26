@@ -3,17 +3,11 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { PlansArrayType, PlanType } from "@/schemas/plansSchema";
 import { useRef, useEffect, useState } from "react";
+import PlanCard from "@/app/components/signup/plan-card";
+import { ChevronRight } from "lucide-react";
 
 const planSchema = z.object({
   plan_id: z.string(),
@@ -44,6 +38,7 @@ export default function PlanPicker({
   const [cardContentRefs, setCardContentRefs] = useState<
     (HTMLDivElement | null)[]
   >([]);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
 
   const onSubmit = (data: PlanFormData) => {
     const selectedPlan = plansData.plans.find(
@@ -78,11 +73,10 @@ export default function PlanPicker({
           isScrollable &&
           ((event.deltaY > 0 && !isAtBottom) || (event.deltaY < 0 && !isAtTop))
         ) {
-          return; // Allow default vertical scrolling
+          return;
         }
       }
 
-      // Check if horizontal scrolling is possible
       const canScrollHorizontally =
         scrollContainer.scrollWidth > scrollContainer.clientWidth;
 
@@ -96,10 +90,22 @@ export default function PlanPicker({
       }
     };
 
+    const handleScroll = () => {
+      if (scrollContainer) {
+        const scrollPosition = scrollContainer.scrollLeft;
+        const scrollWidth = scrollContainer.scrollWidth;
+        const clientWidth = scrollContainer.clientWidth;
+        // Hide scroll indicator when reached the end
+        setShowScrollIndicator(scrollPosition + clientWidth < scrollWidth - 10);
+      }
+    };
+
     scrollContainer.addEventListener("wheel", handleWheel, { passive: false });
+    scrollContainer.addEventListener("scroll", handleScroll);
 
     return () => {
       scrollContainer.removeEventListener("wheel", handleWheel);
+      scrollContainer.removeEventListener("scroll", handleScroll);
     };
   }, [cardContentRefs]);
 
@@ -111,88 +117,42 @@ export default function PlanPicker({
       <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center md:mt-2 md:mb-3">
         Select a Plan
       </h2>
-      <div
-        ref={scrollContainerRef}
-        className="flex-grow overflow-x-auto scrollbar-thin scrollbar-track-white scrollbar-thumb-uiblack overflow-y-hidden scrollbar-corner-white snap-x snap-mandatory"
-      >
-        <div className="flex gap-4 pb-2 h-full px-2 min-w-max">
-          <Controller
-            name="plan_id"
-            control={control}
-            render={({ field }) => (
-              <>
-                {plansData.plans.map((plan, index) => (
-                  <Card
-                    key={plan.plan_id}
-                    className={`w-[60vw] lg:w-[30vw] gap-2 h-full flex flex-col cursor-pointer snap-start ${
-                      selectedPlanId === plan.plan_id
-                        ? "bg-[var(--color-box1)] text-white"
-                        : ""
-                    }`}
-                    onClick={() => {
-                      field.onChange(plan.plan_id);
-                      setValue("plan_type", plan.plan_type);
-                    }}
-                  >
-                    <CardHeader className="flex flex-col justify-center p-1">
-                      <CardTitle className="text-lg sm:text-xl font-bold tracking-wider">
-                        {plan.plan_label}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardDescription
-                      className={`px-6 flex items-center
-                      ${
-                        selectedPlanId === plan.plan_id &&
-                        "bg-[var(--color-box1)] text-white"
-                      }
-                      `}
-                    >
-                      {plan.currency_logo}
-                      {plan.plan_price}
-                    </CardDescription>
-                    <CardContent className="text-sm pb-1 max-h-[20%] overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-uiwhite">
-                      {plan.plan_description}
-                    </CardContent>
-                    <CardContent
-                      ref={(el) => {
+      <div className="relative flex-grow overflow-hidden">
+        <div
+          ref={scrollContainerRef}
+          className="flex-grow h-full overflow-x-auto scrollbar-thin scrollbar-track-white scrollbar-thumb-uiblack overflow-y-hidden scrollbar-corner-white snap-x snap-mandatory"
+        >
+          <div className="flex gap-4 pb-2 h-full px-2 min-w-max">
+            <Controller
+              name="plan_id"
+              control={control}
+              render={({ field }) => (
+                <>
+                  {plansData.plans.map((plan, index) => (
+                    <PlanCard
+                      key={plan.plan_id}
+                      plan={plan}
+                      isSelected={selectedPlanId === plan.plan_id}
+                      onSelect={() => {
+                        field.onChange(plan.plan_id);
+                        setValue("plan_type", plan.plan_type);
+                      }}
+                      contentRef={(el) => {
                         cardContentRefs[index] = el;
                       }}
-                      className={`flex-grow overflow-y-auto scrollbar-thin px-3
-                      ${
-                        selectedPlanId === plan.plan_id
-                          ? "scrollbar-track-transparent scrollbar-thumb-uiwhite"
-                          : "scrollbar-track-white scrollbar-thumb-black"
-                      }`}
-                    >
-                      <ul className="list-disc space-y-1 list-inside text-xs">
-                        {plan.plan_items.map((feature, index) => (
-                          <li key={feature.label + index}>{feature.label}</li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                    <CardFooter className="pt-2">
-                      <Button
-                        type="button"
-                        disabled={selectedPlanId === plan.plan_id}
-                        className={`w-full rounded-none 
-                          ${
-                            selectedPlanId === plan.plan_id
-                              ? "bg-[var(--color-box1)] text-white"
-                              : "bg-white text-black hover:bg-gray/80"
-                          }
-                          `}
-                      >
-                        {selectedPlanId === plan.plan_id
-                          ? "Selected"
-                          : "Select plan"}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </>
-            )}
-          />
+                      index={index}
+                    />
+                  ))}
+                </>
+              )}
+            />
+          </div>
         </div>
+        {showScrollIndicator && (
+          <div className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-black bg-opacity-50 rounded-full p-2">
+            <ChevronRight className="w-6 h-6 text-white" />
+          </div>
+        )}
       </div>
       <Button
         type="submit"
@@ -201,7 +161,7 @@ export default function PlanPicker({
           "bg-[var(--color-box1)] mt-6 text-white py-10 hover:bg-[var(--color-box1)]/50"
         }`}
       >
-        <label className="group-hover:scale-110 transition-all md:text-xl ">
+        <label className="group-hover:scale-110 transition-all md:text-xl pointer-events-none">
           Continue with Selected Plan
         </label>
       </Button>
