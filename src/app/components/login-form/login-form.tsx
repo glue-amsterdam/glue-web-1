@@ -126,7 +126,7 @@ export default function LoginForm({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[425px] bg-gradient-to-br from-primary/10 to-secondary/10 backdrop-blur-sm border border-primary/20 rounded-lg shadow-xl p-6 text-black">
+        <DialogContent className="sm:max-w-[425px] bg-uiwhite backdrop-blur-sm border border-primary/20 rounded-lg shadow-xl p-6 text-black">
           <DialogHeader>
             <DialogTitle className="text-3xl font-bold text-center text-primary">
               Log In
@@ -163,11 +163,23 @@ export default function LoginForm({
               </Button>
             </div>
           )}
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full text-white hover:text-white bg-black hover:bg-[var(--color-triangle)]"
+          >
+            <Link href="signup/?step=1">Sign up</Link>
+          </Button>
+
           <Form {...loginForm}>
             <form
               onSubmit={loginForm.handleSubmit(onSubmit)}
-              className="space-y-6"
+              className="space-y-4"
             >
+              <p className="text-xs">
+                Already signed in? Log in to your account:
+              </p>
               <FormField
                 control={loginForm.control}
                 name="email"
@@ -180,7 +192,7 @@ export default function LoginForm({
                         <Input
                           placeholder="Enter your email"
                           {...field}
-                          className="pl-10"
+                          className="pl-10 bg-white"
                         />
                       </div>
                     </FormControl>
@@ -201,7 +213,7 @@ export default function LoginForm({
                           type="password"
                           placeholder="Enter your password"
                           {...field}
-                          className="pl-10"
+                          className="pl-10 bg-white"
                         />
                       </div>
                     </FormControl>
@@ -210,7 +222,11 @@ export default function LoginForm({
                 )}
               />
               <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  className="w-full hover:bg-[var(--color-box2)]"
+                  disabled={isLoading}
+                >
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -220,24 +236,16 @@ export default function LoginForm({
                     "Log In"
                   )}
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full text-black"
-                >
-                  <Link href="signup/?step=1">Sign up</Link>
-                </Button>
               </div>
-              <div className="flex justify-between items-center">
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={() => setIsResetPasswordOpen(true)}
-                  className="text-sm text-primary hover:underline"
-                >
-                  Forgot your password?
-                </Button>
-              </div>
+
+              <Button
+                type="button"
+                variant="link"
+                onClick={() => setIsResetPasswordOpen(true)}
+                className="text-sm text-primary hover:underline text-center w-full"
+              >
+                Forgot your password?
+              </Button>
             </form>
           </Form>
         </DialogContent>
@@ -269,7 +277,7 @@ export default function LoginForm({
                         <Input
                           placeholder="Enter your email"
                           {...field}
-                          className="pl-10"
+                          className="pl-10 bg-white"
                         />
                       </div>
                     </FormControl>
