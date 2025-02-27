@@ -150,15 +150,15 @@ export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
           )}
         </div>
       )}
-      <div className="flex justify-between">
+      <div className="flex justify-between gap-2 flex-wrap">
         <Button type="button" variant="outline" onClick={onBack}>
           Back
         </Button>
         <Button
-          className="bg-[var(--color-box1)] hover:bg-[var(--color-box1)] hover:opacity-75"
+          className="bg-[var(--color-box1)] hover:bg-[var(--color-box1)] hover:opacity-75 text-pretty h-fit"
           type="submit"
         >
-          Next: Account Information
+          Next Step
         </Button>
       </div>
     </form>

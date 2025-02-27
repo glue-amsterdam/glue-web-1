@@ -84,15 +84,15 @@ export function InvoiceForm({ onSubmit, onBack }: InvoiceFormProps) {
           </p>
         )}
       </div>
-      <div className="flex flex-wrap gap-3 justify-between">
+      <div className="flex flex-wrap gap-3 justify-between mt-2">
         <Button type="button" variant="outline" onClick={onBack}>
-          Back to Plan Selection
+          Back
         </Button>
         <Button
           type="submit"
           className="bg-[var(--color-box1)] hover:bg-[var(--color-box1)] hover:opacity-75"
         >
-          Next: Account Information
+          Next Step
         </Button>
       </div>
     </form>

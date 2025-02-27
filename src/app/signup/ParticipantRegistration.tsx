@@ -87,7 +87,7 @@ export default function ParticipantRegistration({
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md lg:max-w-3xl mx-auto">
       <CardHeader>
         <CardTitle>
           {step === 1 && "Step 1: Invoice Information"}

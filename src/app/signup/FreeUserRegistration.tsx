@@ -89,11 +89,13 @@ export default function FreeUserRegistration({
           <input type="hidden" {...register("plan_id")} />
           <input type="hidden" {...register("plan_type")} />
         </CardContent>
-        <CardFooter className="flex justify-between">
+        <CardFooter className="flex justify-between gap-2 flex-wrap">
           <Button type="button" variant="outline" onClick={onBack}>
             Back
           </Button>
-          <Button type="submit">Complete Visitor Registration</Button>
+          <Button className="text-pretty h-fit" type="submit">
+            Complete Visitor Registration
+          </Button>
         </CardFooter>
       </form>
     </Card>

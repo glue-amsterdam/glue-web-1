@@ -161,7 +161,7 @@ export default function PlanPicker({
           "bg-[var(--color-box1)] mt-6 text-white py-10 hover:bg-[var(--color-box1)]/50"
         }`}
       >
-        <label className="group-hover:scale-110 transition-all md:text-xl pointer-events-none">
+        <label className="group-hover:scale-110 transition-all md:text-xl pointer-events-none text-pretty h-fit">
           Continue with Selected Plan
         </label>
       </Button>

@@ -90,15 +90,24 @@ export async function POST(request: Request) {
         throw new Error(`Participant Error: ${participantError.message}`);
 
       // Handle map info
-      if (!validatedData.no_address) {
-        const { error: mapError } = await supabase.from("map_info").insert({
-          user_id: realUserId,
-          formatted_address: validatedData.formatted_address,
-          latitude: validatedData.latitude,
-          longitude: validatedData.longitude,
-          no_address: validatedData.no_address,
-        });
-        if (mapError) throw new Error(`Map Error: ${mapError.message}`);
+
+      const mapData = {
+        user_id: realUserId,
+        no_address: validatedData.no_address,
+        formatted_address: validatedData.no_address
+          ? null
+          : validatedData.formatted_address,
+        latitude: validatedData.no_address ? null : validatedData.latitude,
+        longitude: validatedData.no_address ? null : validatedData.longitude,
+      };
+
+      const { error: mapError } = await supabase
+        .from("map_info")
+        .insert(mapData);
+
+      if (mapError) {
+        console.error("Full map error:", mapError);
+        throw new Error(`Map Error: ${mapError.message}`);
       }
     }
 
