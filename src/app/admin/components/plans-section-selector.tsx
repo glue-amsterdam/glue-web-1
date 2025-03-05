@@ -1,10 +1,10 @@
 "use client";
 
-import type { PlanIdType, PlanType } from "@/schemas/plansSchema";
+import type { PlanType } from "@/schemas/plansSchema";
 import { useRouter, usePathname } from "next/navigation";
 
 interface PlanSelectorProps {
-  currentPlan: PlanIdType;
+  currentPlan: string;
   plans: PlanType[];
 }
 

@@ -18,7 +18,7 @@ export async function GET() {
     const isAdmin = userInfo?.is_mod || false;
 
     // Fetch plans based on user role
-    let query = supabase.from("plans").select("*").order("plan_id");
+    let query = supabase.from("plans").select("*").order("order_by");
 
     if (!isAdmin) {
       query = query.eq("is_participant_enabled", true);

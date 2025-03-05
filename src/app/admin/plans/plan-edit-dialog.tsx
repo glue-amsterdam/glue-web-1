@@ -18,6 +18,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Minus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PlanEditDialogProps {
   plan: PlanType;
@@ -41,14 +48,20 @@ export default function PlanEditDialog({
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     control,
+    setValue,
+    watch,
   } = methods;
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "plan_items",
   });
+
+  console.log(errors);
+
+  const planType = watch("plan_type");
 
   const onSubmit = async (data: PlanType) => {
     setIsSubmitting(true);
@@ -79,6 +92,31 @@ export default function PlanEditDialog({
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
+              <Label htmlFor="plan_type">Plan Type</Label>
+              <Select
+                onValueChange={(value) =>
+                  setValue(
+                    "plan_type",
+                    value as "free" | "member" | "participant",
+                    { shouldDirty: true }
+                  )
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={planType} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="free">Free</SelectItem>
+                  <SelectItem value="member">Member</SelectItem>
+                  <SelectItem value="participant">Participant</SelectItem>
+                </SelectContent>
+              </Select>
+              <input type="hidden" {...register("plan_type")} />
+              {errors.plan_type && (
+                <p className="text-red-500">{errors.plan_type.message}</p>
+              )}
+            </div>
+            <div>
               <Label htmlFor="plan_label">Plan Label</Label>
               <Input id="plan_label" {...register("plan_label")} />
               {errors.plan_label && (
@@ -87,11 +125,7 @@ export default function PlanEditDialog({
             </div>
             <div>
               <Label htmlFor="plan_price">Plan Price</Label>
-              <Input
-                id="plan_price"
-                {...register("plan_price")}
-                disabled={plan.plan_id === "planId-0"}
-              />
+              <Input id="plan_price" {...register("plan_price")} />
               {errors.plan_price && (
                 <p className="text-red-500">{errors.plan_price.message}</p>
               )}
@@ -167,8 +201,10 @@ export default function PlanEditDialog({
                 "currency_logo",
                 "plan_description",
                 "plan_items",
+                "plan_type",
               ]}
               className="w-full"
+              disabled={!isDirty}
             />
           </form>
         </FormProvider>
