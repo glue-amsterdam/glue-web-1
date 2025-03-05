@@ -90,8 +90,23 @@ export default function PlansList({ initialPlans }: PlansListProps) {
     );
     if (confirmed) {
       try {
+        const planToDelete = plans.find((p) => p.plan_id === planId);
+        if (!planToDelete) return;
+
         await deletePlan(planId);
-        setPlans(plans.filter((p) => p.plan_id !== planId));
+
+        // Update local state with correct order_by values
+        const updatedPlans = plans
+          .filter((p) => p.plan_id !== planId)
+          .map((p) => {
+            if (p.order_by > planToDelete.order_by) {
+              return { ...p, order_by: p.order_by - 1 };
+            }
+            return p;
+          });
+
+        setPlans(updatedPlans);
+
         toast({
           title: "Plan deleted",
           description: "The plan has been successfully deleted.",
@@ -138,7 +153,9 @@ export default function PlansList({ initialPlans }: PlansListProps) {
     }
   };
 
-  const handleAddPlan = async (newPlan: Omit<PlanType, "plan_id">) => {
+  const handleAddPlan = async (
+    newPlan: Omit<PlanType, "plan_id" | "order_by">
+  ) => {
     try {
       const createdPlan = await createPlan(newPlan);
       setPlans([...plans, createdPlan]);

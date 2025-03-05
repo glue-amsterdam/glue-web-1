@@ -11,7 +11,10 @@ export const PlanTypeSchema = z.enum(["free", "member", "participant"]);
 export const PlanSchema = z.object({
   plan_id: z.string().uuid("Invalid UUID format"),
   plan_label: z.string(),
-  plan_price: z.string(),
+  plan_price: z
+    .string()
+    .transform((val) => Number(val))
+    .refine((val) => !isNaN(val), { message: "Must be a number" }),
   plan_currency: z.string(),
   currency_logo: z.string(),
   plan_description: z.string(),

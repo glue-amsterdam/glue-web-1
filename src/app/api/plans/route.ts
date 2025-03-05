@@ -5,26 +5,11 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    // Check if the user is an admin
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    const { data: userInfo } = await supabase
-      .from("user_info")
-      .select("is_mod")
-      .eq("user_id", user?.id)
-      .single();
-
-    const isAdmin = userInfo?.is_mod || false;
-
-    // Fetch plans based on user role
-    let query = supabase.from("plans").select("*").order("order_by");
-
-    if (!isAdmin) {
-      query = query.eq("is_participant_enabled", true);
-    }
-
-    const { data: plans, error } = await query;
+    const { data: plans, error } = await supabase
+      .from("plans")
+      .select("*")
+      .eq("is_participant_enabled", true)
+      .order("order_by");
 
     if (error) {
       console.error("Error fetching plans:", error);

@@ -38,7 +38,6 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
     resolver: zodResolver(PlanSchema.omit({ plan_id: true, order_by: true })),
     defaultValues: {
       plan_label: "",
-      plan_price: "",
       plan_currency: "",
       currency_logo: "",
       plan_description: "",

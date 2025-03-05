@@ -69,16 +69,30 @@ export async function updatePlan(plan: PlanType): Promise<PlanType> {
 export async function deletePlan(planId: string): Promise<void> {
   const supabase = await createClient();
 
-  const { error } = await supabase.from("plans").delete().eq("plan_id", planId);
+  // Eliminar el plan
+  const { error: deleteError } = await supabase
+    .from("plans")
+    .delete()
+    .eq("plan_id", planId);
 
-  if (error) {
-    console.error("Error deleting plan:", error);
+  if (deleteError) {
+    console.error("Error deleting plan:", deleteError);
     throw new Error("Failed to delete plan");
+  }
+
+  // Reordenar todos los planes después de la eliminación
+  const { error: updateError } = await supabase.rpc(
+    "update_plan_order_after_delete"
+  );
+
+  if (updateError) {
+    console.error("Error updating plan order:", updateError);
+    throw new Error("Failed to update plan order after deletion");
   }
 }
 
 export async function createPlan(
-  newPlan: Omit<PlanType, "plan_id">
+  newPlan: Omit<PlanType, "plan_id" | "order_by">
 ): Promise<PlanType> {
   const supabase = await createClient();
 
