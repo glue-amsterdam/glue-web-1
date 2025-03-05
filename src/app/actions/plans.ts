@@ -9,7 +9,7 @@ export async function getPlans(): Promise<PlanType[]> {
   const { data, error } = await supabase
     .from("plans")
     .select("*")
-    .order("plan_id");
+    .order("created_at");
 
   if (error) {
     console.error("Error fetching plans:", error);
@@ -17,6 +17,26 @@ export async function getPlans(): Promise<PlanType[]> {
   }
 
   return data as PlanType[];
+}
+
+export async function updatePlanOrder(
+  planId: string,
+  newOrder: number,
+  oldOrder: number
+): Promise<void> {
+  const supabase = await createClient();
+
+  // Start a transaction
+  const { error } = await supabase.rpc("update_plan_order", {
+    p_plan_id: planId,
+    p_new_order: newOrder,
+    p_old_order: oldOrder,
+  });
+
+  if (error) {
+    console.error("Error updating plan order:", error);
+    throw new Error("Failed to update plan order");
+  }
 }
 
 export async function updatePlan(plan: PlanType): Promise<PlanType> {
@@ -32,6 +52,7 @@ export async function updatePlan(plan: PlanType): Promise<PlanType> {
       plan_description: plan.plan_description,
       plan_items: plan.plan_items,
       is_participant_enabled: plan.is_participant_enabled,
+      plan_type: plan.plan_type,
     })
     .eq("plan_id", plan.plan_id)
     .select()
@@ -48,39 +69,51 @@ export async function updatePlan(plan: PlanType): Promise<PlanType> {
 export async function deletePlan(planId: string): Promise<void> {
   const supabase = await createClient();
 
-  const { error } = await supabase.from("plans").delete().eq("plan_id", planId);
+  // Eliminar el plan
+  const { error: deleteError } = await supabase
+    .from("plans")
+    .delete()
+    .eq("plan_id", planId);
 
-  if (error) {
-    console.error("Error deleting plan:", error);
+  if (deleteError) {
+    console.error("Error deleting plan:", deleteError);
     throw new Error("Failed to delete plan");
+  }
+
+  // Reordenar todos los planes después de la eliminación
+  const { error: updateError } = await supabase.rpc(
+    "update_plan_order_after_delete"
+  );
+
+  if (updateError) {
+    console.error("Error updating plan order:", updateError);
+    throw new Error("Failed to update plan order after deletion");
   }
 }
 
 export async function createPlan(
-  newPlan: Omit<PlanType, "plan_id">
+  newPlan: Omit<PlanType, "plan_id" | "order_by">
 ): Promise<PlanType> {
   const supabase = await createClient();
 
-  // Obtener el último plan_id
-  const { data: lastPlan, error: lastPlanError } = await supabase
+  // Get the maximum order_by value
+  const { data: maxOrderData, error: maxOrderError } = await supabase
     .from("plans")
-    .select("plan_id")
-    .order("plan_id", { ascending: false })
+    .select("order_by")
+    .order("order_by", { ascending: false })
     .limit(1);
 
-  if (lastPlanError) {
-    console.error("Error fetching last plan:", lastPlanError);
+  if (maxOrderError) {
+    console.error("Error getting max order:", maxOrderError);
     throw new Error("Failed to create plan");
   }
 
-  // Generar el nuevo plan_id
-  const lastPlanId = lastPlan?.[0]?.plan_id ?? "planId-1";
-  const newPlanId = `planId-${Number.parseInt(lastPlanId.split("-")[1]) + 1}`;
+  const newOrder = (maxOrderData[0]?.order_by || 0) + 1;
 
-  // Insertar el nuevo plan
+  // Insert the new plan with auto-generated UUID and the new order
   const { data, error } = await supabase
     .from("plans")
-    .insert({ ...newPlan, plan_id: newPlanId })
+    .insert({ ...newPlan, order_by: newOrder })
     .select()
     .single();
 

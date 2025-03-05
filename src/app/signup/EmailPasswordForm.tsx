@@ -57,7 +57,7 @@ export function EmailPasswordForm({
           </p>
         )}
       </div>
-      <div className="flex justify-between">
+      <div className="flex justify-between gap-2 flex-wrap">
         {onBack && (
           <Button type="button" variant="outline" onClick={onBack}>
             Back
@@ -67,7 +67,7 @@ export function EmailPasswordForm({
           type="submit"
           className={`${
             onBack ? "" : "w-full"
-          } bg-[var(--color-box1)] hover:bg-[var(--color-box1)] hover:opacity-75`}
+          } bg-[var(--color-box1)] hover:bg-[var(--color-box1)] hover:opacity-75 text-pretty h-fit`}
         >
           {submitButtonText}
         </Button>

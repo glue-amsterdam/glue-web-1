@@ -1,38 +1,39 @@
-import { useForm } from "react-hook-form";
+import type React from "react";
+import { ControllerRenderProps, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
-const phoneRegex = /^[+]?[0-9\s()-]{7,20}$/;
-
-const socialMediaLinksSchema = z.object({
-  instagramLink: z.string().url("Invalid Instagram URL").or(z.literal("")),
-  facebookLink: z.string().url("Invalid Facebook URL").or(z.literal("")),
-  linkedinLink: z.string().url("Invalid LinkedIn URL").or(z.literal("")),
-});
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 export const participantExtraDataSchema = z.object({
   short_description: z
     .string()
     .min(1, "Short description is required")
     .max(500, "Short description must be 500 characters or less"),
-  phone_number: z.array(
-    z
-      .string()
-      .regex(phoneRegex, "Invalid phone number format")
-      .or(z.literal(""))
-  ),
-  social_media: socialMediaLinksSchema.optional(),
-  visible_email: z
-    .array(z.string().email("Invalid email address").or(z.literal("")))
+  phone_numbers: z
+    .array(z.string())
+    .max(3, "Only 3 items max")
+    .nullable()
     .optional(),
-  visible_website: z
-    .array(z.string().url("Invalid URL").or(z.literal("")))
+  social_media: z.record(z.string(), z.any()).nullable().optional(),
+  visible_emails: z.array(z.string()).max(3, "Only 3 items max").nullable(),
+  visible_websites: z
+    .array(z.string())
+    .max(3, "Only 3 items max")
+    .nullable()
     .optional(),
 });
+
 export type ParticipantExtraDataFormData = z.infer<
   typeof participantExtraDataSchema
 >;
@@ -46,134 +47,179 @@ export function ParticipantExtraDataForm({
   onSubmit,
   onBack,
 }: ParticipantExtraDataFormProps) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ParticipantExtraDataFormData>({
+  const form = useForm<ParticipantExtraDataFormData>({
     resolver: zodResolver(participantExtraDataSchema),
+    defaultValues: {
+      phone_numbers: [],
+      visible_emails: [],
+      visible_websites: [],
+      social_media: {},
+    },
   });
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <Label htmlFor="short_description">Short Description</Label>
-        <Textarea id="short_description" {...register("short_description")} />
-        {errors.short_description && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.short_description.message}
-          </p>
-        )}
-      </div>
-      <div>
-        <Label htmlFor="phone_number">Phone Number(s)</Label>
-        <Input
-          id="phone_number"
-          {...register("phone_number.0")}
-          placeholder="Primary phone number"
-        />
-        <Input
-          {...register("phone_number.1")}
-          placeholder="Secondary phone number (optional)"
-          className="mt-2"
-        />
-        {errors.phone_number && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.phone_number.message}
-          </p>
-        )}
-      </div>
+  const handleArrayChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: ControllerRenderProps<ParticipantExtraDataFormData>
+  ) => {
+    const newValue = e.target.value.split(",").map((s) => s.trim());
+    field.onChange(newValue);
+  };
 
-      <div>
-        <Label htmlFor="visible_email">Visible Email(s)</Label>
-        <Input
-          id="visible_email"
-          {...register("visible_email.0")}
-          placeholder="Primary visible email (optional)"
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="short_description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Short Description</FormLabel>
+              <FormControl>
+                <Textarea {...field} />
+              </FormControl>
+              <FormDescription>
+                Provide a brief description (max 500 characters)
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        <Input
-          {...register("visible_email.1")}
-          placeholder="Secondary visible email (optional)"
-          className="mt-2"
+
+        <FormField
+          control={form.control}
+          name="phone_numbers"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone Number(s)</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  value={field.value?.join(", ") || ""}
+                  onChange={(e) => handleArrayChange(e, field)}
+                  placeholder="Enter phone numbers separated by commas"
+                />
+              </FormControl>
+              <FormDescription>
+                Enter phone numbers separated by commas (max 3)
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.visible_email && errors.visible_email[0] && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.visible_email[0].message}
-          </p>
-        )}
-        {errors.visible_email && errors.visible_email[1] && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.visible_email[1].message}
-          </p>
-        )}
-      </div>
-      <div>
-        <Label htmlFor="visible_website">Visible Website(s)</Label>
-        <Input
-          id="visible_website"
-          {...register("visible_website.0")}
-          placeholder="Primary website URL (optional)"
+
+        <FormField
+          control={form.control}
+          name="visible_emails"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Visible Email(s)</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  value={field.value?.join(", ") || ""}
+                  onChange={(e) => handleArrayChange(e, field)}
+                  placeholder="Enter visible emails separated by commas"
+                />
+              </FormControl>
+              <FormDescription>
+                Enter visible email addresses separated by commas (max 3)
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        <Input
-          {...register("visible_website.1")}
-          placeholder="Secondary website URL (optional)"
-          className="mt-2"
+
+        <FormField
+          control={form.control}
+          name="visible_websites"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Visible Website(s)</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  value={field.value?.join(", ") || ""}
+                  onChange={(e) => handleArrayChange(e, field)}
+                  placeholder="Enter visible websites separated by commas"
+                />
+              </FormControl>
+              <FormDescription>
+                Enter visible websites separated by commas (max 3)
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.visible_website && errors.visible_website[0] && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.visible_website[0].message}
-          </p>
-        )}
-        {errors.visible_website && errors.visible_website[1] && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.visible_website[1].message}
-          </p>
-        )}
-      </div>
-      <div>
-        <Label>Social Media Links</Label>
-        <Input
-          {...register("social_media.instagramLink")}
-          placeholder="Instagram URL"
-          className="mt-2"
-        />
-        {errors.social_media?.instagramLink && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.social_media.instagramLink.message}
-          </p>
-        )}
-        <Input
-          {...register("social_media.facebookLink")}
-          placeholder="Facebook URL"
-          className="mt-2"
-        />
-        {errors.social_media?.facebookLink && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.social_media.facebookLink.message}
-          </p>
-        )}
-        <Input
-          {...register("social_media.linkedinLink")}
-          placeholder="LinkedIn URL"
-          className="mt-2"
-        />
-        {errors.social_media?.linkedinLink && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.social_media.linkedinLink.message}
-          </p>
-        )}
-      </div>
-      <div className="flex justify-between">
-        <Button type="button" variant="outline" onClick={onBack}>
-          Back
-        </Button>
-        <Button
-          className="bg-[var(--color-box1)] hover:bg-[var(--color-box1)] hover:opacity-75"
-          type="submit"
-        >
-          Next: Account Information
-        </Button>
-      </div>
-    </form>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Social Media</h3>
+          <FormField
+            control={form.control}
+            name="social_media.facebookLink"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Facebook Link</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={field.value || ""}
+                    className="bg-white text-black"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="social_media.linkedinLink"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>LinkedIn Link</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={field.value || ""}
+                    className="bg-white text-black"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="social_media.instagramLink"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Instagram Link</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={field.value || ""}
+                    className="bg-white text-black"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="flex justify-between flex-wrap gap-2">
+          <Button type="button" variant="outline" onClick={onBack}>
+            Back
+          </Button>
+          <Button
+            className="bg-[var(--color-box1)] hover:bg-[var(--color-box1)] hover:opacity-75 text-pretty h-fit"
+            type="submit"
+          >
+            Next Step
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

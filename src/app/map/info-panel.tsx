@@ -11,13 +11,11 @@ import {
 } from "@/components/ui/accordion";
 import {
   MapPin,
-  MapPinPlus,
-  MapPinHouse,
-  MapPinMinusInside,
+  MapPinIcon as MapPinPlus,
+  MapPinIcon as MapPinHouse,
+  MapPinIcon as MapPinMinusInside,
   Route,
   ExternalLink,
-  Lock,
-  LockOpen,
   RouteIcon,
   Users,
   User,
@@ -27,7 +25,6 @@ import {
   type Route as RouteType,
   RouteZone,
 } from "@/app/hooks/useMapData";
-import { useAuth } from "@/app/context/AuthContext";
 import LoginForm from "@/app/components/login-form/login-form";
 import { useRouter } from "next/navigation";
 
@@ -57,7 +54,6 @@ function InfoPanel({
   className,
 }: InfoPanelProps) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -151,10 +147,6 @@ function InfoPanel({
     [onRouteSelect, updateURL]
   );
 
-  const handleLoginModalOpen = () => {
-    if (!user) setIsLoginModalOpen(true);
-  };
-
   const handleLoginSuccess = () => {
     setIsLoginModalOpen(false);
     router.refresh();
@@ -198,38 +190,22 @@ function InfoPanel({
 
             return (
               <AccordionItem key={zone} value={zone}>
-                <AccordionTrigger
-                  onClick={handleLoginModalOpen}
-                  className="text-base font-semibold hover:bg-gray-100 rounded-lg px-2 py-1 cursor-pointer"
-                >
+                <AccordionTrigger className="text-base font-semibold hover:bg-gray-100 rounded-lg px-2 py-1 cursor-pointer">
                   <Route className="mr-2 h-4 w-4" />
                   {zone} Routes
-                  {!user ? (
-                    <Lock className="ml-2 h-3 w-3 text-red-600" />
-                  ) : (
-                    <LockOpen className="ml-2 h-3 w-3 text-green-500" />
-                  )}
                 </AccordionTrigger>
                 <AccordionContent>
-                  {user ? (
-                    <div className="space-y-2">
-                      {zoneRoutes.map((route) => (
-                        <RouteItem
-                          key={route.id}
-                          route={route}
-                          selectedRoute={selectedRoute}
-                          onSelect={handleRouteSelect}
-                          redirectRouteToGoogleMaps={redirectRouteToGoogleMaps}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-4">
-                      <p className="text-muted-foreground">
-                        Please log in to view routes
-                      </p>
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    {zoneRoutes.map((route) => (
+                      <RouteItem
+                        key={route.id}
+                        route={route}
+                        selectedRoute={selectedRoute}
+                        onSelect={handleRouteSelect}
+                        redirectRouteToGoogleMaps={redirectRouteToGoogleMaps}
+                      />
+                    ))}
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             );

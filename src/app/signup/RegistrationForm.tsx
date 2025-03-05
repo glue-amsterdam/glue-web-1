@@ -6,7 +6,7 @@ import FreeUserRegistration from "@/app/signup/FreeUserRegistration";
 import MemberUserRegistration from "@/app/signup/MemberUserRegistration";
 import ParticipantRegistration from "@/app/signup/ParticipantRegistration";
 import { useToast } from "@/hooks/use-toast";
-import { PlansArrayType } from "@/schemas/plansSchema";
+import type { PlansArrayType } from "@/schemas/plansSchema";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -43,7 +43,6 @@ export default function RegistrationForm({ plansData }: RegistrationFormProps) {
     setLoading(true);
     setError(null);
 
-    console.log("Registration data:", data);
     const registrationData = {
       ...data,
       plan_id: selectedPlan!.plan_id,
@@ -88,7 +87,7 @@ export default function RegistrationForm({ plansData }: RegistrationFormProps) {
   };
 
   return (
-    <main>
+    <main className="flex-1 w-full pb-8">
       {error && (
         <div
           className="bg-red-100 border border-red-500 text-red-700 px-4 py-3 rounded relative mb-4"
@@ -101,7 +100,7 @@ export default function RegistrationForm({ plansData }: RegistrationFormProps) {
         <PlanPicker plansData={plansData} onPlanSelected={handlePlanSelected} />
       )}
       {step === 2 && selectedPlan && (
-        <div className="w-[90%] md:main-container mx-auto flex flex-col">
+        <div className="w-[90%] mx-auto flex flex-col">
           <h2 className="text-2xl font-bold mb-4 mt-2">
             Complete Your Registration
           </h2>
@@ -132,7 +131,7 @@ export default function RegistrationForm({ plansData }: RegistrationFormProps) {
         </div>
       )}
       {loading && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-4 rounded-lg shadow-lg">
             <LoadingSpinner />
           </div>

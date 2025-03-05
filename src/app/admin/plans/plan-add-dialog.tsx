@@ -17,9 +17,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Minus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PlanAddDialogProps {
-  onSave: (newPlan: Omit<PlanType, "plan_id">) => void;
+  onSave: (newPlan: Omit<PlanType, "plan_id" | "order_by">) => void;
   onClose: () => void;
 }
 
@@ -27,16 +34,15 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const methods = useForm<Omit<PlanType, "plan_id">>({
-    resolver: zodResolver(PlanSchema.omit({ plan_id: true })),
+  const methods = useForm<Omit<PlanType, "plan_id" | "order_by">>({
+    resolver: zodResolver(PlanSchema.omit({ plan_id: true, order_by: true })),
     defaultValues: {
       plan_label: "",
-      plan_price: "",
       plan_currency: "",
       currency_logo: "",
       plan_description: "",
       plan_items: [],
-      is_participant_enabled: false,
+      is_participant_enabled: true,
       plan_type: "participant",
     },
   });
@@ -46,14 +52,20 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
     handleSubmit,
     formState: { errors },
     control,
+    setValue,
+    watch,
   } = methods;
+
+  console.log(errors);
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "plan_items",
   });
 
-  const onSubmit = async (data: Omit<PlanType, "plan_id">) => {
+  const planType = watch("plan_type");
+
+  const onSubmit = async (data: Omit<PlanType, "plan_id" | "order_by">) => {
     setIsSubmitting(true);
     try {
       await onSave(data);
@@ -80,6 +92,30 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
         </DialogHeader>
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div>
+              <Label htmlFor="plan_type">Plan Type</Label>
+              <Select
+                value={planType}
+                onValueChange={(value) =>
+                  setValue(
+                    "plan_type",
+                    value as "free" | "member" | "participant"
+                  )
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select plan type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="free">Free</SelectItem>
+                  <SelectItem value="member">Member</SelectItem>
+                  <SelectItem value="participant">Participant</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.plan_type && (
+                <p className="text-red-500">{errors.plan_type.message}</p>
+              )}
+            </div>
             <div>
               <Label htmlFor="plan_label">Plan Label</Label>
               <Input id="plan_label" {...register("plan_label")} />
@@ -165,6 +201,7 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
                 "currency_logo",
                 "plan_description",
                 "plan_items",
+                "plan_type",
               ]}
               className="w-full"
             />
