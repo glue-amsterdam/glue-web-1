@@ -37,10 +37,12 @@ export async function GET() {
         slug,
         is_sticky,
         status,
-        user_id
+        user_id,
+        is_active
       `
         )
         .eq("status", "accepted")
+        .eq("is_active", true)
         .eq("is_sticky", false)
         .limit(30);
 

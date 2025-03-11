@@ -45,6 +45,7 @@ export async function GET(
         is_sticky,
         year,
         status,
+        is_active,
         user_info!inner(
           user_name,
           is_mod,
@@ -58,6 +59,7 @@ export async function GET(
       `
       )
       .eq("slug", slug)
+      .eq("is_active", true)
       .single()) as { data: ParticipantDetails | null; error: PostgrestError };
 
     if (participantError) {

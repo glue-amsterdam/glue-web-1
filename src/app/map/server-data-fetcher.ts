@@ -84,10 +84,12 @@ async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]> {
         `
         user_id,
         status,
-        special_program
+        special_program,
+        is_active
       `
       )
-      .eq("status", "accepted"),
+      .eq("status", "accepted")
+      .eq("is_active", true),
     supabase.from("hubs").select(`
         id,
         name,

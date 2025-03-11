@@ -36,12 +36,14 @@ export async function GET() {
           user_id,
           is_sticky,
           status,
+          is_active,
           user_info (
             user_name
           )
         `
       )
-      .eq("status", "accepted")) as {
+      .eq("status", "accepted")
+      .eq("is_active", true)) as {
       data: ParticipantDetails[] | null;
       error: PostgrestError;
     };
