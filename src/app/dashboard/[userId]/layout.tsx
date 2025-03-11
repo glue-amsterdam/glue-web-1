@@ -39,7 +39,7 @@ export default async function DashboardLayout({
 
   const { data: participantDetails } = await supabase
     .from("participant_details")
-    .select("status")
+    .select("status, is_active")
     .eq("user_id", loggedInUserId)
     .single();
 
@@ -103,6 +103,7 @@ export default async function DashboardLayout({
       <DashboardMenu
         isMod={isModerator}
         userName={loggedUserInfo?.user_name}
+        is_active={participantDetails?.is_active}
         targetUserId={targetUserId}
       />
       <DashboardProvider {...propData}>{children}</DashboardProvider>

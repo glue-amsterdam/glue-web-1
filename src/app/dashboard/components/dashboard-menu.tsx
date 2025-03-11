@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,26 +18,51 @@ import {
   USER_DASHBOARD_SECTIONS,
 } from "@/constants";
 
+// List of sections that should only be visible when is_active is true
+const ACTIVE_ONLY_SECTIONS = [
+  "profile-image",
+  "visiting-hours",
+  "map-info",
+  "invoice-data",
+  "create-events",
+  "your-events",
+];
+
 type DashboardMenuProps = {
   isMod?: boolean;
   userName?: string;
   targetUserId?: string;
+  is_active: boolean;
 };
 
 export default function DashboardMenu({
   isMod,
   userName,
   targetUserId,
+  is_active,
 }: DashboardMenuProps) {
+  const filteredDashboardSections = useMemo(() => {
+    let sections = USER_DASHBOARD_SECTIONS;
+
+    if (!is_active) {
+      sections = USER_DASHBOARD_SECTIONS.filter((section) => {
+        return !ACTIVE_ONLY_SECTIONS.includes(section.href);
+      });
+    }
+
+    return sections;
+  }, [is_active]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user } = useAuth();
 
   if (!user) return null;
 
+  // Filter dashboard sections based on is_active status
+
   const SidebarContent = () => (
     <nav className="space-y-4 p-6">
       <AnimatePresence>
-        {USER_DASHBOARD_SECTIONS.map((item, index) => (
+        {filteredDashboardSections.map((item, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, y: 20 }}
