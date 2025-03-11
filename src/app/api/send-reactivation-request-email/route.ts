@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     // Get user information
     const { data: userData, error: userError } = await supabase
       .from("user_info")
-      .select("*")
+      .select("user_name")
       .eq("user_id", userId)
       .single();
 
