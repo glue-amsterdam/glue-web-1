@@ -1,5 +1,19 @@
 import { z } from "zod";
 
+export type ParticipantDetails = z.infer<typeof participantDetailsSchema>;
+
+export const reactivationNotesSchema = z.object({
+  plan_id: z.string().optional().nullable(),
+  plan_type: z.string().optional().nullable(),
+  formatted_address: z.string().optional().nullable(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
+  no_address: z.boolean().optional().default(false),
+  notes: z.string().optional().nullable(),
+});
+
+export type ReactivationNotes = z.infer<typeof reactivationNotesSchema>;
+
 export const participantDetailsSchema = z
   .object({
     user_id: z.string().uuid(),
@@ -16,6 +30,13 @@ export const participantDetailsSchema = z
     special_program: z.boolean(),
     year: z.number().nullable().optional(),
     status: z.enum(["pending", "accepted", "declined"]).default("pending"),
+    is_active: z.boolean().default(true),
+    reactivation_requested: z.boolean().default(false),
+    reactivation_notes: reactivationNotesSchema.optional().nullable(),
+    reactivation_status: z
+      .enum(["pending", "approved", "declined"])
+      .optional()
+      .nullable(),
   })
   .superRefine((data, ctx) => {
     if (data.is_sticky && (data.year == null || data.year <= 1900)) {
@@ -27,5 +48,3 @@ export const participantDetailsSchema = z
       });
     }
   });
-
-export type ParticipantDetails = z.infer<typeof participantDetailsSchema>;

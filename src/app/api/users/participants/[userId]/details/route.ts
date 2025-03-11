@@ -47,20 +47,14 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ userId: string }> }
+// Placeholder for sendReactivationRequestEmail function
+async function sendReactivationRequestEmail(
+  userId: string,
+  notes: string | undefined
 ) {
-  const { userId } = await params;
-  return handleRequest(request, userId, "create");
-}
-
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ userId: string }> }
-) {
-  const { userId } = await params;
-  return handleRequest(request, userId, "update");
+  // Implement email sending logic here
+  console.log(`Reactivation requested for user ${userId} with notes: ${notes}`);
+  return Promise.resolve(); // Simulate successful email sending
 }
 
 async function handleRequest(
@@ -77,6 +71,19 @@ async function handleRequest(
 
     const body = await request.json();
     const validatedData = participantDetailsSchema.parse(body);
+
+    // Check if this is a reactivation request
+    const isReactivationRequest =
+      validatedData.reactivation_requested && !validatedData.is_active;
+
+    // If it's a reactivation request, send email to admins
+    if (isReactivationRequest) {
+      // Send email notification to admins (we'll implement this later)
+      await sendReactivationRequestEmail(
+        userId,
+        validatedData.reactivation_notes as string | undefined
+      );
+    }
 
     let result;
     if (action === "update") {
@@ -125,4 +132,20 @@ async function handleRequest(
       { status: 500 }
     );
   }
+}
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ userId: string }> }
+) {
+  const { userId } = await params;
+  return handleRequest(request, userId, "create");
+}
+
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ userId: string }> }
+) {
+  const { userId } = await params;
+  return handleRequest(request, userId, "update");
 }

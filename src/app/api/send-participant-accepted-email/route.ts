@@ -7,7 +7,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    config.supabaseUrl,
     process.env.SUPABASE_SERVICE_ROLE_KEY as string,
     {
       auth: {
