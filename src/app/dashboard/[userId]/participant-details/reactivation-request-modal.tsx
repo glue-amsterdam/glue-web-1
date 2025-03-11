@@ -198,6 +198,10 @@ export function ReactivationRequestModal({
                           if (selectedPlan) {
                             form.setValue("plan_id", selectedPlan.plan_id);
                             form.setValue("plan_type", selectedPlan.plan_type);
+                            form.setValue(
+                              "plan_label",
+                              selectedPlan.plan_label
+                            );
                           }
                         }}
                         defaultValue={field.value || undefined}

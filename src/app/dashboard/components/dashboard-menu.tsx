@@ -42,16 +42,14 @@ export default function DashboardMenu({
   is_active,
 }: DashboardMenuProps) {
   const filteredDashboardSections = useMemo(() => {
-    let sections = USER_DASHBOARD_SECTIONS;
+    if (isMod) return USER_DASHBOARD_SECTIONS;
 
-    if (!is_active) {
-      sections = USER_DASHBOARD_SECTIONS.filter((section) => {
-        return !ACTIVE_ONLY_SECTIONS.includes(section.href);
-      });
-    }
-
-    return sections;
-  }, [is_active]);
+    return is_active
+      ? USER_DASHBOARD_SECTIONS
+      : USER_DASHBOARD_SECTIONS.filter(
+          (section) => !ACTIVE_ONLY_SECTIONS.includes(section.href)
+        );
+  }, [is_active, isMod]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user } = useAuth();
 
