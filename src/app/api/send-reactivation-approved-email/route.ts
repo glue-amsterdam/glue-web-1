@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { config } from "@/env";
+import { sendReactivationApprovedEmail } from "@/components/emails/participant-details-emails";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -136,13 +137,7 @@ export async function POST(request: Request) {
         from: `GLUE <${config.baseEmail}>`,
         to: user.email,
         subject: "Your GLUE Account Has Been Reactivated",
-        html: `
-          <h1>Welcome back, ${userData.user_name || user.email}!</h1>
-          <p>Your GLUE account has been successfully reactivated.</p>
-          <p>You now have full access to all features and can start creating events and interacting with the community.</p>
-          <p>Log in to your account to get started!</p>
-          
-        `,
+        html: sendReactivationApprovedEmail(userData.user_name, user.email),
       });
     } catch (emailError) {
       console.error("Error sending reactivation email:", emailError);

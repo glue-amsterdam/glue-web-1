@@ -1,7 +1,7 @@
-import { participantDetailsSchema } from "@/schemas/participantDetailsSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { participantDetailsSchema } from "@/schemas/participantDetailsSchemas";
 
 export async function GET(
   request: Request,
@@ -47,16 +47,6 @@ export async function GET(
   }
 }
 
-// Placeholder for sendReactivationRequestEmail function
-async function sendReactivationRequestEmail(
-  userId: string,
-  notes: string | undefined
-) {
-  // Implement email sending logic here
-  console.log(`Reactivation requested for user ${userId} with notes: ${notes}`);
-  return Promise.resolve(); // Simulate successful email sending
-}
-
 async function handleRequest(
   request: Request,
   userId: string,
@@ -70,23 +60,20 @@ async function handleRequest(
     const supabase = await createClient();
 
     const body = await request.json();
+
+    // Validar solo los campos que se están actualizando
     const validatedData = participantDetailsSchema.parse(body);
 
-    // Check if this is a reactivation request
-    const isReactivationRequest =
-      validatedData.reactivation_requested && !validatedData.is_active;
-
-    // If it's a reactivation request, send email to admins
-    if (isReactivationRequest) {
-      // Send email notification to admins (we'll implement this later)
-      await sendReactivationRequestEmail(
-        userId,
-        validatedData.reactivation_notes as string | undefined
-      );
-    }
-
     let result;
+
     if (action === "update") {
+      // Manejar casos especiales
+      if (validatedData.reactivation_status === "declined") {
+        validatedData.is_active = false;
+      } else if (validatedData.reactivation_status === "pending") {
+        validatedData.reactivation_requested = true;
+      }
+
       result = await supabase
         .from("participant_details")
         .update(validatedData)
@@ -121,6 +108,7 @@ async function handleRequest(
     return NextResponse.json(data);
   } catch (error) {
     if (error instanceof ZodError) {
+      console.error("Zod validation error:", error.errors);
       return NextResponse.json(
         { error: "Invalid participant data", details: error.errors },
         { status: 400 }

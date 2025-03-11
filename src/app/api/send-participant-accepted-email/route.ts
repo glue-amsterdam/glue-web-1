@@ -1,3 +1,4 @@
+import { sendParticipantAcceptedEmail } from "@/components/emails/participant-details-emails";
 import { config } from "@/env";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
@@ -42,12 +43,7 @@ export async function POST(request: Request) {
         from: `GLUE <${config.baseEmail}>`,
         to: user.email,
         subject: "Your Participant Application Has Been Accepted",
-        html: `
-          <h1>Congratulations!${user.email}</h1>
-          <p>Your application to become a GLUE participant has been accepted.</p>
-          <p>You can now start modifying your participant data and creating events.</p>
-          <p>Log in to your account to get started!</p>
-        `,
+        html: sendParticipantAcceptedEmail(user.email),
       });
     } catch (emailError) {
       console.error("Error sending email:", emailError);

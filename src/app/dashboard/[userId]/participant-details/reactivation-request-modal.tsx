@@ -79,7 +79,7 @@ export function ReactivationRequestModal({
       formatted_address: null,
       latitude: null,
       longitude: null,
-      no_address: false,
+      no_address: true,
       notes: "",
     },
   });

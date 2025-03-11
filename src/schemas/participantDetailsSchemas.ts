@@ -3,13 +3,13 @@ import { z } from "zod";
 export type ParticipantDetails = z.infer<typeof participantDetailsSchema>;
 
 export const reactivationNotesSchema = z.object({
-  plan_id: z.string(),
-  plan_type: z.string(),
-  plan_label: z.string(),
+  plan_id: z.string().optional().nullable(),
+  plan_type: z.string().optional().nullable(),
+  plan_label: z.string().optional().nullable(),
   formatted_address: z.string().optional().nullable(),
   latitude: z.number().optional().nullable(),
   longitude: z.number().optional().nullable(),
-  no_address: z.boolean().optional().default(false),
+  no_address: z.boolean().optional().default(true),
   notes: z.string().optional().nullable(),
 });
 

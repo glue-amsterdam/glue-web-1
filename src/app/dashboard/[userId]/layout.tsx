@@ -58,7 +58,7 @@ export default async function DashboardLayout({
   }
 
   // If user is a participant but status is pending
-  if (isParticipant && participantStatus === "pending") {
+  if (isParticipant && participantStatus === "pending" && !isModerator) {
     return (
       <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
         <PendingApproval
@@ -69,7 +69,7 @@ export default async function DashboardLayout({
   }
 
   // If user is a participant but status is rejected
-  if (isParticipant && participantStatus === "declined") {
+  if (isParticipant && participantStatus === "declined" && !isModerator) {
     return (
       <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
         <RejectedAccess
