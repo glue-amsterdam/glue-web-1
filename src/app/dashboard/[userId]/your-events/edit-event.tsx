@@ -34,6 +34,7 @@ import { config } from "@/env";
 import { CoOrganizerSearch } from "@/app/dashboard/components/co-organizers-search";
 import { LocationSelector } from "@/app/dashboard/[userId]/create-events/location-selector";
 import { useEventsDays } from "@/app/context/MainContext";
+import Image from "next/image";
 
 interface EditEventFormProps {
   event: EventType;
@@ -339,10 +340,12 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
               <FormLabel>Event Image</FormLabel>
               <div className="w-full h-80 overflow-hidden bg-gray-100 rounded-md relative mb-2">
                 {imagePreview ? (
-                  <img
+                  <Image
                     src={imagePreview || "/placeholder.svg"}
+                    fill
+                    sizes="(min-width: 1024px) 50vw, 100vw"
                     alt="Event image preview"
-                    className="w-full h-full object-cover rounded-md"
+                    className="object-cover rounded-md"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-md">

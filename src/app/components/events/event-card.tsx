@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { fadeInConfig } from "@/utils/animations";
 import { IndividualEventResponse } from "@/schemas/eventSchemas";
 import { getEventIcon } from "@/constants";
+import Image from "next/image";
 
 interface EventCardProps {
   event: IndividualEventResponse;
@@ -37,10 +38,13 @@ export default function EventCard({ event }: EventCardProps) {
           onClick={() => handleClick(event.eventId)}
         >
           <div className="bg-black/20 group-hover:bg-background/80 transition-all duration-200 absolute inset-0 z-10" />
-          <img
+          <Image
             src={event.thumbnail.image_url}
+            fill
+            sizes="(min-width: 1024px) 50vw, 100vw"
             alt={`Event from the GLUE community: ${event.name} - ${event.type} type`}
-            className="absolute rounded-md top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 object-cover w-full h-full"
+            className="z-0 object-cover group-hover:scale-105 transition-all duration-200"
+            layout="fill"
           />
           <div className="absolute inset-0 flex flex-col justify-center px-2 md:px-10 z-20 group-hover:text-black text-background transition-all duration-200">
             <h3 className="text-xl md:text-2xl xl:text-4xl tracking-widest">
