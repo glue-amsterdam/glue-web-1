@@ -90,7 +90,7 @@ const PlanCard = forwardRef<HTMLDivElement, PlanCardProps>(
         <div className="w-full h-px bg-gray-200" />
         <CardContent
           ref={contentRef}
-          className={`flex-grow overflow-y-auto scrollbar-thin p-4
+          className={`flex-grow overflow-x-hidden overflow-y-auto scrollbar-thin p-4
           ${
             isSelected
               ? "scrollbar-track-transparent scrollbar-thumb-white"
