@@ -98,16 +98,13 @@ function Labels({ mainMenu }: { mainMenu: MainMenuItem[] }) {
       <div className="relative w-[90%] md:w-[85%] h-[60%]">
         <div className="absolute flex h-full w-full items-center justify-evenly">
           <div className="w-[12vh] group-hover:scale-105 md:w-[30vw] transition-all">
-            <span
-              id={`label-${mainMenu[0]?.section}`}
-              className="navLabel break-words"
-            >
+            <span id={`label-${mainMenu[0]?.section}`} className="navLabel">
               {mainMenu[0]?.label}
             </span>
           </div>
           <span
             id={`label-${mainMenu[2]?.section}`}
-            className="navLabel break-words flex justify-end group-hover:scale-105 transition-all"
+            className="navLabel flex justify-end group-hover:scale-105 transition-all"
           >
             {mainMenu[2]?.label}
           </span>
@@ -115,13 +112,13 @@ function Labels({ mainMenu }: { mainMenu: MainMenuItem[] }) {
         <div className="absolute flex h-full w-full flex-col items-center">
           <span
             id={`label-${mainMenu[1]?.section}`}
-            className="navLabel break-words group-hover:scale-105 transition-all"
+            className="navLabel group-hover:scale-105 transition-all"
           >
             {mainMenu[1]?.label}
           </span>
           <span
             id={`label-${mainMenu[3]?.section}`}
-            className="navLabel break-words flex items-end group-hover:scale-105 transition-all"
+            className="navLabel flex items-end group-hover:scale-105 transition-all"
           >
             {mainMenu[3]?.label}
           </span>

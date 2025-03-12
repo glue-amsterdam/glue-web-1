@@ -40,8 +40,8 @@ export async function GET() {
         user_id
       `
         )
-        .eq("status", "accepted") /* 
-        .eq("is_active", true) */
+        .eq("status", "accepted")
+        .eq("is_active", true)
         .eq("is_sticky", false)
         .limit(30);
 
