@@ -1,14 +1,18 @@
-import React, { memo } from "react";
+"use client";
+
+import { memo } from "react";
+import { X } from "lucide-react";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import CarouselPopUp from "@/app/map/carousel-pop-up";
 import { Popup } from "react-map-gl";
-import { PopupInfo } from "@/app/map/map-component";
+import type { PopupInfo } from "@/app/map/map-component";
+import { Anchor } from "mapbox-gl";
 
 type Props = {
   isLoading: boolean;
   popupInfo: PopupInfo;
   handlePopupClose: () => void;
-  isError?: boolean; // Add error handling
+  isError?: boolean;
 };
 
 function PopUpComponent({
@@ -17,20 +21,30 @@ function PopUpComponent({
   handlePopupClose,
   isError,
 }: Props) {
-  console.log(popupInfo);
-  // Early return for loading state
+  // Common popup configuration
+  const popupConfig = {
+    longitude: popupInfo.longitude,
+    latitude: popupInfo.latitude,
+    onClose: handlePopupClose,
+    closeButton: false,
+    closeOnClick: false,
+    anchor: "center" as Anchor,
+    className: "custom-map-popup",
+  };
+
+  // Loading state
   if (isLoading) {
     return (
-      <Popup
-        anchor="center"
-        longitude={popupInfo.longitude}
-        latitude={popupInfo.latitude}
-        onClose={handlePopupClose}
-        closeButton={false}
-        closeOnClick={false}
-      >
-        <div className="w-64 sm:w-80 md:w-96 overflow-hidden rounded-lg shadow-md bg-white">
-          <div className="flex items-center justify-center h-48">
+      <Popup {...popupConfig}>
+        <div className="popup-wrapper">
+          <button
+            onClick={handlePopupClose}
+            className="popup-close-btn"
+            aria-label="Close popup"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <div className="popup-loading">
             <LoadingSpinner />
           </div>
         </div>
@@ -38,39 +52,48 @@ function PopUpComponent({
     );
   }
 
-  // Early return for error state
+  // Error state
   if (isError) {
     return (
-      <Popup
-        anchor="center"
-        longitude={popupInfo.longitude}
-        latitude={popupInfo.latitude}
-        onClose={handlePopupClose}
-        closeButton={false}
-        closeOnClick={false}
-      >
-        <div className="w-64 sm:w-80 md:w-96 overflow-hidden rounded-lg shadow-md bg-white">
-          <div className="flex items-center justify-center h-48 p-4 text-red-600">
-            Failed to load location data. Please try again.
+      <Popup {...popupConfig}>
+        <div className="popup-wrapper">
+          <button
+            onClick={handlePopupClose}
+            className="popup-close-btn"
+            aria-label="Close popup"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <div className="popup-error">
+            <p className="text-red-600 text-center">
+              Failed to load location data.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 mt-2 bg-black text-white rounded-md hover:bg-opacity-90"
+            >
+              Try Again
+            </button>
           </div>
         </div>
       </Popup>
     );
   }
 
-  // Render the popup with data
+  // Data loaded state
   return (
-    <Popup
-      anchor="center"
-      longitude={popupInfo.longitude}
-      latitude={popupInfo.latitude}
-      onClose={handlePopupClose}
-      closeButton={false}
-      closeOnClick={false}
-      aria-label="Location details"
-    >
-      <div className="w-64 sm:w-80 md:w-96 overflow-hidden rounded-lg shadow-md bg-white">
-        <CarouselPopUp popupInfo={popupInfo} />
+    <Popup {...popupConfig}>
+      <div className="popup-wrapper">
+        <button
+          onClick={handlePopupClose}
+          className="popup-close-btn"
+          aria-label="Close popup"
+        >
+          <X className="h-5 w-5 text-black" />
+        </button>
+        <div className="popup-content">
+          <CarouselPopUp popupInfo={popupInfo} />
+        </div>
       </div>
     </Popup>
   );

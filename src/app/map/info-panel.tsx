@@ -108,14 +108,24 @@ function InfoPanel({
   }, []);
 
   const redirectRouteToGoogleMaps = useCallback((route: RouteType) => {
+    if (!route || route.dots.length === 0) return;
+
+    const origin = `${route.dots[0].latitude},${route.dots[0].longitude}`;
+    const destination = `${route.dots[route.dots.length - 1].latitude},${
+      route.dots[route.dots.length - 1].longitude
+    }`;
+
     const waypoints = route.dots
+      .slice(1, -1) // Remove first and last dots to avoid duplication
       .map((dot) => `${dot.latitude},${dot.longitude}`)
       .join("|");
-    const url = `https://www.google.com/maps/dir/?api=1&origin=${
-      route.dots[0].latitude
-    },${route.dots[0].longitude}&destination=${
-      route.dots[route.dots.length - 1].latitude
-    },${route.dots[route.dots.length - 1].longitude}&waypoints=${waypoints}`;
+
+    let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
+
+    if (waypoints) {
+      url += `&waypoints=${waypoints}`;
+    }
+
     window.open(url, "_blank");
   }, []);
 
