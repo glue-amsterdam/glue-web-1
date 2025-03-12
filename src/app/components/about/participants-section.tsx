@@ -111,7 +111,7 @@ export default function ParticipantsSection({
           </Carousel>
         </div>
         <ScrollableText
-          containerClassName="max-h-[10%] overflow-hidden"
+          containerClassName="max-h-[20%] overflow-y-auto"
           className="mt-4 text-sm sm:text-base md:text-lg pr-4"
         >
           <motion.p
