@@ -45,7 +45,6 @@ export async function GET(
         is_sticky,
         year,
         status,
-        is_active,
         user_info!inner(
           user_name,
           is_mod,
