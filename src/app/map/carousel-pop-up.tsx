@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -23,9 +25,10 @@ function CarouselPopUp({ popupInfo }: Props) {
   const autoplay = useRef(
     Autoplay({
       delay: 3000,
-      stopOnInteraction: false, // Ensures it doesn't stop permanently on user interaction
+      stopOnInteraction: false,
     })
   );
+
   const handleMouseEnter = () => {
     autoplay.current.stop();
   };
@@ -33,6 +36,7 @@ function CarouselPopUp({ popupInfo }: Props) {
   const handleMouseLeave = () => {
     autoplay.current.play();
   };
+
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
 
@@ -95,7 +99,7 @@ function CarouselPopUp({ popupInfo }: Props) {
                     e.currentTarget.src = "/participant-placeholder.jpg";
                   }}
                 />
-                <div className="absolute bottom-0 left-0 right-0 p-4 z-20">
+                <div className="absolute top-4 left-0 right-0 p-4 z-20">
                   <h3 className="font-semibold text-lg leading-tight text-white mb-1">
                     {participant.user_name}
                   </h3>
@@ -145,7 +149,7 @@ function CarouselPopUp({ popupInfo }: Props) {
                   </Link>
                   <Button
                     variant="outline"
-                    className="flex-1 bg-white hover:bg-[var(--color-triangle)] text-black hover:text-white  transition-colors duration-200"
+                    className="flex-1 bg-white hover:bg-[var(--color-triangle)] text-black hover:text-white transition-colors duration-200"
                     onClick={(e) =>
                       handleGoogleMapsRedirect(popupInfo.formatted_address, e)
                     }
@@ -158,11 +162,11 @@ function CarouselPopUp({ popupInfo }: Props) {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="absolute -left-2 z-30 text-black" />
-        <CarouselNext className="absolute -right-2 z-30 text-black" />
+        <CarouselPrevious className="absolute left-2 z-30 text-black" />
+        <CarouselNext className="absolute right-2 z-30 text-black" />
       </Carousel>
 
-      <div className="flex justify-center mt-2">
+      <div className="flex justify-center mt-2 pb-2">
         {uniqueParticipants.map((_, index) => (
           <button
             key={index}
@@ -175,7 +179,7 @@ function CarouselPopUp({ popupInfo }: Props) {
       </div>
 
       {(popupInfo.is_hub || popupInfo.is_collective) && (
-        <div className="mt-4 p-4">
+        <div className="mt-2 p-4 pt-0">
           <h4 className="font-semibold mb-2">
             {popupInfo.is_hub ? "Hub" : "Collective"} Participants:
           </h4>

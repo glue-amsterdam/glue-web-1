@@ -25,9 +25,10 @@ export async function GET() {
     // 2. Fetch participant_details for these user_ids and filter for accepted status
     const { data: participantDetails, error: participantError } = await supabase
       .from("participant_details")
-      .select("user_id, status")
+      .select("user_id, status, is_active")
       .in("user_id", userIds)
-      .eq("status", "accepted");
+      .eq("status", "accepted")
+      .eq("is_active", true);
 
     if (participantError) {
       console.error("Error fetching participant details:", participantError);

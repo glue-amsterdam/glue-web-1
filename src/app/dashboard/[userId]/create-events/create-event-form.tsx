@@ -38,6 +38,7 @@ import { CoOrganizerSearch } from "@/app/dashboard/components/co-organizers-sear
 import { Button } from "@/components/ui/button";
 import { config } from "@/env";
 import { LocationSelector } from "@/app/dashboard/[userId]/create-events/location-selector";
+import Image from "next/image";
 
 interface EventFormProps {
   existingEventCount: number;
@@ -310,9 +311,11 @@ export function EventForm({
                   <FormLabel>Event Image</FormLabel>
                   <div className="w-full h-80 overflow-hidden bg-gray object-cover rounded-md relative mb-2">
                     {imagePreview ? (
-                      <img
+                      <Image
                         src={imagePreview || "/placeholder.svg"}
                         alt="Event image preview"
+                        fill
+                        sizes="(min-width: 1024px) 50vw, 100vw"
                         className="object-cover rounded-md"
                       />
                     ) : (

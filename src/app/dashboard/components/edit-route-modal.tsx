@@ -192,7 +192,7 @@ export function EditRouteModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-4xl text-black max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <RouteIcon className="h-6 w-6" />
@@ -299,14 +299,14 @@ export function EditRouteModal({
                 </CardContent>
               </Card>
             </div>
-            <Card className="col-span-1">
+            <Card className="col-span-1 max-h-[70vh] overflow-y-scroll">
               <CardHeader>
                 <CardTitle>Available Locations</CardTitle>
                 <CardDescription>
                   Search and add locations to your route
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="">
                 <div className="relative mb-4">
                   <Controller
                     name="searchTerm"
@@ -322,7 +322,7 @@ export function EditRouteModal({
                   />
                   <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 </div>
-                <ScrollArea className="h-[400px] pr-4">
+                <ScrollArea className="pr-4">
                   <div className="space-y-4">
                     {filteredMapInfoList.map((mapInfo) => (
                       <Card key={mapInfo.id} className="bg-muted">

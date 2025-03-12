@@ -7,6 +7,7 @@ import {
   IndividualEventWithMapResponse,
 } from "@/schemas/eventSchemas";
 import { MapPinIcon as MapPinCheck } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 interface EventContentProps {
@@ -48,10 +49,12 @@ export default function EventContent({ event }: EventContentProps) {
         </div>
         <article className="flex flex-col space-y-4">
           <figure className="relative w-full h-60 lg:h-[40vh] overflow-hidden">
-            <img
+            <Image
               src={event.thumbnail.image_url}
+              fill
               alt={`Event from the GLUE community: ${event.name} - ${event.type} type`}
-              className="rounded-md object-cover w-full h-full"
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover"
             />
           </figure>
           <div className="flex flex-col lg:flex-row gap-4 text-black">

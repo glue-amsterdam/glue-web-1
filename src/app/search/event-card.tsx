@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 interface Event {
@@ -19,11 +20,15 @@ function EventCard({ event }: { event: Event }) {
       className="bg-uiwhite p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden"
     >
       {event.image_url && (
-        <img
-          src={event.image_url}
-          alt={event.title}
-          className="w-full h-24 object-cover mb-4 rounded-md"
-        />
+        <div className="w-full h-36 relative">
+          <Image
+            src={event.image_url}
+            alt={event.title}
+            fill
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            className="object-cover mb-4 rounded-md"
+          />
+        </div>
       )}
       <h3 className="font-bold text-xl text-uiblack mb-2">{event.title}</h3>
       <p className="text-sm text-uiblack mb-4 line-clamp-3">

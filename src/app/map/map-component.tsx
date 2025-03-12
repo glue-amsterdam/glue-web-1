@@ -1,13 +1,7 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-  memo,
-} from "react";
+import type React from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
 import Map, {
   Marker,
   NavigationControl,
@@ -16,12 +10,13 @@ import Map, {
   Layer,
 } from "react-map-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { type MapInfo, type Route as RouteType } from "@/app/hooks/useMapData";
+import type { MapInfo, Route as RouteType } from "@/app/hooks/useMapData";
 import { config } from "@/env";
 import { useLocationData } from "@/app/hooks/useLocationData";
 import { MemoizedMarker } from "@/app/map/memorized-marker";
 import MemoizedPopUpComponent from "@/app/map/pop-up-component";
 import { useDebouncedCallback } from "use-debounce";
+import MemoizedRoutePopupComponent from "@/app/map/route-pop-up";
 
 const CITY_BOUNDS: [number, number, number, number] = [
   Number.parseFloat(config.cityBoundWest || "0"),
@@ -77,6 +72,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   updateURL,
 }) => {
   const [popupInfo, setPopupInfo] = useState<PopupInfo | null>(null);
+  const [showRoutePopup, setShowRoutePopup] = useState<boolean>(false);
   const { locationData, isLoading, isError } =
     useLocationData(selectedLocation);
   const mapRef = useRef<MapRef>(null);
@@ -100,6 +96,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   useEffect(() => {
     if (locationData && selectedLocation !== lastFetchedLocationRef.current) {
       setPopupInfo(locationData);
+      setShowRoutePopup(false);
       debouncedFlyToLocation(locationData);
       lastFetchedLocationRef.current = selectedLocation;
     } else if (selectedRoute) {
@@ -107,6 +104,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       if (route && route.dots.length > 0) {
         debouncedFlyToLocation(route.dots[0]);
         setPopupInfo(null);
+        setShowRoutePopup(true);
         lastFetchedLocationRef.current = null;
       }
     }
@@ -137,6 +135,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
     };
   }, [selectedRoute, routes]);
 
+  // Get the selected route object
+  const selectedRouteObject = useMemo(() => {
+    if (!selectedRoute) return null;
+    return routes.find((r) => r.id === selectedRoute) || null;
+  }, [selectedRoute, routes]);
+
   // Handle marker click
   const handleMarkerClick = useCallback(
     (location: MapInfo) => {
@@ -145,15 +149,27 @@ const MapComponent: React.FC<MapComponentProps> = ({
         setSelectedLocation(location.id);
         if (selectedRoute) {
           setSelectedRoute("");
+          setShowRoutePopup(false);
         }
       }
     },
     [setSelectedLocation, updateURL, setSelectedRoute, selectedRoute]
   );
 
+  // Handle route marker click
+  const handleRouteMarkerClick = useCallback(
+    (e: React.MouseEvent, routeId: string) => {
+      setShowRoutePopup(true);
+      setSelectedRoute(routeId);
+      updateURL({ route: routeId });
+    },
+    [setSelectedRoute, updateURL]
+  );
+
   // Handle popup close
   const handlePopupClose = useCallback(() => {
     setPopupInfo(null);
+    setShowRoutePopup(false);
   }, []);
 
   return (
@@ -205,9 +221,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
                 latitude={dot.latitude}
                 anchor="bottom"
                 onClick={(e) => {
-                  e.originalEvent.stopPropagation();
-                  setSelectedRoute(selectedRoute);
-                  updateURL({ route: selectedRoute });
+                  handleRouteMarkerClick(
+                    e as unknown as React.MouseEvent,
+                    selectedRoute
+                  );
                 }}
               >
                 <div className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold cursor-pointer">
@@ -223,6 +240,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
           isLoading={isLoading}
           popupInfo={popupInfo}
           isError={isError}
+        />
+      )}
+      {showRoutePopup && selectedRouteObject && (
+        <MemoizedRoutePopupComponent
+          route={selectedRouteObject}
+          handlePopupClose={handlePopupClose}
         />
       )}
     </Map>

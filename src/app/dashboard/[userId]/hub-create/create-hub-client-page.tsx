@@ -17,8 +17,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { mutate } from "swr";
-import { UserInfo } from "@/schemas/userInfoSchemas";
-import { HubValues } from "@/schemas/hubSchemas";
+import type { UserInfo } from "@/schemas/userInfoSchemas";
+import type { HubValues } from "@/schemas/hubSchemas";
 import { HubForm } from "@/app/dashboard/components/hub-form";
 
 interface CreateHubClientPageProps {
@@ -121,7 +121,7 @@ export default function CreateHubClientPage({
   };
 
   return (
-    <div className="container mx-auto py-10 space-y-8">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <HomeIcon className="h-8 w-8" />
@@ -130,7 +130,7 @@ export default function CreateHubClientPage({
       </div>
       <Separator />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="col-span-1 space-y-6">
+        <div className="col-span-1 space-y-6 order-2 lg:order-1">
           <Card>
             <CardHeader>
               <CardTitle>Create Hub</CardTitle>
@@ -156,7 +156,7 @@ export default function CreateHubClientPage({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[300px] pr-4 scrollbar-thin scrollbar-thumb-glueBlue scrollbar-track-blue-500">
+              <ScrollArea className="pr-4 scrollbar-thin scrollbar-thumb-glueBlue scrollbar-track-blue-500">
                 <div className="space-y-2">
                   {selectedParticipants.map((userId) => {
                     const participant = userInfoList?.find(
@@ -165,13 +165,13 @@ export default function CreateHubClientPage({
                     if (!participant) return null;
                     return (
                       <Card key={userId} className="bg-muted">
-                        <CardContent className="flex justify-between items-center p-3">
+                        <CardContent className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 gap-2">
                           <div className="flex items-center gap-2 flex-wrap">
                             <Badge variant="secondary" className="text-xs">
                               <UserIcon className="w-3 h-3 mr-1" />
                               Participant
                             </Badge>
-                            <span className="text-sm">
+                            <span className="text-sm truncate max-w-[150px] sm:max-w-[200px]">
                               {participant.user_name ||
                                 participant.visible_emails?.[0] ||
                                 participant.user_id}
@@ -183,7 +183,7 @@ export default function CreateHubClientPage({
                               </Badge>
                             )}
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 w-full sm:w-auto justify-end">
                             <Button
                               variant="outline"
                               size="sm"
@@ -214,14 +214,14 @@ export default function CreateHubClientPage({
             </CardContent>
           </Card>
         </div>
-        <Card className="col-span-1 order-first mb:order-last">
+        <Card className="col-span-1 order-1 lg:order-2 h-[500px] lg:h-[90vh] overflow-y-hidden">
           <CardHeader>
             <CardTitle>Available Participants</CardTitle>
             <CardDescription>
               Search and add participants to your hub
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-y-auto h-[calc(100%-80px)]">
             <div className="relative mb-4">
               <Input
                 type="text"
@@ -232,7 +232,7 @@ export default function CreateHubClientPage({
               />
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             </div>
-            <ScrollArea className="h-[500px] pr-4">
+            <ScrollArea className="pr-4">
               <div className="space-y-4">
                 {filteredUserInfoList.map((userInfo) => (
                   <Card key={userInfo.id} className="bg-muted">

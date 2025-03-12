@@ -16,4 +16,6 @@ export const config = {
   adminEmails: process.env.NEXT_PUBLIC_ADMIN_EMAILS as string,
   baseEmail:
     (process.env.NEXT_PUBLIC_BASE_EMAIL as string) || "onboarding@resend.dev",
+  baseParticipantAcceptedEmail: process.env
+    .NEXT_PUBLIC_ACCEPTED_EMAIL as string,
 };

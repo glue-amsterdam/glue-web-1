@@ -41,6 +41,7 @@ export async function GET() {
       `
         )
         .eq("status", "accepted")
+        .eq("is_active", true)
         .eq("is_sticky", false)
         .limit(30);
 

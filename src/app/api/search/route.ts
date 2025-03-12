@@ -110,6 +110,7 @@ export async function GET(request: Request) {
       `
       )
       .in("user_id", participantIds)
+      .eq("is_active", true)
       .eq("status", "accepted");
 
     // Fetch participant images

@@ -26,7 +26,7 @@ function ParticipantCard({ participant }: { participant: Participant }) {
         <img
           src={participant.image_url || "/participant-placeholder.jpg"}
           alt={"GLUE profile picture of participant" + participant.user_name}
-          className="w-16 h-16 rounded-full object-cover mr-4 border-2 border-glueBlue"
+          className="size-36 rounded-full object-cover mr-4 border-2 border-glueBlue"
         />
 
         <div>

@@ -127,16 +127,16 @@ export default function HubsList() {
   return (
     <div className="container mx-auto py-10 space-y-6">
       <h1 className="text-3xl font-bold">Hubs</h1>
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center ">
         <Input
           type="text"
           placeholder="Search hubs..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
+          className="max-w-sm bg-white text-black"
         />
       </div>
-      <Table>
+      <Table className="bg-white rounded-xl text-black">
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>

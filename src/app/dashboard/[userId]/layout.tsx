@@ -39,7 +39,7 @@ export default async function DashboardLayout({
 
   const { data: participantDetails } = await supabase
     .from("participant_details")
-    .select("status")
+    .select("status, is_active")
     .eq("user_id", loggedInUserId)
     .single();
 
@@ -58,7 +58,7 @@ export default async function DashboardLayout({
   }
 
   // If user is a participant but status is pending
-  if (isParticipant && participantStatus === "pending") {
+  if (isParticipant && participantStatus === "pending" && !isModerator) {
     return (
       <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
         <PendingApproval
@@ -69,7 +69,7 @@ export default async function DashboardLayout({
   }
 
   // If user is a participant but status is rejected
-  if (isParticipant && participantStatus === "declined") {
+  if (isParticipant && participantStatus === "declined" && !isModerator) {
     return (
       <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
         <RejectedAccess
@@ -103,6 +103,7 @@ export default async function DashboardLayout({
       <DashboardMenu
         isMod={isModerator}
         userName={loggedUserInfo?.user_name}
+        is_active={participantDetails?.is_active}
         targetUserId={targetUserId}
       />
       <DashboardProvider {...propData}>{children}</DashboardProvider>

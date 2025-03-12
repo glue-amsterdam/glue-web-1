@@ -1,7 +1,7 @@
-import { participantDetailsSchema } from "@/schemas/participantDetailsSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { participantDetailsSchema } from "@/schemas/participantDetailsSchemas";
 
 export async function GET(
   request: Request,
@@ -47,22 +47,6 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ userId: string }> }
-) {
-  const { userId } = await params;
-  return handleRequest(request, userId, "create");
-}
-
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ userId: string }> }
-) {
-  const { userId } = await params;
-  return handleRequest(request, userId, "update");
-}
-
 async function handleRequest(
   request: Request,
   userId: string,
@@ -76,10 +60,20 @@ async function handleRequest(
     const supabase = await createClient();
 
     const body = await request.json();
+
+    // Validar solo los campos que se están actualizando
     const validatedData = participantDetailsSchema.parse(body);
 
     let result;
+
     if (action === "update") {
+      // Manejar casos especiales
+      if (validatedData.reactivation_status === "declined") {
+        validatedData.is_active = false;
+      } else if (validatedData.reactivation_status === "pending") {
+        validatedData.reactivation_requested = true;
+      }
+
       result = await supabase
         .from("participant_details")
         .update(validatedData)
@@ -114,6 +108,7 @@ async function handleRequest(
     return NextResponse.json(data);
   } catch (error) {
     if (error instanceof ZodError) {
+      console.error("Zod validation error:", error.errors);
       return NextResponse.json(
         { error: "Invalid participant data", details: error.errors },
         { status: 400 }
@@ -125,4 +120,20 @@ async function handleRequest(
       { status: 500 }
     );
   }
+}
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ userId: string }> }
+) {
+  const { userId } = await params;
+  return handleRequest(request, userId, "create");
+}
+
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ userId: string }> }
+) {
+  const { userId } = await params;
+  return handleRequest(request, userId, "update");
 }
