@@ -10,7 +10,8 @@ export async function GET() {
       await supabase
         .from("participant_details")
         .select("user_id")
-        .eq("status", "accepted");
+        .eq("status", "accepted")
+        .eq("is_active", true);
 
     if (participantError) {
       throw new Error(
