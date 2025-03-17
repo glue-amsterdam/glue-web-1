@@ -56,11 +56,7 @@ export async function fetchCuratedSection(): Promise<CuratedResponse> {
     }
 
     const data = await res.json();
-    console.log("Raw API response:", JSON.stringify(data, null, 2));
-
     const validatedData = curatedResponseSchema.parse(data);
-
-    console.log("After validation:", JSON.stringify(validatedData, null, 2));
 
     return validatedData;
   } catch (error) {
