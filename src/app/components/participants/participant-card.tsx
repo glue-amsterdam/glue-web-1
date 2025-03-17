@@ -1,5 +1,6 @@
 import { config } from "@/env";
 import { ParticipantClient } from "@/lib/client/fetch-participants";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function ParticipantCard({
@@ -11,19 +12,13 @@ export default function ParticipantCard({
     <Link href={`/participants/${participant.slug}`} className="block">
       <div className="bg-black rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
         <div className="relative h-48">
-          {participant.image_url ? (
-            <img
-              src={participant.image_url || "/participant-placeholder.jpg"}
-              alt={`GLUE ${config.cityName} participant ${participant.user_name} image`}
-              className="object-cover absolute inset-0 w-full h-full"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
-              <span className="text-gray-500 text-2xl">
-                {participant.user_name[0]}
-              </span>
-            </div>
-          )}
+          <Image
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            src={participant.image_url || "/placeholder.jpg"}
+            alt={`GLUE ${config.cityName} participant ${participant.user_name} image`}
+            className="object-cover"
+          />
         </div>
         <div className="p-4">
           <h2 className="text-xl font-semibold mb-2">

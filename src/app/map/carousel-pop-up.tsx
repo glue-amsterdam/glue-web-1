@@ -16,6 +16,7 @@ import {
 import type { PopupInfo } from "@/app/map/map-component";
 import { MapPin } from "lucide-react";
 import Autoplay from "embla-carousel-autoplay";
+import Image from "next/image";
 
 interface Props {
   popupInfo: PopupInfo;
@@ -91,14 +92,20 @@ function CarouselPopUp({ popupInfo }: Props) {
             <CarouselItem key={`${participant.user_id}-${index}`}>
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 to-transparent z-10" />
-                <img
-                  src={participant.image_url || "/participant-placeholder.jpg"}
-                  alt={`Image of ${participant.user_name}`}
-                  className="w-full h-48 object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = "/participant-placeholder.jpg";
-                  }}
-                />
+                <div className="relative w-full h-48">
+                  <Image
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    fill
+                    src={
+                      participant.image_url || "/participant-placeholder.jpg"
+                    }
+                    alt={`Image of ${participant.user_name}`}
+                    className="object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.jpg";
+                    }}
+                  />
+                </div>
                 <div className="absolute top-4 left-0 right-0 p-4 z-20">
                   <h3 className="font-semibold text-lg leading-tight text-white mb-1">
                     {participant.user_name}
