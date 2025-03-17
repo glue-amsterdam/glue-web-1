@@ -99,7 +99,7 @@ export async function GET() {
             image: {
               image_url:
                 participant.participant_image?.[0]?.image_url ||
-                "/participant-placeholder.jpg",
+                "/placeholder.jpg",
               alt:
                 `${
                   participant.user_name || "Unknown User"

@@ -96,8 +96,7 @@ export async function GET() {
       userName: participant.user_name || "Unknown User",
       image: {
         image_url:
-          participant.participant_image?.[0]?.image_url ||
-          "/participant-placeholder.jpg",
+          participant.participant_image?.[0]?.image_url || "/placeholder.jpg",
         alt:
           `${
             participant.user_name || "Unknown User"

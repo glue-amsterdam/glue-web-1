@@ -18,7 +18,7 @@ const CURATED_FALLBACK_DATA: CuratedResponse = {
         userName: "Loading Member 1",
         year: 2024,
         image: {
-          image_url: "/participant-placeholder.jpg",
+          image_url: "/placeholder.jpg",
           alt: "Loading Member 1 profile image - participant from GLUE design routes",
         },
       },
@@ -27,7 +27,7 @@ const CURATED_FALLBACK_DATA: CuratedResponse = {
         userName: "Loading Member 2",
         year: 2024,
         image: {
-          image_url: "/participant-placeholder.jpg",
+          image_url: "/placeholder.jpg",
           alt: "Loading Member 2 profile image - participant from GLUE design routes",
         },
       },

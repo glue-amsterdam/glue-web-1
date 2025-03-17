@@ -89,8 +89,7 @@ export default function ParticipantsSection({
                         <div className="relative w-full h-full aspect-square">
                           <Image
                             src={
-                              participant.image?.image_url ||
-                              "/participant-placeholder.jpg"
+                              participant.image?.image_url || "/placeholder.jpg"
                             }
                             alt={`${participant.userName} profile image thumbnail`}
                             fill

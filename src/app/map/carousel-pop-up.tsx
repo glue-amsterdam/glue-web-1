@@ -96,9 +96,7 @@ function CarouselPopUp({ popupInfo }: Props) {
                   <Image
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     fill
-                    src={
-                      participant.image_url || "/participant-placeholder.jpg"
-                    }
+                    src={participant.image_url || "/placeholder.jpg"}
                     alt={`Image of ${participant.user_name}`}
                     className="object-cover"
                     onError={(e) => {

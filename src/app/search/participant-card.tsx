@@ -24,13 +24,13 @@ function ParticipantCard({ participant }: { participant: Participant }) {
       className="bg-uiwhite p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer overflow-hidden"
     >
       <div className="flex items-center mb-4">
-        <div className="size-36 mr-4 border-2 border-glueBlue">
+        <div className="size-36 mr-4 relative">
           <Image
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            src={participant.image_url || "/participant-placeholder.jpg"}
+            src={participant.image_url || "/placeholder.jpg"}
             alt={"GLUE profile picture of participant" + participant.user_name}
-            className="rounded-full object-cover "
+            className="rounded-full object-cover"
           />
         </div>
 
