@@ -52,7 +52,7 @@ function ParticipantCard({ participant, index }: ParticipantCardProps) {
           "mb-2 px-2 group"
         )}
       >
-        <div className="relative size-8 rounded-full overflow-hidden">
+        <div className="relative size-8 md:size-10 lg:size-12 rounded-full overflow-hidden">
           <Image
             src={participant.image?.image_url || "/placeholder.jpg"}
             alt={participant.image?.alt || "Participant profile image"}
