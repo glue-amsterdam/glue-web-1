@@ -12,6 +12,11 @@ export type CuratedParticipantWithYear = {
   slug: string;
   userName: string;
   year: number;
+  userId?: string;
+  image?: {
+    image_url: string;
+    alt: string;
+  };
 };
 
 /* PARTICIPANTS */

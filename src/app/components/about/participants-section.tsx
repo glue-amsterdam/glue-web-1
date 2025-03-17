@@ -16,6 +16,7 @@ import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
 import { UserPlusIcon } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface ParticipantsSection {
   title: string;
@@ -33,7 +34,7 @@ export default function ParticipantsSection({
   return (
     <motion.article
       {...fadeInConfig}
-      className="z-20 mx-auto about-w h-full flex flex-col gap-2 justify-around py-4"
+      className="z-20 mx-auto about-w h-full flex flex-col gap-2 justify-around py-4 w-full"
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <motion.h1
@@ -85,16 +86,18 @@ export default function ParticipantsSection({
                   <Link href={`/participants/${participant.slug}`}>
                     <Card className="border-none shadow-sm bg-transparent hover:shadow-md transition-shadow duration-300 max-w-full h-full">
                       <CardContent className="p-0 h-full w-full relative group">
-                        <img
-                          src={
-                            participant.image?.image_url ||
-                            "/participant-placeholder.jpg" ||
-                            "/placeholder.svg" ||
-                            "/placeholder.svg"
-                          }
-                          alt={`${participant.userName} profile image thumbnail`}
-                          className="w-full h-full object-cover rounded-lg"
-                        />
+                        <div className="relative w-full h-full aspect-square">
+                          <Image
+                            src={
+                              participant.image?.image_url || "/placeholder.jpg"
+                            }
+                            alt={`${participant.userName} profile image thumbnail`}
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            className="object-cover rounded-lg"
+                            priority={index < 5}
+                          />
+                        </div>
                         <div className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
                           <p className="text-center font-semibold text-xs sm:text-sm truncate px-2">
                             {participant.userName}

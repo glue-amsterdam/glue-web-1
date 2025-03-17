@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { UserCircle } from "lucide-react";
+import Image from "next/image";
 import type { CuratedParticipantWithYear } from "@/schemas/usersSchemas";
 import { cn } from "@/lib/utils";
 
@@ -52,7 +52,15 @@ function ParticipantCard({ participant, index }: ParticipantCardProps) {
           "mb-2 px-2 group"
         )}
       >
-        <UserCircle className="h-5 w-5 text-white group-hover:text-black transition-all" />
+        <div className="relative size-8 md:size-10 lg:size-12 rounded-full overflow-hidden">
+          <Image
+            src={participant.image?.image_url || "/placeholder.jpg"}
+            alt={participant.image?.alt || "Participant profile image"}
+            fill
+            className="object-cover group-hover:scale-110 transition-all"
+            sizes="150px"
+          />
+        </div>
         <h3 className="font-semibold text-base md:text-lg lg:text-xl text-balance group-hover:scale-110 transition-all group-hover:text-black">
           {participant.userName}
         </h3>

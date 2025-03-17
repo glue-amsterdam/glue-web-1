@@ -24,6 +24,7 @@ import {
 import { CalendarIcon, ClockIcon, PencilIcon, TrashIcon } from "lucide-react";
 import { EditEventForm } from "@/app/dashboard/[userId]/your-events/edit-event";
 import { deleteImage } from "@/utils/supabase/storage/client";
+import Image from "next/image";
 
 interface EventCardProps {
   event: EventType;
@@ -66,10 +67,12 @@ export function EventCard({
     <Card className="bg-card">
       <CardHeader>
         <div className="relative h-40 w-full overflow-hidden rounded-t-lg">
-          <img
+          <Image
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            fill
             src={(event.image_url as string) || "/placeholder.jpg"}
             alt={event.title}
-            className="absolute inset-0 object-cover w-full h-full"
+            className="absolute object-cover"
           />
         </div>
         <CardTitle className="mt-4">{event.title}</CardTitle>

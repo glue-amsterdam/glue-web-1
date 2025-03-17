@@ -58,7 +58,7 @@ export async function GET(
       `
       )
       .eq("slug", slug)
-      .eq("is_active", true)
+      .or("is_active.eq.true,is_sticky.eq.true")
       .single()) as { data: ParticipantDetails | null; error: PostgrestError };
 
     if (participantError) {

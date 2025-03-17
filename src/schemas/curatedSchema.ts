@@ -15,6 +15,13 @@ export const curatedParticipantSchema = z.object({
   slug: z.string(),
   userName: z.string(),
   year: z.number(),
+  userId: z.string().optional(),
+  image: z
+    .object({
+      image_url: z.string(),
+      alt: z.string(),
+    })
+    .optional(),
 });
 
 export const curatedHeaderSchema = z.object({

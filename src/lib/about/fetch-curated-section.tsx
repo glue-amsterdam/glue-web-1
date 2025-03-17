@@ -17,11 +17,19 @@ const CURATED_FALLBACK_DATA: CuratedResponse = {
         slug: "placeholder-1",
         userName: "Loading Member 1",
         year: 2024,
+        image: {
+          image_url: "/placeholder.jpg",
+          alt: "Loading Member 1 profile image - participant from GLUE design routes",
+        },
       },
       {
         slug: "placeholder-2",
         userName: "Loading Member 2",
         year: 2024,
+        image: {
+          image_url: "/placeholder.jpg",
+          alt: "Loading Member 2 profile image - participant from GLUE design routes",
+        },
       },
     ],
   },
@@ -48,7 +56,6 @@ export async function fetchCuratedSection(): Promise<CuratedResponse> {
     }
 
     const data = await res.json();
-
     const validatedData = curatedResponseSchema.parse(data);
 
     return validatedData;

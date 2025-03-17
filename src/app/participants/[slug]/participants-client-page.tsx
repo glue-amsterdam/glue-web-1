@@ -23,7 +23,7 @@ export default function ParticipantClientPage({
         <div className="h-full">
           <ImageCarousel
             userName={participant.user_info.user_name}
-            images={participant.images || "/participant-placeholder.jpg"}
+            images={participant.images || "/placeholder.jpg"}
           />
         </div>
       </article>

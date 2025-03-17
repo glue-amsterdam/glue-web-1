@@ -9,6 +9,7 @@ import { ImageIcon } from "lucide-react";
 import { uploadImage, deleteImage } from "@/utils/supabase/storage/client";
 import { useToast } from "@/hooks/use-toast";
 import { config } from "@/env";
+import Image from "next/image";
 
 const imageSchema = z.object({
   id: z.string().optional(),
@@ -243,10 +244,12 @@ export function ProfileImageForm({
           <div key={field.id} className="border p-4 rounded-md">
             <div className="w-full h-60 relative mb-2 overflow-hidden">
               {currentImages[index]?.image_url ? (
-                <img
-                  src={currentImages[index].image_url || "/placeholder.svg"}
+                <Image
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  fill
+                  src={currentImages[index].image_url || "/placeholder.jpg"}
                   alt={`Profile image ${index + 1}`}
-                  className="rounded-md absolute inset-0 w-full h-full object-cover"
+                  className="rounded-md object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-md">
