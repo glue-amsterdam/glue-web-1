@@ -14,10 +14,8 @@ export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
   const participant: ParticipantClientResponse = await fetchParticipant(slug);
 
-  // Default image (fallback)
   const defaultImage = `${config.baseUrl}/${config.cityName}/og-image.jpg`;
 
-  // Select the first image if available
   const imageUrl =
     participant.images.length > 0
       ? participant.images[0].image_url
@@ -68,6 +66,11 @@ export default async function ParticipantPage({
   const params = await paramsPromise;
   const { slug } = params;
   const participant: ParticipantClientResponse = await fetchParticipant(slug);
+
+  // If participant is sticky, treat them as accepted regardless of status
+  if (participant.is_sticky) {
+    return <ParticipantClientPage participant={participant} />;
+  }
 
   switch (participant.status) {
     case "pending":
