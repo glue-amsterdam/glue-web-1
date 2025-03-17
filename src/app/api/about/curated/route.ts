@@ -1,6 +1,7 @@
 import { CuratedParticipantWithYear } from "@/schemas/usersSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
+import { config } from "@/env";
 
 type ParticipantDetails = {
   slug: string;
@@ -9,8 +10,19 @@ type ParticipantDetails = {
 };
 
 type Participant = {
+  user_id: string;
   user_name: string;
   participant_details: ParticipantDetails | ParticipantDetails[];
+  participant_image?: { image_url: string }[];
+};
+
+// Extended type to include image information
+type CuratedParticipantWithYearAndImage = CuratedParticipantWithYear & {
+  userId: string;
+  image: {
+    image_url: string;
+    alt: string;
+  };
 };
 
 export async function GET() {
@@ -40,14 +52,18 @@ export async function GET() {
       });
     }
 
-    // Fetch all participants
+    // Fetch all participants with image data
     const { data: allParticipants, error: participantsError } =
       await supabase.from("user_info").select(`
+        user_id,
         user_name,
         participant_details (
           slug,
           is_sticky,
           year
+        ),
+        participant_image (
+          image_url
         )
       `);
 
@@ -79,16 +95,28 @@ export async function GET() {
             slug: detail.slug,
             userName: participant.user_name,
             year: detail.year,
+            userId: participant.user_id,
+            image: {
+              image_url:
+                participant.participant_image?.[0]?.image_url ||
+                "/participant-placeholder.jpg",
+              alt:
+                `${
+                  participant.user_name || "Unknown User"
+                } profile image - participant from GLUE design routes in ${
+                  config.cityName
+                }` || `GLUE participant profile image from ${config.cityName}`,
+            },
           }));
       })
       .filter(
-        (participant): participant is CuratedParticipantWithYear =>
+        (participant): participant is CuratedParticipantWithYearAndImage =>
           participant.slug !== undefined && participant.year !== undefined
       );
 
     // Group participants by year
     const groupedByYear = curatedParticipants.reduce<
-      Record<number, CuratedParticipantWithYear[]>
+      Record<number, CuratedParticipantWithYearAndImage[]>
     >((acc, participant) => {
       if (!acc[participant.year]) {
         acc[participant.year] = [];

@@ -17,11 +17,19 @@ const CURATED_FALLBACK_DATA: CuratedResponse = {
         slug: "placeholder-1",
         userName: "Loading Member 1",
         year: 2024,
+        image: {
+          image_url: "/participant-placeholder.jpg",
+          alt: "Loading Member 1 profile image - participant from GLUE design routes",
+        },
       },
       {
         slug: "placeholder-2",
         userName: "Loading Member 2",
         year: 2024,
+        image: {
+          image_url: "/participant-placeholder.jpg",
+          alt: "Loading Member 2 profile image - participant from GLUE design routes",
+        },
       },
     ],
   },
@@ -48,8 +56,11 @@ export async function fetchCuratedSection(): Promise<CuratedResponse> {
     }
 
     const data = await res.json();
+    console.log("Raw API response:", JSON.stringify(data, null, 2));
 
     const validatedData = curatedResponseSchema.parse(data);
+
+    console.log("After validation:", JSON.stringify(validatedData, null, 2));
 
     return validatedData;
   } catch (error) {
