@@ -57,33 +57,55 @@ function InfoPanel({
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Always include "participants" in the initial state
   const [openAccordions, setOpenAccordions] = useState<string[]>([
     "participants",
   ]);
 
+  // This useEffect ensures the participants accordion stays open
+  // while also handling URL parameters
   useEffect(() => {
     const placeId = searchParams.get("place");
     const routeId = searchParams.get("route");
 
+    let newAccordions = [...openAccordions];
+
+    // Always ensure "participants" is included unless explicitly overridden by a route
+    if (!routeId && !newAccordions.includes("participants")) {
+      newAccordions.push("participants");
+    }
+
     if (placeId) {
-      setOpenAccordions((prev) =>
-        prev.includes("participants") ? prev : [...prev, "participants"]
-      );
       setSelectedLocation(placeId);
-    } else {
-      setOpenAccordions((prev) =>
-        prev.filter((item) => item !== "participants")
-      );
+      if (!newAccordions.includes("participants")) {
+        newAccordions.push("participants");
+      }
     }
 
     if (routeId) {
       const routeZone = routeId.split("-")[0];
-      setOpenAccordions((prev) =>
-        prev.includes(routeZone) ? prev : [...prev, routeZone]
-      );
       setSelectedRoute(routeId);
+
+      // When a route is selected, we might want to close the participants accordion
+      // and open the route's zone accordion instead
+      newAccordions = newAccordions.filter((item) => item !== "participants");
+      if (!newAccordions.includes(routeZone)) {
+        newAccordions.push(routeZone);
+      }
     }
-  }, [searchParams, setSelectedLocation, setSelectedRoute]);
+
+    // Only update if the accordions have changed
+    if (JSON.stringify(newAccordions) !== JSON.stringify(openAccordions)) {
+      setOpenAccordions(newAccordions);
+    }
+  }, [searchParams, setSelectedLocation, setSelectedRoute, openAccordions]);
+
+  // Force participants accordion to be open on mount
+  useEffect(() => {
+    setOpenAccordions((prev) =>
+      prev.includes("participants") ? prev : [...prev, "participants"]
+    );
+  }, []);
 
   const groupedRoutes = useMemo(() => {
     return routes.reduce((acc, route) => {
@@ -162,14 +184,30 @@ function InfoPanel({
     router.refresh();
   };
 
+  // Custom handler for accordion value change to ensure participants stays open
+  const handleAccordionChange = (value: string[]) => {
+    // If we're trying to close the participants accordion and no route is selected,
+    // keep it open
+    if (
+      !selectedRoute &&
+      !value.includes("participants") &&
+      openAccordions.includes("participants")
+    ) {
+      setOpenAccordions([...value, "participants"]);
+    } else {
+      setOpenAccordions(value);
+    }
+  };
+
   return (
     <ScrollArea className={`h-[calc(100vh-5rem)] ${className} text-black`}>
       <div className="p-4 space-y-4">
         <Accordion
           type="multiple"
           value={openAccordions}
-          onValueChange={setOpenAccordions}
+          onValueChange={handleAccordionChange}
           className="w-full"
+          defaultValue={["participants"]}
         >
           <AccordionItem value="participants">
             <AccordionTrigger className="text-base font-semibold hover:bg-gray-100 rounded-lg px-2 py-1">
