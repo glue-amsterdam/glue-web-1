@@ -408,9 +408,7 @@
 
 /* Ensure popup tip is white */
 .mapboxgl-popup-tip {
-  border-top-color: white !important;
-  border-bottom-color: white !important;
-  z-index: 5 !important;
+  display: none !important;
 }
 
 /* Mobile adjustments */
