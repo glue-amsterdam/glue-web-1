@@ -19,7 +19,7 @@ export const MainContextProvider = ({
     fallbackData: initialData,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    refreshInterval: 60000,
+    dedupingInterval: 86400000,
   });
 
   return <MainContext.Provider value={data}>{children}</MainContext.Provider>;

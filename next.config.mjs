@@ -9,6 +9,7 @@ const nextConfig = {
         port: "",
       },
     ],
+    minimumCacheTTL: 1800,
   },
 };
 

@@ -8,6 +8,38 @@
   .text-balance {
     text-wrap: balance;
   }
+  /* Custom scrollbar styling for better cross-platform compatibility */
+  .custom-scrollbar::-webkit-scrollbar {
+    height: 25px; /* Increased to 16px for an even thicker scrollbar */
+    width: 16px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--color-box1);
+    border-radius: 20px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(
+      255,
+      255,
+      255,
+      0.8
+    ); /* Darker for better visibility */
+    border-radius: 20px;
+    border: 4px solid transparent; /* Creates padding effect */
+    background-clip: content-box;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255);
+  }
+
+  /* Make scrollbar always visible on Mac */
+  .custom-scrollbar {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: auto; /* Use auto instead of thin */
+  }
   .dashboard-input {
     @apply bg-uiwhite text-uiblack;
   }
@@ -376,9 +408,7 @@
 
 /* Ensure popup tip is white */
 .mapboxgl-popup-tip {
-  border-top-color: white !important;
-  border-bottom-color: white !important;
-  z-index: 5 !important;
+  display: none !important;
 }
 
 /* Mobile adjustments */

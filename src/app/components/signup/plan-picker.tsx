@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import type { PlansArrayType, PlanType } from "@/schemas/plansSchema";
 import { useRef, useEffect, useState } from "react";
 import PlanCard from "@/app/components/signup/plan-card";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 
 const planSchema = z.object({
   plan_id: z.string(),
@@ -35,10 +35,10 @@ export default function PlanPicker({
 
   const selectedPlanId = watch("plan_id");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [cardContentRefs, setCardContentRefs] = useState<
-    (HTMLDivElement | null)[]
-  >([]);
+  const cardContentRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  const [showLeftScrollIndicator, setShowLeftScrollIndicator] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   const onSubmit = (data: PlanFormData) => {
     const selectedPlan = plansData.plans.find(
@@ -49,65 +49,149 @@ export default function PlanPicker({
     }
   };
 
+  // Initialize card content refs
   useEffect(() => {
-    setCardContentRefs(new Array(plansData.plans.length).fill(null));
+    cardContentRefs.current = new Array(plansData.plans.length).fill(null);
+
+    // Detect if device supports touch
+    setIsTouchDevice("ontouchstart" in window || navigator.maxTouchPoints > 0);
   }, [plansData.plans.length]);
 
+  // Handle scroll indicator visibility
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
     if (!scrollContainer) return;
-
-    const handleWheel = (event: WheelEvent) => {
-      const target = event.target as Node;
-      const cardContent = cardContentRefs.find(
-        (ref) => ref && ref.contains(target)
-      );
-
-      if (cardContent) {
-        const { scrollHeight, clientHeight, scrollTop } = cardContent;
-        const isScrollable = scrollHeight > clientHeight;
-        const isAtTop = scrollTop === 0;
-        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1; // Added a small tolerance
-
-        if (
-          isScrollable &&
-          ((event.deltaY > 0 && !isAtBottom) || (event.deltaY < 0 && !isAtTop))
-        ) {
-          return;
-        }
-      }
-
-      const canScrollHorizontally =
-        scrollContainer.scrollWidth > scrollContainer.clientWidth;
-
-      if (canScrollHorizontally) {
-        event.preventDefault();
-        const newScrollLeft = scrollContainer.scrollLeft + event.deltaY;
-        scrollContainer.scrollTo({
-          left: newScrollLeft,
-          behavior: "smooth",
-        });
-      }
-    };
 
     const handleScroll = () => {
       if (scrollContainer) {
         const scrollPosition = scrollContainer.scrollLeft;
         const scrollWidth = scrollContainer.scrollWidth;
         const clientWidth = scrollContainer.clientWidth;
-        // Hide scroll indicator when reached the end
-        setShowScrollIndicator(scrollPosition + clientWidth < scrollWidth - 10);
+
+        // Show right indicator when not at the end
+        setShowScrollIndicator(scrollPosition + clientWidth < scrollWidth - 20);
+
+        // Show left indicator when scrolled to the right
+        setShowLeftScrollIndicator(scrollPosition > 20);
+      }
+    };
+
+    // Check initial scroll state
+    handleScroll();
+    scrollContainer.addEventListener("scroll", handleScroll);
+
+    return () => {
+      scrollContainer.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  // Simplified wheel event handling
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    const handleWheel = (event: WheelEvent) => {
+      // Check if we're scrolling inside a card's content
+      const target = event.target as Node;
+      const cardContent = cardContentRefs.current.find(
+        (ref) => ref && ref.contains(target)
+      );
+
+      // If we're in a card's content area that can scroll vertically
+      if (cardContent) {
+        const { scrollHeight, clientHeight, scrollTop } = cardContent;
+        const isScrollable = scrollHeight > clientHeight;
+
+        // If the card content is scrollable and not at the boundaries, let it scroll naturally
+        if (isScrollable) {
+          const isAtTop = scrollTop <= 0;
+          const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
+
+          if (
+            (event.deltaY > 0 && !isAtBottom) ||
+            (event.deltaY < 0 && !isAtTop)
+          ) {
+            return; // Let the default scroll behavior happen
+          }
+        }
+      }
+
+      // Otherwise, handle horizontal scrolling
+      if (scrollContainer.scrollWidth > scrollContainer.clientWidth) {
+        event.preventDefault();
+        scrollContainer.scrollBy({
+          left: event.deltaY,
+          behavior: "smooth",
+        });
       }
     };
 
     scrollContainer.addEventListener("wheel", handleWheel, { passive: false });
-    scrollContainer.addEventListener("scroll", handleScroll);
 
     return () => {
       scrollContainer.removeEventListener("wheel", handleWheel);
-      scrollContainer.removeEventListener("scroll", handleScroll);
     };
-  }, [cardContentRefs]);
+  }, []);
+
+  // Handle touch events for better trackpad/touch support
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer || !isTouchDevice) return;
+
+    let startX: number;
+    let scrollLeft: number;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      startX = e.touches[0].pageX - scrollContainer.offsetLeft;
+      scrollLeft = scrollContainer.scrollLeft;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!startX) return;
+
+      const x = e.touches[0].pageX - scrollContainer.offsetLeft;
+      const walk = (x - startX) * 2; // Scroll speed multiplier
+      scrollContainer.scrollLeft = scrollLeft - walk;
+
+      // Prevent page scrolling when scrolling the container
+      if (Math.abs(walk) > 10) {
+        e.preventDefault();
+      }
+    };
+
+    scrollContainer.addEventListener("touchstart", handleTouchStart, {
+      passive: false,
+    });
+    scrollContainer.addEventListener("touchmove", handleTouchMove, {
+      passive: false,
+    });
+
+    return () => {
+      scrollContainer.removeEventListener("touchstart", handleTouchStart);
+      scrollContainer.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, [isTouchDevice]);
+
+  // Function to scroll right when indicator is clicked
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 300; // Adjust as needed
+      scrollContainerRef.current.scrollBy({
+        left: scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 300;
+      scrollContainerRef.current.scrollBy({
+        left: -scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
 
   return (
     <form
@@ -118,9 +202,23 @@ export default function PlanPicker({
         Select a Plan
       </h2>
       <div className="relative flex-grow overflow-hidden">
+        {showLeftScrollIndicator && (
+          <button
+            type="button"
+            onClick={scrollLeft}
+            className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70 transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 cursor-pointer z-10"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="w-6 h-6 text-white" />
+          </button>
+        )}
         <div
           ref={scrollContainerRef}
-          className="flex-grow h-full overflow-x-auto scrollbar-thin scrollbar-track-white scrollbar-thumb-uiblack overflow-y-hidden scrollbar-corner-white snap-x snap-mandatory"
+          className="flex-grow h-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory custom-scrollbar"
+          style={{
+            scrollbarWidth: "auto", // For Firefox - "thick" doesn't exist, use "auto" instead
+            msOverflowStyle: "none", // For IE and Edge
+          }}
         >
           <div className="flex gap-4 pb-2 h-full px-2 min-w-max">
             <Controller
@@ -138,7 +236,7 @@ export default function PlanPicker({
                         setValue("plan_type", plan.plan_type);
                       }}
                       contentRef={(el) => {
-                        cardContentRefs[index] = el;
+                        cardContentRefs.current[index] = el;
                       }}
                       index={index}
                     />
@@ -149,9 +247,14 @@ export default function PlanPicker({
           </div>
         </div>
         {showScrollIndicator && (
-          <div className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-black bg-opacity-50 rounded-full p-2">
+          <button
+            type="button"
+            onClick={scrollRight}
+            className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70 transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 cursor-pointer"
+            aria-label="Scroll right"
+          >
             <ChevronRight className="w-6 h-6 text-white" />
-          </div>
+          </button>
         )}
       </div>
       <Button

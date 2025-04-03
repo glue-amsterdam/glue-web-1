@@ -57,17 +57,9 @@ export default function EventCard({ event }: EventCardProps) {
               {event.name}
             </h3>
 
-            <time
-              className="text-sm text-muted-foreground mb-2 block"
-              dateTime={`${event.date.date ?? ""}T${event.startTime}`}
-            >
-              {event.date.date
-                ? new Date(event.date.date).toLocaleDateString("en-GB", {
-                    timeZone: "UTC",
-                  })
-                : "Invalid date"}
-              | {event.startTime} - {event.endTime}
-            </time>
+            <p className="text-sm text-muted-foreground mb-2 block">
+              {event.date.label}
+            </p>
             <div>
               <div className="flex gap-2 items-center">
                 <span className="text-sm md:text-lg font-bold">Organiser:</span>
