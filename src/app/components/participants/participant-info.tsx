@@ -2,7 +2,6 @@
 
 import { ParticipantHubInfo } from "@/app/components/participants/participant-hub-info";
 import { useEventsDays } from "@/app/context/MainContext";
-import { Separator } from "@/components/ui/separator";
 import { ParticipantClientResponse } from "@/types/api-visible-user";
 import { formatUrl } from "@/utils/formatUrl";
 import { motion, Variants } from "framer-motion";
@@ -58,7 +57,6 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
             {participant.short_description}
           </motion.p>
         )}
-        <Separator className="opacity-50 max-w-[90%] mx-auto" />
         {participant.description && (
           <>
             <motion.div
@@ -69,7 +67,6 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
               variants={fadeInUp}
               dangerouslySetInnerHTML={{ __html: participant.description }}
             />
-            <Separator className="opacity-50 max-w-[90%] mx-auto" />
           </>
         )}
 
