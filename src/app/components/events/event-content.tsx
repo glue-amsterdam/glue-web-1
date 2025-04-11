@@ -59,17 +59,9 @@ export default function EventContent({ event }: EventContentProps) {
           </figure>
           <div className="flex flex-col lg:flex-row gap-4 text-black">
             <div className="flex-1">
-              <time
-                className="text-sm text-muted-foreground mb-2 block"
-                dateTime={`${event.date.date ?? ""}T${event.startTime}`}
-              >
-                {event.date.date
-                  ? new Date(event.date.date).toLocaleDateString("en-GB", {
-                      timeZone: "UTC",
-                    })
-                  : "Invalid date"}
-                | {event.startTime} - {event.endTime}
-              </time>
+              <p className="text-sm text-muted-foreground mb-2 block">
+                {event.date.label} {event.startTime} - {event.endTime}
+              </p>
               <p className="mb-4 text-sm">{event.description}</p>
             </div>
             <div className="flex gap-8 text-black">
