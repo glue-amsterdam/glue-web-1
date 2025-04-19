@@ -1,14 +1,15 @@
 "use client";
 
 import type React from "react";
-import { useCallback, useState, memo, useEffect } from "react";
+import { useCallback, useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { MenuIcon, X } from "lucide-react";
 import { type MapInfo, type Route, useMapData } from "@/app/hooks/useMapData";
-import Memoinfo from "@/app/map/info-panel";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
-import MemoizedMapComponent from "@/app/map/map-component";
 import { cn } from "@/lib/utils";
+import MapComponent from "@/app/map/map-component";
+import InfoPanel from "@/app/map/info-panel";
+import { LoadingFallback } from "@/app/components/loading-fallback";
 
 interface MapMainProps {
   initialData: {
@@ -25,53 +26,50 @@ function MapMain({ initialData }: MapMainProps) {
     selectedRoute,
     setSelectedLocation,
     setSelectedRoute,
-    updateURL,
   } = useMapData(initialData);
 
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Close sidebar when switching to large screen
   useEffect(() => {
     if (isLargeScreen) {
       setSidebarOpen(false);
     }
   }, [isLargeScreen]);
 
-  const handleParticipantSelect = useCallback(
-    (locationId: string) => {
-      setSelectedLocation(locationId);
-      setSelectedRoute("");
-      updateURL({ place: locationId });
-      if (!isLargeScreen) {
-        setSidebarOpen(false);
-      }
-    },
-    [setSelectedLocation, setSelectedRoute, updateURL, isLargeScreen]
-  );
-
-  const handleRouteSelect = useCallback(
-    (routeId: string) => {
-      setSelectedRoute(routeId);
-      setSelectedLocation("");
-      updateURL({ route: routeId });
-      if (!isLargeScreen) {
-        setSidebarOpen(false);
-      }
-    },
-    [setSelectedRoute, setSelectedLocation, updateURL, isLargeScreen]
-  );
-
   const toggleSidebar = useCallback(() => {
     setSidebarOpen((prev) => !prev);
   }, []);
 
-  // Handle clicking outside to close sidebar on mobile
   const handleOutsideClick = useCallback(() => {
     if (!isLargeScreen && sidebarOpen) {
       setSidebarOpen(false);
     }
   }, [isLargeScreen, sidebarOpen]);
+
+  const handleLocationSelect = useCallback(
+    (locationId: string) => {
+      console.log("Location selected in main:", locationId);
+      setSelectedLocation(locationId);
+      // Cerrar el panel móvil después de seleccionar
+      if (!isLargeScreen) {
+        setSidebarOpen(false);
+      }
+    },
+    [setSelectedLocation, isLargeScreen]
+  );
+
+  const handleRouteSelect = useCallback(
+    (routeId: string) => {
+      console.log("Route selected in main:", routeId);
+      setSelectedRoute(routeId);
+      // Cerrar el panel móvil después de seleccionar
+      if (!isLargeScreen) {
+        setSidebarOpen(false);
+      }
+    },
+    [setSelectedRoute, isLargeScreen]
+  );
 
   return (
     <div className="flex flex-col h-[calc(100vh-5rem)]">
@@ -84,30 +82,26 @@ function MapMain({ initialData }: MapMainProps) {
             className="w-1/3 bg-card h-full overflow-auto border-r"
             aria-label="Participant and route list"
           >
-            <Memoinfo
+            <InfoPanel
               mapInfo={mapInfo}
               routes={routes}
-              setSelectedLocation={setSelectedLocation}
-              setSelectedRoute={setSelectedRoute}
               selectedLocation={selectedLocation}
               selectedRoute={selectedRoute}
-              onParticipantSelect={handleParticipantSelect}
+              onLocationSelect={handleLocationSelect}
               onRouteSelect={handleRouteSelect}
-              updateURL={updateURL}
             />
           </aside>
           <main className="w-2/3 relative h-full" aria-label="Map">
-            <MemoizedMapComponent
-              mapInfo={mapInfo}
-              routes={routes}
-              setSelectedLocation={setSelectedLocation}
-              setSelectedRoute={setSelectedRoute}
-              selectedLocation={selectedLocation}
-              selectedRoute={selectedRoute}
-              onParticipantSelect={handleParticipantSelect}
-              onRouteSelect={handleRouteSelect}
-              updateURL={updateURL}
-            />
+            <Suspense fallback={<LoadingFallback />}>
+              <MapComponent
+                mapInfo={mapInfo}
+                routes={routes}
+                selectedLocation={selectedLocation}
+                selectedRoute={selectedRoute}
+                onLocationSelect={setSelectedLocation}
+                onRouteSelect={setSelectedRoute}
+              />
+            </Suspense>
           </main>
         </div>
       ) : (
@@ -143,16 +137,13 @@ function MapMain({ initialData }: MapMainProps) {
               </Button>
             </div>
             <div className="overflow-y-auto h-[calc(100vh-64px)]">
-              <Memoinfo
+              <InfoPanel
                 mapInfo={mapInfo}
                 routes={routes}
-                setSelectedLocation={setSelectedLocation}
-                setSelectedRoute={setSelectedRoute}
                 selectedLocation={selectedLocation}
                 selectedRoute={selectedRoute}
-                onParticipantSelect={handleParticipantSelect}
+                onLocationSelect={handleLocationSelect}
                 onRouteSelect={handleRouteSelect}
-                updateURL={updateURL}
               />
             </div>
           </aside>
@@ -180,24 +171,20 @@ function MapMain({ initialData }: MapMainProps) {
             aria-label="Map"
             onClick={handleOutsideClick}
           >
-            <MemoizedMapComponent
-              mapInfo={mapInfo}
-              routes={routes}
-              setSelectedLocation={setSelectedLocation}
-              setSelectedRoute={setSelectedRoute}
-              selectedLocation={selectedLocation}
-              selectedRoute={selectedRoute}
-              onParticipantSelect={handleParticipantSelect}
-              onRouteSelect={handleRouteSelect}
-              updateURL={updateURL}
-            />
+            <Suspense fallback={<LoadingFallback />}>
+              <MapComponent
+                mapInfo={mapInfo}
+                routes={routes}
+                selectedLocation={selectedLocation}
+                selectedRoute={selectedRoute}
+                onLocationSelect={setSelectedLocation}
+                onRouteSelect={setSelectedRoute}
+              />
+            </Suspense>
           </main>
         </div>
       )}
     </div>
   );
 }
-
-const MemoMapMain = memo(MapMain);
-
-export default MemoMapMain;
+export default MapMain;

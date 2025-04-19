@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import React, { useState, useCallback, useMemo } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Accordion,
@@ -11,12 +10,9 @@ import {
 } from "@/components/ui/accordion";
 import {
   MapPin,
-  MapPinIcon as MapPinPlus,
-  MapPinIcon as MapPinHouse,
-  MapPinIcon as MapPinMinusInside,
-  Route,
-  ExternalLink,
+  MapPinIcon,
   RouteIcon,
+  ExternalLink,
   Users,
   User,
 } from "lucide-react";
@@ -25,19 +21,14 @@ import {
   type Route as RouteType,
   RouteZone,
 } from "@/app/hooks/useMapData";
-import LoginForm from "@/app/components/login-form/login-form";
-import { useRouter } from "next/navigation";
 
 interface InfoPanelProps {
   mapInfo: MapInfo[];
   routes: RouteType[];
   selectedLocation: string | null;
   selectedRoute: string | null;
-  setSelectedLocation: (locationId: string) => void;
-  setSelectedRoute: (routeId: string) => void;
-  onParticipantSelect: (locationId: string) => void;
+  onLocationSelect: (locationId: string) => void;
   onRouteSelect: (routeId: string) => void;
-  updateURL: (params: { place?: string; route?: string }) => void;
   className?: string;
 }
 
@@ -46,67 +37,16 @@ function InfoPanel({
   routes,
   selectedLocation,
   selectedRoute,
-  setSelectedLocation,
-  setSelectedRoute,
-  onParticipantSelect,
+  onLocationSelect,
   onRouteSelect,
-  updateURL,
   className,
 }: InfoPanelProps) {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
   // Always include "participants" in the initial state
   const [openAccordions, setOpenAccordions] = useState<string[]>([
     "participants",
   ]);
 
-  // This useEffect ensures the participants accordion stays open
-  // while also handling URL parameters
-  useEffect(() => {
-    const placeId = searchParams.get("place");
-    const routeId = searchParams.get("route");
-
-    let newAccordions = [...openAccordions];
-
-    // Always ensure "participants" is included unless explicitly overridden by a route
-    if (!routeId && !newAccordions.includes("participants")) {
-      newAccordions.push("participants");
-    }
-
-    if (placeId) {
-      setSelectedLocation(placeId);
-      if (!newAccordions.includes("participants")) {
-        newAccordions.push("participants");
-      }
-    }
-
-    if (routeId) {
-      const routeZone = routeId.split("-")[0];
-      setSelectedRoute(routeId);
-
-      // When a route is selected, we might want to close the participants accordion
-      // and open the route's zone accordion instead
-      newAccordions = newAccordions.filter((item) => item !== "participants");
-      if (!newAccordions.includes(routeZone)) {
-        newAccordions.push(routeZone);
-      }
-    }
-
-    // Only update if the accordions have changed
-    if (JSON.stringify(newAccordions) !== JSON.stringify(openAccordions)) {
-      setOpenAccordions(newAccordions);
-    }
-  }, [searchParams, setSelectedLocation, setSelectedRoute, openAccordions]);
-
-  // Force participants accordion to be open on mount
-  useEffect(() => {
-    setOpenAccordions((prev) =>
-      prev.includes("participants") ? prev : [...prev, "participants"]
-    );
-  }, []);
-
+  // Group routes by zone
   const groupedRoutes = useMemo(() => {
     return routes.reduce((acc, route) => {
       if (!acc[route.zone]) acc[route.zone] = [];
@@ -122,67 +62,42 @@ function InfoPanel({
     RouteZone.WEST,
   ];
 
-  const redirectToGoogleMaps = useCallback((lat: number, lng: number) => {
-    window.open(
-      `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,
-      "_blank"
-    );
-  }, []);
-
-  const redirectRouteToGoogleMaps = useCallback((route: RouteType) => {
-    if (!route || route.dots.length === 0) return;
-
-    const origin = `${route.dots[0].latitude},${route.dots[0].longitude}`;
-    const destination = `${route.dots[route.dots.length - 1].latitude},${
-      route.dots[route.dots.length - 1].longitude
-    }`;
-
-    const waypoints = route.dots
-      .slice(1, -1) // Remove first and last dots to avoid duplication
-      .map((dot) => `${dot.latitude},${dot.longitude}`)
-      .join("|");
-
-    let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
-
-    if (waypoints) {
-      url += `&waypoints=${waypoints}`;
-    }
-
-    window.open(url, "_blank");
-  }, []);
-
-  const handleLocationSelect = useCallback(
-    (locationId: string) => {
-      updateURL({ place: locationId, route: undefined });
-      onParticipantSelect(locationId);
-      setOpenAccordions((prev) => {
-        const newAccordions = prev.filter(
-          (item) => item === "participants" || item === locationId
-        );
-        return newAccordions.includes("participants")
-          ? newAccordions
-          : ["participants", ...newAccordions];
-      });
+  const redirectToGoogleMaps = useCallback(
+    (lat: number, lng: number, e: React.MouseEvent) => {
+      e.stopPropagation(); // Importante: evitar que el evento se propague
+      window.open(
+        `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,
+        "_blank"
+      );
     },
-    [onParticipantSelect, updateURL]
+    []
   );
 
-  const handleRouteSelect = useCallback(
-    (routeId: string) => {
-      updateURL({ place: undefined, route: routeId });
-      onRouteSelect(routeId);
-      setOpenAccordions((prev) => {
-        const newAccordions = prev.filter((item) => item !== "participants");
-        return [...newAccordions, routeId.split("-")[0]];
-      });
-    },
-    [onRouteSelect, updateURL]
-  );
+  const redirectRouteToGoogleMaps = useCallback(
+    (route: RouteType, e: React.MouseEvent) => {
+      e.stopPropagation(); // Importante: evitar que el evento se propague
+      if (!route || route.dots.length === 0) return;
 
-  const handleLoginSuccess = () => {
-    setIsLoginModalOpen(false);
-    router.refresh();
-  };
+      const origin = `${route.dots[0].latitude},${route.dots[0].longitude}`;
+      const destination = `${route.dots[route.dots.length - 1].latitude},${
+        route.dots[route.dots.length - 1].longitude
+      }`;
+
+      const waypoints = route.dots
+        .slice(1, -1) // Remove first and last dots to avoid duplication
+        .map((dot) => `${dot.latitude},${dot.longitude}`)
+        .join("|");
+
+      let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
+
+      if (waypoints) {
+        url += `&waypoints=${waypoints}`;
+      }
+
+      window.open(url, "_blank");
+    },
+    []
+  );
 
   // Custom handler for accordion value change to ensure participants stays open
   const handleAccordionChange = (value: string[]) => {
@@ -198,6 +113,23 @@ function InfoPanel({
       setOpenAccordions(value);
     }
   };
+
+  // Manejadores de selección con logs para depuración
+  const handleLocationClick = useCallback(
+    (locationId: string) => {
+      console.log("Location clicked in panel:", locationId); // Añadir log para depuración
+      onLocationSelect(locationId);
+    },
+    [onLocationSelect]
+  );
+
+  const handleRouteClick = useCallback(
+    (routeId: string) => {
+      console.log("Route clicked in panel:", routeId); // Añadir log para depuración
+      onRouteSelect(routeId);
+    },
+    [onRouteSelect]
+  );
 
   return (
     <ScrollArea className={`h-[calc(100vh-5rem)] ${className} text-black`}>
@@ -224,7 +156,7 @@ function InfoPanel({
                       key={location.id}
                       location={location}
                       selectedLocation={selectedLocation}
-                      onSelect={handleLocationSelect}
+                      onSelect={handleLocationClick}
                       redirectToGoogleMaps={redirectToGoogleMaps}
                     />
                   ))}
@@ -239,7 +171,7 @@ function InfoPanel({
             return (
               <AccordionItem key={zone} value={zone}>
                 <AccordionTrigger className="text-base font-semibold hover:bg-gray-100 rounded-lg px-2 py-1 cursor-pointer">
-                  <Route className="mr-2 h-4 w-4" />
+                  <RouteIcon className="mr-2 h-4 w-4" />
                   {zone} Routes
                 </AccordionTrigger>
                 <AccordionContent>
@@ -249,7 +181,7 @@ function InfoPanel({
                         key={route.id}
                         route={route}
                         selectedRoute={selectedRoute}
-                        onSelect={handleRouteSelect}
+                        onSelect={handleRouteClick}
                         redirectRouteToGoogleMaps={redirectRouteToGoogleMaps}
                       />
                     ))}
@@ -260,11 +192,6 @@ function InfoPanel({
           })}
         </Accordion>
       </div>
-      <LoginForm
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onLoginSuccess={handleLoginSuccess}
-      />
     </ScrollArea>
   );
 }
@@ -279,15 +206,23 @@ const LocationItem = React.memo(
     location: MapInfo;
     selectedLocation: string | null;
     onSelect: (locationId: string) => void;
-    redirectToGoogleMaps: (lat: number, lng: number) => void;
+    redirectToGoogleMaps: (
+      lat: number,
+      lng: number,
+      e: React.MouseEvent
+    ) => void;
   }) => {
+    const handleClick = useCallback(() => {
+      onSelect(location.id);
+    }, [onSelect, location.id]);
+
     return (
       <div className="border rounded-lg overflow-hidden mb-2">
         {location.is_hub || location.is_collective ? (
           <Accordion
             type="single"
-            value={selectedLocation || ""}
-            onValueChange={onSelect}
+            value={selectedLocation === location.id ? location.id : ""}
+            onValueChange={(value) => value && onSelect(value)}
           >
             <AccordionItem value={location.id}>
               <AccordionTrigger
@@ -298,16 +233,16 @@ const LocationItem = React.memo(
                       : "bg-yellow-500/50"
                     : ""
                 }`}
-                onClick={() => onSelect(location.id)}
+                onClick={handleClick}
               >
                 <div className="flex items-center w-full">
                   {location.is_hub ? (
-                    <MapPinHouse
+                    <MapPinIcon
                       className="mr-2 h-4 w-4 text-green-500"
                       aria-hidden="true"
                     />
                   ) : (
-                    <MapPinPlus
+                    <MapPinIcon
                       className="mr-2 h-4 w-4 text-yellow-500"
                       aria-hidden="true"
                     />
@@ -317,13 +252,13 @@ const LocationItem = React.memo(
                     <span>{location.is_hub ? "HUB" : "Collective"}</span>
                   </div>
                   <div
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onClick={(e) =>
                       redirectToGoogleMaps(
                         location.latitude,
-                        location.longitude
-                      );
-                    }}
+                        location.longitude,
+                        e
+                      )
+                    }
                     className="ml-2 cursor-pointer"
                   >
                     <ExternalLink className="h-3 w-3" />
@@ -358,11 +293,11 @@ const LocationItem = React.memo(
                   : "bg-blue-500/50"
                 : ""
             }`}
-            onClick={() => onSelect(location.id)}
+            onClick={handleClick}
           >
             <div className="flex items-center w-full">
               {location.is_special_program ? (
-                <MapPinMinusInside
+                <MapPinIcon
                   className="mr-2 h-4 w-4 text-purple-500"
                   aria-hidden="true"
                 />
@@ -378,10 +313,9 @@ const LocationItem = React.memo(
                   : `${location.participants[0].user_name} - Participant`}
               </span>
               <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  redirectToGoogleMaps(location.latitude, location.longitude);
-                }}
+                onClick={(e) =>
+                  redirectToGoogleMaps(location.latitude, location.longitude, e)
+                }
                 className="ml-2 cursor-pointer"
               >
                 <ExternalLink className="h-3 w-3" />
@@ -405,14 +339,18 @@ const RouteItem = React.memo(
     route: RouteType;
     selectedRoute: string | null;
     onSelect: (routeId: string) => void;
-    redirectRouteToGoogleMaps: (route: RouteType) => void;
+    redirectRouteToGoogleMaps: (route: RouteType, e: React.MouseEvent) => void;
   }) => {
+    const handleClick = useCallback(() => {
+      onSelect(route.id);
+    }, [onSelect, route.id]);
+
     return (
       <Accordion
         type="single"
         collapsible
-        value={selectedRoute || ""}
-        onValueChange={onSelect}
+        value={selectedRoute === route.id ? route.id : ""}
+        onValueChange={(value) => value && onSelect(value)}
         className="border rounded-lg overflow-hidden mb-2"
       >
         <AccordionItem value={route.id}>
@@ -420,7 +358,7 @@ const RouteItem = React.memo(
             className={`p-2 text-sm hover:bg-gray/50 ${
               selectedRoute === route.id ? "bg-red-500/10" : ""
             }`}
-            onClick={() => onSelect(route.id)}
+            onClick={handleClick}
           >
             <div className="flex items-center w-full">
               <RouteIcon
@@ -429,10 +367,7 @@ const RouteItem = React.memo(
               />
               <span className="flex-grow text-left text-sm">{route.name}</span>
               <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  redirectRouteToGoogleMaps(route);
-                }}
+                onClick={(e) => redirectRouteToGoogleMaps(route, e)}
                 className="ml-2 cursor-pointer"
               >
                 <ExternalLink className="h-3 w-3" />
@@ -467,6 +402,4 @@ const RouteItem = React.memo(
 );
 RouteItem.displayName = "RouteItem";
 
-const Memoinfo = React.memo(InfoPanel);
-
-export default Memoinfo;
+export default React.memo(InfoPanel);

@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { LoadingFallback } from "@/app/components/loading-fallback";
 import { getCookieConsent } from "@/app/actions/cookieConsent";
 import { Button } from "@/components/ui/button";
 import { CookieSettingsModal } from "@/components/cookies/cookies-modal";
-import { MapInfo, Route } from "@/app/hooks/useMapData";
-import MemoMapMain from "@/app/map/map-main";
+import type { MapInfo, Route } from "@/app/hooks/useMapData";
+import MapMain from "@/app/map/map-main";
 
 interface MapWrapperProps {
   initialData: {
@@ -37,7 +37,7 @@ export default function MapWrapper({ initialData }: MapWrapperProps) {
   return (
     <>
       {mapConsent ? (
-        <MemoMapMain initialData={initialData} />
+        <MapMain initialData={initialData} />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
           <div className="text-center">

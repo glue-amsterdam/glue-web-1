@@ -94,7 +94,7 @@ export default function ParticipantsSection({
                             alt={`${participant.userName} profile image thumbnail`}
                             width={900}
                             height={1000}
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            sizes="(max-width: 768px) 100vw, 50vw"
                             className="absolute inset-0 w-full h-full object-cover rounded-lg"
                             priority={index < 5}
                           />

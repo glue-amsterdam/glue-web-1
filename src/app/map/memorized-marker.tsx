@@ -1,8 +1,10 @@
+"use client";
+
 import {
   MapPin,
-  MapPinHouse,
-  MapPinMinusInside,
-  MapPinPlus,
+  MapPinIcon as MapPinHouse,
+  MapPinIcon as MapPinMinusInside,
+  MapPinIcon as MapPinPlus,
 } from "lucide-react";
 import { Marker } from "react-map-gl";
 import { memo } from "react";
@@ -14,24 +16,30 @@ interface Location {
   is_hub?: boolean;
   is_collective?: boolean;
   is_special_program?: boolean;
+  isRouteMarker?: boolean;
 }
 
 interface MemoizedMarkerProps {
   location: Location;
-  onClick: (e: { originalEvent: { stopPropagation: () => void } }) => void;
+  onClick?: (e: { originalEvent: { stopPropagation: () => void } }) => void; // Hacer onClick opcional
+  isRouteMarker?: boolean;
 }
 
 export const MemoizedMarker = memo(
-  ({ location, onClick }: MemoizedMarkerProps) => (
+  ({ location, onClick, isRouteMarker }: MemoizedMarkerProps) => (
     <Marker
       longitude={location.longitude}
       latitude={location.latitude}
       anchor="top"
-      onClick={onClick}
+      onClick={isRouteMarker ? undefined : onClick} // Disable click for route markers
     >
-      <div className="relative cursor-pointer">
+      <div
+        className={`relative cursor-${isRouteMarker ? "default" : "pointer"}`}
+      >
         <div
-          className={`size-7 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110 ${
+          className={`size-7 rounded-full flex items-center justify-center shadow-md transition-transform ${
+            isRouteMarker ? "" : "hover:scale-110"
+          } ${
             location.is_hub
               ? "bg-green-500 opacity-70 hover:opacity-100"
               : location.is_collective

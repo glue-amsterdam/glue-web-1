@@ -1,9 +1,9 @@
 "use client";
 
-import React, { memo, useCallback } from "react";
+import { memo, useCallback } from "react";
 import { X, MapPin } from "lucide-react";
 import { Popup } from "react-map-gl";
-import { Route } from "@/app/hooks/useMapData";
+import type { Route } from "@/app/hooks/useMapData";
 import { Button } from "@/components/ui/button";
 
 interface RoutePopupProps {
@@ -50,7 +50,8 @@ function RoutePopupComponent({ route, handlePopupClose }: RoutePopupProps) {
       closeButton={false}
       closeOnClick={false}
       className="custom-map-popup route-popup transition-all text-black"
-      anchor="center"
+      anchor="top"
+      offset={[0, -15]} // Add offset to avoid covering dots
     >
       <div className="popup-wrapper">
         <button

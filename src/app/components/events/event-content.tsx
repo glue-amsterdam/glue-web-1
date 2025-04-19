@@ -114,7 +114,7 @@ export default function EventContent({ event }: EventContentProps) {
                 rel="noreferrer"
               >
                 <MapPinCheck />
-                <p>{event.location.formatted_address}</p>
+                <p className="text-black">{event.location.formatted_address}</p>
               </a>
             </div>
           )}
