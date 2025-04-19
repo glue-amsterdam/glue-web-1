@@ -113,7 +113,7 @@ export default function InfoSection({
                   height={900}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
                   className="object-cover w-full h-full object-center"
-                  quality={70}
+                  quality={100}
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-uiwhite/80 p-6 lg:hidden">
                   <DialogTitle>
