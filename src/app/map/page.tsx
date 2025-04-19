@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 import Background from "@/app/components/background";
 import { LoadingFallback } from "@/app/components/loading-fallback";
 import { NAVBAR_HEIGHT } from "@/constants";

@@ -1,14 +1,15 @@
+"use client";
+
 import { config } from "@/env";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useCallback, useMemo, useEffect } from "react";
-import { useDebouncedCallback } from "use-debounce";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 
 // City bounding box from environment variables
 const CITY_BOUNDS: [number, number, number, number] = [
-  parseFloat(config.cityBoundWest || "0"),
-  parseFloat(config.cityBoundSouth || "0"),
-  parseFloat(config.cityBoundEast || "0"),
-  parseFloat(config.cityBoundNorth || "0"),
+  Number.parseFloat(config.cityBoundWest || "0"),
+  Number.parseFloat(config.cityBoundSouth || "0"),
+  Number.parseFloat(config.cityBoundEast || "0"),
+  Number.parseFloat(config.cityBoundNorth || "0"),
 ];
 
 export interface Participant {
@@ -59,13 +60,53 @@ export function useMapData(initialData: {
   mapInfo: MapInfo[];
   routes: Route[];
 }) {
-  const mapInfo = initialData.mapInfo;
-  const [routes] = useState<Route[]>(initialData.routes); // Remove setRoutes since we don't need it anymore
-  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
-  const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
-
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  // Referencia para evitar actualizaciones cíclicas
+  const isUpdatingUrl = useRef(false);
+
+  // Get initial selection from URL
+  const initialLocationId = searchParams.get("place");
+  const initialRouteId = searchParams.get("route");
+
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(
+    initialLocationId
+  );
+  const [selectedRoute, setSelectedRoute] = useState<string | null>(
+    initialRouteId
+  );
+
+  // Update state when URL changes
+  useEffect(() => {
+    // Si estamos en medio de una actualización de URL, no procesamos este cambio
+    if (isUpdatingUrl.current) {
+      return;
+    }
+
+    const placeId = searchParams.get("place");
+    const routeId = searchParams.get("route");
+
+    // If URL has no parameters, clear selections
+    if (pathname === "/map" && !searchParams.toString()) {
+      if (selectedLocation !== null) setSelectedLocation(null);
+      if (selectedRoute !== null) setSelectedRoute(null);
+      return;
+    }
+
+    if (placeId && placeId !== selectedLocation) {
+      setSelectedLocation(placeId);
+      setSelectedRoute(null);
+    } else if (routeId && routeId !== selectedRoute) {
+      setSelectedRoute(routeId);
+      setSelectedLocation(null);
+    } else if (!placeId && !routeId) {
+      // Clear selections if no parameters
+      setSelectedLocation(null);
+      setSelectedRoute(null);
+    }
+  }, [searchParams, pathname, selectedLocation, selectedRoute]);
 
   const isWithinBounds = useCallback((lng: number, lat: number) => {
     return (
@@ -78,61 +119,87 @@ export function useMapData(initialData: {
 
   const filteredMapInfo = useMemo(
     () =>
-      mapInfo.filter((location) =>
+      initialData.mapInfo.filter((location) =>
         isWithinBounds(location.longitude, location.latitude)
       ),
-    [mapInfo, isWithinBounds]
+    [initialData.mapInfo, isWithinBounds]
   );
+
   const filteredRoutes = useMemo(
     () =>
-      routes.filter((route) =>
+      initialData.routes.filter((route) =>
         route.dots.every((dot) => isWithinBounds(dot.longitude, dot.latitude))
       ),
-    [routes, isWithinBounds]
+    [initialData.routes, isWithinBounds]
   );
 
-  const debouncedUpdateURL = useDebouncedCallback(
+  // Función para actualizar la URL
+  const updateURL = useCallback(
     (params: { place?: string; route?: string }) => {
-      const newSearchParams = new URLSearchParams(searchParams.toString());
-      if (params.place) {
-        newSearchParams.set("place", params.place);
-        newSearchParams.delete("route");
-      } else if (params.route) {
-        newSearchParams.set("route", params.route);
-        newSearchParams.delete("place");
-      } else {
-        newSearchParams.delete("place");
-        newSearchParams.delete("route");
+      // Marcar que estamos actualizando la URL para evitar ciclos
+      isUpdatingUrl.current = true;
+
+      try {
+        const newSearchParams = new URLSearchParams();
+
+        if (params.place) {
+          newSearchParams.set("place", params.place);
+        } else if (params.route) {
+          newSearchParams.set("route", params.route);
+        }
+
+        const newURL = `/map${
+          newSearchParams.toString() ? `?${newSearchParams.toString()}` : ""
+        }`;
+
+        // Usar replace en lugar de push para evitar entradas duplicadas en el historial
+        router.replace(newURL, { scroll: false });
+      } finally {
+        // Asegurarnos de restablecer la bandera después de un breve retraso
+        setTimeout(() => {
+          isUpdatingUrl.current = false;
+        }, 100);
       }
-      router.push(`/map?${newSearchParams.toString()}`, { scroll: false });
     },
-    150
+    [router]
   );
 
-  // Cleanup logic in a useEffect hook
-  useEffect(() => {
-    const abortController = new AbortController();
-    return () => {
-      abortController.abort(); // Cleanup on unmount
-    };
-  }, []);
-
-  const handleParticipantSelect = useCallback(
+  const handleLocationSelect = useCallback(
     (locationId: string) => {
-      setSelectedLocation(locationId);
-      setSelectedRoute(null);
-      debouncedUpdateURL({ place: locationId });
+      // Si se hace clic en la misma ubicación, no hacemos nada
+      if (locationId === selectedLocation) return;
+
+      // Actualizamos el estado local
+      setSelectedLocation(locationId || null);
+      if (locationId) setSelectedRoute(null);
+
+      // Actualizamos la URL solo si hay un ID válido
+      if (locationId) {
+        updateURL({ place: locationId });
+      } else {
+        updateURL({});
+      }
     },
-    [debouncedUpdateURL]
+    [updateURL, selectedLocation, setSelectedRoute]
   );
 
   const handleRouteSelect = useCallback(
     (routeId: string) => {
-      setSelectedRoute(routeId);
-      setSelectedLocation(null);
-      debouncedUpdateURL({ route: routeId });
+      // Si se hace clic en la misma ruta, no hacemos nada
+      if (routeId === selectedRoute) return;
+
+      // Actualizamos el estado local
+      setSelectedRoute(routeId || null);
+      if (routeId) setSelectedLocation(null);
+
+      // Actualizamos la URL solo si hay un ID válido
+      if (routeId) {
+        updateURL({ route: routeId });
+      } else {
+        updateURL({});
+      }
     },
-    [debouncedUpdateURL]
+    [updateURL, selectedRoute, setSelectedLocation]
   );
 
   return {
@@ -140,9 +207,9 @@ export function useMapData(initialData: {
     routes: filteredRoutes,
     selectedLocation,
     selectedRoute,
-    setSelectedLocation: handleParticipantSelect,
+    setSelectedLocation: handleLocationSelect,
     setSelectedRoute: handleRouteSelect,
-    updateURL: debouncedUpdateURL,
+    updateURL,
     isWithinBounds,
   };
 }

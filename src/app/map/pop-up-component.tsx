@@ -6,7 +6,7 @@ import LoadingSpinner from "@/app/components/LoadingSpinner";
 import CarouselPopUp from "@/app/map/carousel-pop-up";
 import { Popup } from "react-map-gl";
 import type { PopupInfo } from "@/app/map/map-component";
-import { Anchor } from "mapbox-gl";
+import type { Anchor } from "mapbox-gl";
 
 type Props = {
   isLoading: boolean;
