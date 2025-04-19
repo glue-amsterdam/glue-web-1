@@ -20,7 +20,7 @@ function CreateEventPage() {
   if (!events) return <div>No events available</div>;
 
   const eventCount = events.length;
-  const canCreateEvent = eventCount < 5;
+  const canCreateEvent = eventCount < 6;
 
   return (
     <EventForm
