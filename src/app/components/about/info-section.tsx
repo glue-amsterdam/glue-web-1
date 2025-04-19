@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { fadeInConfig } from "@/utils/animations";
 import DOMPurify from "dompurify";
-import { InfoItemClient } from "@/schemas/infoSchema";
+import type { InfoItemClient } from "@/schemas/infoSchema";
 import Image from "next/image";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import InfoCard from "@/app/components/about/info-card";
@@ -43,7 +43,7 @@ export default function InfoSection({
             No Press Items
           </AlertTitle>
           <AlertDescription className="text-md">
-            {`We’re currently preparing the Info Items. Check back soon.`}
+            {`We're currently preparing the Info Items. Check back soon.`}
           </AlertDescription>
         </Alert>
       </motion.div>
@@ -101,19 +101,21 @@ export default function InfoSection({
       <Dialog open={modalOpen} onOpenChange={closeModal}>
         <DialogContent
           forceMount
-          className="text-uiblack w-[90vw] max-w-[1200px] h-[90vh] rounded-none m-0 p-0 overflow-hidden"
+          className="text-uiblack w-[90vw] max-w-full h-[90vh] rounded-none m-0 p-0 overflow-hidden"
         >
           {selectedInfo && (
-            <div className="relative w-full h-full flex flex-col">
-              <div className="relative w-full h-1/2">
+            <div className="relative w-full h-full flex flex-col lg:flex-row">
+              <div className="relative w-full lg:w-1/2 lg:h-full aspect-[2/1] md:aspect-auto">
                 <Image
-                  src={selectedInfo.image_url}
+                  src={selectedInfo.image_url || "/placeholder.jpg"}
                   alt={selectedInfo.title}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
-                  className="object-cover"
+                  width={1600}
+                  height={900}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
+                  className="object-cover w-full h-full object-center"
+                  quality={70}
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-uiwhite/80 p-6">
+                <div className="absolute bottom-0 left-0 right-0 bg-uiwhite/80 p-6 lg:hidden">
                   <DialogTitle>
                     <motion.p
                       initial={{ rotate: 20 }}
@@ -129,7 +131,23 @@ export default function InfoSection({
                   </DialogDescription>
                 </div>
               </div>
-              <div className="flex-grow overflow-y-auto p-6 bg-white ">
+
+              {/* Contenido - Ocupa la mitad derecha en pantallas grandes */}
+              <div className="flex-grow overflow-y-auto p-6 bg-white lg:w-1/2">
+                {/* Título visible solo en pantallas grandes */}
+                <div className="hidden lg:block mb-6">
+                  <DialogTitle>
+                    <motion.p
+                      initial={{ rotate: 20 }}
+                      animate={modalOpen ? { rotate: 0 } : {}}
+                      transition={{ duration: 0.3 }}
+                      className="text-3xl font-bold"
+                    >
+                      {selectedInfo.title}
+                    </motion.p>
+                  </DialogTitle>
+                </div>
+
                 <div
                   className="text-sm md:text-base prose max-w-none font-overpas text-black"
                   dangerouslySetInnerHTML={{

@@ -44,10 +44,12 @@ const InfoCard = ({
         <div className="relative w-full h-full">
           <Image
             src={info.image_url || "/placeholder.jpg"}
-            alt={info.title + "- Information about GLUE routes desing"}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
-            className="object-cover group-hover:scale-105 transition-all duration-700"
+            alt={`${info.title} - Information about GLUE routes desing`}
+            width={1600}
+            height={900}
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover w-full h-full group-hover:scale-105 transition-all duration-700"
+            quality={70}
           />
           <div className="absolute bottom-0 left-0 right-0 bg-uiblack/50 w-full text-uiwhite py-4 duration-300 group-hover:py-12 transition-all">
             <h3 className="font-bold text-xl lg:text-3xl tracking-wider mb-2 text-center">

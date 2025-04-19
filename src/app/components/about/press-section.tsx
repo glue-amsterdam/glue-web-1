@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { fadeInConfig } from "@/utils/animations";
-import { PressItem } from "@/schemas/pressSchema";
+import type { PressItem } from "@/schemas/pressSchema";
 import Image from "next/image";
 import DOMPurify from "dompurify";
 import { DialogDescription } from "@radix-ui/react-dialog";
@@ -49,7 +49,7 @@ export default function PressSection({
             No Press Items
           </AlertTitle>
           <AlertDescription className="text-md">
-            {`We’re currently preparing the Press Items. Check back soon.`}
+            {`We're currently preparing the Press Items. Check back soon.`}
           </AlertDescription>
         </Alert>
       </motion.div>
@@ -80,13 +80,15 @@ export default function PressSection({
           className="cursor-pointer rounded-none border-none group shadow-md h-full"
           onClick={() => openModal(item)}
         >
-          <div className="relative w-full h-full">
+          <div className="relative w-full aspect-video">
             <Image
-              src={item.image_url}
+              src={item.image_url || "/placeholder.svg"}
               alt={item.title}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
-              className="object-cover group-hover:scale-105 transition-all duration-700"
+              width={1600}
+              height={900}
+              sizes="(max-width: 768px) 100vw, 80vw"
+              className="object-cover w-full h-full group-hover:scale-105 transition-all duration-700"
+              quality={70}
             />
             <div className="absolute bottom-0 left-0 right-0 bg-uiblack/50 w-full text-uiwhite py-4 duration-300 group-hover:py-12 transition-all">
               <h3 className="font-bold text-xl lg:text-3xl tracking-wider mb-2 text-center">
@@ -144,19 +146,20 @@ export default function PressSection({
       <Dialog open={modalOpen} onOpenChange={closeModal}>
         <DialogContent
           forceMount
-          className="text-uiblack w-[90vw] max-w-[1200px] h-[90vh] rounded-none m-0 p-0 overflow-hidden"
+          className="text-uiblack w-[90vw] max-w-full h-[90vh] rounded-none m-0 p-0 overflow-hidden"
         >
           {selectedItem && (
-            <div className="relative w-full h-full flex flex-col">
-              <div className="relative w-full h-1/2">
+            <div className="relative w-full h-full flex flex-col lg:flex-row">
+              <div className="relative w-full lg:w-1/2 h-1/2 lg:h-full">
                 <Image
-                  src={selectedItem.image_url}
+                  src={selectedItem.image_url || "/placeholder.svg"}
                   alt={selectedItem.title}
                   fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
-                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw,50vw"
+                  className="object-cover object-center"
+                  quality={70}
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-uiwhite/80 p-6">
+                <div className="absolute bottom-0 left-0 right-0 bg-uiwhite/80 p-6 lg:hidden">
                   <DialogTitle>
                     <motion.p
                       initial={{ rotate: 20 }}
@@ -172,17 +175,35 @@ export default function PressSection({
                   </DialogDescription>
                 </div>
               </div>
-              <ScrollableText
-                containerClassName="overflow-hidden px-4 py-10"
-                className="text-sm sm:text-base md:text-lg pr-4 h-full overflow-y-auto"
-              >
-                <p
-                  className="font-overpass"
-                  dangerouslySetInnerHTML={{
-                    __html: DOMPurify.sanitize(selectedItem.description || ""),
-                  }}
-                />
-              </ScrollableText>
+
+              <div className="flex flex-col lg:w-1/2 h-1/2 lg:h-full">
+                <div className="p-6 bg-uiwhite">
+                  <DialogTitle>
+                    <motion.p
+                      initial={{ rotate: 20 }}
+                      animate={modalOpen ? { rotate: 0 } : {}}
+                      transition={{ duration: 0.3 }}
+                      className="text-3xl font-bold"
+                    >
+                      {selectedItem.title}
+                    </motion.p>
+                  </DialogTitle>
+                </div>
+
+                <ScrollableText
+                  containerClassName="overflow-hidden flex-grow"
+                  className="text-sm sm:text-base md:text-lg p-6 h-full overflow-y-auto"
+                >
+                  <p
+                    className="font-overpass"
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(
+                        selectedItem.description || ""
+                      ),
+                    }}
+                  />
+                </ScrollableText>
+              </div>
             </div>
           )}
         </DialogContent>
