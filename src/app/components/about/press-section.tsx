@@ -80,7 +80,7 @@ export default function PressSection({
           className="cursor-pointer rounded-none border-none group shadow-md h-full"
           onClick={() => openModal(item)}
         >
-          <div className="relative w-full aspect-video">
+          <div className="relative w-full h-full">
             <Image
               src={item.image_url || "/placeholder.svg"}
               alt={item.title}
