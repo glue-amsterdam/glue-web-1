@@ -92,9 +92,10 @@ export default function ParticipantsSection({
                               participant.image?.image_url || "/placeholder.jpg"
                             }
                             alt={`${participant.userName} profile image thumbnail`}
-                            fill
+                            width={900}
+                            height={1000}
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            className="object-cover rounded-lg"
+                            className="absolute inset-0 w-full h-full object-cover rounded-lg"
                             priority={index < 5}
                           />
                         </div>

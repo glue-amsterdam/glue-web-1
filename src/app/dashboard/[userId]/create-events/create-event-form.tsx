@@ -183,7 +183,7 @@ export function EventForm({
         <AlertTitle>Event Limit Reached</AlertTitle>
         <AlertDescription>
           You have reached the maximum number of events allowed (
-          {existingEventCount}/5). Please delete an existing event before
+          {existingEventCount}/6). Please delete an existing event before
           creating a new one.
         </AlertDescription>
       </Alert>

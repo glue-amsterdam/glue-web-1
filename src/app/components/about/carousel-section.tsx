@@ -95,7 +95,7 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
               {carouselData.slides.map((slide, index) => (
                 <CarouselItem className="h-full" key={index}>
                   <Card className="border-none bg-transparent h-full">
-                    <CardContent className="p-0 h-full">
+                    <CardContent className="p-0 h-full overflow-hidden">
                       <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -105,9 +105,10 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
                         <Image
                           src={slide.image_url || "/placeholder.svg"}
                           alt={`Slide number ${index} from the GLUE Gallery`}
-                          className="object-cover"
-                          quality={100}
-                          fill
+                          className="absolute inset-0 w-full h-full object-cover"
+                          quality={85}
+                          width={1920}
+                          height={1080}
                           onClick={() => {
                             setSelectedImage(index);
                             setModalOpen(true);
@@ -137,13 +138,13 @@ export default function CarouselSection({ carouselData }: MainSectionProps) {
               <Image
                 src={
                   carouselData.slides[selectedImage].image_url ||
-                  "/placeholder.jpg" ||
-                  "/placeholder.svg"
+                  "/placeholder.jpg"
                 }
                 alt={"Slide from the GLUE Gallery"}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 90vw, 80vw"
-                className="object-cover"
+                width={1920}
+                height={1080}
+                sizes="80vw"
+                className="absolute inset-0 w-full h-full object-cover"
               />
               <Button
                 variant="ghost"

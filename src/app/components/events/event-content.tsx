@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { getEventIcon, isRSVPRequiredEvent } from "@/constants";
-import {
+import type {
   EnhancedUser,
   IndividualEventWithMapResponse,
 } from "@/schemas/eventSchemas";
@@ -50,11 +50,13 @@ export default function EventContent({ event }: EventContentProps) {
         <article className="flex flex-col space-y-4">
           <figure className="relative w-full h-60 lg:h-[40vh] overflow-hidden">
             <Image
-              src={event.thumbnail.image_url}
-              fill
+              src={event.thumbnail.image_url || "/placeholder.svg"}
+              width={1920}
+              height={1080}
               alt={`Event from the GLUE community: ${event.name} - ${event.type} type`}
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="object-cover"
+              sizes="60vw"
+              className="absolute inset-0 w-full h-full object-cover"
+              quality={85}
             />
           </figure>
           <div className="flex flex-col lg:flex-row gap-4 text-black">
@@ -109,6 +111,7 @@ export default function EventContent({ event }: EventContentProps) {
                 className="flex gap-1"
                 target="_blank"
                 href={`/map?place=${event.location.id}`}
+                rel="noreferrer"
               >
                 <MapPinCheck />
                 <p>{event.location.formatted_address}</p>

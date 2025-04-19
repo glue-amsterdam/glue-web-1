@@ -8,7 +8,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { config } from "@/env";
-import { ClientUserImage } from "@/types/api-visible-user";
+import type { ClientUserImage } from "@/types/api-visible-user";
 import Image from "next/image";
 
 export default function ImageCarousel({
@@ -26,10 +26,11 @@ export default function ImageCarousel({
             <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
               <Image
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                fill
+                width={1920}
+                height={1080}
                 src="/placeholder.jpg"
                 alt={`GLUE ${config.cityName} participant ${userName}, image number 1`}
-                className="object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
               />
             </div>
           </CarouselItem>
@@ -38,13 +39,14 @@ export default function ImageCarousel({
           <CarouselItem key={index} className="h-full">
             <div className="relative w-full h-full cursor-pointer transition-transform hover:scale-105">
               <Image
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                fill
-                src={image.image_url}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                width={1920}
+                height={1080}
+                src={image.image_url || "/placeholder.jpg"}
                 alt={`GLUE ${
                   config.cityName
                 } participant ${userName}, image number ${index + 1}`}
-                className="object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
               />
             </div>
           </CarouselItem>

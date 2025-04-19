@@ -23,7 +23,7 @@ function GlueLogo({ className, fill, width, height }: Props) {
     <Image
       src={"/logos/logo-main.png"}
       className={twMerge("", className)}
-      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw"
+      sizes="50vw"
       alt="GLUE logo, connected by design"
       {...(fill ? { fill: true } : { width, height })}
     />

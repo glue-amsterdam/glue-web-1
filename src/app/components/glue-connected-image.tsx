@@ -24,6 +24,7 @@ function GlueConectedImage({ className, fill, height, width }: Props) {
       src={"/logos/connected.png"}
       className={twMerge("", className)}
       alt="GLUE, connected by design"
+      sizes="50vw"
       {...(fill ? { fill: true } : { width, height })}
     />
   );

@@ -52,12 +52,13 @@ const CitizenCard = ({ citizen, openModal }: CitizenCardProps) => {
             "
           />
           <Image
-            src={citizen.image_url || "/placeholder.svg"}
+            src={citizen.image_url || "/placeholder.jpg"}
             alt={`${citizen.name}, citizen of honour from the GLUE design routes, year ${citizen.year}`}
-            fill
+            width={500}
+            height={500}
             quality={100}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover z-0 group-hover:grayscale-[0] md:grayscale-[0.2]"
+            sizes="50vw"
+            className="object-cover w-full h-full z-0 group-hover:grayscale-[0] md:grayscale-[0.2] transition-all duration-700"
           />
           <div className="z-30 absolute bottom-0 right-0 p-2 bg-black/50 w-full">
             <h3 className="font-bold text-uiwhite text-right text-lg md:text-2xl lg:text-3xl">
@@ -178,10 +179,11 @@ export default function CitizenOfHonourSection({
                   <Image
                     src={selectedCitizen.image_url || "/placeholder.jpg"}
                     alt={`${selectedCitizen.name}, citizen of honour from the GLUE design routes, year ${selectedCitizen.year}`}
-                    fill
+                    width={1920}
+                    height={1080}
                     sizes="(max-width: 768px) 90vw, (max-width: 1200px) 80vw, 70vw"
-                    className="object-cover"
-                    quality={100}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    quality={85}
                   />
                 </div>
 

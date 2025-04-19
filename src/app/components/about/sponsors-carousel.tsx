@@ -78,15 +78,17 @@ export default function SponsorsCarousel({
                 target={sponsor.website ? "_blank" : "_self"}
                 className="block w-full aspect-square relative group h-[80%] md:h-[90%]"
               >
-                <div className="relative flex items-center justify-center h-full">
+                <div className="relative w-full aspect-square flex items-center justify-center">
                   <Image
                     src={sponsor.image_url || "/placeholder.jpg"}
                     alt={sponsor.name}
-                    fill
-                    sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
-                    className="object-contain transition-transform duration-300 group-hover:scale-105"
+                    width={300}
+                    height={300}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-contain transition-transform duration-300 group-hover:scale-105 w-full h-full"
                   />
                 </div>
+
                 <div className="absolute inset-0 bg-uiblack bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="text-center">
                     <p className="font-semibold text-xs md:text-sm">
