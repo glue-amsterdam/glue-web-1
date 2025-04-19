@@ -56,9 +56,11 @@ function ParticipantCard({ participant, index }: ParticipantCardProps) {
           <Image
             src={participant.image?.image_url || "/placeholder.jpg"}
             alt={participant.image?.alt || "Participant profile image"}
-            fill
-            className="object-cover group-hover:scale-110 transition-all"
-            sizes="150px"
+            width={300}
+            height={300}
+            sizes="33vw"
+            className="object-cover group-hover:scale-110 transition-all rounded-full"
+            layout="responsive"
           />
         </div>
         <h3 className="font-semibold text-base md:text-lg lg:text-xl text-balance group-hover:scale-110 transition-all group-hover:text-black">

@@ -26,11 +26,12 @@ function ParticipantCard({ participant }: { participant: Participant }) {
       <div className="flex items-center mb-4">
         <div className="size-36 mr-4 relative">
           <Image
-            fill
+            width={144}
+            height={144}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             src={participant.image_url || "/placeholder.jpg"}
             alt={"GLUE profile picture of participant" + participant.user_name}
-            className="rounded-full object-cover"
+            className="absolute inset-0 w-full h-full rounded-full object-cover"
           />
         </div>
 
