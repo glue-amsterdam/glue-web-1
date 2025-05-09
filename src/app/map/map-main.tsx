@@ -32,6 +32,17 @@ function MapMain({ initialData }: MapMainProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
+    };
+
+    setVH();
+    window.addEventListener("resize", setVH);
+    return () => window.removeEventListener("resize", setVH);
+  }, []);
+
+  useEffect(() => {
     if (isLargeScreen) {
       setSidebarOpen(false);
     }
@@ -49,9 +60,7 @@ function MapMain({ initialData }: MapMainProps) {
 
   const handleLocationSelect = useCallback(
     (locationId: string) => {
-      console.log("Location selected in main:", locationId);
       setSelectedLocation(locationId);
-      // Cerrar el panel móvil después de seleccionar
       if (!isLargeScreen) {
         setSidebarOpen(false);
       }
@@ -61,9 +70,7 @@ function MapMain({ initialData }: MapMainProps) {
 
   const handleRouteSelect = useCallback(
     (routeId: string) => {
-      console.log("Route selected in main:", routeId);
       setSelectedRoute(routeId);
-      // Cerrar el panel móvil después de seleccionar
       if (!isLargeScreen) {
         setSidebarOpen(false);
       }
@@ -74,8 +81,6 @@ function MapMain({ initialData }: MapMainProps) {
   return (
     <div className="flex flex-col h-[calc(100vh-5rem)]">
       <h1 className="sr-only">City Map</h1>
-
-      {/* Desktop Layout */}
       {isLargeScreen ? (
         <div className="flex flex-1 h-full">
           <aside
@@ -105,7 +110,6 @@ function MapMain({ initialData }: MapMainProps) {
           </main>
         </div>
       ) : (
-        /* Mobile Layout with custom sliding sidebar */
         <div className="flex flex-col h-full relative">
           {/* Overlay when sidebar is open */}
           {sidebarOpen && (
@@ -136,7 +140,13 @@ function MapMain({ initialData }: MapMainProps) {
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            <div className="overflow-y-auto h-[calc(100vh-64px)]">
+            <div
+              className="overflow-y-auto"
+              style={{
+                height: "calc(var(--vh, 1vh) * 100 - 64px)",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
               <InfoPanel
                 mapInfo={mapInfo}
                 routes={routes}

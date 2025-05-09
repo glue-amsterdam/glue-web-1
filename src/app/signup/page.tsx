@@ -16,7 +16,7 @@ export default function SignUpPage() {
   if (error) return <div>Failed to load plans data</div>;
 
   // Extract plans array from the response
-  const plansData = data?.plans as PlansArrayType;
+  const plansData = data as PlansArrayType;
 
   // Check if plans exist and are available
   if (!plansData?.plans || plansData.plans.length === 0) {

@@ -115,7 +115,6 @@ const MapComponent = ({
   // Función para resetear el mapa al estado inicial
   const resetMapToDefault = useCallback(() => {
     if (mapRef.current) {
-      console.log("Ejecutando resetMapToDefault");
       mapRef.current.flyTo({
         center: CITY_CENTER,
         zoom: ZOOM_LEVELS.INITIAL,
@@ -140,12 +139,6 @@ const MapComponent = ({
         return;
       }
 
-      console.log(`Centering map on location: ${locationId}`, {
-        instant,
-        coords: [location.longitude, location.latitude],
-        zoom: ZOOM_LEVELS.PARTICIPANT,
-      });
-
       mapRef.current.flyTo({
         center: [location.longitude, location.latitude],
         zoom: ZOOM_LEVELS.PARTICIPANT,
@@ -155,7 +148,6 @@ const MapComponent = ({
     [mapInfo]
   );
 
-  // Función para centrar el mapa en una ruta
   const centerMapOnRoute = useCallback(
     (routeId: string, instant = false) => {
       if (!mapRef.current) {
@@ -169,17 +161,10 @@ const MapComponent = ({
         return;
       }
 
-      console.log(
-        `Centering map on route: ${routeId}`,
-        instant ? "(instant)" : ""
-      );
-
-      // Para rutas, ajustar los límites para mostrar toda la ruta
       const coordinates = route.dots.map(
         (dot) => [dot.longitude, dot.latitude] as [number, number]
       );
 
-      // Calcular límites
       const bounds = coordinates.reduce(
         (bounds, coord) => {
           return {
@@ -199,7 +184,6 @@ const MapComponent = ({
         }
       );
 
-      // Añadir padding a los límites para una mejor visualización
       mapRef.current.fitBounds([bounds.sw, bounds.ne], {
         padding: { top: 150, bottom: 150, left: 150, right: 150 },
         duration: instant ? 0 : ANIMATION_DURATION,
@@ -208,7 +192,6 @@ const MapComponent = ({
     [routes]
   );
 
-  // Handle popup close
   const handlePopupClose = useCallback(() => {
     if (selectedLocation) onLocationSelect("");
     if (selectedRoute) onRouteSelect("");
@@ -239,43 +222,22 @@ const MapComponent = ({
     });
   }, [mapInfo]);
 
-  // Manejar el evento de carga del mapa
   const handleMapLoad = useCallback(() => {
-    console.log("Map loaded");
     setMapLoaded(true);
   }, []);
 
-  // Efecto para manejar la carga inicial con parámetros en la URL
   useEffect(() => {
-    // Solo ejecutar cuando el mapa esté cargado y no se haya hecho la carga inicial
     if (!mapLoaded || initialLoadDone.current) return;
 
-    console.log("Checking initial load conditions:", {
-      mapLoaded,
-      initialLoadDone: initialLoadDone.current,
-      selectedLocation,
-      selectedRoute,
-      mapInfoLength: mapInfo.length,
-    });
-
-    // Verificar si hay una ubicación o ruta seleccionada en la carga inicial
     if (selectedLocation && mapInfo.length > 0) {
-      console.log("Initial load with selected location:", selectedLocation);
-
-      // Pequeño retraso para asegurar que el mapa esté completamente listo
       setTimeout(() => {
         centerMapOnLocation(selectedLocation, true);
         initialLoadDone.current = true;
-        console.log("Initial location centering complete");
       }, 500);
     } else if (selectedRoute && routes.length > 0) {
-      console.log("Initial load with selected route:", selectedRoute);
-
-      // Pequeño retraso para asegurar que el mapa esté completamente listo
       setTimeout(() => {
         centerMapOnRoute(selectedRoute, true);
         initialLoadDone.current = true;
-        console.log("Initial route centering complete");
       }, 500);
     } else {
       initialLoadDone.current = true;
@@ -292,16 +254,7 @@ const MapComponent = ({
 
   // Reset map when URL changes to base /map
   useEffect(() => {
-    // Verificar si la URL es exactamente "/map" (sin parámetros)
     const isBaseMapUrl = pathname === "/map" && searchParams.toString() === "";
-
-    console.log("URL check:", {
-      pathname,
-      searchParams: searchParams.toString(),
-      isBaseMapUrl,
-      selectedLocation,
-      selectedRoute,
-    });
 
     if (
       isBaseMapUrl &&
@@ -309,13 +262,8 @@ const MapComponent = ({
       !selectedRoute &&
       !isResetting.current
     ) {
-      console.log(
-        "Resetting map to default view - URL is /map with no params and no selections"
-      );
-      // Reset to initial view
       resetMapToDefault();
 
-      // Reset refs
       prevSelectedLocation.current = null;
       prevSelectedRoute.current = null;
       hadPreviousSelection.current = false;
@@ -328,25 +276,19 @@ const MapComponent = ({
     selectedRoute,
   ]);
 
-  // Efecto para detectar cuando se tenía una selección previa
   useEffect(() => {
     if (selectedLocation || selectedRoute) {
       hadPreviousSelection.current = true;
     }
   }, [selectedLocation, selectedRoute]);
 
-  // Efecto para resetear el mapa cuando no hay selecciones
   useEffect(() => {
-    // Si no hay selecciones activas pero había una selección previa
     if (
       !selectedLocation &&
       !selectedRoute &&
       hadPreviousSelection.current &&
       !isResetting.current
     ) {
-      console.log(
-        "Resetting map to default view - No selections but had previous"
-      );
       isResetting.current = true;
 
       // Resetear el mapa a la vista predeterminada
@@ -369,13 +311,6 @@ const MapComponent = ({
 
     // Manejar cambios en la selección de ubicación
     if (selectedLocation !== prevSelectedLocation.current) {
-      console.log("Location selection changed:", {
-        from: prevSelectedLocation.current,
-        to: selectedLocation,
-        mapLoaded,
-        mapInfoLength: mapInfo.length,
-      });
-
       // Guardar la ubicación anterior antes de actualizarla
       prevSelectedLocation.current = selectedLocation;
 
@@ -383,9 +318,6 @@ const MapComponent = ({
         // Verificar si la ubicación existe en mapInfo
         const locationExists = mapInfo.some(
           (loc) => loc.id === selectedLocation
-        );
-        console.log(
-          `Location ${selectedLocation} exists in mapInfo: ${locationExists}`
         );
 
         if (locationExists) {
@@ -400,19 +332,11 @@ const MapComponent = ({
 
     // Manejar cambios en la selección de ruta
     if (selectedRoute !== prevSelectedRoute.current) {
-      console.log("Route selection changed:", {
-        from: prevSelectedRoute.current,
-        to: selectedRoute,
-        mapLoaded,
-        routesLength: routes.length,
-      });
-
       prevSelectedRoute.current = selectedRoute;
 
       if (selectedRoute && routes.length > 0) {
         // Verificar si la ruta existe en routes
         const routeExists = routes.some((r) => r.id === selectedRoute);
-        console.log(`Route ${selectedRoute} exists in routes: ${routeExists}`);
 
         if (routeExists) {
           centerMapOnRoute(selectedRoute);
@@ -438,7 +362,6 @@ const MapComponent = ({
       location: MapInfo
     ) => {
       e.originalEvent.stopPropagation();
-      console.log("Marker clicked:", location.id);
       onLocationSelect(location.id);
     },
     [onLocationSelect]
@@ -450,10 +373,6 @@ const MapComponent = ({
     if (selectedLocation && mapInfo.length > 0) {
       const location = mapInfo.find((loc) => loc.id === selectedLocation);
       if (location) {
-        console.log(
-          "Setting initial view state to selected location:",
-          selectedLocation
-        );
         return {
           longitude: location.longitude,
           latitude: location.latitude,
