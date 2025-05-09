@@ -114,10 +114,8 @@ function InfoPanel({
     }
   };
 
-  // Manejadores de selección con logs para depuración
   const handleLocationClick = useCallback(
     (locationId: string) => {
-      console.log("Location clicked in panel:", locationId); // Añadir log para depuración
       onLocationSelect(locationId);
     },
     [onLocationSelect]
@@ -125,7 +123,6 @@ function InfoPanel({
 
   const handleRouteClick = useCallback(
     (routeId: string) => {
-      console.log("Route clicked in panel:", routeId); // Añadir log para depuración
       onRouteSelect(routeId);
     },
     [onRouteSelect]
