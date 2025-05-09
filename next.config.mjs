@@ -6,12 +6,11 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname,
-        port: "",
+        pathname: "/**",
       },
     ],
-    minimumCacheTTL: 1800,
-    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 2678400,
+    formats: ["image/webp"],
   },
 };
-
 export default nextConfig;
