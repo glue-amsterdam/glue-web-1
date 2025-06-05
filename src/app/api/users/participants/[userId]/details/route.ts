@@ -61,13 +61,11 @@ async function handleRequest(
 
     const body = await request.json();
 
-    // Validar solo los campos que se están actualizando
     const validatedData = participantDetailsSchema.parse(body);
 
     let result;
 
     if (action === "update") {
-      // Manejar casos especiales
       if (validatedData.reactivation_status === "declined") {
         validatedData.is_active = false;
       } else if (validatedData.reactivation_status === "pending") {
