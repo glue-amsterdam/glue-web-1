@@ -1,10 +1,27 @@
+"use client";
+
+import type React from "react";
+
 import { CardContent } from "@/components/ui/card";
-import { CombinedUserInfo } from "@/types/combined-user-info";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import type { CombinedUserInfo } from "@/types/combined-user-info";
 import DOMPurify from "dompurify";
-import { Clock, Globe, Phone, CreditCard, User } from "lucide-react";
+import {
+  Clock,
+  Phone,
+  CreditCard,
+  User,
+  Star,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { useEventsDays } from "@/app/context/MainContext";
+import { useState } from "react";
 
 type Props = {
   selectedUser: CombinedUserInfo;
@@ -12,269 +29,370 @@ type Props = {
 
 function UserFullViewContent({ selectedUser }: Props) {
   const eventDays = useEventsDays();
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    new Set(["basic", "participant"])
+  );
+
+  const toggleSection = (section: string) => {
+    setExpandedSections((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(section)) {
+        newSet.delete(section);
+      } else {
+        newSet.add(section);
+      }
+      return newSet;
+    });
+  };
 
   const getDayLabel = (dayId: string) => {
     const day = eventDays.find((day) => day.dayId === dayId);
     return day ? day.label : dayId;
   };
 
-  return (
-    <CardContent className="p-4 sm:p-6">
-      <div className="space-y-4 sm:space-y-6">
-        <section>
-          <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 flex items-center">
-            <User className="w-5 h-5 mr-2" />
-            User Information
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium mr-2">User ID:</span>
-              <span className="text-sm sm:text-base">
-                {selectedUser.user_id}
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium mr-2">Plan Type:</span>
-              <Badge variant="outline">{selectedUser.plan_type}</Badge>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium mr-2">Is Moderator:</span>
-              <Badge variant={selectedUser.is_mod ? "default" : "secondary"}>
-                {selectedUser.is_mod ? "Yes" : "No"}
-              </Badge>
-            </div>
+  const getStatusIcon = (status?: string) => {
+    switch (status) {
+      case "approved":
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case "rejected":
+        return <XCircle className="w-4 h-4 text-red-500" />;
+      case "pending":
+        return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+      default:
+        return null;
+    }
+  };
+
+  const CollapsibleSection = ({
+    id,
+    title,
+    icon,
+    children,
+  }: {
+    id: string;
+    title: string;
+    icon: React.ReactNode;
+    children: React.ReactNode;
+    defaultExpanded?: boolean;
+  }) => {
+    const isExpanded = expandedSections.has(id);
+
+    return (
+      <div className="border border-gray-200 rounded-lg overflow-hidden">
+        <Button
+          variant="ghost"
+          className="w-full justify-between p-4 h-auto hover:bg-gray-50"
+          onClick={() => toggleSection(id)}
+        >
+          <div className="flex items-center gap-2">
+            {icon}
+            <span className="font-medium">{title}</span>
           </div>
-        </section>
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
+        </Button>
+        {isExpanded && (
+          <div className="p-4 pt-0 border-t border-gray-100">{children}</div>
+        )}
+      </div>
+    );
+  };
 
-        <Separator />
-
-        {selectedUser.participantDetails && (
-          <section>
-            <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 flex items-center">
-              <User className="w-5 h-5 mr-2" />
-              Participant Details
-            </h3>
-            <div className="flex flex-wrap gap-3 sm:gap-4">
-              <div>
-                <p className="font-medium">Short Description</p>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  {selectedUser.participantDetails.short_description}
-                </p>
+  return (
+    <CardContent className="p-6">
+      <div className="space-y-4">
+        {/* Basic Information - Always visible */}
+        <CollapsibleSection
+          id="basic"
+          title="Basic Information"
+          icon={<User className="w-4 h-4" />}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm font-medium text-gray-600">
+                  Plan Type
+                </span>
+                <Badge variant="outline">{selectedUser.plan_type}</Badge>
               </div>
-              <div>
-                <p className="font-medium">Description</p>
-                <p
-                  dangerouslySetInnerHTML={{
-                    __html: DOMPurify.sanitize(
-                      selectedUser.participantDetails.description || ""
-                    ),
-                  }}
-                  className="text-sm sm:text-base text-muted-foreground font-overpass"
-                />
-              </div>
-              <div>
-                <p className="font-medium">Slug</p>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  {selectedUser.participantDetails.slug}
-                </p>
-              </div>
-              <div>
-                <p className="font-medium">Is Sticky</p>
-                <Badge
-                  variant={
-                    selectedUser.participantDetails.is_sticky
-                      ? "default"
-                      : "secondary"
-                  }
-                >
-                  {selectedUser.participantDetails.is_sticky ? "Yes" : "No"}
+              <div className="flex justify-between">
+                <span className="text-sm font-medium text-gray-600">
+                  Moderator
+                </span>
+                <Badge variant={selectedUser.is_mod ? "default" : "secondary"}>
+                  {selectedUser.is_mod ? "Yes" : "No"}
                 </Badge>
               </div>
-              <div>
-                <p className="font-medium">Year</p>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  {selectedUser.participantDetails.year || "N/A"}
-                </p>
-              </div>
-              <div>
-                <p className="font-medium">Status</p>
-                <Badge>{selectedUser.participantDetails.status}</Badge>
-              </div>
             </div>
-          </section>
-        )}
+          </div>
+        </CollapsibleSection>
 
-        {selectedUser.invoiceData && (
-          <>
-            <Separator />
-            <section>
-              <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 flex items-center">
-                <CreditCard className="w-5 h-5 mr-2" />
-                Invoice Information
-              </h3>
-              <div className="flex flex-wrap gap-3 sm:gap-4">
+        {/* Participant Details */}
+        {selectedUser.participantDetails && (
+          <CollapsibleSection
+            id="participant"
+            title="Participant Details"
+            icon={
+              getStatusIcon(selectedUser.participantDetails.status) || (
+                <User className="w-4 h-4" />
+              )
+            }
+          >
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2 mb-4">
+                <Badge variant="outline">
+                  {selectedUser.participantDetails.status}
+                </Badge>
+                {selectedUser.participantDetails.is_sticky && (
+                  <Badge variant="secondary" className="gap-1">
+                    <Star className="w-3 h-3" />
+                    Sticky
+                  </Badge>
+                )}
+                <Badge
+                  variant={
+                    selectedUser.participantDetails.is_active
+                      ? "default"
+                      : "destructive"
+                  }
+                >
+                  {selectedUser.participantDetails.is_active
+                    ? "Active"
+                    : "Inactive"}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="font-medium">Company Name</p>
-                  <p className="text-sm sm:text-base text-muted-foreground">
-                    {selectedUser.invoiceData.invoice_company_name}
+                  <h4 className="font-medium text-sm text-gray-600 mb-1">
+                    Slug
+                  </h4>
+                  <p className="text-sm font-mono bg-gray-50 px-2 py-1 rounded">
+                    /{selectedUser.participantDetails.slug}
                   </p>
                 </div>
-                <div>
-                  <p className="font-medium">Address</p>
-                  <p className="text-sm sm:text-base text-muted-foreground">
-                    {selectedUser.invoiceData.invoice_address}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium">City</p>
-                  <p className="text-sm sm:text-base text-muted-foreground">
-                    {selectedUser.invoiceData.invoice_city}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium">Zip Code</p>
-                  <p className="text-sm sm:text-base text-muted-foreground">
-                    {selectedUser.invoiceData.invoice_zip_code}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium">Country</p>
-                  <p className="text-sm sm:text-base text-muted-foreground">
-                    {selectedUser.invoiceData.invoice_country}
-                  </p>
-                </div>
-                {selectedUser.invoiceData.invoice_extra && (
+                {selectedUser.participantDetails.year && (
                   <div>
-                    <p className="font-medium">Additional Info</p>
-                    <p className="text-sm sm:text-base text-muted-foreground">
-                      {selectedUser.invoiceData.invoice_extra}
+                    <h4 className="font-medium text-sm text-gray-600 mb-1">
+                      Year
+                    </h4>
+                    <p className="text-sm">
+                      {selectedUser.participantDetails.year}
                     </p>
                   </div>
                 )}
               </div>
-            </section>
-          </>
+
+              {selectedUser.participantDetails.short_description && (
+                <div>
+                  <h4 className="font-medium text-sm text-gray-600 mb-1">
+                    Short Description
+                  </h4>
+                  <p className="text-sm text-gray-700">
+                    {selectedUser.participantDetails.short_description}
+                  </p>
+                </div>
+              )}
+
+              {selectedUser.participantDetails.description && (
+                <div>
+                  <h4 className="font-medium text-sm text-gray-600 mb-1">
+                    Description
+                  </h4>
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(
+                        selectedUser.participantDetails.description
+                      ),
+                    }}
+                    className="text-sm text-gray-700 prose prose-sm max-w-none"
+                  />
+                </div>
+              )}
+            </div>
+          </CollapsibleSection>
         )}
+
+        {/* Contact Information */}
+        {((selectedUser.phone_numbers &&
+          selectedUser.phone_numbers.length > 0) ||
+          (selectedUser.social_media &&
+            Object.keys(selectedUser.social_media).length > 0) ||
+          (selectedUser.visible_websites &&
+            selectedUser.visible_websites.length > 0)) && (
+          <CollapsibleSection
+            id="contact"
+            title="Contact Information"
+            icon={<Phone className="w-4 h-4" />}
+          >
+            <div className="space-y-4">
+              {selectedUser.phone_numbers &&
+                selectedUser.phone_numbers.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-sm text-gray-600 mb-2">
+                      Phone Numbers
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedUser.phone_numbers.map((phone, index) => (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="font-mono"
+                        >
+                          {phone}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {selectedUser.social_media &&
+                Object.keys(selectedUser.social_media).length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-sm text-gray-600 mb-2">
+                      Social Media
+                    </h4>
+                    <div className="space-y-2">
+                      {Object.entries(selectedUser.social_media).map(
+                        ([platform, link]) => (
+                          <div
+                            key={platform}
+                            className="flex items-center justify-between"
+                          >
+                            <span className="text-sm font-medium capitalize">
+                              {platform}
+                            </span>
+                            <a
+                              href={link as string}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                            >
+                              View <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              {selectedUser.visible_websites &&
+                selectedUser.visible_websites.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-sm text-gray-600 mb-2">
+                      Websites
+                    </h4>
+                    <div className="space-y-2">
+                      {selectedUser.visible_websites.map((website, index) => (
+                        <a
+                          key={index}
+                          href={website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                        >
+                          {website} <ExternalLink className="w-3 h-3" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+            </div>
+          </CollapsibleSection>
+        )}
+
+        {/* Visiting Hours */}
         {selectedUser.visitingHours &&
           Array.isArray(selectedUser.visitingHours) &&
           selectedUser.visitingHours.length > 0 && (
-            <>
-              <Separator />
-              <section>
-                <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 flex items-center">
-                  <Clock className="w-5 h-5 mr-2" />
-                  Visiting Hours
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  {selectedUser.visitingHours.map((visitingHour, index) => (
-                    <div key={index} className="bg-muted p-3 rounded-md">
-                      <p className="font-medium mb-2">
-                        {getDayLabel(visitingHour.day_id)}
-                      </p>
-                      {Array.isArray(visitingHour.hours) &&
-                      visitingHour.hours.length > 0 ? (
-                        visitingHour.hours.map(
+            <CollapsibleSection
+              id="hours"
+              title="Visiting Hours"
+              icon={<Clock className="w-4 h-4" />}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {selectedUser.visitingHours.map((visitingHour, index) => (
+                  <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                    <h4 className="font-medium text-sm mb-2">
+                      {getDayLabel(visitingHour.day_id)}
+                    </h4>
+                    {Array.isArray(visitingHour.hours) &&
+                    visitingHour.hours.length > 0 ? (
+                      <div className="space-y-1">
+                        {visitingHour.hours.map(
                           (
                             time: { open: string; close: string },
                             timeIndex: number
                           ) => (
-                            <p key={timeIndex} className="text-sm sm:text-base">
+                            <p
+                              key={timeIndex}
+                              className="text-xs font-mono bg-white px-2 py-1 rounded"
+                            >
                               {time.open} - {time.close}
                             </p>
                           )
-                        )
-                      ) : (
-                        <p className="text-sm sm:text-base">
-                          No hours set for this day
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </>
-          )}
-
-        {selectedUser.phone_numbers &&
-          selectedUser.phone_numbers.length > 0 && (
-            <>
-              <Separator />
-              <section>
-                <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 flex items-center">
-                  <Phone className="w-5 h-5 mr-2" />
-                  Phone Numbers
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedUser.phone_numbers.map((phone, index) => (
-                    <Badge key={index} variant="outline">
-                      {phone}
-                    </Badge>
-                  ))}
-                </div>
-              </section>
-            </>
-          )}
-
-        {selectedUser.social_media &&
-          Object.keys(selectedUser.social_media).length > 0 && (
-            <>
-              <Separator />
-              <section>
-                <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 flex items-center">
-                  <Globe className="w-5 h-5 mr-2" />
-                  Social Media
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  {Object.entries(selectedUser.social_media).map(
-                    ([platform, link]) => (
-                      <div
-                        key={platform}
-                        className="flex flex-wrap items-center gap-2"
-                      >
-                        <span className="font-medium mr-2 capitalize">
-                          {platform}:
-                        </span>
-                        <a
-                          href={link as string}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm sm:text-base text-blue-500 hover:underline"
-                        >
-                          {link as string}
-                        </a>
+                        )}
                       </div>
-                    )
-                  )}
-                </div>
-              </section>
-            </>
+                    ) : (
+                      <p className="text-xs text-gray-500">No hours set</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CollapsibleSection>
           )}
 
-        {selectedUser.visible_websites &&
-          selectedUser.visible_websites.length > 0 && (
-            <>
-              <Separator />
-              <section>
-                <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 flex items-center">
-                  <Globe className="w-5 h-5 mr-2" />
-                  Websites
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  {selectedUser.visible_websites.map((website, index) => (
-                    <a
-                      key={index}
-                      href={website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm sm:text-base text-blue-500 hover:underline"
-                    >
-                      {website}
-                    </a>
-                  ))}
+        {/* Invoice Information */}
+        {selectedUser.invoiceData && (
+          <CollapsibleSection
+            id="invoice"
+            title="Invoice Information"
+            icon={<CreditCard className="w-4 h-4" />}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <div>
+                  <h4 className="font-medium text-sm text-gray-600 mb-1">
+                    Company
+                  </h4>
+                  <p className="text-sm">
+                    {selectedUser.invoiceData.invoice_company_name}
+                  </p>
                 </div>
-              </section>
-            </>
-          )}
+                <div>
+                  <h4 className="font-medium text-sm text-gray-600 mb-1">
+                    Address
+                  </h4>
+                  <p className="text-sm">
+                    {selectedUser.invoiceData.invoice_address}
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <h4 className="font-medium text-sm text-gray-600 mb-1">
+                    City
+                  </h4>
+                  <p className="text-sm">
+                    {selectedUser.invoiceData.invoice_city}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm text-gray-600 mb-1">
+                    Country
+                  </h4>
+                  <p className="text-sm">
+                    {selectedUser.invoiceData.invoice_country}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CollapsibleSection>
+        )}
       </div>
     </CardContent>
   );
