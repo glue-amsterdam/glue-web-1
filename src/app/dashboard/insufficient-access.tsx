@@ -7,7 +7,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { AlertCircle, House, Map, UserPlus } from "lucide-react";
+import {
+  AlertCircle,
+  HomeIcon as House,
+  Map,
+  UserPlus,
+  Loader2,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,8 +27,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { PlanType } from "@/schemas/plansSchema";
 
 export default function InsufficientAccess({
   userName,
@@ -33,15 +49,72 @@ export default function InsufficientAccess({
 }) {
   const router = useRouter();
   const { toast } = useToast();
+  const [plans, setPlans] = useState<PlanType[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<string>("");
+  const [isLoadingPlans, setIsLoadingPlans] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const loadPlans = async () => {
+    if (plans.length > 0) return;
+
+    setIsLoadingPlans(true);
+    try {
+      const response = await fetch("/api/plans");
+      if (!response.ok) {
+        throw new Error("Failed to fetch plans");
+      }
+
+      const data = await response.json();
+      setPlans(data.plans || []);
+    } catch (error) {
+      console.error("Error loading plans:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load plans. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingPlans(false);
+    }
+  };
+
+  const onDialogOpenChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (open) {
+      loadPlans();
+    } else {
+      setSelectedPlan("");
+    }
+  };
 
   const onContinueAction = async () => {
+    if (!selectedPlan) {
+      toast({
+        title: "Plan Required",
+        description: "Please select a plan before continuing.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
+      const selectedPlanData = plans.find(
+        (plan) => plan.plan_id === selectedPlan
+      );
+
       const response = await fetch("/api/upgrade-request", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userName, userId }),
+        body: JSON.stringify({
+          userName,
+          userId,
+          planId: selectedPlan,
+          planName: selectedPlanData?.plan_label || "Unknown Plan",
+        }),
       });
 
       if (!response.ok) {
@@ -50,8 +123,10 @@ export default function InsufficientAccess({
 
       toast({
         title: "Thank you for your interest!",
-        description: "We'll be in touch soon.",
+        description: `We'll be in touch soon regarding the ${selectedPlanData?.plan_label} plan.`,
       });
+
+      setDialogOpen(false);
       router.push("/");
     } catch (error) {
       console.error("Error sending upgrade request:", error);
@@ -60,6 +135,8 @@ export default function InsufficientAccess({
         description: "Failed to send upgrade request. Please try again later.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -91,9 +168,7 @@ export default function InsufficientAccess({
             transition={{ delay: 0.3 }}
           >
             <p>{`Sorry, you don't have sufficient privileges to access profile modification.`}</p>
-            <p>
-              {`Visitors and base members can only access the Map to see the routes`}
-            </p>
+            <p>{`Visitors and base members can only access the Map to see the routes`}</p>
           </motion.article>
         </CardContent>
         <CardFooter className="flex justify-center">
@@ -107,7 +182,7 @@ export default function InsufficientAccess({
                 <span className="flex-grow text-center">Go to Map</span>
               </Button>
             </motion.div>
-            <AlertDialog>
+            <AlertDialog open={dialogOpen} onOpenChange={onDialogOpenChange}>
               <AlertDialogTrigger asChild>
                 <motion.div
                   className="mb-2"
@@ -122,17 +197,64 @@ export default function InsufficientAccess({
                   </Button>
                 </motion.div>
               </AlertDialogTrigger>
-              <AlertDialogContent className="text-black">
+              <AlertDialogContent className="text-black max-w-md">
                 <AlertDialogHeader>
                   <AlertDialogTitle>{`Become a participant ${userName}`}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    {`Want to Become a Participant? Click on "Continue" and a GLUE team member will get in touch with you.`}
+                    {`Want to Become a Participant? Select a plan and click "Continue". A GLUE team member will get in touch with you.`}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+
+                <div className="py-4">
+                  <Label htmlFor="plan-select" className="text-sm font-medium">
+                    Select a Plan
+                  </Label>
+                  {isLoadingPlans ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <span className="text-sm text-muted-foreground">
+                        Loading plans...
+                      </span>
+                    </div>
+                  ) : (
+                    <Select
+                      value={selectedPlan}
+                      onValueChange={setSelectedPlan}
+                    >
+                      <SelectTrigger id="plan-select" className="mt-2">
+                        <SelectValue placeholder="Choose a plan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {plans.map((plan) => (
+                          <SelectItem key={plan.plan_id} value={plan.plan_id}>
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                {plan.plan_label}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={onContinueAction}>
-                    Continue
+                  <AlertDialogCancel disabled={isSubmitting}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={onContinueAction}
+                    disabled={!selectedPlan || isSubmitting || isLoadingPlans}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Sending...
+                      </>
+                    ) : (
+                      "Continue"
+                    )}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
