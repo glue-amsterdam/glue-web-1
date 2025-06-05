@@ -74,7 +74,7 @@ export function UserInfoForm({
         title: "Success",
         description: "User information updated successfully.",
       });
-      await mutate("/api/users/participants/${targetUserId}/info");
+      await mutate(`/api/users/participants/${targetUserId}/info`);
       router.refresh();
     },
     (error) => {
