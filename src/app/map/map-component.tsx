@@ -522,7 +522,7 @@ const MapComponent = ({
               }}
             />
           </Source>
-          {selectedRouteObject?.dots.map((dot) => (
+          {selectedRouteObject?.dots.map((dot, index) => (
             <MemoizedMarker
               key={dot.id}
               location={{
@@ -532,6 +532,7 @@ const MapComponent = ({
                 is_special_program: true, // Use special program marker for route dots
               }}
               isRouteMarker={true} // Mark as route marker to disable click
+              routeStep={index + 1} // Pass the route step number
             />
           ))}
         </>

@@ -5,6 +5,7 @@ import {
   MapPinIcon as MapPinHouse,
   MapPinIcon as MapPinMinusInside,
   MapPinIcon as MapPinPlus,
+  Circle,
 } from "lucide-react";
 import { Marker } from "react-map-gl";
 import { memo } from "react";
@@ -23,45 +24,89 @@ interface MemoizedMarkerProps {
   location: Location;
   onClick?: (e: { originalEvent: { stopPropagation: () => void } }) => void; // Hacer onClick opcional
   isRouteMarker?: boolean;
+  routeStep?: number; // Add route step number
 }
 
 export const MemoizedMarker = memo(
-  ({ location, onClick, isRouteMarker }: MemoizedMarkerProps) => (
-    <Marker
-      longitude={location.longitude}
-      latitude={location.latitude}
-      anchor="top"
-      onClick={isRouteMarker ? undefined : onClick} // Disable click for route markers
-    >
-      <div
-        className={`relative cursor-${isRouteMarker ? "default" : "pointer"}`}
+  ({ location, onClick, isRouteMarker, routeStep }: MemoizedMarkerProps) => {
+    // Determine marker styling based on type
+    const getMarkerStyle = () => {
+      if (isRouteMarker) {
+        return {
+          containerClass:
+            "size-8 rounded-full flex items-center justify-center shadow-md border-2 border-white",
+          bgClass: "bg-red-500",
+          icon: Circle,
+          iconClass: "w-4 h-4 text-white",
+        };
+      }
+
+      if (location.is_hub) {
+        return {
+          containerClass:
+            "size-7 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110",
+          bgClass: "bg-green-500 opacity-70 hover:opacity-100",
+          icon: MapPinHouse,
+          iconClass: "w-5 h-5 text-white",
+        };
+      }
+
+      if (location.is_collective) {
+        return {
+          containerClass:
+            "size-7 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110",
+          bgClass: "bg-yellow-500 opacity-70 hover:opacity-100",
+          icon: MapPinPlus,
+          iconClass: "w-5 h-5 text-white",
+        };
+      }
+
+      if (location.is_special_program) {
+        return {
+          containerClass:
+            "size-7 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110",
+          bgClass: "bg-purple-500 opacity-70 hover:opacity-100",
+          icon: MapPinMinusInside,
+          iconClass: "w-5 h-5 text-white",
+        };
+      }
+
+      // Default participant marker
+      return {
+        containerClass:
+          "size-7 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110",
+        bgClass: "bg-blue-500 opacity-70 hover:opacity-100",
+        icon: MapPin,
+        iconClass: "w-5 h-5 text-white",
+      };
+    };
+
+    const markerStyle = getMarkerStyle();
+    const IconComponent = markerStyle.icon;
+
+    return (
+      <Marker
+        longitude={location.longitude}
+        latitude={location.latitude}
+        anchor="top"
+        onClick={isRouteMarker ? undefined : onClick} // Disable click for route markers
       >
         <div
-          className={`size-7 rounded-full flex items-center justify-center shadow-md transition-transform ${
-            isRouteMarker ? "" : "hover:scale-110"
-          } ${
-            location.is_hub
-              ? "bg-green-500 opacity-70 hover:opacity-100"
-              : location.is_collective
-              ? "bg-yellow-500 opacity-70 hover:opacity-100"
-              : location.is_special_program
-              ? "bg-purple-500 opacity-70 hover:opacity-100"
-              : "bg-blue-500 opacity-70 hover:opacity-100"
-          }`}
+          className={`relative cursor-${isRouteMarker ? "default" : "pointer"}`}
         >
-          {location.is_hub ? (
-            <MapPinHouse className="w-5 h-5 text-white" />
-          ) : location.is_collective ? (
-            <MapPinPlus className="w-5 h-5 text-white" />
-          ) : location.is_special_program ? (
-            <MapPinMinusInside className="w-5 h-5 text-white" />
-          ) : (
-            <MapPin className="w-5 h-5 text-white" />
-          )}
+          <div
+            className={`${markerStyle.containerClass} ${markerStyle.bgClass}`}
+          >
+            {isRouteMarker && routeStep ? (
+              <span className="text-white text-xs font-bold">{routeStep}</span>
+            ) : (
+              <IconComponent className={markerStyle.iconClass} />
+            )}
+          </div>
         </div>
-      </div>
-    </Marker>
-  )
+      </Marker>
+    );
+  }
 );
 
 MemoizedMarker.displayName = "MemoizedMarker";

@@ -56,7 +56,7 @@ export default function NavbarBurger() {
     <AnimatePresence>
       <header
         className={`${isVisible && "select-none backdrop-blur-lg bg-uiblack/20"}
-        ${isDashboard ? "sticky top-0 z-50" : "absolute z-50 top-0"}  
+        ${isDashboard ? "sticky top-0 z-50" : "absolute z-[53] top-0"}  
         h-[${NAVBAR_HEIGHT}rem] w-full drop-shadow-md`}
       >
         <motion.div

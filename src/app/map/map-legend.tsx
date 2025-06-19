@@ -34,10 +34,10 @@ function MapLegendComponent({
 
   return (
     <div
-      className={`absolute ${position.top} ${position.right} text-black z-10 bg-white rounded-lg shadow-lg border border-gray-200 ${className}`}
+      className={`absolute ${position.top} ${position.right} text-black z-10 bg-white rounded-lg outline-none ${className} z-[51]`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-100">
+      <div className="flex items-center justify-between p-3">
         <h3 className="font-semibold text-sm text-gray-900">{title}</h3>
         <Button
           variant="ghost"

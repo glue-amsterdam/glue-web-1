@@ -120,7 +120,7 @@ function MapMain({ initialData }: MapMainProps) {
           {/* Overlay when sidebar is open */}
           {sidebarOpen && (
             <div
-              className="fixed inset-0 bg-black/20 z-20"
+              className="fixed inset-0 bg-black/20 z-[52]"
               onClick={toggleSidebar}
               aria-hidden="true"
             />
@@ -129,7 +129,7 @@ function MapMain({ initialData }: MapMainProps) {
           {/* Custom sliding sidebar */}
           <aside
             className={cn(
-              "fixed top-0 left-0 h-full w-[85vw] max-w-[400px] bg-card z-30 overflow-hidden transition-transform duration-300 ease-in-out transform",
+              "fixed top-0 left-0 h-full w-[85vw] max-w-[400px] bg-card z-[52] overflow-hidden transition-transform duration-300 ease-in-out transform",
               sidebarOpen ? "translate-x-0" : "-translate-x-full"
             )}
             aria-label="Participant and route list"
