@@ -29,6 +29,15 @@ export default function NavbarBurger() {
     }
   };
 
+  const handleLogoClick = (e: React.MouseEvent) => {
+    // Prevent event bubbling to avoid interference with map click handlers
+    e.stopPropagation();
+    // Add a small delay to ensure navigation happens after any map click events
+    setTimeout(() => {
+      // The Link component will handle the navigation
+    }, 10);
+  };
+
   useEffect(() => {
     if (pathname !== "/") {
       setIsVisible(true);
@@ -47,7 +56,7 @@ export default function NavbarBurger() {
     <AnimatePresence>
       <header
         className={`${isVisible && "select-none backdrop-blur-lg bg-uiblack/20"}
-        ${isDashboard ? "sticky top-0 z-50" : "absolute z-50 top-0"}  
+        ${isDashboard ? "sticky top-0 z-50" : "absolute z-[53] top-0"}  
         h-[${NAVBAR_HEIGHT}rem] w-full drop-shadow-md`}
       >
         <motion.div
@@ -87,7 +96,7 @@ export default function NavbarBurger() {
                   !isVisible ? "opacity-0 pointer-events-none" : "opacity-100"
                 } flex`}
               >
-                <Link href="/">
+                <Link href="/" onClick={handleLogoClick} data-navigation="true">
                   <div className="relative size-14">
                     <GlueLogoSVG
                       isVisible={isVisible}

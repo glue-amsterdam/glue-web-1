@@ -9,6 +9,7 @@ import { useMediaQuery } from "@/hooks/userMediaQuery";
 import { cn } from "@/lib/utils";
 import MapComponent from "@/app/map/map-component";
 import InfoPanel from "@/app/map/info-panel";
+import RouteFooter from "@/app/map/route-footer";
 import { LoadingFallback } from "@/app/components/loading-fallback";
 
 interface MapMainProps {
@@ -78,6 +79,11 @@ function MapMain({ initialData }: MapMainProps) {
     [setSelectedRoute, isLargeScreen]
   );
 
+  // Get the selected route object for the footer
+  const selectedRouteObject = selectedRoute
+    ? routes.find((r) => r.id === selectedRoute) || null
+    : null;
+
   return (
     <div className="flex flex-col h-[calc(100vh-5rem)]">
       <h1 className="sr-only">City Map</h1>
@@ -114,7 +120,7 @@ function MapMain({ initialData }: MapMainProps) {
           {/* Overlay when sidebar is open */}
           {sidebarOpen && (
             <div
-              className="fixed inset-0 bg-black/20 z-20"
+              className="fixed inset-0 bg-black/20 z-[52]"
               onClick={toggleSidebar}
               aria-hidden="true"
             />
@@ -123,7 +129,7 @@ function MapMain({ initialData }: MapMainProps) {
           {/* Custom sliding sidebar */}
           <aside
             className={cn(
-              "fixed top-0 left-0 h-full w-[85vw] max-w-[400px] bg-card z-30 overflow-hidden transition-transform duration-300 ease-in-out transform",
+              "fixed top-0 left-0 h-full w-[85vw] max-w-[400px] bg-card z-[52] overflow-hidden transition-transform duration-300 ease-in-out transform",
               sidebarOpen ? "translate-x-0" : "-translate-x-full"
             )}
             aria-label="Participant and route list"
@@ -177,7 +183,10 @@ function MapMain({ initialData }: MapMainProps) {
 
           {/* Map takes full width on mobile */}
           <main
-            className="flex-1 h-full w-full"
+            className={cn(
+              "flex-1 h-full w-full",
+              selectedRouteObject && "pb-24"
+            )}
             aria-label="Map"
             onClick={handleOutsideClick}
           >
@@ -192,6 +201,14 @@ function MapMain({ initialData }: MapMainProps) {
               />
             </Suspense>
           </main>
+
+          {/* Route Footer for mobile */}
+          {selectedRouteObject && (
+            <RouteFooter
+              route={selectedRouteObject}
+              onClose={() => setSelectedRoute("")}
+            />
+          )}
         </div>
       )}
     </div>

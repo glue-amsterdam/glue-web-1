@@ -169,6 +169,9 @@ export function useMapData(initialData: {
       // Si se hace clic en la misma ubicación, no hacemos nada
       if (locationId === selectedLocation) return;
 
+      // Don't update URL if we're not on the map page
+      if (pathname !== "/map") return;
+
       // Actualizamos el estado local
       setSelectedLocation(locationId || null);
       if (locationId) setSelectedRoute(null);
@@ -180,13 +183,16 @@ export function useMapData(initialData: {
         updateURL({});
       }
     },
-    [updateURL, selectedLocation, setSelectedRoute]
+    [updateURL, selectedLocation, setSelectedRoute, pathname]
   );
 
   const handleRouteSelect = useCallback(
     (routeId: string) => {
       // Si se hace clic en la misma ruta, no hacemos nada
       if (routeId === selectedRoute) return;
+
+      // Don't update URL if we're not on the map page
+      if (pathname !== "/map") return;
 
       // Actualizamos el estado local
       setSelectedRoute(routeId || null);
@@ -199,7 +205,7 @@ export function useMapData(initialData: {
         updateURL({});
       }
     },
-    [updateURL, selectedRoute, setSelectedLocation]
+    [updateURL, selectedRoute, setSelectedLocation, pathname]
   );
 
   return {

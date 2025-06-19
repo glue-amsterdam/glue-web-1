@@ -68,6 +68,12 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
     return [...subItems].sort((a, b) => a.place - b.place);
   };
 
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Prevent event bubbling to avoid interference with map click handlers
+    e.stopPropagation();
+    setIsMenuOpen(false);
+  };
+
   return (
     <nav className="flex items-center justify-start gap-4 px-2">
       <div
@@ -108,7 +114,7 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
                   >
                     <Link
                       href={`/${item.section}`}
-                      onClick={() => setIsMenuOpen(false)}
+                      onClick={handleLinkClick}
                       className="text-uiblack hover:underline text-2xl tracking-wider hover:text-uiblack/50 md:hover:scale-105 md:transition-all"
                     >
                       {item.label}
@@ -118,7 +124,7 @@ function AnimatedNavMenu({ navItems }: { navItems: MainMenuItem[] }) {
                         (subItem, index) =>
                           subItem.is_visible && (
                             <Link
-                              onClick={() => setIsMenuOpen(false)}
+                              onClick={handleLinkClick}
                               key={`${subItem.href}-${index}`}
                               href={`/${item.section}#${subItem.href}`}
                               className="text-uiblack hover:underline text-xs tracking-wider hover:text-uiblack/50 md:hover:scale-105 md:transition-all"

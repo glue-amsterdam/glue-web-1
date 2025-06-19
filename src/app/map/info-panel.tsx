@@ -75,7 +75,7 @@ function InfoPanel({
 
   const redirectRouteToGoogleMaps = useCallback(
     (route: RouteType, e: React.MouseEvent) => {
-      e.stopPropagation(); // Importante: evitar que el evento se propague
+      e.stopPropagation();
       if (!route || route.dots.length === 0) return;
 
       const origin = `${route.dots[0].latitude},${route.dots[0].longitude}`;
@@ -84,7 +84,7 @@ function InfoPanel({
       }`;
 
       const waypoints = route.dots
-        .slice(1, -1) // Remove first and last dots to avoid duplication
+        .slice(1, -1)
         .map((dot) => `${dot.latitude},${dot.longitude}`)
         .join("|");
 
@@ -101,17 +101,7 @@ function InfoPanel({
 
   // Custom handler for accordion value change to ensure participants stays open
   const handleAccordionChange = (value: string[]) => {
-    // If we're trying to close the participants accordion and no route is selected,
-    // keep it open
-    if (
-      !selectedRoute &&
-      !value.includes("participants") &&
-      openAccordions.includes("participants")
-    ) {
-      setOpenAccordions([...value, "participants"]);
-    } else {
-      setOpenAccordions(value);
-    }
+    setOpenAccordions(value);
   };
 
   const handleLocationClick = useCallback(

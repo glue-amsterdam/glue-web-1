@@ -13,8 +13,10 @@ import { config } from "@/env";
 import { MemoizedMarker } from "@/app/map/memorized-marker";
 import MemoizedPopUpComponent from "@/app/map/pop-up-component";
 import MemoizedRoutePopupComponent from "@/app/map/route-pop-up";
+import MemoizedMapLegend from "@/app/map/map-legend";
 import { useLocationData } from "@/app/hooks/useLocationData";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useMediaQuery } from "@/hooks/userMediaQuery";
 
 export interface PopupInfo {
   id: string;
@@ -85,6 +87,60 @@ const MapComponent = ({
   const isResetting = useRef(false);
   const initialLoadDone = useRef(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const isLargeScreen = useMediaQuery("(min-width: 1024px)");
+  const isNavigatingAway = useRef(false);
+  const navigationClickTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Track navigation away from map page
+  useEffect(() => {
+    if (pathname !== "/map") {
+      isNavigatingAway.current = true;
+    } else {
+      // Reset the flag when we're back on the map page
+      isNavigatingAway.current = false;
+    }
+  }, [pathname]);
+
+  // Also set the flag immediately when component unmounts (navigation happening)
+  useEffect(() => {
+    return () => {
+      isNavigatingAway.current = true;
+    };
+  }, []);
+
+  // Listen for navigation clicks globally
+  useEffect(() => {
+    const handleNavigationClick = () => {
+      isNavigatingAway.current = true;
+      // Clear any existing timeout
+      if (navigationClickTimeout.current) {
+        clearTimeout(navigationClickTimeout.current);
+      }
+      // Reset the flag after a short delay
+      navigationClickTimeout.current = setTimeout(() => {
+        isNavigatingAway.current = false;
+      }, 1000);
+    };
+
+    // Listen for clicks on navigation elements
+    document.addEventListener("click", (e) => {
+      const target = e.target as HTMLElement;
+      // Check for home navigation specifically
+      if (
+        target.closest('a[href="/"]') ||
+        target.closest('a[href^="/"]') ||
+        target.closest('[data-navigation="true"]')
+      ) {
+        handleNavigationClick();
+      }
+    });
+
+    return () => {
+      if (navigationClickTimeout.current) {
+        clearTimeout(navigationClickTimeout.current);
+      }
+    };
+  }, []);
 
   // Get the selected route object
   const selectedRouteObject = useMemo(() => {
@@ -193,9 +249,20 @@ const MapComponent = ({
   );
 
   const handlePopupClose = useCallback(() => {
+    // Don't clear selections if we're navigating away from the map page
+    if (isNavigatingAway.current || pathname !== "/map") {
+      return;
+    }
+
     if (selectedLocation) onLocationSelect("");
     if (selectedRoute) onRouteSelect("");
-  }, [selectedLocation, selectedRoute, onLocationSelect, onRouteSelect]);
+  }, [
+    selectedLocation,
+    selectedRoute,
+    onLocationSelect,
+    onRouteSelect,
+    pathname,
+  ]);
 
   // Prefetch nearby locations for faster loading
   const prefetchNearbyLocations = useCallback(() => {
@@ -391,6 +458,29 @@ const MapComponent = ({
     };
   }, [selectedLocation, mapInfo]);
 
+  // Create a conditional click handler that only works when appropriate
+  const handleMapClick = useCallback(() => {
+    // Don't handle clicks if we're navigating away or not on map page
+    if (isNavigatingAway.current || pathname !== "/map") {
+      return;
+    }
+
+    // Only call handlePopupClose if we have a selection
+    if (selectedLocation || selectedRoute) {
+      handlePopupClose();
+    }
+  }, [
+    isNavigatingAway,
+    pathname,
+    selectedLocation,
+    selectedRoute,
+    handlePopupClose,
+  ]);
+
+  // Completely disable map interactions when navigating
+  const shouldDisableMapInteractions =
+    isNavigatingAway.current || pathname !== "/map";
+
   return (
     <Map
       ref={mapRef}
@@ -399,8 +489,10 @@ const MapComponent = ({
       style={{ width: "100%", height: "100%" }}
       mapStyle="mapbox://styles/mapbox/dark-v11"
       maxBounds={CITY_BOUNDS}
-      onClick={handlePopupClose}
-      onMoveEnd={prefetchNearbyLocations}
+      onClick={shouldDisableMapInteractions ? undefined : handleMapClick}
+      onMoveEnd={
+        shouldDisableMapInteractions ? undefined : prefetchNearbyLocations
+      }
       renderWorldCopies={false}
       onLoad={handleMapLoad}
     >
@@ -430,7 +522,7 @@ const MapComponent = ({
               }}
             />
           </Source>
-          {selectedRouteObject?.dots.map((dot) => (
+          {selectedRouteObject?.dots.map((dot, index) => (
             <MemoizedMarker
               key={dot.id}
               location={{
@@ -440,6 +532,7 @@ const MapComponent = ({
                 is_special_program: true, // Use special program marker for route dots
               }}
               isRouteMarker={true} // Mark as route marker to disable click
+              routeStep={index + 1} // Pass the route step number
             />
           ))}
         </>
@@ -455,13 +548,16 @@ const MapComponent = ({
         />
       )}
 
-      {/* Popup for selected route - with offset to avoid covering dots */}
-      {selectedRoute && selectedRouteObject && (
+      {/* Popup for selected route - only show on desktop */}
+      {selectedRoute && selectedRouteObject && isLargeScreen && (
         <MemoizedRoutePopupComponent
           route={selectedRouteObject}
           handlePopupClose={handlePopupClose}
         />
       )}
+
+      {/* Map Legend */}
+      <MemoizedMapLegend />
     </Map>
   );
 };
