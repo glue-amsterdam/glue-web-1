@@ -15,6 +15,7 @@ import MemoizedPopUpComponent from "@/app/map/pop-up-component";
 import MemoizedRoutePopupComponent from "@/app/map/route-pop-up";
 import { useLocationData } from "@/app/hooks/useLocationData";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useMediaQuery } from "@/hooks/userMediaQuery";
 
 export interface PopupInfo {
   id: string;
@@ -85,6 +86,7 @@ const MapComponent = ({
   const isResetting = useRef(false);
   const initialLoadDone = useRef(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const isLargeScreen = useMediaQuery("(min-width: 1024px)");
 
   // Get the selected route object
   const selectedRouteObject = useMemo(() => {
@@ -455,8 +457,8 @@ const MapComponent = ({
         />
       )}
 
-      {/* Popup for selected route - with offset to avoid covering dots */}
-      {selectedRoute && selectedRouteObject && (
+      {/* Popup for selected route - only show on desktop */}
+      {selectedRoute && selectedRouteObject && isLargeScreen && (
         <MemoizedRoutePopupComponent
           route={selectedRouteObject}
           handlePopupClose={handlePopupClose}
