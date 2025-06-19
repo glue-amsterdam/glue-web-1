@@ -13,6 +13,7 @@ import { config } from "@/env";
 import { MemoizedMarker } from "@/app/map/memorized-marker";
 import MemoizedPopUpComponent from "@/app/map/pop-up-component";
 import MemoizedRoutePopupComponent from "@/app/map/route-pop-up";
+import MemoizedMapLegend from "@/app/map/map-legend";
 import { useLocationData } from "@/app/hooks/useLocationData";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
@@ -553,6 +554,9 @@ const MapComponent = ({
           handlePopupClose={handlePopupClose}
         />
       )}
+
+      {/* Map Legend */}
+      <MemoizedMapLegend />
     </Map>
   );
 };
