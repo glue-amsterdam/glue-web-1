@@ -69,6 +69,15 @@ export function MobileNavMenu({ navItems, setIsOpen }: Props) {
     setIsLoginModalOpen(false);
   }, []);
 
+  const handleSubItemClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      // Prevent event bubbling to avoid interference with map click handlers
+      e.stopPropagation();
+      setIsOpen(false);
+    },
+    [setIsOpen]
+  );
+
   return (
     <div className="relative">
       <ul className="space-y-2">
@@ -90,9 +99,7 @@ export function MobileNavMenu({ navItems, setIsOpen }: Props) {
                         <Link
                           href={`/${item.section}#${subItem.href}`}
                           className="block text-xs px-2 py-1 hover:bg-accent rounded-md"
-                          onClick={() => {
-                            setIsOpen(false);
-                          }}
+                          onClick={handleSubItemClick}
                         >
                           {subItem.title}
                         </Link>
