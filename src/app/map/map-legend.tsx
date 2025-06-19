@@ -26,7 +26,7 @@ function MapLegendComponent({
   title = legendTitle,
   position = legendPosition,
 }: MapLegendProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpanded = useCallback(() => {
     setIsExpanded((prev) => !prev);
