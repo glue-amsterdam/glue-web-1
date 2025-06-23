@@ -155,7 +155,7 @@ export function ActiveStatusSection({
         </div>
       )}
 
-      {isMod && !isActive && (
+      {!isActive && (
         <div className="space-y-4 mt-6">
           <Alert className="bg-red-50 border-red-500">
             <AlertCircle className="h-4 w-4 text-red-600" />
