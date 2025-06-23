@@ -1,6 +1,57 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
+// Define types for user info and participant details
+interface UserInfo {
+  id: string;
+  user_id: string;
+  user_name: string;
+  visible_emails: string[] | null;
+  plan_type: string;
+  is_mod: boolean;
+  created_at: string;
+  upgrade_requested: boolean;
+  upgrade_requested_plan_id: string | null;
+  upgrade_requested_plan_type: string | null;
+  upgrade_request_notes: string | null;
+  upgrade_requested_at: string | null;
+  phone_numbers: string[] | null;
+  social_media: string[] | null;
+  visible_websites: string[] | null;
+}
+
+interface ParticipantDetail {
+  user_id: string;
+  slug: string;
+  status: string;
+  is_sticky: boolean;
+  is_active: boolean;
+  special_program: boolean;
+  year: number | null;
+  reactivation_requested: boolean;
+  reactivation_status: string | null;
+}
+
+// Type guards
+function isUserInfo(obj: unknown): obj is UserInfo {
+  if (typeof obj !== "object" || obj === null) return false;
+  const o = obj as Record<string, unknown>;
+  return (
+    typeof o.id === "string" &&
+    typeof o.user_id === "string" &&
+    typeof o.user_name === "string" &&
+    "plan_type" in o
+  );
+}
+
+function isParticipantDetail(obj: unknown): obj is ParticipantDetail {
+  if (typeof obj !== "object" || obj === null) return false;
+  const o = obj as Record<string, unknown>;
+  return (
+    typeof o.user_id === "string" && typeof o.slug === "string" && "status" in o
+  );
+}
+
 export async function GET() {
   try {
     const supabase = await createClient();
@@ -37,23 +88,16 @@ export async function GET() {
       return NextResponse.json([]);
     }
 
+    // Type assertion for users_info
+    const typedUsersInfo: UserInfo[] = Array.isArray(users_info)
+      ? (users_info.filter(isUserInfo) as unknown[] as UserInfo[])
+      : [];
+
     // Get participant details for participants only
     const participantIds =
-      users_info
-        ?.filter((user) => user && user.plan_type === "participant")
+      typedUsersInfo
+        .filter((user) => user.plan_type === "participant")
         .map((user) => user.user_id) || [];
-
-    interface ParticipantDetail {
-      user_id: string;
-      slug: string;
-      status: string;
-      is_sticky: boolean;
-      is_active: boolean;
-      special_program: boolean;
-      year: number | null;
-      reactivation_requested: boolean;
-      reactivation_status: string | null;
-    }
 
     let participantDetails: ParticipantDetail[] = [];
 
@@ -82,13 +126,15 @@ export async function GET() {
         );
       }
       participantDetails = Array.isArray(participant_data)
-        ? participant_data
+        ? (participant_data.filter(
+            isParticipantDetail
+          ) as unknown[] as ParticipantDetail[])
         : [];
     }
 
     // Combine user info with participant details
-    const enrichedUsers = users_info.map((user) => {
-      if (user && user.plan_type === "participant") {
+    const enrichedUsers = typedUsersInfo.map((user) => {
+      if (user.plan_type === "participant") {
         const participantInfo = participantDetails.find(
           (p) => p.user_id === user.user_id
         );
