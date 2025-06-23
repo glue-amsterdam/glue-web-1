@@ -1,15 +1,19 @@
 import { createClient } from "@/utils/supabase/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient();
 
-    const { data: plans, error } = await supabase
-      .from("plans")
-      .select("*")
-      .eq("is_participant_enabled", true)
-      .order("order_by");
+    const all = req.nextUrl.searchParams.get("all");
+
+    let query = supabase.from("plans").select("*").order("order_by");
+
+    if (all !== "true") {
+      query = query.eq("is_participant_enabled", true);
+    }
+
+    const { data: plans, error } = await query;
 
     if (error) {
       console.error("Error fetching plans:", error);
@@ -19,7 +23,7 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({ plans: plans });
+    return NextResponse.json({ plans });
   } catch (error) {
     console.error("Unexpected error:", error);
     return NextResponse.json(

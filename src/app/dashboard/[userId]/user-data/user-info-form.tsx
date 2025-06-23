@@ -215,7 +215,7 @@ export function UserInfoForm({
                           (p) => p.plan_id === form.getValues("plan_id")
                         ) && (
                           <p className="text-red-500 text-xs mt-2">
-                            {` Warning: The user's current plan is not in the list of available plans.`}
+                            {`The user's current plan is not in the list of available plans.The plan must be deleted or unactive, please review these or select a different plan.`}
                           </p>
                         )}
                       </FormItem>
