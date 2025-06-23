@@ -99,7 +99,7 @@ export default async function DashboardLayout({
   };
 
   return (
-    <section className="flex min-h-dvh">
+    <section className="">
       <DashboardMenu
         isMod={isModerator}
         userName={loggedUserInfo?.user_name}

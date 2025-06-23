@@ -5,11 +5,27 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    // Get basic user info
+    // Get extended user info
     const { data: users_info, error: users_error } = await supabase
       .from("user_info")
       .select(
-        "id, user_id, user_name, visible_emails, plan_type, is_mod, created_at"
+        [
+          "id",
+          "user_id",
+          "user_name",
+          "visible_emails",
+          "plan_type",
+          "is_mod",
+          "created_at",
+          "upgrade_requested",
+          "upgrade_requested_plan_id",
+          "upgrade_requested_plan_type",
+          "upgrade_request_notes",
+          "upgrade_requested_at",
+          "phone_numbers",
+          "social_media",
+          "visible_websites",
+        ].join(", ")
       )
       .order("user_name", { ascending: true });
 
@@ -17,10 +33,14 @@ export async function GET() {
       throw new Error(`Failed to fetch users list: ${users_error.message}`);
     }
 
+    if (!Array.isArray(users_info)) {
+      return NextResponse.json([]);
+    }
+
     // Get participant details for participants only
     const participantIds =
       users_info
-        ?.filter((user) => user.plan_type === "participant")
+        ?.filter((user) => user && user.plan_type === "participant")
         .map((user) => user.user_id) || [];
 
     interface ParticipantDetail {
@@ -29,22 +49,46 @@ export async function GET() {
       status: string;
       is_sticky: boolean;
       is_active: boolean;
+      special_program: boolean;
+      year: number | null;
+      reactivation_requested: boolean;
+      reactivation_status: string | null;
     }
 
     let participantDetails: ParticipantDetail[] = [];
 
     if (participantIds.length > 0) {
-      const { data: participant_data } = await supabase
-        .from("participant_details")
-        .select("user_id, slug, status, is_sticky, is_active")
-        .in("user_id", participantIds);
+      const { data: participant_data, error: participant_error } =
+        await supabase
+          .from("participant_details")
+          .select(
+            [
+              "user_id",
+              "slug",
+              "status",
+              "is_sticky",
+              "is_active",
+              "special_program",
+              "year",
+              "reactivation_requested",
+              "reactivation_status",
+            ].join(", ")
+          )
+          .in("user_id", participantIds);
 
-      participantDetails = participant_data || [];
+      if (participant_error) {
+        throw new Error(
+          `Failed to fetch participant details: ${participant_error.message}`
+        );
+      }
+      participantDetails = Array.isArray(participant_data)
+        ? participant_data
+        : [];
     }
 
     // Combine user info with participant details
-    const enrichedUsers = users_info?.map((user) => {
-      if (user.plan_type === "participant") {
+    const enrichedUsers = users_info.map((user) => {
+      if (user && user.plan_type === "participant") {
         const participantInfo = participantDetails.find(
           (p) => p.user_id === user.user_id
         );
@@ -54,6 +98,11 @@ export async function GET() {
           participant_status: participantInfo?.status,
           participant_is_sticky: participantInfo?.is_sticky,
           participant_is_active: participantInfo?.is_active,
+          participant_special_program: participantInfo?.special_program,
+          participant_year: participantInfo?.year,
+          participant_reactivation_requested:
+            participantInfo?.reactivation_requested,
+          participant_reactivation_status: participantInfo?.reactivation_status,
         };
       }
       return user;

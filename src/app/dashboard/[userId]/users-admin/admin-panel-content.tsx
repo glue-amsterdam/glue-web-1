@@ -40,6 +40,18 @@ interface ExtendedUserInfo extends UserInfo {
   participant_status?: string;
   participant_is_sticky?: boolean;
   participant_is_active?: boolean;
+  participant_special_program?: boolean;
+  participant_year?: number | null;
+  participant_reactivation_requested?: boolean;
+  participant_reactivation_status?: string | null;
+  upgrade_requested?: boolean;
+  upgrade_requested_plan_id?: string | null;
+  upgrade_requested_plan_type?: string | null;
+  upgrade_request_notes?: string | null;
+  upgrade_requested_at?: string | null;
+  phone_numbers?: string[] | null;
+  social_media?: Record<string, unknown> | null;
+  visible_websites?: string[] | null;
 }
 
 interface UsersAdminPageProps {
@@ -70,25 +82,19 @@ export default function UsersAdminPage({
   const [sortBy, setSortBy] = useState<string>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
+  // Filtros nuevos
+  const [modFilter, setModFilter] = useState<string>("all");
+  const [upgradeFilter, setUpgradeFilter] = useState<string>("all");
+  const [specialProgramFilter, setSpecialProgramFilter] =
+    useState<string>("all");
+  const [yearFilter, setYearFilter] = useState<string>("all");
+  const [reactivationRequestedFilter, setReactivationRequestedFilter] =
+    useState<string>("all");
+  const [reactivationStatusFilter, setReactivationStatusFilter] =
+    useState<string>("all");
+
   const router = useRouter();
   const { toast } = useToast();
-
-  // User statistics
-  const userStats = useMemo(() => {
-    const stats = {
-      total: users.length,
-      participant: users.filter((u) => u.plan_type === "participant").length,
-      member: users.filter((u) => u.plan_type === "member").length,
-      free: users.filter((u) => u.plan_type === "free").length,
-      active_participants: users.filter(
-        (u) => u.plan_type === "participant" && u.participant_is_active === true
-      ).length,
-      sticky_participants: users.filter(
-        (u) => u.plan_type === "participant" && u.participant_is_sticky === true
-      ).length,
-    };
-    return stats;
-  }, [users]);
 
   // Advanced filtering and sorting
   const filteredAndSortedUsers = useMemo(() => {
@@ -115,7 +121,22 @@ export default function UsersAdminPage({
         }
       }
 
-      // Participant-specific filters
+      // Plan type filter (redundante con tab, pero útil si se quiere combinar)
+      // Moderador
+      if (modFilter !== "all") {
+        if (modFilter === "mod" && !user.is_mod) return false;
+        if (modFilter === "not_mod" && user.is_mod) return false;
+      }
+
+      // Upgrade solicitado
+      if (upgradeFilter !== "all") {
+        if (upgradeFilter === "requested" && !user.upgrade_requested)
+          return false;
+        if (upgradeFilter === "not_requested" && user.upgrade_requested)
+          return false;
+      }
+
+      // Participante: status, sticky, active, special_program, year, reactivation
       if (user.plan_type === "participant") {
         if (
           participantStatus !== "all" &&
@@ -140,6 +161,34 @@ export default function UsersAdminPage({
           user.participant_is_active === true
         ) {
           return false;
+        }
+        if (specialProgramFilter !== "all") {
+          if (
+            specialProgramFilter === "yes" &&
+            !user.participant_special_program
+          )
+            return false;
+          if (specialProgramFilter === "no" && user.participant_special_program)
+            return false;
+        }
+        if (yearFilter !== "all") {
+          if (user.participant_year?.toString() !== yearFilter) return false;
+        }
+        if (reactivationRequestedFilter !== "all") {
+          if (
+            reactivationRequestedFilter === "yes" &&
+            !user.participant_reactivation_requested
+          )
+            return false;
+          if (
+            reactivationRequestedFilter === "no" &&
+            user.participant_reactivation_requested
+          )
+            return false;
+        }
+        if (reactivationStatusFilter !== "all") {
+          if (user.participant_reactivation_status !== reactivationStatusFilter)
+            return false;
         }
       }
 
@@ -182,6 +231,12 @@ export default function UsersAdminPage({
     activeFilter,
     sortBy,
     sortOrder,
+    modFilter,
+    upgradeFilter,
+    specialProgramFilter,
+    yearFilter,
+    reactivationRequestedFilter,
+    reactivationStatusFilter,
   ]);
 
   // Group by type
@@ -252,6 +307,12 @@ export default function UsersAdminPage({
     setSortBy("name");
     setSortOrder("asc");
     setShowAdvancedFilters(false);
+    setModFilter("all");
+    setUpgradeFilter("all");
+    setSpecialProgramFilter("all");
+    setYearFilter("all");
+    setReactivationRequestedFilter("all");
+    setReactivationStatusFilter("all");
   };
 
   const activeFiltersCount = [
@@ -259,149 +320,248 @@ export default function UsersAdminPage({
     participantStatus !== "all",
     stickyFilter !== "all",
     activeFilter !== "all",
+    modFilter !== "all",
+    upgradeFilter !== "all",
+    specialProgramFilter !== "all",
+    yearFilter !== "all",
+    reactivationRequestedFilter !== "all",
+    reactivationStatusFilter !== "all",
   ].filter(Boolean).length;
 
   return (
-    <div className="container mx-auto space-y-6 bg-white text-black px-2">
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex gap-4 items-center mb-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                type="text"
-                placeholder="Search by name, email, ID, or slug..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">Sort by Name</SelectItem>
-                <SelectItem value="plan_type">Sort by Type</SelectItem>
-                <SelectItem value="status">Sort by Status</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-            >
-              <ArrowUpDown className="w-4 h-4" />
-              {sortOrder === "asc" ? "ASC" : "DESC"}
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              Filters
-              {activeFiltersCount > 0 && (
-                <Badge variant="secondary" className="ml-2">
-                  {activeFiltersCount}
-                </Badge>
-              )}
-            </Button>
-
-            {activeFiltersCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={clearFilters}>
-                <X className="w-4 h-4 mr-2" />
-                Clear
+    <div className="mx-auto container max-h-[90vh] h-[90vh] flex flex-col bg-white text-black px-2">
+      {/* Filtros sticky arriba */}
+      <div className="sticky top-0 z-10 bg-gray shadow-sm pt-2 pb-2 border-b border-gray">
+        <Card className="shadow-none border-none bg-gray">
+          <CardContent className="p-4 pb-2">
+            <div className="flex gap-4 items-center mb-2 flex-wrap">
+              <div className="flex-1 relative min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  type="text"
+                  placeholder="Search by name, email, ID, or slug..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 dashboard-input border border-gray rounded-md"
+                />
+              </div>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-40 bg-uiwhite text-uiblack border border-gray rounded-md">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-uiwhite text-uiblack border border-gray">
+                  <SelectItem value="name">Sort by Name</SelectItem>
+                  <SelectItem value="plan_type">Sort by Type</SelectItem>
+                  <SelectItem value="status">Sort by Status</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                }
+                className="bg-uiwhite text-uiblack border border-gray rounded-md"
+              >
+                <ArrowUpDown className="w-4 h-4" />
+                {sortOrder === "asc" ? "ASC" : "DESC"}
               </Button>
-            )}
-          </div>
-
-          {/* Advanced filters */}
-          {showAdvancedFilters && (
-            <div className="border-t pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Participant Status
-                  </label>
-                  <Select
-                    value={participantStatus}
-                    onValueChange={setParticipantStatus}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="accepted">Approved</SelectItem>
-                      <SelectItem value="declined">Rejected</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Sticky Status
-                  </label>
-                  <Select value={stickyFilter} onValueChange={setStickyFilter}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="sticky">Sticky Only</SelectItem>
-                      <SelectItem value="not_sticky">Not Sticky</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Active Status
-                  </label>
-                  <Select value={activeFilter} onValueChange={setActiveFilter}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="active">Active Only</SelectItem>
-                      <SelectItem value="inactive">Inactive Only</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-end">
-                  <div className="text-sm text-gray-600">
-                    <p>Active: {userStats.active_participants}</p>
-                    <p>Sticky: {userStats.sticky_participants}</p>
+              {/* Filtro rápido: Moderador */}
+              <Select value={modFilter} onValueChange={setModFilter}>
+                <SelectTrigger className="w-32 bg-uiwhite text-uiblack border border-gray rounded-md">
+                  <SelectValue placeholder="Mod" />
+                </SelectTrigger>
+                <SelectContent className="bg-uiwhite text-uiblack border border-gray">
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="mod">Moderators</SelectItem>
+                  <SelectItem value="not_mod">Not Mod</SelectItem>
+                </SelectContent>
+              </Select>
+              {/* Filtro rápido: Upgrade solicitado */}
+              <Select value={upgradeFilter} onValueChange={setUpgradeFilter}>
+                <SelectTrigger className="w-40 bg-uiwhite text-uiblack border border-gray rounded-md">
+                  <SelectValue placeholder="Upgrade" />
+                </SelectTrigger>
+                <SelectContent className="bg-uiwhite text-uiblack border border-gray">
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="requested">Upgrade Requested</SelectItem>
+                  <SelectItem value="not_requested">No Upgrade</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className="bg-uiwhite text-uiblack border border-gray rounded-md"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Filters
+                {activeFiltersCount > 0 && (
+                  <Badge variant="secondary" className="ml-2">
+                    {activeFiltersCount}
+                  </Badge>
+                )}
+              </Button>
+              {activeFiltersCount > 0 && (
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  <X className="w-4 h-4 mr-2" />
+                  Clear
+                </Button>
+              )}
+            </div>
+            {/* Filtros avanzados */}
+            {showAdvancedFilters && (
+              <div className="border border-gray bg-uiwhite rounded-md mt-2 p-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Participant Status
+                    </label>
+                    <Select
+                      value={participantStatus}
+                      onValueChange={setParticipantStatus}
+                    >
+                      <SelectTrigger className="bg-uiwhite text-uiblack border border-gray rounded-md">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-uiwhite text-uiblack border border-gray">
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="accepted">Approved</SelectItem>
+                        <SelectItem value="declined">Rejected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Sticky Status
+                    </label>
+                    <Select
+                      value={stickyFilter}
+                      onValueChange={setStickyFilter}
+                    >
+                      <SelectTrigger className="bg-uiwhite text-uiblack border border-gray rounded-md">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-uiwhite text-uiblack border border-gray">
+                        <SelectItem value="all">All</SelectItem>
+                        <SelectItem value="sticky">Sticky Only</SelectItem>
+                        <SelectItem value="not_sticky">Not Sticky</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Active Status
+                    </label>
+                    <Select
+                      value={activeFilter}
+                      onValueChange={setActiveFilter}
+                    >
+                      <SelectTrigger className="bg-uiwhite text-uiblack border border-gray rounded-md">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-uiwhite text-uiblack border border-gray">
+                        <SelectItem value="all">All</SelectItem>
+                        <SelectItem value="active">Active Only</SelectItem>
+                        <SelectItem value="inactive">Inactive Only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Special Program
+                    </label>
+                    <Select
+                      value={specialProgramFilter}
+                      onValueChange={setSpecialProgramFilter}
+                    >
+                      <SelectTrigger className="bg-uiwhite text-uiblack border border-gray rounded-md">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-uiwhite text-uiblack border border-gray">
+                        <SelectItem value="all">All</SelectItem>
+                        <SelectItem value="yes">Yes</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Year
+                    </label>
+                    <Input
+                      type="number"
+                      placeholder="Year"
+                      value={yearFilter === "all" ? "" : yearFilter}
+                      onChange={(e) =>
+                        setYearFilter(e.target.value ? e.target.value : "all")
+                      }
+                      className="w-full dashboard-input border border-gray rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Reactivation Requested
+                    </label>
+                    <Select
+                      value={reactivationRequestedFilter}
+                      onValueChange={setReactivationRequestedFilter}
+                    >
+                      <SelectTrigger className="bg-uiwhite text-uiblack border border-gray rounded-md">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-uiwhite text-uiblack border border-gray">
+                        <SelectItem value="all">All</SelectItem>
+                        <SelectItem value="yes">Yes</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Reactivation Status
+                    </label>
+                    <Select
+                      value={reactivationStatusFilter}
+                      onValueChange={setReactivationStatusFilter}
+                    >
+                      <SelectTrigger className="bg-uiwhite text-uiblack border border-gray rounded-md">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-uiwhite text-uiblack border border-gray">
+                        <SelectItem value="all">All</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="declined">Declined</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Tabs by user type */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="flex-1 flex flex-col min-h-0"
+      >
+        <TabsList className="grid w-full grid-cols-4 sticky top-[80px] z-10 bg-white border-b border-gray py-2">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="participant">Participants</TabsTrigger>
           <TabsTrigger value="member">Members</TabsTrigger>
           <TabsTrigger value="free">Visitors</TabsTrigger>
         </TabsList>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0 mt-2">
           {/* User list */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 flex flex-col min-h-0 bg-white pt-2 rounded-md shadow-sm">
             {/* Multiple selection controls */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-2 px-2">
               <p className="text-sm text-gray-600">
                 {selectedUsers.size} users selected
               </p>
@@ -437,17 +597,24 @@ export default function UsersAdminPage({
                 </AlertDialogContent>
               </AlertDialog>
             </div>
-
-            <TabsContent value="all">
-              <ScrollArea className="h-[calc(100vh-400px)]">
-                {usersByType.all.map((user) => (
-                  <UserCard
+            <TabsContent value="all" className="flex-1 min-h-0">
+              <ScrollArea className="h-full max-h-[calc(80vh-120px)] min-h-0 pr-2">
+                {usersByType.all.map((user, idx) => (
+                  <div
                     key={user.user_id}
-                    selectedUsers={selectedUsers}
-                    setSelectedUsers={setSelectedUsers}
-                    user={user}
-                    onSelectUser={onSelectUser}
-                  />
+                    className={
+                      idx !== usersByType.all.length - 1
+                        ? "border-b border-gray"
+                        : ""
+                    }
+                  >
+                    <UserCard
+                      selectedUsers={selectedUsers}
+                      setSelectedUsers={setSelectedUsers}
+                      user={user}
+                      onSelectUser={onSelectUser}
+                    />
+                  </div>
                 ))}
                 {usersByType.all.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
@@ -516,28 +683,28 @@ export default function UsersAdminPage({
             </TabsContent>
           </div>
 
-          {/* User details panel */}
-          <div className="lg:col-span-2">
+          {/* User details panel compacto */}
+          <div className="lg:col-span-2 flex flex-col min-h-0 bg-gray-50 border-l border-gray p-2 rounded-md">
             {selectedUserDetails ? (
-              <Card>
+              <Card className="h-full max-h-[60vh] min-h-[180px] overflow-y-auto bg-gray-50 shadow-none border-none">
                 <HeaderUserFullView selectedUser={selectedUserDetails} />
                 <UserFullViewContent selectedUser={selectedUserDetails} />
               </Card>
             ) : isLoadingDetails ? (
-              <Card>
-                <CardContent className="flex items-center justify-center h-[calc(100vh-400px)]">
+              <Card className="h-full max-h-[60vh] min-h-[180px] flex items-center justify-center bg-gray-50 shadow-none border-none">
+                <CardContent className="flex items-center justify-center h-full">
                   <LoadingFallbackMini />
                 </CardContent>
               </Card>
             ) : detailsError ? (
-              <Card>
-                <CardContent className="flex items-center justify-center h-[calc(100vh-400px)]">
+              <Card className="h-full max-h-[60vh] min-h-[180px] flex items-center justify-center bg-gray-50 shadow-none border-none">
+                <CardContent className="flex items-center justify-center h-full">
                   <p className="text-red-500">Error loading user details</p>
                 </CardContent>
               </Card>
             ) : (
-              <Card>
-                <CardContent className="flex items-center justify-center h-[calc(100vh-400px)]">
+              <Card className="h-full max-h-[60vh] min-h-[180px] flex items-center justify-center bg-gray-50 shadow-none border-none">
+                <CardContent className="flex items-center justify-center h-full">
                   <p className="text-gray-500">Select a user to view details</p>
                 </CardContent>
               </Card>

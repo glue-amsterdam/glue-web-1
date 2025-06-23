@@ -11,7 +11,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="min-h-dvh bg-[var(--color-box3)]">
+    <main className="bg-[var(--color-box3)]">
       {children}
       <Background />
     </main>

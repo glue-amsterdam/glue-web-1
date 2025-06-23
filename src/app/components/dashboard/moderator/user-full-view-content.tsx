@@ -16,7 +16,6 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  ExternalLink,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -102,27 +101,28 @@ function UserFullViewContent({ selectedUser }: Props) {
   };
 
   return (
-    <CardContent className="p-6">
-      <div className="space-y-4">
+    <CardContent className="p-2">
+      <div className="space-y-2">
         {/* Basic Information - Always visible */}
         <CollapsibleSection
           id="basic"
           title="Basic Information"
           icon={<User className="w-4 h-4" />}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+            <div className="space-y-1">
               <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-600">
-                  Plan Type
-                </span>
-                <Badge variant="outline">{selectedUser.plan_type}</Badge>
+                <span className="text-xs text-gray-600">Plan Type</span>
+                <Badge variant="outline" className="text-xs px-2 py-0.5">
+                  {selectedUser.plan_type}
+                </Badge>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-600">
-                  Moderator
-                </span>
-                <Badge variant={selectedUser.is_mod ? "default" : "secondary"}>
+                <span className="text-xs text-gray-600">Moderator</span>
+                <Badge
+                  variant={selectedUser.is_mod ? "default" : "secondary"}
+                  className="text-xs px-2 py-0.5"
+                >
                   {selectedUser.is_mod ? "Yes" : "No"}
                 </Badge>
               </div>
@@ -141,15 +141,17 @@ function UserFullViewContent({ selectedUser }: Props) {
               )
             }
           >
-            <div className="space-y-4">
-              <div className="flex flex-wrap gap-2 mb-4">
-                <Badge variant="outline">
+            <div className="space-y-2 text-xs">
+              <div className="flex flex-wrap gap-1 mb-2">
+                <Badge variant="outline" className="text-xs px-2 py-0.5">
                   {selectedUser.participantDetails.status}
                 </Badge>
                 {selectedUser.participantDetails.is_sticky && (
-                  <Badge variant="secondary" className="gap-1">
-                    <Star className="w-3 h-3" />
-                    Sticky
+                  <Badge
+                    variant="secondary"
+                    className="gap-1 text-xs px-2 py-0.5"
+                  >
+                    <Star className="w-3 h-3" /> Sticky
                   </Badge>
                 )}
                 <Badge
@@ -158,57 +160,49 @@ function UserFullViewContent({ selectedUser }: Props) {
                       ? "default"
                       : "destructive"
                   }
+                  className="text-xs px-2 py-0.5"
                 >
                   {selectedUser.participantDetails.is_active
                     ? "Active"
                     : "Inactive"}
                 </Badge>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div>
-                  <h4 className="font-medium text-sm text-gray-600 mb-1">
-                    Slug
-                  </h4>
-                  <p className="text-sm font-mono bg-gray-50 px-2 py-1 rounded">
+                  <span className="text-xs text-gray-600">Slug</span>
+                  <p className="text-xs font-mono bg-gray-50 px-2 py-1 rounded">
                     /{selectedUser.participantDetails.slug}
                   </p>
                 </div>
                 {selectedUser.participantDetails.year && (
                   <div>
-                    <h4 className="font-medium text-sm text-gray-600 mb-1">
-                      Year
-                    </h4>
-                    <p className="text-sm">
+                    <span className="text-xs text-gray-600">Year</span>
+                    <p className="text-xs">
                       {selectedUser.participantDetails.year}
                     </p>
                   </div>
                 )}
               </div>
-
               {selectedUser.participantDetails.short_description && (
                 <div>
-                  <h4 className="font-medium text-sm text-gray-600 mb-1">
+                  <span className="text-xs text-gray-600">
                     Short Description
-                  </h4>
-                  <p className="text-sm text-gray-700">
+                  </span>
+                  <p className="text-xs text-gray-700">
                     {selectedUser.participantDetails.short_description}
                   </p>
                 </div>
               )}
-
               {selectedUser.participantDetails.description && (
                 <div>
-                  <h4 className="font-medium text-sm text-gray-600 mb-1">
-                    Description
-                  </h4>
+                  <span className="text-xs text-gray-600">Description</span>
                   <div
                     dangerouslySetInnerHTML={{
                       __html: DOMPurify.sanitize(
                         selectedUser.participantDetails.description
                       ),
                     }}
-                    className="text-sm text-gray-700 prose prose-sm max-w-none"
+                    className="text-xs text-gray-700 prose prose-xs max-w-none"
                   />
                 </div>
               )}
@@ -228,19 +222,17 @@ function UserFullViewContent({ selectedUser }: Props) {
             title="Contact Information"
             icon={<Phone className="w-4 h-4" />}
           >
-            <div className="space-y-4">
+            <div className="space-y-2 text-xs">
               {selectedUser.phone_numbers &&
                 selectedUser.phone_numbers.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-sm text-gray-600 mb-2">
-                      Phone Numbers
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
+                    <span className="text-xs text-gray-600">Phone Numbers</span>
+                    <div className="flex flex-wrap gap-1">
                       {selectedUser.phone_numbers.map((phone, index) => (
                         <Badge
                           key={index}
                           variant="outline"
-                          className="font-mono"
+                          className="font-mono text-xs px-2 py-0.5"
                         >
                           {phone}
                         </Badge>
@@ -252,27 +244,20 @@ function UserFullViewContent({ selectedUser }: Props) {
               {selectedUser.social_media &&
                 Object.keys(selectedUser.social_media).length > 0 && (
                   <div>
-                    <h4 className="font-medium text-sm text-gray-600 mb-2">
-                      Social Media
-                    </h4>
-                    <div className="space-y-2">
+                    <span className="text-xs text-gray-600">Social Media</span>
+                    <div className="space-y-1">
                       {Object.entries(selectedUser.social_media).map(
                         ([platform, link]) => (
                           <div
                             key={platform}
                             className="flex items-center justify-between"
                           >
-                            <span className="text-sm font-medium capitalize">
+                            <span className="text-xs font-medium capitalize">
                               {platform}
                             </span>
-                            <a
-                              href={link as string}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                            >
-                              View <ExternalLink className="w-3 h-3" />
-                            </a>
+                            <span className="text-xs text-gray-500 font-mono truncate max-w-[100px]">
+                              {link as string}
+                            </span>
                           </div>
                         )
                       )}
@@ -283,20 +268,15 @@ function UserFullViewContent({ selectedUser }: Props) {
               {selectedUser.visible_websites &&
                 selectedUser.visible_websites.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-sm text-gray-600 mb-2">
-                      Websites
-                    </h4>
-                    <div className="space-y-2">
+                    <span className="text-xs text-gray-600">Websites</span>
+                    <div className="space-y-1">
                       {selectedUser.visible_websites.map((website, index) => (
-                        <a
+                        <span
                           key={index}
-                          href={website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                          className="text-xs text-gray-500 font-mono truncate block max-w-[120px]"
                         >
-                          {website} <ExternalLink className="w-3 h-3" />
-                        </a>
+                          {website}
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -314,12 +294,12 @@ function UserFullViewContent({ selectedUser }: Props) {
               title="Visiting Hours"
               icon={<Clock className="w-4 h-4" />}
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                 {selectedUser.visitingHours.map((visitingHour, index) => (
-                  <div key={index} className="bg-gray-50 p-3 rounded-lg">
-                    <h4 className="font-medium text-sm mb-2">
+                  <div key={index} className="bg-gray-50 p-2 rounded">
+                    <span className="text-xs font-medium mb-1 block">
                       {getDayLabel(visitingHour.day_id)}
-                    </h4>
+                    </span>
                     {Array.isArray(visitingHour.hours) &&
                     visitingHour.hours.length > 0 ? (
                       <div className="space-y-1">
@@ -328,17 +308,19 @@ function UserFullViewContent({ selectedUser }: Props) {
                             time: { open: string; close: string },
                             timeIndex: number
                           ) => (
-                            <p
+                            <span
                               key={timeIndex}
-                              className="text-xs font-mono bg-white px-2 py-1 rounded"
+                              className="text-xs font-mono bg-white px-2 py-0.5 rounded block"
                             >
                               {time.open} - {time.close}
-                            </p>
+                            </span>
                           )
                         )}
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-500">No hours set</p>
+                      <span className="text-xs text-gray-500">
+                        No hours set
+                      </span>
                     )}
                   </div>
                 ))}
@@ -353,39 +335,31 @@ function UserFullViewContent({ selectedUser }: Props) {
             title="Invoice Information"
             icon={<CreditCard className="w-4 h-4" />}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+              <div className="space-y-1">
                 <div>
-                  <h4 className="font-medium text-sm text-gray-600 mb-1">
-                    Company
-                  </h4>
-                  <p className="text-sm">
+                  <span className="text-xs text-gray-600">Company</span>
+                  <p className="text-xs">
                     {selectedUser.invoiceData.invoice_company_name}
                   </p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-sm text-gray-600 mb-1">
-                    Address
-                  </h4>
-                  <p className="text-sm">
+                  <span className="text-xs text-gray-600">Address</span>
+                  <p className="text-xs">
                     {selectedUser.invoiceData.invoice_address}
                   </p>
                 </div>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-1">
                 <div>
-                  <h4 className="font-medium text-sm text-gray-600 mb-1">
-                    City
-                  </h4>
-                  <p className="text-sm">
+                  <span className="text-xs text-gray-600">City</span>
+                  <p className="text-xs">
                     {selectedUser.invoiceData.invoice_city}
                   </p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-sm text-gray-600 mb-1">
-                    Country
-                  </h4>
-                  <p className="text-sm">
+                  <span className="text-xs text-gray-600">Country</span>
+                  <p className="text-xs">
                     {selectedUser.invoiceData.invoice_country}
                   </p>
                 </div>
