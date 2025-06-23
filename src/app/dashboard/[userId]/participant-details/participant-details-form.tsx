@@ -26,6 +26,11 @@ import { SlugField } from "@/app/dashboard/[userId]/participant-details/slug-fie
 import { ModeratorSettings } from "@/app/dashboard/[userId]/participant-details/moderator-settings";
 import { ActiveStatusSection } from "@/app/dashboard/[userId]/participant-details/active-status-section";
 
+import type { z } from "zod";
+import { mapInfoSchema } from "@/schemas/mapInfoSchemas";
+
+type MapInfoType = z.infer<typeof mapInfoSchema>;
+
 export function ParticipantDetailsForm({
   participantDetails,
   isMod,
@@ -44,6 +49,7 @@ export function ParticipantDetailsForm({
     useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const [mapInfo, setMapInfo] = useState<MapInfoType | null>(null);
 
   const form = useForm<ParticipantDetails>({
     resolver: zodResolver(participantDetailsSchema),
@@ -89,6 +95,59 @@ export function ParticipantDetailsForm({
     isError ? "POST" : "PUT"
   );
 
+  const getValidMapInfo = (
+    mapInfo: MapInfoType | null,
+    formValues: ParticipantDetails
+  ): MapInfoType => {
+    if (mapInfo)
+      return {
+        formatted_address: mapInfo.formatted_address ?? null,
+        latitude: mapInfo.latitude ?? null,
+        longitude: mapInfo.longitude ?? null,
+        no_address: mapInfo.no_address ?? true,
+      };
+    const notes = formValues.reactivation_notes;
+    if (
+      notes &&
+      (notes.formatted_address || notes.latitude || notes.longitude)
+    ) {
+      return {
+        formatted_address: notes.formatted_address ?? null,
+        latitude: notes.latitude ?? null,
+        longitude: notes.longitude ?? null,
+        no_address: notes.no_address ?? true,
+      };
+    }
+    return {
+      formatted_address: null,
+      latitude: null,
+      longitude: null,
+      no_address: true,
+    };
+  };
+
+  const upsertParticipantDetailsAndMapInfo = async (
+    participantDetails: ParticipantDetails,
+    mapInfo: MapInfoType | null
+  ) => {
+    if (!targetUserId) return;
+    const response = await fetch(
+      `/api/users/participants/${targetUserId}/upsert-details-map-info`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          participantDetails: { ...participantDetails, user_id: targetUserId },
+          mapInfo,
+        }),
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Error updating participant and map info");
+    }
+    return response.json();
+  };
+
   const handleSubmit = async (values: ParticipantDetails) => {
     setIsSubmitting(true);
     const isReactivationApproval =
@@ -100,6 +159,7 @@ export function ParticipantDetailsForm({
       values.status === "accepted" &&
       participantDetails.status !== "accepted"
     ) {
+      console.log("[handleSubmit] form values before modal:", values);
       setIsDialogOpen(true);
     } else {
       await onSubmit({ ...values, user_id: targetUserId! });
@@ -121,17 +181,71 @@ export function ParticipantDetailsForm({
   const handleReactivationRequest = async (
     reactivationData: ReactivationNotes
   ) => {
+    setMapInfo({
+      formatted_address: reactivationData.formatted_address || null,
+      latitude: reactivationData.latitude || null,
+      longitude: reactivationData.longitude || null,
+      no_address: reactivationData.no_address,
+    });
     form.setValue("reactivation_requested", true);
     form.setValue("reactivation_notes", reactivationData);
     form.setValue("reactivation_status", "pending");
-    await onSubmit({
-      ...form.getValues(),
-      user_id: targetUserId!,
-      reactivation_requested: true,
-      reactivation_notes: reactivationData,
-      reactivation_status: "pending",
-    });
+    await upsertParticipantDetailsAndMapInfo(
+      {
+        ...form.getValues(),
+        user_id: targetUserId!,
+        reactivation_requested: true,
+        reactivation_notes: reactivationData,
+        reactivation_status: "pending",
+      },
+      getValidMapInfo(
+        {
+          formatted_address: reactivationData.formatted_address || null,
+          latitude: reactivationData.latitude || null,
+          longitude: reactivationData.longitude || null,
+          no_address: reactivationData.no_address,
+        },
+        form.getValues()
+      )
+    );
     await sendReactivationRequestEmail(reactivationData);
+  };
+
+  const handleConfirmReactivation = async () => {
+    form.setValue("is_active", true);
+    form.setValue("reactivation_requested", false);
+    form.setValue("reactivation_status", "approved");
+    await upsertParticipantDetailsAndMapInfo(
+      {
+        ...form.getValues(),
+        user_id: targetUserId!,
+        is_active: true,
+        reactivation_requested: false,
+        reactivation_status: "approved",
+      },
+      getValidMapInfo(mapInfo, form.getValues())
+    );
+    await sendReactivationApprovedEmail();
+    setMapInfo(null);
+    setIsReactivationDialogOpen(false);
+  };
+
+  const handleCancelReactivation = async () => {
+    form.setValue("is_active", true);
+    form.setValue("reactivation_requested", false);
+    form.setValue("reactivation_status", "approved");
+    await upsertParticipantDetailsAndMapInfo(
+      {
+        ...form.getValues(),
+        user_id: targetUserId!,
+        is_active: true,
+        reactivation_requested: false,
+        reactivation_status: "approved",
+      },
+      getValidMapInfo(mapInfo, form.getValues())
+    );
+    setMapInfo(null);
+    setIsReactivationDialogOpen(false);
   };
 
   const handleConfirmSendEmail = async () => {
@@ -143,35 +257,6 @@ export function ParticipantDetailsForm({
   const handleCancelSendEmail = async () => {
     await onSubmit({ ...form.getValues(), user_id: targetUserId! });
     setIsDialogOpen(false);
-  };
-
-  const handleConfirmReactivation = async () => {
-    form.setValue("is_active", true);
-    form.setValue("reactivation_requested", false);
-    form.setValue("reactivation_status", "approved");
-    await onSubmit({
-      ...form.getValues(),
-      user_id: targetUserId!,
-      is_active: true,
-      reactivation_requested: false,
-      reactivation_status: "approved",
-    });
-    await sendReactivationApprovedEmail();
-    setIsReactivationDialogOpen(false);
-  };
-
-  const handleCancelReactivation = async () => {
-    form.setValue("is_active", true);
-    form.setValue("reactivation_requested", false);
-    form.setValue("reactivation_status", "approved");
-    await onSubmit({
-      ...form.getValues(),
-      user_id: targetUserId!,
-      is_active: true,
-      reactivation_requested: false,
-      reactivation_status: "approved",
-    });
-    setIsReactivationDialogOpen(false);
   };
 
   const handleDeclineReactivation = async () => {
