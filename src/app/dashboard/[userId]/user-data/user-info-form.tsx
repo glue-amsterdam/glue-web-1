@@ -31,6 +31,9 @@ import { PlanType } from "@/schemas/plansSchema";
 import { useToast } from "@/hooks/use-toast";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 // Update the userInfoSchema to include plan_label
 const extendedUserInfoSchema = userInfoSchema.extend({
@@ -107,12 +110,170 @@ export function UserInfoForm({
     setIsSubmitting(false);
   };
 
+  // Mostrar alerta si hay solicitud de upgrade
+  const hasUpgradeRequest = userInfo.upgrade_requested;
+  const requestedPlan = plans.find(
+    (p) => p.plan_id === userInfo.upgrade_requested_plan_id
+  );
+
+  // Función para aprobar upgrade
+  const handleApproveUpgrade = async () => {
+    if (!targetUserId) return;
+    setIsSubmitting(true);
+    try {
+      // 1. Actualizar user_info
+      const res = await fetch(`/api/users/participants/${targetUserId}/info`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...userInfo,
+          plan_id: userInfo.upgrade_requested_plan_id,
+          plan_type: userInfo.upgrade_requested_plan_type,
+          upgrade_requested: false,
+          upgrade_requested_plan_id: null,
+          upgrade_requested_plan_type: null,
+          upgrade_request_notes: null,
+          upgrade_requested_at: null,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to approve upgrade");
+
+      // 2. Verificar si existe participant_details
+      const detailsRes = await fetch(
+        `/api/users/participants/${targetUserId}/details`
+      );
+      if (detailsRes.status === 404) {
+        // Si no existe, crear uno con valores por defecto
+        const slug = `${
+          userInfo.user_name || "participant"
+        }-${targetUserId.slice(0, 8)}`;
+        const createRes = await fetch(
+          `/api/users/participants/${targetUserId}/details`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: targetUserId,
+              short_description: "",
+              description: "",
+              slug,
+              is_sticky: false,
+              special_program: false,
+              year: null,
+              status: "accepted",
+              is_active: true,
+              reactivation_requested: false,
+              reactivation_notes: null,
+              reactivation_status: null,
+            }),
+          }
+        );
+        if (!createRes.ok)
+          throw new Error("Failed to create participant details");
+      }
+
+      toast({
+        title: "Upgrade approved",
+        description: "The user's plan has been updated.",
+      });
+      await mutate(`/api/users/participants/${targetUserId}/info`);
+      router.refresh();
+    } catch (e) {
+      toast({
+        title: "Error",
+        description: "Failed to approve upgrade.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Función para rechazar upgrade
+  const handleRejectUpgrade = async () => {
+    if (!targetUserId) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`/api/users/participants/${targetUserId}/info`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...userInfo,
+          upgrade_requested: false,
+          upgrade_requested_plan_id: null,
+          upgrade_requested_plan_type: null,
+          upgrade_request_notes: null,
+          upgrade_requested_at: null,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to reject upgrade");
+      toast({
+        title: "Upgrade rejected",
+        description: "The upgrade request has been rejected.",
+      });
+      await mutate(`/api/users/participants/${targetUserId}/info`);
+      router.refresh();
+    } catch (e) {
+      toast({
+        title: "Error",
+        description: "Failed to reject upgrade.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">User Information</CardTitle>
       </CardHeader>
       <CardContent>
+        {hasUpgradeRequest && (
+          <Alert className="mb-4 bg-yellow-50 border-yellow-200">
+            <AlertTitle className="text-yellow-800 flex items-center gap-2">
+              <Badge variant="outline">Upgrade Requested</Badge>
+              {requestedPlan
+                ? requestedPlan.plan_label
+                : userInfo.upgrade_requested_plan_type}
+            </AlertTitle>
+            <AlertDescription className="text-yellow-700">
+              {userInfo.upgrade_request_notes && (
+                <div className="mb-2">
+                  <span className="font-medium">Notes:</span>{" "}
+                  {userInfo.upgrade_request_notes}
+                </div>
+              )}
+              <div>
+                <span className="font-medium">Requested at:</span>{" "}
+                {userInfo.upgrade_requested_at
+                  ? new Date(userInfo.upgrade_requested_at).toLocaleString()
+                  : "-"}
+              </div>
+              {isMod && (
+                <div className="mt-4 flex gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-green-500 hover:bg-green-600"
+                    onClick={handleApproveUpgrade}
+                    disabled={isSubmitting}
+                  >
+                    Approve Upgrade
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={handleRejectUpgrade}
+                    disabled={isSubmitting}
+                  >
+                    Reject
+                  </Button>
+                </div>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
@@ -215,7 +376,7 @@ export function UserInfoForm({
                           (p) => p.plan_id === form.getValues("plan_id")
                         ) && (
                           <p className="text-red-500 text-xs mt-2">
-                            {` Warning: The user's current plan is not in the list of available plans.`}
+                            {`The user's current plan is not in the list of available plans.The plan must be deleted or unactive, please review these or select a different plan.`}
                           </p>
                         )}
                       </FormItem>

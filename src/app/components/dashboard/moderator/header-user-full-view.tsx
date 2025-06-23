@@ -47,7 +47,7 @@ function HeaderUserFullView({ selectedUser }: Props) {
   };
 
   return (
-    <CardHeader className="pb-4">
+    <CardHeader className="pb-2 sticky top-0 z-20 bg-gray-50 border-b border-gray bg-white">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4 min-w-0 flex-1">
           <Avatar className="w-12 h-12 shrink-0">

@@ -26,7 +26,7 @@ export default function UserDataPage() {
     data: plansData,
     error: plansError,
     isLoading: plansLoading,
-  } = useSWR("/api/plans", fetcher);
+  } = useSWR(`/api/plans${isMod ? "?all=true" : ""}`, fetcher);
 
   if (userLoading || plansLoading) return <LoadingFallbackMini />;
   if (userError) return <div>Failed to load User Info data</div>;

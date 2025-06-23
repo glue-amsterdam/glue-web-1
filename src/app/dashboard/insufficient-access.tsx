@@ -43,9 +43,11 @@ import { PlanType } from "@/schemas/plansSchema";
 export default function InsufficientAccess({
   userName,
   userId,
+  notes,
 }: {
   userName: string;
   userId: string;
+  notes?: string;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -110,10 +112,10 @@ export default function InsufficientAccess({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userName,
-          userId,
-          planId: selectedPlan,
-          planName: selectedPlanData?.plan_label || "Unknown Plan",
+          user_id: userId,
+          plan_id: selectedPlan,
+          plan_type: selectedPlanData?.plan_type || "",
+          notes: notes || undefined,
         }),
       });
 

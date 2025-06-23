@@ -36,7 +36,7 @@ export const DashboardProvider: React.FC<
         loggedPlanType,
       }}
     >
-      <div className="md:pl-80 container mx-auto px-4">{children}</div>
+      <div className="md:pl-80">{children}</div>
     </DashboardContext.Provider>
   );
 };

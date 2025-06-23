@@ -19,6 +19,11 @@ export const userInfoSchema = z.object({
     .max(3, "Only 3 items max")
     .nullable()
     .optional(),
+  upgrade_requested: z.boolean().optional(),
+  upgrade_requested_plan_id: z.string().uuid().nullable().optional(),
+  upgrade_requested_plan_type: z.string().nullable().optional(),
+  upgrade_request_notes: z.string().nullable().optional(),
+  upgrade_requested_at: z.string().nullable().optional(),
 });
 
 export type UserInfo = z.infer<typeof userInfoSchema>;
