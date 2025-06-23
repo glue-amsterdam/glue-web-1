@@ -23,6 +23,12 @@ export async function GET(
       .single();
 
     if (error) {
+      if (error.code === "PGRST116") {
+        return NextResponse.json(
+          { error: "user info not found" },
+          { status: 404 }
+        );
+      }
       console.error("Error fetching participant details:", error);
       return NextResponse.json(
         { error: "Failed to fetch participant details" },
