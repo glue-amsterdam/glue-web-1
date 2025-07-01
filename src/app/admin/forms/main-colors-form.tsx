@@ -2,7 +2,6 @@
 
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +11,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MainColors, mainColorsSchema } from "@/schemas/mainSchema";
 import { mutate } from "swr";
+import { ColorPicker } from "@/components/ui/color-picker";
 
 interface MainColorsFormProps {
   initialData: MainColors;
@@ -28,10 +28,11 @@ export default function MainColorsForm({ initialData }: MainColorsFormProps) {
   });
 
   const {
-    register,
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
+    setValue,
   } = methods;
 
   useEffect(() => {
@@ -83,13 +84,10 @@ export default function MainColorsForm({ initialData }: MainColorsFormProps) {
                 <Label htmlFor={key}>
                   {key.charAt(0).toUpperCase() + key.slice(1)} Color
                 </Label>
-                <Input
-                  id={key}
-                  className="dashboard-input"
-                  {...register(key)}
-                  placeholder={`${
-                    key.charAt(0).toUpperCase() + key.slice(1)
-                  } Color`}
+                <ColorPicker
+                  value={watch(key) || "#000000"}
+                  onChange={(val) => setValue(key, val)}
+                  name={key}
                 />
                 {errors[key] && (
                   <p className="text-red-500">{errors[key]?.message}</p>
