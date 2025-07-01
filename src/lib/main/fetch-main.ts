@@ -159,6 +159,7 @@ function transformApiData(data: ApiMainSectionData): MainSectionData {
     })),
     mainLinks: transformedMainLinks,
     eventDays: transformedEventDays,
+    homeText: data.homeText || null,
   };
 }
 

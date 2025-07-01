@@ -45,11 +45,18 @@ export const mainLinksSchema = z.object({
   mainLinks: z.array(linkItemSchema),
 });
 
+export const homeTextSchema = z.object({
+  id: z.string().uuid(),
+  label: z.string(),
+  color: z.string().nullable().optional(),
+});
+
 export const mainSectionSchema = z.object({
   mainColors: mainColorsSchema,
   mainMenu: z.array(mainMenuItemSchema),
   mainLinks: mainLinksSchema,
   eventDays: z.array(eventDaySchema),
+  homeText: homeTextSchema.nullable().optional(),
 });
 
 export type MainSectionData = z.infer<typeof mainSectionSchema>;

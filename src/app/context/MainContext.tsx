@@ -63,3 +63,13 @@ export const useEventsDays = () => {
 
   return sortedEventDays;
 };
+
+export const useHomeText = () => {
+  const context = useContext(MainContext);
+  if (!context) {
+    throw new Error("useHomeText must be used within a MainContextProvider");
+  }
+  return context.homeText;
+};
+
+export { MainContext };
