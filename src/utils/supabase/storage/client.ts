@@ -11,9 +11,15 @@ type UploadProps = {
   file: File;
   bucket: string;
   folder?: string;
+  maxSizeMB?: number;
 };
 
-export const uploadImage = async ({ file, bucket, folder }: UploadProps) => {
+export const uploadImage = async ({
+  file,
+  bucket,
+  folder,
+  maxSizeMB = 2,
+}: UploadProps) => {
   if (!file || !bucket) {
     return { imageUrl: "", error: "Missing file or bucket" };
   }
@@ -26,7 +32,7 @@ export const uploadImage = async ({ file, bucket, folder }: UploadProps) => {
 
   try {
     file = await imageCompression(file, {
-      maxSizeMB: 2,
+      maxSizeMB: maxSizeMB,
     });
   } catch (error) {
     console.error("Image compression failed:", error);
