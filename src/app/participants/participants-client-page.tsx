@@ -5,7 +5,7 @@ import ParticipantCard from "../../components/participants/participant-card";
 import ParticipantsLazyLoader from "../../components/participants/participants-lazy-loader";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import ParticipantsPageHeader from "@/components/participants/participants-page-header";
 import { useColors } from "../context/MainContext";
 
@@ -14,14 +14,42 @@ export default function ParticipantsClientPage() {
   const { participants, loading, hasMore, loadMore, error, retry } =
     useParticipantsLazy(12);
 
-  // Shuffle participants to randomize their positions
+  // Use ref to maintain stable shuffle order
+  const shuffleOrderRef = useRef<Map<string, number>>(new Map());
+  const lastParticipantsLengthRef = useRef<number>(0);
+
+  // Stable shuffle that doesn't reorder existing participants
   const shuffledParticipants = useMemo(() => {
-    const shuffled = [...participants];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    // If we have new participants, add them to the shuffle order
+    if (participants.length > lastParticipantsLengthRef.current) {
+      const newParticipants = participants.slice(
+        lastParticipantsLengthRef.current
+      );
+
+      // Generate random positions for new participants
+      newParticipants.forEach((participant) => {
+        if (!shuffleOrderRef.current.has(participant.user_id)) {
+          // Find an available position (avoiding conflicts)
+          let position;
+          do {
+            position = Math.floor(Math.random() * participants.length);
+          } while (
+            Array.from(shuffleOrderRef.current.values()).includes(position)
+          );
+
+          shuffleOrderRef.current.set(participant.user_id, position);
+        }
+      });
+
+      lastParticipantsLengthRef.current = participants.length;
     }
-    return shuffled;
+
+    // Sort participants based on their shuffle order
+    return [...participants].sort((a, b) => {
+      const orderA = shuffleOrderRef.current.get(a.user_id) ?? 0;
+      const orderB = shuffleOrderRef.current.get(b.user_id) ?? 0;
+      return orderA - orderB;
+    });
   }, [participants]);
 
   // Function to determine card size and style

@@ -56,106 +56,116 @@ const useLogoRefs = () => {
 const useLogoAnimations = (
   refs: ReturnType<typeof useLogoRefs>,
   photoId: string,
-  sectionRef: React.RefObject<HTMLElement>,
-  selectedYear: number
+  sectionRef: React.RefObject<HTMLElement>
 ) => {
   useGSAP(
     () => {
-      setLines({
-        gl_line: refs.gl_line,
-        ue_line: refs.ue_line,
-        lu_line: refs.lu_line,
-        eg_line: refs.eg_line,
-      });
+      try {
+        setLines({
+          gl_line: refs.gl_line,
+          ue_line: refs.ue_line,
+          lu_line: refs.lu_line,
+          eg_line: refs.eg_line,
+        });
 
-      gsap.set(
-        [
+        // Add null checks for letter refs
+        const letterRefs = [
           refs.g_letterRef.current,
           refs.l_letterRef.current,
           refs.u_letterRef.current,
           refs.e_letterRef.current,
-        ],
-        {
-          scale: 0.8,
-          transformOrigin: "center center",
+        ].filter(Boolean);
+
+        if (letterRefs.length > 0) {
+          gsap.set(letterRefs, {
+            scale: 0.8,
+            transformOrigin: "center center",
+          });
         }
-      );
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top center",
-        },
-      });
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top center",
+          },
+        });
 
-      tl.addLabel("start");
+        tl.addLabel("start");
 
-      tl.fromTo(
-        photoId,
-        {
-          scale: 1.2,
-          filter: "blur(10px)",
-        },
-        { scale: 1, filter: "blur(0px)", duration: 0.2 }
-      );
-
-      if (
-        refs.g_letterRef.current &&
-        refs.l_letterRef.current &&
-        refs.u_letterRef.current &&
-        refs.e_letterRef.current &&
-        refs.gl_line.current &&
-        refs.lu_line.current &&
-        refs.ue_line.current &&
-        refs.eg_line.current
-      ) {
-        tl.fromTo(
-          refs.g_letterRef.current,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.2 },
-          "start+=0.5"
-        )
-          .to(
-            refs.gl_line.current,
-            { strokeDashoffset: 0, duration: 0.2 },
-            "<0.02"
-          )
-          .fromTo(
-            refs.l_letterRef.current,
-            { opacity: 0 },
-            { opacity: 1, duration: 0.2 },
-            ">0.01"
-          )
-          .to(
-            refs.lu_line.current,
-            { strokeDashoffset: 0, duration: 0.2 },
-            "<0.02"
-          )
-          .fromTo(
-            refs.u_letterRef.current,
-            { opacity: 0 },
-            { opacity: 1, duration: 0.2 },
-            ">0.01"
-          )
-          .to(
-            refs.ue_line.current,
-            { strokeDashoffset: 0, duration: 0.2 },
-            "<0.02"
-          )
-          .fromTo(
-            refs.e_letterRef.current,
-            { opacity: 0 },
-            { opacity: 1, duration: 0.2 },
-            ">0.01"
-          )
-          .to(
-            refs.eg_line.current,
-            { strokeDashoffset: 0, duration: 0.2 },
-            "<0.02"
+        // Check if photo element exists
+        const photoElement = document.querySelector(photoId);
+        if (photoElement) {
+          tl.fromTo(
+            photoId,
+            {
+              scale: 1.2,
+              filter: "blur(10px)",
+            },
+            { scale: 1, filter: "blur(0px)", duration: 0.2 }
           );
+        }
+
+        // Check if all required refs exist before animating
+        if (
+          refs.g_letterRef.current &&
+          refs.l_letterRef.current &&
+          refs.u_letterRef.current &&
+          refs.e_letterRef.current &&
+          refs.gl_line.current &&
+          refs.lu_line.current &&
+          refs.ue_line.current &&
+          refs.eg_line.current
+        ) {
+          tl.fromTo(
+            refs.g_letterRef.current,
+            { opacity: 0 },
+            { opacity: 1, duration: 0.2 },
+            "start+=0.5"
+          )
+            .to(
+              refs.gl_line.current,
+              { strokeDashoffset: 0, duration: 0.2 },
+              "<0.02"
+            )
+            .fromTo(
+              refs.l_letterRef.current,
+              { opacity: 0 },
+              { opacity: 1, duration: 0.2 },
+              ">0.01"
+            )
+            .to(
+              refs.lu_line.current,
+              { strokeDashoffset: 0, duration: 0.2 },
+              "<0.02"
+            )
+            .fromTo(
+              refs.u_letterRef.current,
+              { opacity: 0 },
+              { opacity: 1, duration: 0.2 },
+              ">0.01"
+            )
+            .to(
+              refs.ue_line.current,
+              { strokeDashoffset: 0, duration: 0.2 },
+              "<0.02"
+            )
+            .fromTo(
+              refs.e_letterRef.current,
+              { opacity: 0 },
+              { opacity: 1, duration: 0.2 },
+              ">0.01"
+            )
+            .to(
+              refs.eg_line.current,
+              { strokeDashoffset: 0, duration: 0.2 },
+              "<0.02"
+            );
+        }
+      } catch (error) {
+        console.error("GSAP animation error in CuratedStickySection:", error);
       }
     },
-    { scope: sectionRef, dependencies: [selectedYear] }
+    { scope: sectionRef }
   );
 };
 
@@ -292,18 +302,8 @@ const CuratedStickySection: React.FC<CuratedStickySectionProps> = ({
   }, [searchParams, years, selectedYear]);
 
   // Use animations for both desktop and mobile
-  useLogoAnimations(
-    desktopRefs,
-    "#curated-group-photo-desktop",
-    sectionRef,
-    selectedYear
-  );
-  useLogoAnimations(
-    mobileRefs,
-    "#curated-group-photo-mobile",
-    sectionRef,
-    selectedYear
-  );
+  useLogoAnimations(desktopRefs, "#curated-group-photo-desktop", sectionRef);
+  useLogoAnimations(mobileRefs, "#curated-group-photo-mobile", sectionRef);
 
   if (!headerData.is_visible) return null;
 

@@ -42,84 +42,104 @@ export default function ParticipantSection({
 
   useGSAP(
     () => {
-      setActiveIndex(
-        Math.floor(Math.random() * participantsData.participants.length)
-      );
-      setLines({
-        lu_line,
-        eg_line,
-        gl_line,
-        ue_line,
-      });
+      try {
+        setActiveIndex(
+          Math.floor(Math.random() * participantsData.participants.length)
+        );
+        setLines({
+          lu_line,
+          eg_line,
+          gl_line,
+          ue_line,
+        });
 
-      if (isMobile) {
-        gsap.set(
-          [
-            g_letterRef.current,
-            l_letterRef.current,
-            u_letterRef.current,
-            e_letterRef.current,
-          ],
-          {
-            scale: 0.2,
-            backgroundColor: "transparent",
+        // Add null checks before setting GSAP properties
+        const letterRefs = [
+          g_letterRef.current,
+          l_letterRef.current,
+          u_letterRef.current,
+          e_letterRef.current,
+        ].filter(Boolean);
+
+        if (letterRefs.length > 0) {
+          if (isMobile) {
+            gsap.set(letterRefs, {
+              scale: 0.2,
+              backgroundColor: "transparent",
+            });
+          } else {
+            gsap.set(letterRefs, {
+              scale: 0.4,
+              backgroundColor: "transparent",
+            });
           }
+        }
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top center",
+          },
+        });
+
+        // Add null checks for line animations
+        if (lu_line.current) {
+          tl.to(
+            lu_line.current,
+            { strokeDashoffset: 0, duration: 0.3, delay: 0.2 },
+            "<"
+          );
+        }
+
+        if (eg_line.current) {
+          tl.to(eg_line.current, { strokeDashoffset: 0, duration: 0.3 }, "<");
+        }
+
+        tl.addLabel("glue-logo-and-lines-animation-end");
+
+        // Check if background blur image exists
+        const backgroundBlurImage = document.querySelector(
+          "#background-blur-image"
         );
-      } else {
-        gsap.set(
-          [
-            g_letterRef.current,
-            l_letterRef.current,
-            u_letterRef.current,
-            e_letterRef.current,
-          ],
-          {
-            scale: 0.4,
-            backgroundColor: "transparent",
-          }
-        );
+        if (backgroundBlurImage) {
+          tl.from("#background-blur-image", {
+            autoAlpha: 0,
+          });
+        }
+
+        // Check if participant selected image exists
+        if (participantSelectedImage.current) {
+          tl.fromTo(
+            participantSelectedImage.current,
+            {
+              scale: 1.1,
+              autoAlpha: 0,
+            },
+            {
+              autoAlpha: 1,
+              scale: 1,
+              duration: 0.3,
+              ease: "expo.inOut",
+            },
+            "<"
+          );
+        }
+
+        // Check if carousel ref exists
+        if (carouselRef.current) {
+          tl.fromTo(
+            ["#participant-info-panel", carouselRef.current],
+            {
+              autoAlpha: 0,
+            },
+            {
+              autoAlpha: 1,
+            }
+          );
+        }
+      } catch (error) {
+        console.error("GSAP animation error in ParticipantSection:", error);
       }
-
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top center",
-        },
-      });
-
-      tl.to(
-        lu_line.current,
-        { strokeDashoffset: 0, duration: 0.3, delay: 0.2 },
-        "<"
-      )
-        .to(eg_line.current, { strokeDashoffset: 0, duration: 0.3 }, "<")
-        .addLabel("glue-logo-and-lines-animation-end")
-        .from("#background-blur-image", {
-          autoAlpha: 0,
-        })
-        .fromTo(
-          participantSelectedImage.current,
-          {
-            scale: 1.1,
-            autoAlpha: 0,
-          },
-          {
-            autoAlpha: 1,
-            scale: 1,
-            duration: 0.3,
-            ease: "expo.inOut",
-          },
-          "<"
-        )
-        .fromTo(
-          ["#participant-info-panel", carouselRef.current],
-          {
-            autoAlpha: 0,
-          },
-          {
-            autoAlpha: 1,
-          }
-        );
     },
     { scope: sectionRef }
   );

@@ -9,13 +9,13 @@ const CAROUSEL_FALLBACK_DATA: CarouselClientType = {
   is_visible: false,
   slides: [
     {
-      image_url: "/placeholder.jgp",
+      image_url: "/placeholder.jpg",
     },
     {
-      image_url: "/placeholder.jgp",
+      image_url: "/placeholder.jpg",
     },
     {
-      image_url: "/placeholder.jgp",
+      image_url: "/placeholder.jpg",
     },
   ],
 };
