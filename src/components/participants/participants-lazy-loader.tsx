@@ -53,7 +53,11 @@ export default function ParticipantsLazyLoader({
   }, []); // Empty dependencies - observer is created only once
 
   if (!hasMore) {
-    return <div className="col-span-full text-center py-8"></div>;
+    return (
+      <div className="col-span-full text-center py-8">
+        <p className="text-gray-500">No more participants to load</p>
+      </div>
+    );
   }
 
   return (
@@ -61,9 +65,20 @@ export default function ParticipantsLazyLoader({
       {loading ? (
         <div className="flex items-center space-x-2">
           <LoadingSpinner />
+          <span>Loading more participants...</span>
         </div>
       ) : (
-        <div className="h-8" /> // Invisible space for observer
+        <div className="flex flex-col items-center space-y-2">
+          <div className="h-8" /> {/* Invisible space for observer */}
+          <button
+            onClick={() => {
+              onLoadMoreRef.current();
+            }}
+            className="px-4 py-2 bg-white/50 text-black rounded hover:bg-white/70 transition-colors"
+          >
+            Load More
+          </button>
+        </div>
       )}
     </div>
   );
