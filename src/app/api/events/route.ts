@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type") as EventType | null;
   const day = searchParams.get("day");
+  const search = searchParams.get("search");
 
   const supabase = await createClient();
 
@@ -37,6 +38,11 @@ export async function GET(request: Request) {
     query = query.eq("dayId", day);
   }
 
+  // Remove the problematic OR query - we'll filter in JavaScript instead
+  // if (search) {
+  //   query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+  // }
+
   try {
     const { data: events, error } = await query;
 
@@ -63,7 +69,7 @@ export async function GET(request: Request) {
 
     const coOrganizerResults = await Promise.all(coOrganizerPromises);
 
-    const enhancedEvents = events.map((event, index) => ({
+    let enhancedEvents = events.map((event, index) => ({
       eventId: event.id,
       name: event.title,
       description: event.description || "",
@@ -99,6 +105,26 @@ export async function GET(request: Request) {
       rsvpLink: event.rsvp_link || "",
       createdAt: event.created_at || "",
     }));
+
+    // If there's a search term, also filter by co-organizers
+    if (search) {
+      enhancedEvents = enhancedEvents.filter((event) => {
+        const searchLower = search.toLowerCase();
+
+        // Check if any co-organizer name matches the search
+        const coOrganizerMatch = event.coOrganizers.some((co) =>
+          co.user_name.toLowerCase().includes(searchLower)
+        );
+
+        // Check if event title, description, or organizer name matches
+        const eventMatch =
+          event.name.toLowerCase().includes(searchLower) ||
+          event.description.toLowerCase().includes(searchLower) ||
+          event.organizer.user_name.toLowerCase().includes(searchLower);
+
+        return eventMatch || coOrganizerMatch;
+      });
+    }
 
     return NextResponse.json(enhancedEvents);
   } catch (error) {

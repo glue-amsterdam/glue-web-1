@@ -57,15 +57,7 @@ const SearchAndFilter = memo(function SearchAndFilter() {
       });
 
       if (hasChanges) {
-        console.log(
-          "SearchAndFilter: Updating URL with params:",
-          params.toString()
-        );
         router.push(`/events?${params.toString()}`, { scroll: false });
-      } else {
-        console.log(
-          "SearchAndFilter: No changes detected, skipping URL update"
-        );
       }
     },
     [router, searchParams]

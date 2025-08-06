@@ -15,7 +15,9 @@ const LazyEventsList = memo(function LazyEventsList({
   const urlSearchParams = useMemo(() => {
     const params = new URLSearchParams();
     Object.entries(searchParams).forEach(([key, value]) => {
-      if (value) params.set(key, value);
+      if (value && value.trim() !== "") {
+        params.set(key, value);
+      }
     });
     return params;
   }, [searchParams]);
