@@ -1,43 +1,42 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo, useCallback, memo } from "react";
 import { IndividualEventResponse } from "@/schemas/eventSchemas";
 import EventsList from "./events-list";
 
-export default function LazyEventsList({
+const LazyEventsList = memo(function LazyEventsList({
   events,
   searchParams,
 }: {
   events: IndividualEventResponse[];
   searchParams: { [key: string]: string };
 }) {
-  const [filteredEvents, setFilteredEvents] = useState(events);
+  const filterEvents = useCallback(
+    (searchTerm: string, eventList: IndividualEventResponse[]) => {
+      const lowercasedSearch = searchTerm.toLowerCase();
+      return eventList.filter(
+        (event) =>
+          event.name.toLowerCase().includes(lowercasedSearch) ||
+          event.description.toLowerCase().includes(lowercasedSearch) ||
+          event.organizer.user_name.toLowerCase().includes(lowercasedSearch) ||
+          event.coOrganizers?.some((co) =>
+            co.user_name.toLowerCase().includes(lowercasedSearch)
+          )
+      );
+    },
+    []
+  );
 
-  useEffect(() => {
+  const filteredEvents = useMemo(() => {
     const search = searchParams.search;
     if (search) {
-      filterEvents(search, events);
+      return filterEvents(search, events);
     } else {
-      setFilteredEvents(events);
+      return events;
     }
-  }, [events, searchParams]);
-
-  const filterEvents = (
-    searchTerm: string,
-    eventList: IndividualEventResponse[]
-  ) => {
-    const lowercasedSearch = searchTerm.toLowerCase();
-    const filtered = eventList.filter(
-      (event) =>
-        event.name.toLowerCase().includes(lowercasedSearch) ||
-        event.description.toLowerCase().includes(lowercasedSearch) ||
-        event.organizer.user_name.toLowerCase().includes(lowercasedSearch) ||
-        event.coOrganizers?.some((co) =>
-          co.user_name.toLowerCase().includes(lowercasedSearch)
-        )
-    );
-    setFilteredEvents(filtered);
-  };
+  }, [events, searchParams.search, filterEvents]);
 
   return <EventsList events={filteredEvents} />;
-}
+});
+
+export default LazyEventsList;

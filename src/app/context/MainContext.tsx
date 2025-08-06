@@ -1,13 +1,17 @@
 "use client";
 
-import { createContext, useContext, ReactNode } from "react";
-import useSWR from "swr";
+import { createContext, useContext, ReactNode, useEffect } from "react";
 import { MainSectionData } from "@/schemas/mainSchema";
 
 const MainContext = createContext<MainSectionData | undefined>(undefined);
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
+/* Create color styles for the root element */
+function createColorStyles(colors: Record<string, string>) {
+  return Object.entries(colors).reduce((acc, [key, value]) => {
+    acc[`--color-${key}`] = value;
+    return acc;
+  }, {} as Record<string, string>);
+}
 export const MainContextProvider = ({
   children,
   initialData,
@@ -15,14 +19,18 @@ export const MainContextProvider = ({
   children: ReactNode;
   initialData: MainSectionData;
 }) => {
-  const { data } = useSWR<MainSectionData>("/api/main", fetcher, {
-    fallbackData: initialData,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 86400000,
-  });
+  /* Set color styles for the root element */
+  useEffect(() => {
+    const root = document.documentElement;
+    const styles = createColorStyles(initialData.mainColors);
+    Object.entries(styles).forEach(([key, value]) => {
+      root.style.setProperty(key, value);
+    });
+  }, [initialData]);
 
-  return <MainContext.Provider value={data}>{children}</MainContext.Provider>;
+  return (
+    <MainContext.Provider value={initialData}>{children}</MainContext.Provider>
+  );
 };
 
 export const useColors = () => {

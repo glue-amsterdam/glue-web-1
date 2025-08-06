@@ -9,6 +9,8 @@ export const DEFAULT_PRESS_ITEMS: PressItemsSectionContent = {
   description:
     "Discover the GLUE project, the GLUE Foundation, and the GLUE International initiative.",
   is_visible: false,
+  text_color: "#ffffff",
+  background_color: "#000000",
   pressItems: [
     {
       id: "glue-tv",

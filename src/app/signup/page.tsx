@@ -6,6 +6,7 @@ import type { PlansArrayType } from "@/schemas/plansSchema";
 import useSWR from "swr";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import NavBar from "@/components/NavBar";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -34,5 +35,10 @@ export default function SignUpPage() {
     );
   }
 
-  return <RegistrationForm plansData={plansData} />;
+  return (
+    <>
+      <NavBar />
+      <RegistrationForm plansData={plansData} />
+    </>
+  );
 }

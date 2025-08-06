@@ -1,6 +1,6 @@
 "use client";
 
-import { LoadingFallbackMini } from "@/app/components/loading-fallback";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useDashboardContext } from "@/app/context/DashboardContext";
 import { InvoiceDataForm } from "@/app/dashboard/[userId]/invoice-data/invoice-data-form";
 
@@ -21,16 +21,14 @@ export default function ParticipantDetailsPage() {
     fetcher
   );
 
-  if (isLoading) return <LoadingFallbackMini />;
+  if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Failed to load invoice data</div>;
   if (!invoiceData) return <div>No invoice data available</div>;
   return (
-    <div className="bg-black pt-4 flex-grow">
-      <InvoiceDataForm
-        initialData={invoiceData}
-        isMod={isMod || false}
-        targetUserId={targetUserId}
-      />
-    </div>
+    <InvoiceDataForm
+      initialData={invoiceData}
+      isMod={isMod || false}
+      targetUserId={targetUserId}
+    />
   );
 }

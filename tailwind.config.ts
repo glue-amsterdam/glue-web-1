@@ -8,58 +8,6 @@ const config: Config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    colors: {
-      transparent: "transparent",
-      current: "currentColor",
-      gray: "#e2e8f0",
-      white: "#ffffff",
-      black: "#000000",
-      uiblack: "#2b2b2b",
-      uiwhite: "#faf9f6",
-      uired: "#f01e27",
-      uigreen: "#13dd88",
-      glueBlue: "#10069f",
-      blue: {
-        100: "#E6F0FF",
-        500: "#3B82F6",
-        600: "#2563EB",
-        800: "#1E40AF",
-      },
-      purple: {
-        50: "#F5F3FF",
-        500: "#8B5CF6",
-        600: "#7C3AED",
-      },
-      green: {
-        50: "#F0FDF4",
-        500: "#22C55E",
-        600: "#16A34A",
-      },
-      yellow: {
-        50: "#FEFCE8",
-        500: "#EAB308",
-        600: "#CA8A04",
-      },
-      red: {
-        500: "#EF4444",
-        600: "#DC2626",
-      },
-      pink: {
-        50: "#FDF2F8",
-        500: "#EC4899",
-        600: "#DB2777",
-      },
-      orange: {
-        50: "#FFF7ED",
-        500: "#F97316",
-        600: "#EA580C",
-      },
-      indigo: {
-        50: "#EEF2FF",
-        500: "#6366F1",
-        600: "#4F46E5",
-      },
-    },
     extend: {
       fontFamily: {
         lausanne: ["lausanne", "sans-serif"],
@@ -67,8 +15,20 @@ const config: Config = {
       },
       scrollBehavior: ["smooth"],
       colors: {
+        transparent: "transparent",
+        current: "currentColor",
+        white: "#ffffff",
+        black: "#000000",
+        uiblack: "#2b2b2b",
+        uiwhite: "#faf9f6",
+        uired: "#f01e27",
+        uigreen: "#13dd88",
+        glueBlue: "#10069f",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        gray: {
+          DEFAULT: "#e2e8f0",
+        },
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",

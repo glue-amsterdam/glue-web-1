@@ -1,6 +1,6 @@
 "use client";
 
-import { LoadingFallbackMini } from "@/app/components/loading-fallback";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useDashboardContext } from "@/app/context/DashboardContext";
 import { MapInfoForm } from "@/app/dashboard/[userId]/map-info/map-info-form";
 import { MapInfo } from "@/schemas/mapInfoSchemas";
@@ -20,13 +20,9 @@ export default function ParticipantDetailsPage() {
     fetcher
   );
 
-  if (isLoading) return <LoadingFallbackMini />;
+  if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Failed to load map data</div>;
   if (!targetUserId) return <div>No target user ID</div>;
 
-  return (
-    <div className="bg-black pt-4 flex-grow">
-      <MapInfoForm initialData={mapInfo} targetUserId={targetUserId} />
-    </div>
-  );
+  return <MapInfoForm initialData={mapInfo} targetUserId={targetUserId} />;
 }

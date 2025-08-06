@@ -1,6 +1,6 @@
 "use client";
 
-import { LoadingFallbackMini } from "@/app/components/loading-fallback";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import CreateHubClientPage from "@/app/dashboard/[userId]/hub-create/create-hub-client-page";
 import { UserInfo } from "@/schemas/userInfoSchemas";
 
@@ -15,7 +15,7 @@ function CreateHub() {
     isLoading,
   } = useSWR<UserInfo[]>("/api/users/participants/hub", fetcher);
 
-  if (isLoading) return <LoadingFallbackMini />;
+  if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Failed to load user data</div>;
 
   return (

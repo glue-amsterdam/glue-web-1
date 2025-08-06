@@ -62,8 +62,27 @@ export function SlugField() {
                 {...field}
                 className="bg-white text-black pr-10"
                 onChange={(e) => {
-                  field.onChange(e);
-                  checkSlugUniqueness(e.target.value);
+                  // Remove whitespace and convert to lowercase
+                  const cleanValue = e.target.value
+                    .replace(/\s+/g, "")
+                    .toLowerCase();
+                  field.onChange(cleanValue);
+                  checkSlugUniqueness(cleanValue);
+                }}
+                onKeyDown={(e) => {
+                  // Prevent space key
+                  if (e.key === " ") {
+                    e.preventDefault();
+                  }
+                }}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  const pastedText = e.clipboardData.getData("text");
+                  const cleanValue = pastedText
+                    .replace(/\s+/g, "")
+                    .toLowerCase();
+                  field.onChange(cleanValue);
+                  checkSlugUniqueness(cleanValue);
                 }}
               />
             </FormControl>

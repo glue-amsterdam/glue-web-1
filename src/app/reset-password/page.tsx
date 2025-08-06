@@ -1,4 +1,5 @@
 import ResetPasswordForm from "@/app/reset-password/reset-password-form";
+import { Suspense } from "react";
 
 export default function ResetPasswordPage() {
   return (
@@ -7,7 +8,9 @@ export default function ResetPasswordPage() {
         <h1 className="text-3xl font-bold text-center text-primary">
           Reset Password
         </h1>
-        <ResetPasswordForm />
+        <Suspense>
+          <ResetPasswordForm />
+        </Suspense>
       </div>
     </div>
   );

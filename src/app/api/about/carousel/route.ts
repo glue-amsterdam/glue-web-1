@@ -9,7 +9,7 @@ export async function GET() {
     // Fetch carousel data first
     const { data: carouselData, error: carouselError } = await supabase
       .from("about_carousel")
-      .select("title,description,is_visible")
+      .select("title,description,is_visible,text_color")
       .eq("id", "about-carousel")
       .single();
 
@@ -21,6 +21,7 @@ export async function GET() {
     // If not visible, return early with empty data
     if (!carouselData.is_visible) {
       const emptyCarouselSection: CarouselClientType = {
+        text_color: "#fff",
         title: "",
         description: "",
         is_visible: false,
@@ -48,6 +49,7 @@ export async function GET() {
     }
 
     const carouselSection: CarouselClientType = {
+      text_color: carouselData.text_color,
       title: carouselData.title,
       description: carouselData.description,
       is_visible: carouselData.is_visible,

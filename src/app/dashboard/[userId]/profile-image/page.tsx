@@ -3,6 +3,7 @@
 import { useDashboardContext } from "@/app/context/DashboardContext";
 import { ProfileImageForm } from "./profile-image-form";
 import useSWR from "swr";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -20,11 +21,11 @@ export default function ProfileImagePage() {
     isLoading: planIdLoading,
   } = useSWR(`/api/users/participants/${targetUserId}/plan-id`, fetcher);
 
-  if (isLoading || planIdLoading) return <div>Loading...</div>;
+  if (isLoading || planIdLoading) return <LoadingSpinner />;
   if (error || planIdError) return <div>Failed to load profile images</div>;
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="w-full max-w-[80%] mx-auto">
       <h1 className="text-2xl font-bold mb-4">Profile Images</h1>
       <ProfileImageForm
         targetUserId={targetUserId as string}

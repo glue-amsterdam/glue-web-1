@@ -22,11 +22,12 @@ export async function GET() {
 
     const carouselSection: Pick<
       CarouselSection,
-      "title" | "description" | "slides" | "is_visible"
+      "title" | "description" | "slides" | "is_visible" | "text_color"
     > = {
       title: carouselData.title,
       description: carouselData.description,
       is_visible: carouselData.is_visible,
+      text_color: carouselData.text_color,
       slides: slidesData.map(({ id, image_url, image_name }) => ({
         id,
         image_url,
@@ -71,6 +72,7 @@ export async function POST(request: Request) {
         title: validatedData.title,
         description: validatedData.description,
         is_visible: validatedData.is_visible,
+        text_color: validatedData.text_color,
       });
 
     if (carouselError) {

@@ -156,8 +156,6 @@ export function MapInfoForm({ initialData, targetUserId }: MapInfoFormProps) {
   const { toast } = useToast();
   const router = useRouter();
 
-  console.log(initialData);
-
   const form = useForm<MapInfo>({
     resolver: zodResolver(mapInfoSchema),
     defaultValues: {
@@ -210,7 +208,7 @@ export function MapInfoForm({ initialData, targetUserId }: MapInfoFormProps) {
 
   return (
     <FormProvider {...form}>
-      <Card className="w-full max-w-2xl mx-auto">
+      <Card className="w-full max-w-[80%] mx-auto">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Map Information</CardTitle>
         </CardHeader>

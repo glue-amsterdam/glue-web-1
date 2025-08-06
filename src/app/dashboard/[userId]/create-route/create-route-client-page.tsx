@@ -96,7 +96,7 @@ export default function CreateRouteClientPage({
   };
 
   return (
-    <div className="container mx-auto py-10 space-y-8">
+    <div className="w-full max-w-[80%] mx-auto flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <RouteIcon className="h-8 w-8" />

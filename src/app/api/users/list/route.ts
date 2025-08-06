@@ -24,10 +24,8 @@ interface ParticipantDetail {
   user_id: string;
   slug: string;
   status: string;
-  is_sticky: boolean;
   is_active: boolean;
   special_program: boolean;
-  year: number | null;
   reactivation_requested: boolean;
   reactivation_status: string | null;
 }
@@ -100,8 +98,10 @@ export async function GET() {
         .map((user) => user.user_id) || [];
 
     let participantDetails: ParticipantDetail[] = [];
+    let stickyParticipantIds: string[] = [];
 
     if (participantIds.length > 0) {
+      // Fetch participant details
       const { data: participant_data, error: participant_error } =
         await supabase
           .from("participant_details")
@@ -110,25 +110,39 @@ export async function GET() {
               "user_id",
               "slug",
               "status",
-              "is_sticky",
               "is_active",
               "special_program",
-              "year",
               "reactivation_requested",
               "reactivation_status",
             ].join(", ")
           )
           .in("user_id", participantIds);
 
+      // Fetch sticky group participants to determine sticky status
+      const { data: sticky_data, error: sticky_error } = await supabase
+        .from("sticky_group_participants")
+        .select("participant_user_id")
+        .in("participant_user_id", participantIds);
+
       if (participant_error) {
         throw new Error(
           `Failed to fetch participant details: ${participant_error.message}`
         );
       }
+
+      if (sticky_error) {
+        console.error("Error fetching sticky participants:", sticky_error);
+        // Don't throw error for sticky participants, just log it
+      }
+
       participantDetails = Array.isArray(participant_data)
         ? (participant_data.filter(
             isParticipantDetail
           ) as unknown[] as ParticipantDetail[])
+        : [];
+
+      stickyParticipantIds = Array.isArray(sticky_data)
+        ? sticky_data.map((sp) => sp.participant_user_id)
         : [];
     }
 
@@ -138,14 +152,14 @@ export async function GET() {
         const participantInfo = participantDetails.find(
           (p) => p.user_id === user.user_id
         );
+        const isSticky = stickyParticipantIds.includes(user.user_id);
         return {
           ...user,
           participant_slug: participantInfo?.slug,
           participant_status: participantInfo?.status,
-          participant_is_sticky: participantInfo?.is_sticky,
+          participant_is_sticky: isSticky,
           participant_is_active: participantInfo?.is_active,
           participant_special_program: participantInfo?.special_program,
-          participant_year: participantInfo?.year,
           participant_reactivation_requested:
             participantInfo?.reactivation_requested,
           participant_reactivation_status: participantInfo?.reactivation_status,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LoadingFallback } from "@/app/components/loading-fallback";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { getCookieConsent } from "@/app/actions/cookieConsent";
 import { Button } from "@/components/ui/button";
 import { CookieSettingsModal } from "@/components/cookies/cookies-modal";
@@ -31,7 +31,7 @@ export default function MapWrapper({ initialData }: MapWrapperProps) {
   }, []);
 
   if (mapConsent === null) {
-    return <LoadingFallback />;
+    return <LoadingSpinner />;
   }
 
   return (

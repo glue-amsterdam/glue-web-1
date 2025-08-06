@@ -12,7 +12,6 @@ import {
   Phone,
   CreditCard,
   User,
-  Star,
   CheckCircle,
   XCircle,
   AlertCircle,
@@ -146,14 +145,7 @@ function UserFullViewContent({ selectedUser }: Props) {
                 <Badge variant="outline" className="text-xs px-2 py-0.5">
                   {selectedUser.participantDetails.status}
                 </Badge>
-                {selectedUser.participantDetails.is_sticky && (
-                  <Badge
-                    variant="secondary"
-                    className="gap-1 text-xs px-2 py-0.5"
-                  >
-                    <Star className="w-3 h-3" /> Sticky
-                  </Badge>
-                )}
+
                 <Badge
                   variant={
                     selectedUser.participantDetails.is_active
@@ -174,14 +166,6 @@ function UserFullViewContent({ selectedUser }: Props) {
                     /{selectedUser.participantDetails.slug}
                   </p>
                 </div>
-                {selectedUser.participantDetails.year && (
-                  <div>
-                    <span className="text-xs text-gray-600">Year</span>
-                    <p className="text-xs">
-                      {selectedUser.participantDetails.year}
-                    </p>
-                  </div>
-                )}
               </div>
               {selectedUser.participantDetails.short_description && (
                 <div>

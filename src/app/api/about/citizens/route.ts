@@ -1,4 +1,7 @@
-import { clientCitizensSectionSchema } from "@/schemas/citizenSchema";
+import {
+  clientCitizensSectionSchema,
+  ClientCitizen,
+} from "@/schemas/citizenSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -8,7 +11,7 @@ export async function GET() {
 
     const { data: section, error: headerError } = await supabase
       .from("about_citizens_section")
-      .select("title, description, is_visible")
+      .select("title, description, is_visible, text_color, background_color")
       .single();
 
     if (headerError) {
@@ -23,10 +26,12 @@ export async function GET() {
         description: "",
         is_visible: false,
         citizensByYear: {},
+        text_color: "#ffffff",
+        background_color: "#000000",
       });
     }
 
-    const { data: citizens, error } = await supabase
+    const { data: citizens = [], error } = await supabase
       .from("about_citizens")
       .select("id, name, image_url, description, year")
       .order("year", { ascending: false });
@@ -36,19 +41,24 @@ export async function GET() {
     }
 
     // Group citizens by year
-    const citizensByYear = citizens.reduce((acc, citizen) => {
-      if (!acc[citizen.year]) {
-        acc[citizen.year] = [];
-      }
-      acc[citizen.year].push(citizen);
-      return acc;
-    }, {} as Record<string, typeof citizens>);
+    const citizensByYear = (citizens as ClientCitizen[]).reduce(
+      (acc, citizen) => {
+        if (!acc[citizen.year]) {
+          acc[citizen.year] = [];
+        }
+        acc[citizen.year].push(citizen);
+        return acc;
+      },
+      {} as Record<string, ClientCitizen[]>
+    );
 
     const response = {
       title: section?.title,
       description: section?.description,
       is_visible: section?.is_visible,
       citizensByYear,
+      text_color: section?.text_color,
+      background_color: section?.background_color,
     };
 
     // Validate response with client schema
@@ -57,11 +67,9 @@ export async function GET() {
     return NextResponse.json(validatedResponse);
   } catch (error) {
     console.error("Error in GET /api/about/citizens:", error);
-    if (process.env.NODE_ENV === "production") {
-      return NextResponse.json(
-        { error: "Failed to fetch citizens data" },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json(
+      { error: "Failed to fetch citizens data" },
+      { status: 500 }
+    );
   }
 }

@@ -82,7 +82,7 @@ export default function RoutesPage() {
 
   return (
     <motion.div
-      className="container mx-auto py-10 space-y-8"
+      className="w-full max-w-[80%] mx-auto flex flex-col gap-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}

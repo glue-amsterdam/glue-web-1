@@ -238,7 +238,7 @@ export function ProfileImageForm({
 
   return (
     <>
-      <p className="mb-4 text-sm text-gray-600">{maxImagesText}</p>
+      <p className="mb-4 text-sm ">{maxImagesText}</p>
       <div className="space-y-4">
         {fields.map((field, index) => (
           <div key={field.id} className="border p-4 rounded-md">

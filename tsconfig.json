@@ -29,7 +29,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/hooks/useEventSWRts"
+    "src/app/hooks/useEventSWRts",
+    "src/components/ViewTransitionsStyle.tss"
   ],
   "exclude": ["node_modules"]
 }

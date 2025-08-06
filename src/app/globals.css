@@ -4,41 +4,233 @@
 @tailwind components;
 @tailwind utilities;
 
+/* View transitions */
+::view-transition-group(root) {
+  animation-duration: 0.1s;
+  animation-timing-function: ease-out;
+  contain: paint;
+}
+.no-hover:hover {
+  background-color: transparent !important;
+}
+
+/* Carousel background fix */
+.carousel-item {
+  background-color: white !important;
+  overflow: hidden;
+}
+
+.carousel-item > div {
+  background-color: white !important;
+}
+
+/* Ensure carousel container has solid background */
+[data-embla-root] {
+  background-color: white !important;
+}
+
+/* Cuando vas de home => about */
+:root[data-from="home"][data-to="about"]::view-transition-old(root) {
+  animation: slide-home-to-about-out 0.6s ease forwards;
+}
+:root[data-from="home"][data-to="about"]::view-transition-new(root) {
+  animation: slide-home-to-about-in 0.6s ease forwards;
+}
+:root[data-from="about"][data-to="home"]::view-transition-old(root) {
+  animation: slide-about-to-home-out 0.6s ease forwards;
+}
+:root[data-from="about"][data-to="home"]::view-transition-new(root) {
+  animation: slide-about-to-home-in 0.6s ease forwards;
+}
+@keyframes slide-home-to-about-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes slide-home-to-about-in {
+  from {
+    transform: translateY(-100vh);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-about-to-home-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100vh);
+  }
+}
+
+@keyframes slide-about-to-home-in {
+  from {
+    transform: translateY(100vh);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Cuando vas de home => events */
+:root[data-from="home"][data-to="events"]::view-transition-old(root) {
+  animation: slide-home-to-events-out 0.6s ease forwards;
+}
+:root[data-from="home"][data-to="events"]::view-transition-new(root) {
+  animation: slide-home-to-events-in 0.6s ease forwards;
+}
+:root[data-from="events"][data-to="home"]::view-transition-old(root) {
+  animation: slide-events-to-home-out 0.6s ease forwards;
+}
+:root[data-from="events"][data-to="home"]::view-transition-new(root) {
+  animation: slide-events-to-home-in 0.6s ease forwards;
+}
+
+@keyframes slide-home-to-events-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100vw);
+  }
+}
+
+@keyframes slide-home-to-events-in {
+  from {
+    transform: translateX(100vw);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-events-to-home-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100vw);
+  }
+}
+
+@keyframes slide-events-to-home-in {
+  from {
+    transform: translateX(-100vw);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Cuando vas de home => map */
+:root[data-from="home"][data-to="map"]::view-transition-old(root) {
+  animation: slide-home-to-map-out 0.6s ease forwards;
+}
+:root[data-from="home"][data-to="map"]::view-transition-new(root) {
+  animation: slide-home-to-map-in 0.6s ease forwards;
+}
+:root[data-from="map"][data-to="home"]::view-transition-old(root) {
+  animation: slide-map-to-home-out 0.6s ease forwards;
+}
+:root[data-from="map"][data-to="home"]::view-transition-new(root) {
+  animation: slide-map-to-home-in 0.6s ease forwards;
+}
+
+@keyframes slide-home-to-map-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100vh);
+  }
+}
+
+@keyframes slide-home-to-map-in {
+  from {
+    transform: translateY(100vh);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-map-to-home-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes slide-map-to-home-in {
+  from {
+    transform: translateY(-100vh);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Cuando vas de home => dashboard */
+:root[data-from="home"][data-to="dashboard"]::view-transition-old(root) {
+  animation: slide-home-to-dashboard-out 0.6s ease forwards;
+}
+:root[data-from="home"][data-to="dashboard"]::view-transition-new(root) {
+  animation: slide-home-to-dashboard-in 0.6s ease forwards;
+}
+:root[data-from="dashboard"][data-to="home"]::view-transition-old(root) {
+  animation: slide-dashboard-to-home-out 0.6s ease forwards;
+}
+:root[data-from="dashboard"][data-to="home"]::view-transition-new(root) {
+  animation: slide-dashboard-to-home-in 0.6s ease forwards;
+}
+
+@keyframes slide-home-to-dashboard-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100vw);
+  }
+}
+
+@keyframes slide-home-to-dashboard-in {
+  from {
+    transform: translateX(-100vw);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-dashboard-to-home-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100vw);
+  }
+}
+
+@keyframes slide-dashboard-to-home-in {
+  from {
+    transform: translateX(100vw);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
-  }
-  /* Custom scrollbar styling for better cross-platform compatibility */
-  .custom-scrollbar::-webkit-scrollbar {
-    height: 25px; /* Increased to 16px for an even thicker scrollbar */
-    width: 16px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: var(--color-box1);
-    border-radius: 20px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: rgba(
-      255,
-      255,
-      255,
-      0.8
-    ); /* Darker for better visibility */
-    border-radius: 20px;
-    border: 4px solid transparent; /* Creates padding effect */
-    background-clip: content-box;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(255, 255, 255);
-  }
-
-  /* Make scrollbar always visible on Mac */
-  .custom-scrollbar {
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: auto; /* Use auto instead of thin */
   }
   .dashboard-input {
     @apply bg-uiwhite text-uiblack;
@@ -53,74 +245,41 @@
 
 @layer components {
   .about-w {
-    @apply max-w-[80%] sm:max-w-[80%];
+    @apply max-w-[95vw] md:max-w-[90%] mx-auto w-full;
   }
-  .h1-titles {
-    @apply text-2xl md:text-4xl lg:text-5xl xl:text-6xl;
+  .about-title {
+    @apply text-xl md:text-2xl lg:text-3xl font-bold tracking-wide;
   }
-  .h2-titles {
-    @apply text-2xl md:text-3xl lg:text-4xl xl:text-5xl tracking-widest uppercase font-bold;
-  }
-  .main-container {
-    @apply h-[calc(100vh-5rem)];
+  .about-description {
+    @apply text-sm md:text-base;
   }
   .navLabel {
-    @apply text-4xl flex-1 sm:text-[3rem] md:text-6xl lg:text-[4.7rem] xl:text-[4.9rem] [line-height:1.3];
+    @apply text-4xl flex-1 sm:text-[3rem] md:text-6xl lg:text-[4.7rem] xl:text-[4.9rem] [line-height:1.3] group-hover:scale-[1.05] transition-all focus:outline-none pointer-events-auto duration-100;
   }
-
   .admin-mini-button {
     @apply rounded-md text-xs px-2 py-1 sm:text-sm bg-[var(--color-box4)] hover:scale-105 transition-all;
   }
-
-  .citizen-triangle {
-    clip-path: polygon(100% 0, 0 100%, 100% 100%);
-    position: absolute;
-    inset: 0;
-  }
-  .citizen-card-triangle {
-    clip-path: polygon(100% 50%, 0 100%, 100% 100%);
-    position: absolute;
-    inset: 0;
-  }
-  .participants-bg {
-    clip-path: polygon(0 0, 100% 0, 100% 20%, 0 85%);
-    position: absolute;
-    inset: 0;
-  }
-  .participants-bg-r {
-    clip-path: polygon(100% 0, 0 0, 0 20%, 100% 65%);
-    position: absolute;
-    inset: 0;
-  }
-  .citizens-bg {
-    clip-path: polygon(100% 0, 100% 30%, 50% 75%, 0 30%, 0 0);
-    position: absolute;
-    inset: 0;
-  }
-  .press-bg {
-    clip-path: polygon(100% 0, 100% 30%, 0 86%, 0 32%, 0 0);
-    position: absolute;
-    inset: 0;
-  }
   .homeLogoLetter {
-    @apply size-24 md:size-28 lg:size-36 xl:size-36 absolute bg-black;
+    @apply size-24 md:size-28 lg:size-32 absolute mix-blend-lighten bg-black;
   }
   .memberLogoLetter {
-    @apply size-10 sm:size-12 md:size-20 xl:size-24 absolute bg-black;
-  }
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
+    @apply size-10 sm:size-12 md:size-20 xl:size-24;
   }
 }
 
 @font-face {
   font-family: "lausanne";
   src: url("/lausanne.woff2") format("woff2");
+}
+
+.sand-clock-clip {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' fill='none' viewBox='0 0 40 40'><path fill='white' d='M0 0h40L20 20l20 20H0l20-20z'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' fill='none' viewBox='0 0 40 40'><path fill='white' d='M0 0h40L20 20l20 20H0l20-20z'/></svg>");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: cover;
+  mask-size: cover;
+  background: black;
 }
 
 @layer base {
@@ -177,12 +336,9 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-
-  * {
-    @apply border-border;
-  }
 }
 
+/* STYLES FOR HOME BUTTONS (HOME PAGE) */
 .upperbutton {
   clip-path: polygon(100% 0, 100% 10%, 50% 50%, 0 10%, 0 0);
   width: 100%;
@@ -214,40 +370,19 @@
   position: absolute;
 }
 
-.scrollbar-visible {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
-}
-
-.scrollbar-visible::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.scrollbar-visible::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.scrollbar-visible::-webkit-scrollbar-thumb {
-  background-color: rgba(155, 155, 155, 0.5);
-  border-radius: 20px;
-  border: transparent;
-}
+/* STYLES FOR SANITIZED HTML (BEAUTY TEXT EDITOR) */
 .prose.text-black * {
   color: black !important;
 }
 .prose {
   max-width: none;
 }
-
 .prose * {
   color: inherit;
 }
-
 .prose strong {
   font-weight: 600;
 }
-
 .prose h1,
 .prose h2,
 .prose h3,
@@ -258,6 +393,7 @@
   line-height: 1.25;
 }
 
+/* MAPBOX STYLES */
 .mapboxgl-popup-content {
   font-family: "Open Sans", sans-serif;
   padding: 15px;
@@ -274,7 +410,7 @@
   margin-bottom: 10px;
 }
 
-@keyframes fadeIn {
+@keyframes fade-in {
   from {
     opacity: 0;
   }
@@ -283,13 +419,23 @@
   }
 }
 
-.sidebar-overlay {
-  animation: fadeIn 0.2s ease-in-out;
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+.radial-gradient-background {
+  background: #000000;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 1) 100%
+  );
 }
 
-/* Add these styles to your global CSS */
+.sidebar-overlay {
+  animation: fade-in 0.2s ease-in-out;
+}
 
-/* Improve popup styling */
 .mapboxgl-popup-content {
   padding: 0 !important;
   overflow: hidden;
@@ -319,8 +465,6 @@
   .mapboxgl-popup {
     max-width: calc(100vw - 32px) !important;
   }
-
-  /* Adjust popup tip for bottom anchor - REMOVED as it's no longer needed*/
 }
 
 /* Custom popup styling */
@@ -523,4 +667,71 @@
 
 .route-popup-content .button svg {
   margin-right: 8px;
+}
+
+/* Custom hover effect for curated section */
+.hover\:scale-image:hover ~ div img {
+  transform: scale(1.05);
+}
+
+/* Fix for overlay scroll on desktop */
+@media (min-width: 768px) {
+  #navbar-portal-container {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+}
+
+/* Simple marker pop-up animation */
+@keyframes marker-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.marker-pop {
+  animation: marker-pop 0.3s ease-out;
+}
+
+/* Marker entrance animation */
+.marker-entrance {
+  animation: marker-entrance 0.5s ease-out forwards;
+}
+
+@keyframes marker-entrance {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Simple marker pop-up animation */
+@keyframes marker-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.marker-pop {
+  animation: marker-pop 0.3s ease-out;
 }

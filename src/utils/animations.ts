@@ -1,3 +1,4 @@
+// Default fade in config (can keep if used elsewhere)
 export const fadeInConfig = {
   initial: { opacity: 0 },
   whileInView: { opacity: 1 },

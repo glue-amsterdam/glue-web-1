@@ -6,6 +6,8 @@ import {
 
 const INFO_FALLBACK_DATA: InfoSectionClient = {
   is_visible: false,
+  text_color: "#000000",
+  background_color: "#ffffff",
   title: "Information about GLUE",
   description:
     "Discover the GLUE project, the GLUE Foundation, and the GLUE International initiative.",

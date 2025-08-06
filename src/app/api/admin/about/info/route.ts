@@ -24,6 +24,8 @@ export async function GET() {
       title: infoData.title,
       description: infoData.description,
       is_visible: infoData.is_visible,
+      text_color: infoData.text_color,
+      background_color: infoData.background_color,
       infoItems:
         infoItemsData?.map(
           ({ id, title, description, image_url, is_visible }) => ({
@@ -58,6 +60,8 @@ export async function PUT(request: Request) {
         title: validatedData.title,
         description: validatedData.description,
         is_visible: validatedData.is_visible,
+        text_color: validatedData.text_color,
+        background_color: validatedData.background_color,
       })
       .eq("id", "about-info");
 

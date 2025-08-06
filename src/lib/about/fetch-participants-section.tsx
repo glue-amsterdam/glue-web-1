@@ -3,32 +3,34 @@ import { ParticipantsResponse } from "@/schemas/participantsSchema";
 
 const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
   headerData: {
+    text_color: "#fff",
     title: "Participants Section!",
     description:
       "Discover all participating brands, designers, studio's and academies of GLUE amsterdam connected by design",
     is_visible: false,
+    background_color: "#000000",
   },
   participants: [
     {
-      userId: "placeholder-1",
       slug: "placeholder-participant-1",
       userName: "Loading Participant 1",
+      short_description: "Loading Participant 1",
       image: {
         image_url: "/placeholder.jgp",
       },
     },
     {
-      userId: "placeholder-2",
       slug: "placeholder-participant-2",
       userName: "Loading Participant 2",
+      short_description: "Loading Participant 2",
       image: {
         image_url: "/placeholder.jgp",
       },
     },
     {
-      userId: "placeholder-3",
       slug: "placeholder-participant-3",
-      userName: "Loading Participant 3",
+      userName: "Loading Participant   3",
+      short_description: "Loading Participant 3",
       image: {
         image_url: "/placeholder.jgp",
       },
@@ -40,7 +42,7 @@ export async function fetchAboutParticipants(): Promise<ParticipantsResponse> {
   try {
     const res = await fetch(`${BASE_URL}/about/participants`, {
       next: {
-        revalidate: 30,
+        revalidate: 3600,
         tags: ["participants"],
       },
     });

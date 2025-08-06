@@ -57,8 +57,6 @@ export function ParticipantDetailsForm({
       short_description: participantDetails?.short_description || "",
       description: participantDetails?.description || "",
       slug: participantDetails?.slug || "",
-      is_sticky: participantDetails?.is_sticky || false,
-      year: participantDetails?.year || null,
       status: participantDetails?.status || "pending",
       user_id: targetUserId || "",
       special_program: participantDetails?.special_program || false,
@@ -444,7 +442,7 @@ export function ParticipantDetailsForm({
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full max-w-[80%] mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">
           Participant Details
@@ -508,8 +506,6 @@ export function ParticipantDetailsForm({
                     "short_description",
                     "description",
                     "slug",
-                    "is_sticky",
-                    "year",
                     "status",
                     "special_program",
                     "is_active",

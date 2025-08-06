@@ -1,3 +1,5 @@
+import NavBar from "@/components/NavBar";
+
 type Props = {
   children: React.ReactNode;
 };
@@ -8,5 +10,10 @@ export const metadata = {
 };
 
 export default function ParticipantsLayout({ children }: Props) {
-  return <main className="bg-[var(--color-box2)]">{children}</main>;
+  return (
+    <main>
+      <NavBar />
+      {children}
+    </main>
+  );
 }

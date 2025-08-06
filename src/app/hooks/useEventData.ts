@@ -19,13 +19,14 @@ export function useEventData(eventId: string | null) {
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-      refreshInterval: 60000,
+      refreshInterval: 0, // Disable automatic refresh
+      dedupingInterval: 60000, // Dedupe requests within 1 minute
+      keepPreviousData: true, // Keep previous data while loading new data
     }
   );
 
   return {
     event: data ? { ...data, mapData: undefined } : null, // Remove mapData from event object
-
     isLoading,
     error: error ? error : null,
   };

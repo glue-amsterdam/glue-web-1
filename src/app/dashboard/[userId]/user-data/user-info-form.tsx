@@ -157,9 +157,7 @@ export function UserInfoForm({
               short_description: "",
               description: "",
               slug,
-              is_sticky: false,
               special_program: false,
-              year: null,
               status: "accepted",
               is_active: true,
               reactivation_requested: false,
@@ -225,7 +223,7 @@ export function UserInfoForm({
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full max-w-[80%] mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">User Information</CardTitle>
       </CardHeader>

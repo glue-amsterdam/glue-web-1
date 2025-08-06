@@ -1,8 +1,4 @@
-import Background from "@/app/components/background";
-import CenteredLoader from "@/app/components/centered-loader";
-import EventsPageContainer from "@/app/events/events-page-container";
-import { NAVBAR_HEIGHT } from "@/constants";
-import { Suspense } from "react";
+import EventsClientPage from "./events-client-page";
 
 export const metadata = {
   title: "GLUE Events",
@@ -21,15 +17,5 @@ export default async function EventsPage(props: {
     }
   });
 
-  return (
-    <div
-      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
-      className={`min-h-dvh relative overflow-hidden`}
-    >
-      <Background />
-      <Suspense fallback={<CenteredLoader />}>
-        <EventsPageContainer params={params} />
-      </Suspense>
-    </div>
-  );
+  return <EventsClientPage params={params} />;
 }

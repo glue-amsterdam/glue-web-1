@@ -1,50 +1,43 @@
-import { Suspense } from "react";
-import Background from "@/app/components/background";
-import AboutCarousel from "@/app/about/about-carousel";
-import AboutParticipants from "@/app/about/about-participants";
-import AboutCurated from "@/app/about/about-curated";
-import AboutInfo from "@/app/about/about-info";
-import AboutCitizens from "@/app/about/about-citizens";
-import { CarouselSkeleton } from "@/app/about/components/skeletons/carouselSkeleton";
-import { ParticipantsSkeleton } from "@/app/about/components/skeletons/participantSkeleton";
-import { CuratedSkeleton } from "@/app/about/components/skeletons/curatedSkeleton";
-import { InfoSectionSkeleton } from "@/app/about/components/skeletons/infoSkeleton";
-import { CitizensSkeleton } from "@/app/about/components/skeletons/citizenSkeleton";
-import AboutLastPage from "@/app/about/about-last-page";
-import AboutPress from "@/app/about/about-press";
+import { fetchAboutParticipants } from "@/lib/about/fetch-participants-section";
+import AboutClientPage from "./about-client-page";
+import { fetchUserCarousel } from "@/lib/about/fetch-carousel-section";
+import { fetchCitizensOfHonor } from "@/lib/about/fetch-citizens-section";
+import { fetchCuratedSectionV2 } from "@/lib/about/fetch-curated-section-v2";
+import { fetchInfoSection } from "@/lib/about/fetch-info-section";
+import { fetchPressSection } from "@/lib/about/fetch-press-section";
+import { fetchInternationalContent } from "@/lib/about/fetch-international-section";
+import { fetchSponsorsData } from "@/lib/about/fetch-sponsors-section";
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const [
+    carouselData,
+    participantsData,
+    citizensData,
+    curatedData,
+    infoSectionData,
+    pressSectionData,
+    glueInternational,
+    sponsorsData,
+  ] = await Promise.all([
+    fetchUserCarousel(),
+    fetchAboutParticipants(),
+    fetchCitizensOfHonor(),
+    fetchCuratedSectionV2(),
+    fetchInfoSection(),
+    fetchPressSection(),
+    fetchInternationalContent(),
+    fetchSponsorsData(),
+  ]);
   return (
-    <>
-      <Suspense fallback={<CarouselSkeleton />}>
-        <AboutCarousel />
-      </Suspense>
-
-      <Suspense fallback={<ParticipantsSkeleton />}>
-        <AboutParticipants />
-      </Suspense>
-
-      <Suspense fallback={<CitizensSkeleton />}>
-        <AboutCitizens />
-      </Suspense>
-
-      <Suspense fallback={<CuratedSkeleton />}>
-        <AboutCurated />
-      </Suspense>
-
-      <Suspense fallback={<InfoSectionSkeleton />}>
-        <AboutInfo />
-      </Suspense>
-
-      <Suspense fallback={<InfoSectionSkeleton />}>
-        <AboutPress />
-      </Suspense>
-
-      <Suspense fallback={<InfoSectionSkeleton />}>
-        <AboutLastPage />
-      </Suspense>
-
-      <Background />
-    </>
+    <AboutClientPage
+      curatedData={curatedData}
+      carouselData={carouselData}
+      participantsData={participantsData}
+      citizensData={citizensData}
+      infoSection={infoSectionData}
+      pressSectionData={pressSectionData}
+      glueInternational={glueInternational}
+      sponsorsData={sponsorsData}
+    />
   );
 }

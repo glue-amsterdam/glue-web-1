@@ -1,20 +1,70 @@
-import AboutSectionSelector from "@/app/admin/components/about-section-selector";
-import AdminHeader from "@/app/admin/components/admin-header";
-import AboutCarouselSection from "@/app/admin/sections/about-carousel-sections";
-import AboutCitizensSection from "@/app/admin/sections/about-citizens-section";
-import AboutCuratedSection from "@/app/admin/sections/about-curated-sections";
-import AboutInfoSection from "@/app/admin/sections/about-info-sections";
-import AboutInternationalSection from "@/app/admin/sections/about-international-sections";
-import AboutParticipantsSection from "@/app/admin/sections/about-participants-sections";
-import AboutPressSection from "@/app/admin/sections/about-press-section";
-import AboutSponsorsSection from "@/app/admin/sections/about-sponsors-sections";
-import LoadingSpinner from "@/app/components/LoadingSpinner";
-import Link from "next/link";
+import { config } from "@/env";
 import { Suspense } from "react";
+
+import LoadingSpinner from "@/app/components/LoadingSpinner";
+import AboutCarouselForm from "@/components/admin/about/carousel/AboutCarouselForm";
+import AboutParticipantsForm from "@/components/admin/about/participants/AboutParticipantsForm";
+import AboutCuratedStickyForm from "@/components/admin/about/curated-sticky/AboutCuratedStickyForm";
+import AboutCitizensForm from "@/components/admin/about/citizens-of-honour/AboutCitizenForm";
+import AboutInfoForm from "@/components/admin/about/info/AboutInfoForm";
+import AboutPressForm from "@/components/admin/about/press/AboutPressForm";
+import AboutInternationalForm from "@/components/admin/about/international/AboutInternationalForm";
+import AboutSponsorsForm from "@/components/admin/about/sponsors/AboutSponsorsForm";
+import AdminAboutSelector from "@/components/admin/about/AdminAboutSelector";
+import AdminHeader from "@/components/admin/AdminHeader";
+import AdminBackHeader from "@/components/admin/AdminBackHeader";
 
 interface AboutPageProps {
   searchParams: Promise<{ [key: string]: string | undefined }>;
 }
+
+const fetchAboutCarousel = async () => {
+  const res = await fetch(`${config.baseApiUrl}/admin/about/carousel`);
+  const data = await res.json();
+  return data;
+};
+
+const fetchAboutParticipants = async () => {
+  const res = await fetch(`${config.baseApiUrl}/admin/about/participants`);
+  const data = await res.json();
+  return data;
+};
+
+const fetchAboutCitizens = async () => {
+  const res = await fetch(`${config.baseApiUrl}/admin/about/citizens`);
+  const data = await res.json();
+  return data;
+};
+
+const fetchAboutYears = async () => {
+  const res = await fetch(`${config.baseApiUrl}/admin/about/citizens/years`);
+  const data = await res.json();
+  return data;
+};
+
+const fetchAboutCurated = async () => {
+  const res = await fetch(`${config.baseApiUrl}/admin/about/curated`);
+  const data = await res.json();
+  return data;
+};
+
+const fetchAboutInfo = async () => {
+  const res = await fetch(`${config.baseApiUrl}/admin/about/info`);
+  const data = await res.json();
+  return data;
+};
+
+const fetchAboutPress = async () => {
+  const res = await fetch(`${config.baseApiUrl}/admin/about/press`);
+  const data = await res.json();
+  return data;
+};
+
+const fetchAboutInternational = async () => {
+  const res = await fetch(`${config.baseApiUrl}/admin/about/international`);
+  const data = await res.json();
+  return data;
+};
 
 export default async function AboutSectionPage({
   searchParams,
@@ -22,60 +72,71 @@ export default async function AboutSectionPage({
   const { section } = await searchParams;
   const currentSection = (section as string) || "about-carousel";
 
+  let sectionData = null;
+  let yearsData = null;
+
+  switch (currentSection) {
+    case "about-carousel":
+      sectionData = await fetchAboutCarousel();
+      break;
+    case "about-participants":
+      sectionData = await fetchAboutParticipants();
+      break;
+    case "about-citizens":
+      sectionData = await fetchAboutCitizens();
+      yearsData = await fetchAboutYears();
+      break;
+    case "about-curated":
+      sectionData = await fetchAboutCurated();
+      break;
+    case "about-info":
+      sectionData = await fetchAboutInfo();
+      break;
+    case "about-press":
+      sectionData = await fetchAboutPress();
+      break;
+    case "about-international":
+      sectionData = await fetchAboutInternational();
+      break;
+    // No fetch for sponsors, handled by Suspense
+    default:
+      break;
+  }
+
   return (
-    <div className="container mx-auto p-4">
-      <AdminHeader adminName="Admin" />
-      <div className="bg-white rounded-lg shadow-md p-6 mt-4">
-        <Link
-          href="/admin"
-          className="text-blue-600 hover:underline mt-4 inline-block"
-        >
-          Back to Admin Dashboard
-        </Link>
-        <h2 className="text-2xl font-semibold mb-6 text-blue-800">
-          About Section
-        </h2>
-        <AboutSectionSelector currentSection={currentSection} />
-        {currentSection === "about-carousel" && (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AboutCarouselSection />
-          </Suspense>
-        )}
-        {currentSection === "about-participants" && (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AboutParticipantsSection />
-          </Suspense>
-        )}
-        {currentSection === "about-citizens" && (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AboutCitizensSection />
-          </Suspense>
-        )}
-        {currentSection === "about-curated" && (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AboutCuratedSection />
-          </Suspense>
-        )}
-        {currentSection === "about-info" && (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AboutInfoSection />
-          </Suspense>
-        )}
-        {currentSection === "about-press" && (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AboutPressSection />
-          </Suspense>
-        )}
-        {currentSection === "about-international" && (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AboutInternationalSection />
-          </Suspense>
-        )}
-        {currentSection === "about-sponsors" && (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AboutSponsorsSection />
-          </Suspense>
-        )}
+    <div className="container mx-auto p-4 text-black h-full pt-[6rem] pb-4">
+      <div className="bg-white p-4 rounded-lg shadow-md">
+        <AdminHeader />
+        <AdminBackHeader backLink="/admin" sectionTitle="About Section" />
+        <AdminAboutSelector currentSection={currentSection} />
+        <div className="">
+          {currentSection === "about-carousel" && (
+            <AboutCarouselForm initialData={sectionData} />
+          )}
+          {currentSection === "about-participants" && (
+            <AboutParticipantsForm initialData={sectionData} />
+          )}
+          {currentSection === "about-citizens" && (
+            <AboutCitizensForm initialData={sectionData} years={yearsData} />
+          )}
+          {currentSection === "about-curated" && (
+            <AboutCuratedStickyForm initialData={sectionData} />
+          )}
+          {currentSection === "about-info" && (
+            <AboutInfoForm initialData={sectionData} />
+          )}
+          {currentSection === "about-press" && (
+            <AboutPressForm initialData={sectionData} />
+          )}
+          {currentSection === "about-international" && (
+            <AboutInternationalForm initialData={sectionData} />
+          )}
+          {currentSection === "about-sponsors" && (
+            <Suspense fallback={<LoadingSpinner />}>
+              <AboutSponsorsForm />
+            </Suspense>
+          )}
+        </div>
       </div>
     </div>
   );

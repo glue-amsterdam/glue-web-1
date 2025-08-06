@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef, memo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/select";
 
 import { useDebounce } from "use-debounce";
-import { motion } from "framer-motion";
 import { EVENT_TYPES } from "@/constants";
 import { useEventsDays } from "@/app/context/MainContext";
 import { EventType } from "@/schemas/eventSchemas";
@@ -24,7 +23,7 @@ const formatEventType = (type: string): string => {
     .join(" ");
 };
 
-export default function SearchAndFilter() {
+const SearchAndFilter = memo(function SearchAndFilter() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("search") || "");
@@ -35,24 +34,48 @@ export default function SearchAndFilter() {
 
   const eventsDays = useEventsDays();
   const [debouncedSearch] = useDebounce(search, 300);
+  const lastSearchRef = useRef<string>(searchParams.get("search") || "");
 
   const updateSearchParams = useCallback(
     (newParams: { [key: string]: string | null }) => {
       const params = new URLSearchParams(searchParams.toString());
+      let hasChanges = false;
+
       Object.entries(newParams).forEach(([key, value]) => {
+        const currentValue = params.get(key);
         if (value === null || value === "") {
-          params.delete(key);
+          if (currentValue !== null) {
+            params.delete(key);
+            hasChanges = true;
+          }
         } else {
-          params.set(key, value.toLowerCase());
+          if (currentValue !== value) {
+            params.set(key, value.toLowerCase());
+            hasChanges = true;
+          }
         }
       });
-      router.push(`/events?${params.toString()}`, { scroll: false });
+
+      if (hasChanges) {
+        console.log(
+          "SearchAndFilter: Updating URL with params:",
+          params.toString()
+        );
+        router.push(`/events?${params.toString()}`, { scroll: false });
+      } else {
+        console.log(
+          "SearchAndFilter: No changes detected, skipping URL update"
+        );
+      }
     },
     [router, searchParams]
   );
 
   useEffect(() => {
-    updateSearchParams({ search: debouncedSearch });
+    if (debouncedSearch !== lastSearchRef.current) {
+      lastSearchRef.current = debouncedSearch;
+      updateSearchParams({ search: debouncedSearch });
+    }
   }, [debouncedSearch, updateSearchParams]);
 
   useEffect(() => {
@@ -69,29 +92,37 @@ export default function SearchAndFilter() {
     }
   }, [searchParams]);
 
-  const handleTypeChange = (value: string) => {
-    setType(value as EventType | "all");
-    updateSearchParams({ type: value === "all" ? null : value });
-  };
+  const handleTypeChange = useCallback(
+    (value: string) => {
+      setType(value as EventType | "all");
+      updateSearchParams({ type: value === "all" ? null : value });
+    },
+    [updateSearchParams]
+  );
 
-  const handleDayChange = (value: string) => {
-    setSelectedDay(value);
-    updateSearchParams({ day: value === "all" ? null : value });
-  };
+  const handleDayChange = useCallback(
+    (value: string) => {
+      setSelectedDay(value);
+      updateSearchParams({ day: value === "all" ? null : value });
+    },
+    [updateSearchParams]
+  );
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearch(e.target.value);
+    },
+    []
+  );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -100 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 1.3 }}
-      className="mb-8 space-y-4 relative z-10"
-    >
+    <div className="mb-8 space-y-4 relative z-10 animate-fade-in">
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
         <Input
           type="text"
           placeholder="Search events/ members..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={handleSearchChange}
           className="flex-grow text-uiblack bg-uiwhite/80"
         />
         <Select value={type} onValueChange={handleTypeChange}>
@@ -121,6 +152,8 @@ export default function SearchAndFilter() {
           </SelectContent>
         </Select>
       </div>
-    </motion.div>
+    </div>
   );
-}
+});
+
+export default SearchAndFilter;
