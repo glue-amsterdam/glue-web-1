@@ -5,6 +5,7 @@ import ParticipantCard from "../../components/participants/participant-card";
 import ParticipantsLazyLoader from "../../components/participants/participants-lazy-loader";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import { useRef } from "react";
 import ParticipantsPageHeader from "@/components/participants/participants-page-header";
 import { useColors } from "../context/MainContext";
 
@@ -12,6 +13,9 @@ export default function ParticipantsClientPage() {
   const { box2 } = useColors();
   const { participants, loading, hasMore, loadMore, error, retry } =
     useParticipantsLazy(12);
+
+  // Keep track of previously animated participants
+  const animatedParticipantsRef = useRef<Set<string>>(new Set());
 
   // Function to determine card size and style
   const getCardConfig = (index: number) => {
@@ -34,11 +38,30 @@ export default function ParticipantsClientPage() {
   };
 
   useGSAP(() => {
-    // Target all participant cards using a CSS selector
-    const participantCards = document.querySelectorAll("#participant-card");
+    // Find new participants that haven't been animated yet
+    const newParticipants = participants.filter(
+      (participant) => !animatedParticipantsRef.current.has(participant.user_id)
+    );
 
+    if (newParticipants.length === 0) return;
+
+    // Get the DOM elements for new participants only
+    const newParticipantElements = newParticipants
+      .map((participant) =>
+        document.querySelector(`[data-participant-id="${participant.user_id}"]`)
+      )
+      .filter(Boolean) as Element[];
+
+    if (newParticipantElements.length === 0) return;
+
+    // Mark these participants as animated
+    newParticipants.forEach((participant) => {
+      animatedParticipantsRef.current.add(participant.user_id);
+    });
+
+    // Animate only the new participants
     gsap.fromTo(
-      participantCards,
+      newParticipantElements,
       {
         opacity: 0,
         y: 100,
@@ -91,7 +114,7 @@ export default function ParticipantsClientPage() {
             return (
               <div
                 key={participant.user_id}
-                id={`participant-card`}
+                data-participant-id={participant.user_id}
                 className={`${mobileSize} md:${desktopSize} transition-all duration-300`}
               >
                 <ParticipantCard

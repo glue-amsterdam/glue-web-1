@@ -76,7 +76,9 @@ export const useParticipantsLazy = (
   }, []); // Remove loadInitialParticipants from dependencies
 
   const loadMore = useCallback(() => {
-    if (loadingMore || !hasMore) return;
+    if (loadingMore || !hasMore) {
+      return;
+    }
 
     setLoadingMore(true);
 
