@@ -16,7 +16,7 @@ const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
       userName: "Loading Participant 1",
       short_description: "Loading Participant 1",
       image: {
-        image_url: "/placeholder.jgp",
+        image_url: "/placeholder.jpg",
       },
     },
     {
@@ -24,7 +24,7 @@ const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
       userName: "Loading Participant 2",
       short_description: "Loading Participant 2",
       image: {
-        image_url: "/placeholder.jgp",
+        image_url: "/placeholder.jpg",
       },
     },
     {
@@ -32,7 +32,7 @@ const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
       userName: "Loading Participant   3",
       short_description: "Loading Participant 3",
       image: {
-        image_url: "/placeholder.jgp",
+        image_url: "/placeholder.jpg",
       },
     },
   ],

@@ -22,31 +22,44 @@ export function aboutAnimations({ refs, tl }: AboutAnimationsProps) {
 
   tl.addLabel("start");
 
-  tl.from([titleRef.current, descriptionRef.current], {
-    delay: 0.4,
-    filter: "blur(10px)",
-    y: 80,
-    autoAlpha: 0,
-    stagger: 0.3,
-  })
-    .fromTo(
-      [imageSliderRef.current?.querySelectorAll("button")],
-      {
-        autoAlpha: 0,
-        y: 50,
-        stagger: 0.05,
-        ease: "power2.inOut",
-        duration: 0.4,
-      },
-      {
-        y: 0,
-        autoAlpha: 1,
-        ease: "power2.inOut",
-        duration: 0.4,
-      },
-      "<"
-    )
-    .from(
+  // Add null checks before animating
+  if (titleRef.current && descriptionRef.current) {
+    tl.from([titleRef.current, descriptionRef.current], {
+      delay: 0.4,
+      filter: "blur(10px)",
+      y: 80,
+      autoAlpha: 0,
+      stagger: 0.3,
+    });
+  }
+
+  // Check if imageSliderRef exists and has buttons
+  if (imageSliderRef.current) {
+    const buttons = imageSliderRef.current.querySelectorAll("button");
+    if (buttons.length > 0) {
+      tl.fromTo(
+        [buttons],
+        {
+          autoAlpha: 0,
+          y: 50,
+          stagger: 0.05,
+          ease: "power2.inOut",
+          duration: 0.4,
+        },
+        {
+          y: 0,
+          autoAlpha: 1,
+          ease: "power2.inOut",
+          duration: 0.4,
+        },
+        "<"
+      );
+    }
+  }
+
+  // Check if topNavBarRef exists
+  if (topNavBarRef.current) {
+    tl.from(
       topNavBarRef.current,
       {
         autoAlpha: 0,
@@ -56,4 +69,5 @@ export function aboutAnimations({ refs, tl }: AboutAnimationsProps) {
       },
       "<"
     );
+  }
 }

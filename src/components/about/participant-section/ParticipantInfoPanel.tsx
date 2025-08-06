@@ -18,47 +18,70 @@ export default function ParticipantInfoPanel({
 }) {
   const sanitizedDescription = useSanitizedHTML(participant.short_description);
 
-  useGSAP(() => {
-    const tl = gsap.timeline();
+  useGSAP(
+    () => {
+      try {
+        const tl = gsap.timeline();
 
-    tl.fromTo(
-      [lu_line.current, eg_line.current],
-      {
-        opacity: 0,
-      },
-      {
-        opacity: 1,
-        duration: 0.5,
-        ease: "power2.inOut",
-      }
-    );
+        // Add null checks for line animations
+        if (lu_line.current && eg_line.current) {
+          tl.fromTo(
+            [lu_line.current, eg_line.current],
+            {
+              opacity: 0,
+            },
+            {
+              opacity: 1,
+              duration: 0.5,
+              ease: "power2.inOut",
+            }
+          );
+        }
 
-    tl.fromTo(
-      participantSelectedImage.current,
-      {
-        opacity: 0,
-        y: 50,
-        duration: 0.5,
-        ease: "power2.inOut",
-      },
-      {
-        opacity: 1,
-        y: 0,
+        // Check if participant selected image exists
+        if (participantSelectedImage.current) {
+          tl.fromTo(
+            participantSelectedImage.current,
+            {
+              opacity: 0,
+              y: 50,
+              duration: 0.5,
+              ease: "power2.inOut",
+            },
+            {
+              opacity: 1,
+              y: 0,
+            }
+          );
+        }
+
+        // Check if participant name and description elements exist
+        const participantName = document.querySelector("#participant-name");
+        const participantDescription = document.querySelector(
+          "#participant-description"
+        );
+
+        if (participantName || participantDescription) {
+          tl.fromTo(
+            ["#participant-name", "#participant-description"],
+            {
+              opacity: 0,
+              x: -100,
+              ease: "power2.inOut",
+            },
+            {
+              opacity: 1,
+              x: 0,
+            },
+            "<"
+          );
+        }
+      } catch (error) {
+        console.error("GSAP animation error in ParticipantInfoPanel:", error);
       }
-    ).fromTo(
-      ["#participant-name", "#participant-description"],
-      {
-        opacity: 0,
-        x: -100,
-        ease: "power2.inOut",
-      },
-      {
-        opacity: 1,
-        x: 0,
-      },
-      "<"
-    );
-  }, [participant]);
+    },
+    { scope: participantSelectedImage }
+  );
 
   return (
     <div

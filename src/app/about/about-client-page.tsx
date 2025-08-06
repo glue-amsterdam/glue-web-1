@@ -60,27 +60,65 @@ export default function AboutClientPage({
   const descriptionRef = useRef<HTMLParagraphElement>(null);
   const imageSliderRef = useRef<HTMLDivElement>(null);
 
-  useGSAP(() => {
-    const tl = gsap.timeline();
-    aboutAnimations({
-      refs: {
-        g_letterRef,
-        gl_line,
-        l_letterRef,
-        lu_line,
-        u_letterRef,
-        ue_line,
-        e_letterRef,
-        eg_line,
-        topNavBarRef,
-        sectionRef,
-        titleRef,
-        descriptionRef,
-        imageSliderRef,
-      },
-      tl,
-    });
-  });
+  // Add safety checks for data
+  const isDataLoaded =
+    carouselData &&
+    participantsData &&
+    citizensData &&
+    curatedData &&
+    infoSection &&
+    pressSectionData &&
+    glueInternational &&
+    sponsorsData;
+
+  useGSAP(
+    () => {
+      // Only run animations if data is loaded
+      if (!isDataLoaded) return;
+
+      // Add a small delay to ensure all refs are properly mounted
+      const timeoutId = setTimeout(() => {
+        try {
+          const tl = gsap.timeline();
+          aboutAnimations({
+            refs: {
+              g_letterRef,
+              gl_line,
+              l_letterRef,
+              lu_line,
+              u_letterRef,
+              ue_line,
+              e_letterRef,
+              eg_line,
+              topNavBarRef,
+              sectionRef,
+              titleRef,
+              descriptionRef,
+              imageSliderRef,
+            },
+            tl,
+          });
+        } catch (error) {
+          console.error("GSAP animation error:", error);
+        }
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
+    },
+    { scope: container }
+  );
+
+  // Show loading state if data is not loaded
+  if (!isDataLoaded) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ReactLenis root>
