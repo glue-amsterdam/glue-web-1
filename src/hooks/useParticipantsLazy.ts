@@ -25,11 +25,14 @@ export const useParticipantsLazy = (
   const [currentPage, setCurrentPage] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const hasLoadedRef = useRef(false);
 
   // Calculate hasMore
   const hasMore = currentPage * itemsPerPage < allParticipants.length;
 
   const loadInitialParticipants = useCallback(async () => {
+    if (hasLoadedRef.current) return; // Prevent multiple loads
+
     try {
       setLoading(true);
       setError(null);
@@ -50,6 +53,7 @@ export const useParticipantsLazy = (
       const firstPage = allData.slice(0, itemsPerPage);
       setParticipants(firstPage);
       setCurrentPage(1);
+      hasLoadedRef.current = true;
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") return;
 
@@ -60,7 +64,7 @@ export const useParticipantsLazy = (
     }
   }, [itemsPerPage]);
 
-  // Load all participants initially
+  // Load all participants initially - only once
   useEffect(() => {
     loadInitialParticipants();
 
@@ -69,7 +73,7 @@ export const useParticipantsLazy = (
         abortControllerRef.current.abort();
       }
     };
-  }, [loadInitialParticipants]);
+  }, []); // Remove loadInitialParticipants from dependencies
 
   const loadMore = useCallback(() => {
     if (loadingMore || !hasMore) return;
@@ -92,6 +96,8 @@ export const useParticipantsLazy = (
     setError(null);
     setCurrentPage(0);
     setParticipants([]);
+    setAllParticipants([]);
+    hasLoadedRef.current = false;
     loadInitialParticipants();
   }, [loadInitialParticipants]);
 
