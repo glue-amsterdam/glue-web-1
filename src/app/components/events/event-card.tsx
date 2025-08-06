@@ -39,7 +39,7 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
           src={event.thumbnail.image_url || "/placeholder.svg"}
           width={1920}
           height={1080}
-          sizes="(min-width: 1024px) 50vw, 100vw"
+          sizes="80vw"
           alt={`Event from the GLUE community: ${event.name} - ${event.type} type`}
           className="absolute inset-0 w-full h-full z-0 object-cover group-hover:scale-105 transition-all duration-200"
         />

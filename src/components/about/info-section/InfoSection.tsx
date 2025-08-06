@@ -90,13 +90,14 @@ export default function InfoSection({
         style={{ color: infoSection.text_color }}
         dangerouslySetInnerHTML={{ __html: sanitizedTitle }}
       />
-      <p id="info-description" className="text-lg">
-        <span
-          className="about-description text-xs md:text-sm lg:text-base px-4"
-          style={{ color: infoSection.text_color }}
-          dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
-        />
-      </p>
+
+      <p
+        id="info-description"
+        className="about-description text-xs md:text-sm lg:text-base px-4"
+        style={{ color: infoSection.text_color }}
+        dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+      />
+
       <div
         className={cn(
           "grid grid-cols-1 w-full flex-1 min-h-0 gap-10 md:gap-6 pt-2 items-stretch auto-rows-fr max-w-[90vw] mx-auto",
