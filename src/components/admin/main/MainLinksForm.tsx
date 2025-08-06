@@ -52,7 +52,7 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
         title: "Links updated",
         description: "The main links have been successfully updated.",
       });
-      reset(data);
+      methods.reset(data);
       await mutate("/api/admin/main/links");
       router.refresh();
     },
