@@ -1,38 +1,34 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import {
-  ParticipantClient,
-  fetchParticipants,
-} from "@/lib/client/fetch-participants";
+import { IndividualEventResponse } from "@/schemas/eventSchemas";
+import { fetchEventsClient } from "@/utils/api";
 
-interface UseParticipantsLazyReturn {
-  participants: ParticipantClient[];
+interface UseEventsLazyReturn {
+  events: IndividualEventResponse[];
   loading: boolean;
   hasMore: boolean;
   loadMore: () => void;
   error: string | null;
   retry: () => void;
+  totalEvents: number;
 }
 
-export const useParticipantsLazy = (
+export const useEventsLazy = (
+  searchParams: URLSearchParams,
   itemsPerPage: number = 12
-): UseParticipantsLazyReturn => {
-  const [participants, setParticipants] = useState<ParticipantClient[]>([]);
-  const [allParticipants, setAllParticipants] = useState<ParticipantClient[]>(
-    []
-  );
+): UseEventsLazyReturn => {
+  const [events, setEvents] = useState<IndividualEventResponse[]>([]);
+  const [allEvents, setAllEvents] = useState<IndividualEventResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [totalEvents, setTotalEvents] = useState(0);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const hasLoadedRef = useRef(false);
 
   // Calculate hasMore
-  const hasMore = currentPage * itemsPerPage < allParticipants.length;
+  const hasMore = currentPage * itemsPerPage < allEvents.length;
 
-  const loadInitialParticipants = useCallback(async () => {
-    if (hasLoadedRef.current) return; // Prevent multiple loads
-
+  const loadInitialEvents = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -43,37 +39,46 @@ export const useParticipantsLazy = (
       }
 
       abortControllerRef.current = new AbortController();
-      const allData = await fetchParticipants();
+
+      // Add pagination parameters to search params
+      const paramsWithPagination = new URLSearchParams(searchParams);
+      paramsWithPagination.set("limit", "1000"); // Get all events for filtering
+
+      const allData = await fetchEventsClient(paramsWithPagination);
 
       if (abortControllerRef.current.signal.aborted) return;
 
-      setAllParticipants(allData);
+      setAllEvents(allData);
+      setTotalEvents(allData.length);
 
       // Load first page
       const firstPage = allData.slice(0, itemsPerPage);
-      setParticipants(firstPage);
+      setEvents(firstPage);
       setCurrentPage(1);
-      hasLoadedRef.current = true;
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") return;
 
-      setError("Error loading participants");
-      console.error("Error loading participants:", err);
+      setError("Error loading events");
+      console.error("Error loading events:", err);
     } finally {
       setLoading(false);
     }
-  }, [itemsPerPage]);
+  }, [searchParams, itemsPerPage]);
 
-  // Load all participants initially - only once
+  // Load all events initially when search params change
   useEffect(() => {
-    loadInitialParticipants();
+    setEvents([]);
+    setCurrentPage(0);
+    setAllEvents([]);
+    setTotalEvents(0);
+    loadInitialEvents();
 
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, []); // Remove loadInitialParticipants from dependencies
+  }, [loadInitialEvents]);
 
   const loadMore = useCallback(() => {
     if (loadingMore || !hasMore) return;
@@ -84,29 +89,30 @@ export const useParticipantsLazy = (
     setTimeout(() => {
       const startIndex = currentPage * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
-      const newParticipants = allParticipants.slice(startIndex, endIndex);
+      const newEvents = allEvents.slice(startIndex, endIndex);
 
-      setParticipants((prev) => [...prev, ...newParticipants]);
+      setEvents((prev) => [...prev, ...newEvents]);
       setCurrentPage((prev) => prev + 1);
       setLoadingMore(false);
     }, 300);
-  }, [loadingMore, currentPage, itemsPerPage, allParticipants, hasMore]);
+  }, [loadingMore, currentPage, itemsPerPage, allEvents, hasMore]);
 
   const retry = useCallback(() => {
     setError(null);
     setCurrentPage(0);
-    setParticipants([]);
-    setAllParticipants([]);
-    hasLoadedRef.current = false;
-    loadInitialParticipants();
-  }, [loadInitialParticipants]);
+    setEvents([]);
+    setAllEvents([]);
+    setTotalEvents(0);
+    loadInitialEvents();
+  }, [loadInitialEvents]);
 
   return {
-    participants,
+    events,
     loading: loading || loadingMore,
     hasMore,
     loadMore,
     error,
     retry,
+    totalEvents,
   };
 };
