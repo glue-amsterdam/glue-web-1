@@ -15,15 +15,25 @@ export default function ParticipantsLazyLoader({
   loading,
 }: ParticipantsLazyLoaderProps) {
   const observerRef = useRef<HTMLDivElement>(null);
+  const onLoadMoreRef = useRef(onLoadMore);
+  const hasMoreRef = useRef(hasMore);
+  const loadingRef = useRef(loading);
+
+  // Update refs when props change
+  useEffect(() => {
+    onLoadMoreRef.current = onLoadMore;
+    hasMoreRef.current = hasMore;
+    loadingRef.current = loading;
+  }, [onLoadMore, hasMore, loading]);
 
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [target] = entries;
-      if (target.isIntersecting && hasMore && !loading) {
-        onLoadMore();
+      if (target.isIntersecting && hasMoreRef.current && !loadingRef.current) {
+        onLoadMoreRef.current();
       }
     },
-    [hasMore, loading, onLoadMore]
+    [] // Empty dependencies - we use refs instead
   );
 
   useEffect(() => {
@@ -40,7 +50,7 @@ export default function ParticipantsLazyLoader({
     return () => {
       observer.disconnect();
     };
-  }, [handleObserver]);
+  }, []); // Empty dependencies - observer is created only once
 
   if (!hasMore) {
     return <div className="col-span-full text-center py-8"></div>;

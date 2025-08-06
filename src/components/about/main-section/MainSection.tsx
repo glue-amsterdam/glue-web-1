@@ -40,7 +40,7 @@ export default function MainSection({
     >
       <div
         aria-hidden="true"
-        className="radial-gradient-background absolute inset-0 opacity-50 pointer-events-none z-10 overflow-hidden"
+        className="radial-gradient-background absolute inset-0 opacity-50 pointer-events-none z-0 overflow-hidden"
       />
       <h1
         id="about-main-heading"

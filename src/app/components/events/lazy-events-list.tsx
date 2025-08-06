@@ -65,7 +65,7 @@ const LazyEventsList = memo(function LazyEventsList({
             onClick={handleLoadMore}
             disabled={loading}
             variant="outline"
-            className="px-8"
+            className="px-4 bg-white/50 text-black"
           >
             {loading ? (
               <>

@@ -73,8 +73,8 @@ export default function ImageSlider({
       </CarouselContent>
       {!modalOpen && (
         <>
-          <CarouselPrevious className="mix-blend-exclusion absolute left-0 top-1/2 -translate-y-1/2 hover:scale-105 transition-all duration-300  " />
-          <CarouselNext className="mix-blend-exclusion absolute right-0 top-1/2 -translate-y-1/2 hover:scale-105 transition-all duration-300 " />
+          <CarouselPrevious className="mix-blend-exclusion absolute left-0 top-1/2 -translate-y-1/2 hover:scale-105 transition-all duration-300 z-20" />
+          <CarouselNext className="mix-blend-exclusion absolute right-0 top-1/2 -translate-y-1/2 hover:scale-105 transition-all duration-300 z-20" />
         </>
       )}
       <MainHeroDialog
