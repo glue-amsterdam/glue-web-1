@@ -3,6 +3,7 @@ import { config } from "@/env";
 import { CarouselClientType } from "@/schemas/carouselSchema";
 
 const CAROUSEL_FALLBACK_DATA: CarouselClientType = {
+  text_color: "#fff",
   title: "Welcome to GLUE",
   description: `Discover ${config.cityName}'s vibrant design community`,
   is_visible: false,
@@ -23,7 +24,7 @@ export async function fetchUserCarousel(): Promise<CarouselClientType> {
   try {
     const res = await fetch(`${BASE_URL}/about/carousel`, {
       next: {
-        revalidate: 3600,
+        revalidate: 86400,
         tags: ["carousel"],
       },
     });

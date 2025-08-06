@@ -9,7 +9,7 @@ export async function GET() {
 
     const { data: curatedData } = await supabase
       .from("about_curated")
-      .select("title,description, is_visible")
+      .select("title,description, is_visible, text_color, background_color")
       .single();
 
     if (!curatedData) {
@@ -49,6 +49,8 @@ export async function PUT(request: Request) {
         title: validatedData.title,
         description: validatedData.description,
         is_visible: validatedData.is_visible,
+        text_color: validatedData.text_color,
+        background_color: validatedData.background_color,
       })
       .eq("id", "about-curated");
 
@@ -56,7 +58,7 @@ export async function PUT(request: Request) {
 
     return NextResponse.json(curatedData);
   } catch (error) {
-    console.error("Error in PUT /api/about/curated", error);
+    console.error("Error in PUT /api/admin/about/curated", error);
     return NextResponse.json(
       { error: "An error occurred while updating curated about data" },
       { status: 500 }

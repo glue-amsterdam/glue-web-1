@@ -1,6 +1,6 @@
 "use client";
 
-import { LoadingFallbackMini } from "@/app/components/loading-fallback";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useDashboardContext } from "@/app/context/DashboardContext";
 import { EventManagement } from "@/app/dashboard/[userId]/your-events/event-management";
 import { useToast } from "@/hooks/use-toast";
@@ -19,7 +19,7 @@ function EventsPage() {
     mutate,
   } = useSWR<EventType[]>(`/api/events/participant/${targetUserId}`, fetcher);
 
-  if (isLoading) return <LoadingFallbackMini />;
+  if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Failed to load events</div>;
   if (!events) return <div>No events available</div>;
 

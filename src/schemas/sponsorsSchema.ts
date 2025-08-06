@@ -10,6 +10,8 @@ export const sponsorsHeaderSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
   sponsors_types: z.array(sponsorTypeSchema),
+  text_color: z.string().min(1, "Text color is required"),
+  background_color: z.string().min(1, "Background color is required"),
 });
 
 export const sponsorSchema = z.object({

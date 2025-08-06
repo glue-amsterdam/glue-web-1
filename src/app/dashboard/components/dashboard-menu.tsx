@@ -12,11 +12,8 @@ import {
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu } from "lucide-react";
-import {
-  ADMIN_DASHBOARD_SECTIONS,
-  NAVBAR_HEIGHT,
-  USER_DASHBOARD_SECTIONS,
-} from "@/constants";
+import { ADMIN_DASHBOARD_SECTIONS, USER_DASHBOARD_SECTIONS } from "@/constants";
+import { useColors } from "@/app/context/MainContext";
 
 // List of sections that should only be visible when is_active is true
 const ACTIVE_ONLY_SECTIONS = [
@@ -41,6 +38,7 @@ export default function DashboardMenu({
   targetUserId,
   is_active,
 }: DashboardMenuProps) {
+  const { box1, box2 } = useColors();
   const filteredDashboardSections = useMemo(() => {
     if (isMod) return USER_DASHBOARD_SECTIONS;
 
@@ -58,7 +56,7 @@ export default function DashboardMenu({
   // Filter dashboard sections based on is_active status
 
   const SidebarContent = () => (
-    <nav className="space-y-4 p-6">
+    <nav className="flex flex-col gap-4 p-6">
       <AnimatePresence>
         {filteredDashboardSections.map((item, index) => (
           <motion.div
@@ -71,7 +69,7 @@ export default function DashboardMenu({
             <Link href={`/dashboard/${targetUserId}/${item.href}`}>
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-3 text-white hover:text-gray-800 hover:bg-[var(--color-box2)] transition-all duration-200"
+                className="w-full justify-start gap-3 text-white transition-all duration-200"
                 onClick={() => setIsSidebarOpen(false)}
               >
                 <item.icon className="size-5" />
@@ -86,7 +84,7 @@ export default function DashboardMenu({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="mt-8 pt-6 border-t border-[var(--color-box3)]"
+          className="mt-8 pt-6 border-t border-white"
         >
           <h3 className="text-white font-bold text-center pb-4 tracking-wider text-sm uppercase">
             Mod Section
@@ -103,7 +101,7 @@ export default function DashboardMenu({
                 <Link href={`/dashboard/${user.id}/${item.href}`}>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start gap-3 text-white hover:text-gray-800 hover:bg-[var(--color-box2)] transition-all duration-200"
+                    className="w-full justify-start gap-3 text-white ransition-all duration-200"
                     onClick={() => setIsSidebarOpen(false)}
                   >
                     <item.icon className="size-5" />
@@ -131,27 +129,32 @@ export default function DashboardMenu({
             <Button
               variant="ghost"
               size="icon"
-              className="m-4 bg-[var(--color-box2)] text-white hover:bg-[var(--color-box3)]"
+              style={{ backgroundColor: box2 }}
+              className="m-4  text-white hover:bg-[var(--color-box3)]"
               aria-label="Toggle menu"
             >
               <Menu className="size-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-80 p-0 bg-[var(--color-box1)]">
+          <SheetContent
+            style={{ backgroundColor: box1 }}
+            side="left"
+            className="w-80 p-0 overflow-y-auto"
+          >
             <SheetTitle className="sr-only">Dashboard Menu</SheetTitle>
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-4 top-4 text-white hover:bg-[var(--color-box2)]"
+              className="absolute right-4 top-4 text-white z-10"
               onClick={() => setIsSidebarOpen(false)}
               aria-label="Close menu"
             ></Button>
-            <div className="p-6">
+            <div className="p-6 pt-16">
               <h2 className="text-white text-xl font-bold mb-2">
                 Hello, {userName || user.email}
               </h2>
               {isMod && targetUserId && (
-                <p className="text-sm text-gray-600 mb-6">
+                <p className="text-xs text-white mb-6">
                   Modifying profile of ID: {targetUserId}
                 </p>
               )}
@@ -165,17 +168,15 @@ export default function DashboardMenu({
         initial={{ opacity: 0, x: -100 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
-        style={{
-          paddingTop: `${NAVBAR_HEIGHT}rem`,
-        }}
-        className="hidden md:block w-80 bg-[var(--color-box1)] shadow-xl overflow-y-auto fixed left-0 top-0 h-screen scrollbar scrollbar-thumb-white scrollbar-track-white/10"
+        style={{ backgroundColor: box1 }}
+        className="pt-[5rem] hidden md:block w-80 shadow-xl overflow-y-auto scrollbar scrollbar-thumb-white scrollbar-track-white/10 border-r-2 border-white"
       >
         <div className="p-6">
           <h2 className="text-white text-xl font-bold mb-2">
             Hello, {userName || user.email}
           </h2>
           {isMod && targetUserId && (
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-xs italic text-white mb-4">
               Modifying profile for: {targetUserId}
             </p>
           )}

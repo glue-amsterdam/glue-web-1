@@ -3,9 +3,12 @@
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { Skeleton } from "@/components/ui/skeleton";
-import { NAVBAR_HEIGHT } from "@/constants";
 import ParticipantCard from "@/app/search/participant-card";
 import EventCard from "@/app/search/event-card";
+import { useColors } from "../context/MainContext";
+import NavBar from "@/components/NavBar";
+import { useSetPageDataset } from "@/hooks/useSetPageDataset";
+import { Suspense } from "react";
 
 interface Participant {
   id: string;
@@ -46,10 +49,9 @@ const fetcher = async (url: string): Promise<SearchResult> => {
   return res.json();
 };
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
-
   const { data, error, isLoading } = useSWR<SearchResult>(
     query ? `/api/search?q=${encodeURIComponent(query)}` : null,
     fetcher
@@ -58,38 +60,44 @@ export default function SearchPage() {
   if (error) return <ErrorMessage message="Failed to load results" />;
 
   return (
-    <div
-      style={{ paddingTop: `${NAVBAR_HEIGHT}rem` }}
-      className="bg-[var(--color-box4)] min-h-dvh"
-    >
-      <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4 text-uiwhite">{`Search Results for "${query}"`}</h1>
-        {isLoading ? (
-          <SearchSkeleton />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <ResultSection
-              title="Participants"
-              items={data?.participants}
-              renderItem={(participant) => (
-                <ParticipantCard
-                  key={participant.id}
-                  participant={participant}
-                />
-              )}
-            />
-            <ResultSection
-              title="Events"
-              items={data?.events}
-              renderItem={(event) => <EventCard key={event.id} event={event} />}
-            />
-          </div>
-        )}
-        {!isLoading && !data?.participants.length && !data?.events.length && (
-          <NoResultsMessage query={query} />
-        )}
-      </div>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4 text-uiwhite">{`Search Results for "${query}"`}</h1>
+      {isLoading ? (
+        <SearchSkeleton />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <ResultSection
+            title="Participants"
+            items={data?.participants}
+            renderItem={(participant) => (
+              <ParticipantCard key={participant.id} participant={participant} />
+            )}
+          />
+          <ResultSection
+            title="Events"
+            items={data?.events}
+            renderItem={(event) => <EventCard key={event.id} event={event} />}
+          />
+        </div>
+      )}
+      {!isLoading && !data?.participants.length && !data?.events.length && (
+        <NoResultsMessage query={query} />
+      )}
     </div>
+  );
+}
+
+export default function SearchPage() {
+  useSetPageDataset("search");
+  const { box4 } = useColors();
+
+  return (
+    <main style={{ backgroundColor: box4 }} className="min-h-dvh pt-[5rem]">
+      <NavBar style={{ backgroundColor: box4 }} />
+      <Suspense fallback={<SearchSkeleton />}>
+        <SearchContent />
+      </Suspense>
+    </main>
   );
 }
 

@@ -14,20 +14,18 @@ interface UserInfo {
   user_name: string;
 }
 
-interface MapInfoRaw {
-  id: string;
-  formatted_address: string;
-  latitude: number;
-  longitude: number;
-  user_id: string;
-  user_info: MaybeArray<UserInfo>;
-}
-
 interface ParticipantDetail {
   user_id: string;
   status: string;
   special_program: boolean;
+  slug: string | null;
 }
+
+interface ParticipantImage {
+  user_id: string;
+  image_url: string;
+}
+
 interface HubParticipant {
   user_id: string;
   user_info: MaybeArray<UserInfo>;
@@ -64,9 +62,23 @@ interface RouteDot {
     | null;
 }
 
+interface MapInfoRaw {
+  id: string;
+  formatted_address: string;
+  latitude: number;
+  longitude: number;
+  user_id: string;
+  user_info: MaybeArray<UserInfo>;
+}
+
 async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]> {
   // Fetch all required data in parallel
-  const [mapInfoResult, participantResult, hubsResult] = await Promise.all([
+  const [
+    mapInfoResult,
+    participantResult,
+    hubsResult,
+    participantImagesResult,
+  ] = await Promise.all([
     supabase.from("map_info").select(`
         id,
         formatted_address,
@@ -85,7 +97,8 @@ async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]> {
         user_id,
         status,
         special_program,
-        is_active
+        is_active,
+        slug
       `
       )
       .eq("status", "accepted")
@@ -102,24 +115,44 @@ async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]> {
           )
         )
       `),
+    supabase
+      .from("participant_image")
+      .select(
+        `
+        user_id,
+        image_url
+      `
+      )
+      .order("id", { ascending: true }),
   ]);
 
   if (mapInfoResult.error) throw mapInfoResult.error;
   if (participantResult.error) throw participantResult.error;
   if (hubsResult.error) throw hubsResult.error;
+  if (participantImagesResult.error) throw participantImagesResult.error;
 
   const mapInfoData = mapInfoResult.data as MapInfoRaw[];
   const participantData = participantResult.data as ParticipantDetail[];
   const hubsData = hubsResult.data as HubInfo[];
+  const participantImagesData =
+    participantImagesResult.data as ParticipantImage[];
 
   if (!mapInfoData || !participantData) {
     throw new Error("No map info or participant data returned from Supabase");
   }
 
-  // Create a map of accepted participants with their details
+  // Create lookup maps for efficient data access
   const acceptedParticipants = new Map(
     participantData.map((p) => [p.user_id, p])
   );
+
+  // Create image lookup map (keep only the first image per user)
+  const imageMap = new Map<string, string>();
+  participantImagesData.forEach((image) => {
+    if (!imageMap.has(image.user_id)) {
+      imageMap.set(image.user_id, image.image_url);
+    }
+  });
 
   // Process map_info and hub data
   const locationMap = new Map<string, MapInfo>();
@@ -146,6 +179,8 @@ async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]> {
           user_id: userInfo.user_id,
           user_name: userInfo.user_name,
           is_host: true,
+          slug: participant.slug,
+          image_url: imageMap.get(userInfo.user_id) || null,
         },
       ],
       is_hub: false,
@@ -173,6 +208,7 @@ async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]> {
       const hubParticipants = ensureArray(hub.hub_participants);
       const participantCount = hubParticipants.length;
 
+      // Calculate is_hub and is_collective based on participant count
       existingLocation.is_hub = participantCount > 3;
       existingLocation.is_collective =
         participantCount <= 3 && participantCount > 1;
@@ -191,6 +227,8 @@ async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]> {
               user_id: participant.user_id,
               user_name: userInfo.user_name,
               is_host: false,
+              slug: acceptedParticipant.slug,
+              image_url: imageMap.get(participant.user_id) || null,
             });
           }
         }

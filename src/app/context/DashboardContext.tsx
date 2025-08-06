@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext } from "react";
+import { useColors } from "./MainContext";
 
 type DashboardContextType = {
   isMod?: boolean;
@@ -27,6 +28,7 @@ export const useDashboardContext = () => {
 export const DashboardProvider: React.FC<
   DashboardContextType & { children: React.ReactNode }
 > = ({ children, isMod, targetUserId, loggedInUserId, loggedPlanType }) => {
+  const { box3 } = useColors();
   return (
     <DashboardContext.Provider
       value={{
@@ -36,7 +38,9 @@ export const DashboardProvider: React.FC<
         loggedPlanType,
       }}
     >
-      <div className="md:pl-80">{children}</div>
+      <div className="w-full py-4" style={{ backgroundColor: box3 }}>
+        {children}
+      </div>
     </DashboardContext.Provider>
   );
 };

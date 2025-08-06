@@ -6,7 +6,7 @@ function EventHeader() {
   return (
     <motion.header {...fadeInConfig}>
       <motion.h1
-        className="h1-titles uppercase text-uiblack py-4"
+        className="h1-titles uppercase py-4"
         initial={{ opacity: 0, x: -70 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}

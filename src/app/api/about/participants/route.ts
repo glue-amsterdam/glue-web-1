@@ -9,7 +9,7 @@ export async function GET() {
     // Fetch header data first
     const { data: headerData, error: headerError } = await supabase
       .from("about_participants")
-      .select("title,description,is_visible")
+      .select("title,is_visible,text_color,description,background_color")
       .single();
 
     if (headerError) {
@@ -24,87 +24,51 @@ export async function GET() {
           title: "",
           description: "",
           is_visible: false,
+          text_color: "#fff",
+          background_color: "#000000",
         },
         participants: [],
       });
     }
 
-    const { data: participantDetails, error: participantDetailsError } =
-      await supabase
-        .from("participant_details")
-        .select(
-          `
-        slug,
-        is_sticky,
-        status,
-        user_id
-      `
-        )
-        .eq("status", "accepted")
-        .eq("is_active", true)
-        .eq("is_sticky", false)
-        .limit(30);
-
-    if (participantDetailsError) {
-      console.error(
-        "Error fetching participant details:",
-        participantDetailsError
-      );
-      throw participantDetailsError;
-    }
-
-    // Get the user_ids from the fetched participant_details
-    const userIds = participantDetails.map((detail) => detail.user_id);
-
-    // Now fetch the corresponding user_info
-    const { data: userData, error: userDataError } = await supabase
-      .from("user_info")
-      .select(
-        `
-        user_id,
-        user_name,
-        participant_image (
-          image_url
-        )
-      `
-      )
-      .in("user_id", userIds);
-
-    if (userDataError) {
-      console.error("Error fetching user data:", userDataError);
-      throw userDataError;
-    }
-
-    // Combine the data
-    const combinedData = participantDetails.map((detail) => {
-      const user = userData.find((u) => u.user_id === detail.user_id);
-      if (!user) {
-        console.warn(`No user found for user_id: ${detail.user_id}`);
+    // Llama al nuevo RPC que ya trae todo lo necesario
+    const { data: participants, error: participantsError } = await supabase.rpc(
+      "get_random_participants_full",
+      {
+        limit_count: 20,
       }
-      return { ...detail, ...user };
-    });
+    );
 
-    // Randomize and limit to 15 participants
-    const randomParticipants = combinedData
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 15);
+    if (participantsError) {
+      console.error("Error fetching participants:", participantsError);
+      throw participantsError;
+    }
 
-    // Transform participants data
-    const transformedParticipants = randomParticipants.map((participant) => ({
-      userId: participant.user_id,
-      slug: participant.slug || "",
-      userName: participant.user_name || "Unknown User",
-      image: {
-        image_url:
-          participant.participant_image?.[0]?.image_url || "/placeholder.jpg",
-        alt:
-          `${
+    interface ParticipantResponse {
+      slug: string;
+      status: "accepted" | "pending" | "rejected";
+      short_description: string;
+      user_id: string;
+      image_url: string | null;
+      user_name: string;
+    }
+
+    // Transforma los datos para el frontend
+    const transformedParticipants = participants.map(
+      (participant: ParticipantResponse) => ({
+        slug: participant.slug || "",
+        short_description: participant.short_description || "",
+        userName: participant.user_name || "Unknown User",
+        image: {
+          image_url: participant.image_url || "/placeholder.jpg",
+          alt: `${
             participant.user_name || "Unknown User"
           } profile image - participant from GLUE design routes in ${
             config.cityName
-          }` || `GLUE participant profile image from ${config.cityName}`,
-      },
-    }));
+          }`,
+        },
+      })
+    );
 
     const response = {
       headerData,

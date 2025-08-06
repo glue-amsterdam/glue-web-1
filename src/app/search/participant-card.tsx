@@ -10,7 +10,6 @@ interface Participant {
     description: string | null;
     slug: string | null;
     is_sticky: boolean;
-    year: number | null;
     status: string;
   };
   image_url: string | null;
@@ -53,11 +52,6 @@ function ParticipantCard({ participant }: { participant: Participant }) {
         {participant.participant_details.is_sticky && (
           <span className="bg-yellow-50 text-yellow-600 px-2 py-1 rounded-full text-xs">
             STICKY
-          </span>
-        )}
-        {participant.participant_details.year && (
-          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-            Year: {participant.participant_details.year}
           </span>
         )}
       </div>

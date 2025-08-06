@@ -15,6 +15,8 @@ export const pressItemsSectionSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters"),
   is_visible: z.boolean(),
   pressItems: z.array(pressItemSchema).max(2, "Maximum 2 press items allowed"),
+  text_color: z.string().min(1, "Text color is required"),
+  background_color: z.string().min(1, "Background color is required"),
 });
 
 export type PressItemsSectionContent = z.infer<typeof pressItemsSectionSchema>;

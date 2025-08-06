@@ -5,7 +5,7 @@ import { BASE_URL } from "@/constants";
 import { RouteValues } from "@/schemas/mapSchema";
 import { ParticipantClientResponse } from "@/types/api-visible-user";
 
-/* EVENTS WITH SEARCH PARAMS */
+/* EVENTS WITH SEARCH PARAMS - SERVER SIDE */
 export const fetchEvents = cache(
   async (searchParams: URLSearchParams): Promise<IndividualEventResponse[]> => {
     try {
@@ -34,6 +34,36 @@ export const fetchEvents = cache(
     }
   }
 );
+
+/* EVENTS WITH SEARCH PARAMS - CLIENT SIDE */
+export const fetchEventsClient = async (
+  searchParams: URLSearchParams
+): Promise<IndividualEventResponse[]> => {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/events?${searchParams.toString()}`,
+      {}
+    );
+
+    if (!res.ok) {
+      throw new Error(
+        `Failed to fetch events: ${res.status} ${res.statusText}`
+      );
+    }
+
+    const data = await res.json();
+
+    if (!Array.isArray(data)) {
+      console.error("API returned non-array data:", data);
+      return [];
+    }
+
+    return data as IndividualEventResponse[];
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    return [];
+  }
+};
 
 const eventCache = new Map<string, IndividualEventResponse>();
 

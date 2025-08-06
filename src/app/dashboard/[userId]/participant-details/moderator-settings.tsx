@@ -9,7 +9,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useFormContext } from "react-hook-form";
 import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
@@ -18,10 +17,8 @@ import { CalendarHeart } from "lucide-react";
 export function ModeratorSettings() {
   const {
     control,
-    watch,
     formState: { errors },
   } = useFormContext<ParticipantDetails>();
-  const isSticky = watch("is_sticky");
 
   console.log(errors);
   return (
@@ -45,51 +42,6 @@ export function ModeratorSettings() {
           </FormItem>
         )}
       />
-      <FormField
-        control={control}
-        name="is_sticky"
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-            <div className="space-y-0.5">
-              <FormLabel className="text-base">Is Sticky</FormLabel>
-              <FormDescription>Set this participant as sticky</FormDescription>
-            </div>
-            <FormControl>
-              <Switch
-                checked={field.value || false}
-                onCheckedChange={field.onChange}
-              />
-            </FormControl>
-          </FormItem>
-        )}
-      />
-
-      {isSticky && (
-        <FormField
-          control={control}
-          name="year"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Year</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  {...field}
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value ? Number(e.target.value) : null
-                    )
-                  }
-                  value={field.value === null ? "" : field.value}
-                  className="bg-white text-black"
-                />
-              </FormControl>
-              <FormDescription>Required when Is Sticky is true</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      )}
 
       <FormField
         control={control}

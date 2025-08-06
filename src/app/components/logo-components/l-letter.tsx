@@ -3,9 +3,10 @@ import { twMerge } from "tailwind-merge";
 
 type Props = {
   className: string;
+  ref: React.RefObject<SVGSVGElement>;
 };
 
-function Lletter({ className }: Props) {
+function Lletter({ className, ref }: Props) {
   return (
     <svg
       width="32"
@@ -13,6 +14,7 @@ function Lletter({ className }: Props) {
       viewBox="0 0 35 45"
       fill="none"
       className={twMerge("", className)}
+      ref={ref}
     >
       <path d="M0 45V0h5.731v39.733H32V45H0Z" fill="currentColor" />
     </svg>

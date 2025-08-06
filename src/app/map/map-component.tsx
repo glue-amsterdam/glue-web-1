@@ -14,7 +14,6 @@ import { MemoizedMarker } from "@/app/map/memorized-marker";
 import MemoizedPopUpComponent from "@/app/map/pop-up-component";
 import MemoizedRoutePopupComponent from "@/app/map/route-pop-up";
 import MemoizedMapLegend from "@/app/map/map-legend";
-import { useLocationData } from "@/app/hooks/useLocationData";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
 
@@ -26,14 +25,14 @@ export interface PopupInfo {
   is_hub: boolean;
   is_collective: boolean;
   is_special_program: boolean;
-  hub_name: string | null;
-  hub_description: string | null;
+  hub_name?: string;
+  hub_description?: string | null;
   participants: {
     user_id: string;
     user_name: string;
     is_host: boolean;
-    slug: string | null;
-    image_url: string | null;
+    slug?: string | null;
+    image_url?: string | null;
   }[];
 }
 
@@ -77,8 +76,6 @@ const MapComponent = ({
   onRouteSelect,
 }: MapComponentProps) => {
   const mapRef = useRef<MapRef>(null);
-  const { locationData, isLoading, isError } =
-    useLocationData(selectedLocation);
   const prevSelectedLocation = useRef<string | null>(null);
   const prevSelectedRoute = useRef<string | null>(null);
   const hadPreviousSelection = useRef<boolean>(false);
@@ -90,6 +87,12 @@ const MapComponent = ({
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
   const isNavigatingAway = useRef(false);
   const navigationClickTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Get the selected location data from the complete mapInfo
+  const selectedLocationData = useMemo(() => {
+    if (!selectedLocation) return null;
+    return mapInfo.find((location) => location.id === selectedLocation) || null;
+  }, [selectedLocation, mapInfo]);
 
   // Track navigation away from map page
   useEffect(() => {
@@ -263,31 +266,6 @@ const MapComponent = ({
     onRouteSelect,
     pathname,
   ]);
-
-  // Prefetch nearby locations for faster loading
-  const prefetchNearbyLocations = useCallback(() => {
-    // Get visible locations based on current view
-    const mapBounds = mapRef.current?.getBounds();
-    const visibleLocations = mapInfo.filter((location) => {
-      const lng = location.longitude;
-      const lat = location.latitude;
-
-      // Simple check if location is in current viewport
-      return (
-        mapBounds &&
-        lng >= mapBounds.getWest() &&
-        lng <= mapBounds.getEast() &&
-        lat >= mapBounds.getSouth() &&
-        lat <= mapBounds.getNorth()
-      );
-    });
-
-    // Prefetch data for visible locations (limit to 5 to avoid too many requests)
-    visibleLocations.slice(0, 5).forEach((location) => {
-      // This will trigger SWR prefetch
-      fetch(`/api/mapbox/location/${location.id}`, { priority: "low" });
-    });
-  }, [mapInfo]);
 
   const handleMapLoad = useCallback(() => {
     setMapLoaded(true);
@@ -490,9 +468,7 @@ const MapComponent = ({
       mapStyle="mapbox://styles/mapbox/dark-v11"
       maxBounds={CITY_BOUNDS}
       onClick={shouldDisableMapInteractions ? undefined : handleMapClick}
-      onMoveEnd={
-        shouldDisableMapInteractions ? undefined : prefetchNearbyLocations
-      }
+      onMoveEnd={shouldDisableMapInteractions ? undefined : () => {}}
       renderWorldCopies={false}
       onLoad={handleMapLoad}
     >
@@ -500,11 +476,14 @@ const MapComponent = ({
 
       {/* Render location markers when no route is selected */}
       {!selectedRoute &&
-        mapInfo.map((location) => (
+        mapInfo.map((location, index) => (
           <MemoizedMarker
             key={location.id}
             location={location}
             onClick={(e) => handleMarkerClick(e, location)}
+            isSelected={selectedLocation === location.id}
+            index={index}
+            mapLoaded={mapLoaded}
           />
         ))}
 
@@ -533,18 +512,20 @@ const MapComponent = ({
               }}
               isRouteMarker={true} // Mark as route marker to disable click
               routeStep={index + 1} // Pass the route step number
+              index={index}
+              mapLoaded={mapLoaded}
             />
           ))}
         </>
       )}
 
       {/* Popup for selected location */}
-      {selectedLocation && locationData && (
+      {selectedLocation && selectedLocationData && (
         <MemoizedPopUpComponent
           handlePopupClose={handlePopupClose}
-          isLoading={isLoading}
-          popupInfo={locationData}
-          isError={isError}
+          isLoading={false}
+          popupInfo={selectedLocationData}
+          isError={false}
         />
       )}
 

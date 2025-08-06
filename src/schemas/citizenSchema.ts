@@ -16,7 +16,9 @@ export const citizensSectionSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
   is_visible: z.boolean(),
-  citizensByYear: z.record(z.array(citizenSchema).min(3).max(4)),
+  citizensByYear: z.record(z.array(citizenSchema)),
+  text_color: z.string().default("#ffffff"),
+  background_color: z.string().default("#000000"),
 });
 
 export type Citizen = z.infer<typeof citizenSchema>;
@@ -35,6 +37,8 @@ export const clientCitizensSectionSchema = z.object({
   description: z.string(),
   is_visible: z.boolean(),
   citizensByYear: z.record(z.array(clientCitizenSchema)),
+  text_color: z.string(),
+  background_color: z.string(),
 });
 
 export type ClientCitizen = z.infer<typeof clientCitizenSchema>;

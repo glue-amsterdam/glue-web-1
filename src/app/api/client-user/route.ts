@@ -34,10 +34,9 @@ export async function GET() {
         `
           slug, 
           user_id,
-          is_sticky,
           status,
           is_active,
-          user_info (
+          user_info!inner (
             user_name
           )
         `

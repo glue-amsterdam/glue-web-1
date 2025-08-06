@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import useSWR from "swr";
-import { LoadingFallbackMini } from "@/app/components/loading-fallback";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -121,11 +121,11 @@ export default function HubsList() {
     }
   };
 
-  if (isLoading) return <LoadingFallbackMini />;
+  if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Failed to load hubs</div>;
 
   return (
-    <div className="container mx-auto py-10 space-y-6">
+    <div className="w-full max-w-[90%] mx-auto flex flex-col gap-4">
       <h1 className="text-3xl font-bold">Hubs</h1>
       <div className="flex justify-between items-center ">
         <Input

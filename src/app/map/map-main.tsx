@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import MapComponent from "@/app/map/map-component";
 import InfoPanel from "@/app/map/info-panel";
 import RouteFooter from "@/app/map/route-footer";
-import { LoadingFallback } from "@/app/components/loading-fallback";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 interface MapMainProps {
   initialData: {
@@ -85,7 +85,7 @@ function MapMain({ initialData }: MapMainProps) {
     : null;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-5rem)]">
+    <div className="flex flex-col pt-[5rem] h-dvh">
       <h1 className="sr-only">City Map</h1>
       {isLargeScreen ? (
         <div className="flex flex-1 h-full">
@@ -103,7 +103,7 @@ function MapMain({ initialData }: MapMainProps) {
             />
           </aside>
           <main className="w-2/3 relative h-full" aria-label="Map">
-            <Suspense fallback={<LoadingFallback />}>
+            <Suspense fallback={<LoadingSpinner />}>
               <MapComponent
                 mapInfo={mapInfo}
                 routes={routes}
@@ -190,7 +190,7 @@ function MapMain({ initialData }: MapMainProps) {
             aria-label="Map"
             onClick={handleOutsideClick}
           >
-            <Suspense fallback={<LoadingFallback />}>
+            <Suspense fallback={<LoadingSpinner />}>
               <MapComponent
                 mapInfo={mapInfo}
                 routes={routes}

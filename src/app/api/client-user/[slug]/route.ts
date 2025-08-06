@@ -42,8 +42,6 @@ export async function GET(
         slug,
         short_description,
         description,
-        is_sticky,
-        year,
         status,
         user_info!inner(
           user_name,
@@ -58,7 +56,7 @@ export async function GET(
       `
       )
       .eq("slug", slug)
-      .or("is_active.eq.true,is_sticky.eq.true")
+      .or("is_active.eq.true")
       .single()) as { data: ParticipantDetails | null; error: PostgrestError };
 
     if (participantError) {
@@ -84,6 +82,17 @@ export async function GET(
     if (!data.user_id) {
       return NextResponse.json({ error: "User ID not found" }, { status: 404 });
     }
+
+    // Check if participant is sticky by looking at sticky_group_participants table
+    const { data: stickyData, error: stickyError } = await supabase
+      .from("sticky_group_participants")
+      .select("participant_user_id")
+      .eq("participant_user_id", data.user_id);
+
+    // Determine if participant is sticky based on presence in sticky_group_participants
+    // If stickyError is PGRST116 (no rows found), participant is not sticky
+    // If stickyData has any rows, participant is sticky
+    const isSticky = !stickyError && stickyData && stickyData.length > 0;
 
     // Fetch additional related data
     const [imageData, mapInfo, visitingHoursData, events] = await Promise.all([
@@ -130,6 +139,7 @@ export async function GET(
 
     const fullParticipantData = {
       ...data,
+      is_sticky: isSticky, // Override the is_sticky field with our computed value
       user_info: {
         ...userData,
         map_info: mapInfo.data || [],

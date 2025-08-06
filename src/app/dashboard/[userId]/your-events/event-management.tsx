@@ -15,7 +15,7 @@ export function EventManagement({
   onEventDeleted,
 }: EventManagementProps) {
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-[80%] mx-auto">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-white">Your Events</h2>
       </div>

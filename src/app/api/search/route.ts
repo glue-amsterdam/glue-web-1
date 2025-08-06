@@ -21,7 +21,6 @@ interface Participant {
     description: string | null;
     slug: string | null;
     is_sticky: boolean;
-    year: number | null;
     status: string;
   };
   image_url: string | null;
@@ -104,8 +103,6 @@ export async function GET(request: Request) {
         short_description,
         description,
         slug,
-        is_sticky,
-        year,
         status
       `
       )
@@ -119,8 +116,21 @@ export async function GET(request: Request) {
       .select("user_id, image_url")
       .in("user_id", participantIds);
 
-    const [participantDetailsResult, participantImagesResult] =
-      await Promise.all([participantDetailsQuery, participantImagesQuery]);
+    // Fetch sticky group participants to determine sticky status
+    const stickyParticipantsQuery = supabase
+      .from("sticky_group_participants")
+      .select("participant_user_id")
+      .in("participant_user_id", participantIds);
+
+    const [
+      participantDetailsResult,
+      participantImagesResult,
+      stickyParticipantsResult,
+    ] = await Promise.all([
+      participantDetailsQuery,
+      participantImagesQuery,
+      stickyParticipantsQuery,
+    ]);
 
     if (participantDetailsResult.error) {
       console.error(
@@ -144,6 +154,11 @@ export async function GET(request: Request) {
       );
     }
 
+    // Create a set of sticky participant IDs for quick lookup
+    const stickyParticipantIds = new Set(
+      stickyParticipantsResult.data?.map((sp) => sp.participant_user_id) || []
+    );
+
     // Create maps for quick lookup
     const participantDetailsMap = new Map(
       participantDetailsResult.data.map((details) => [details.user_id, details])
@@ -165,8 +180,7 @@ export async function GET(request: Request) {
             short_description: details.short_description,
             description: details.description,
             slug: details.slug,
-            is_sticky: details.is_sticky,
-            year: details.year,
+            is_sticky: stickyParticipantIds.has(participant.user_id),
             status: details.status,
           },
           image_url: participantImageMap.get(participant.user_id) ?? null,

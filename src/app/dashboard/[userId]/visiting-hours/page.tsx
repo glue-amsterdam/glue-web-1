@@ -1,10 +1,9 @@
 "use client";
 
-import { LoadingFallbackMini } from "@/app/components/loading-fallback";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useDashboardContext } from "@/app/context/DashboardContext";
 import { VisitingHoursForm } from "@/app/dashboard/[userId]/visiting-hours/visiting-hours-form";
 import { VisitingHoursDays } from "@/schemas/visitingHoursSchema";
-import { motion } from "framer-motion";
 import useSWR from "swr";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -19,15 +18,13 @@ export default function VisitingHoursPage() {
     fetcher
   );
 
-  if (isLoading) return <LoadingFallbackMini />;
+  if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Failed to load visiting hours data</div>;
   if (!visitingHours) return <div>No visiting hours data available</div>;
   return (
-    <motion.div className="bg-black pt-4 flex-grow">
-      <VisitingHoursForm
-        initialData={visitingHours}
-        targetUserId={targetUserId}
-      />
-    </motion.div>
+    <VisitingHoursForm
+      initialData={visitingHours}
+      targetUserId={targetUserId}
+    />
   );
 }

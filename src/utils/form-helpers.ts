@@ -21,8 +21,10 @@ export function createSubmitHandler<T extends FieldValues>(
         throw new Error(`Failed to update: ${response.statusText}`);
       }
 
+      const responseData = await response.json();
+
       if (onSuccess) {
-        await onSuccess(data);
+        await onSuccess(responseData);
       }
     } catch (error) {
       console.error(`Error updating:`, error);

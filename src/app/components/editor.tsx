@@ -14,21 +14,54 @@ import {
   Quote,
   Undo,
   Redo,
-  Heading1,
-  Heading2,
   LinkIcon,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { FontSize } from "./tiptap-font-size";
+import TextStyle from "@tiptap/extension-text-style";
+import type { Editor } from "@tiptap/react";
 
-const MenuBar = ({ editor }: { editor: ReturnType<typeof useEditor> }) => {
+const FONT_SIZES = ["0.75rem", "0.875rem", "1rem", "1.125rem", "1.5rem"];
+
+const getNextFontSize = (current: string | null, direction: 1 | -1) => {
+  const idx = FONT_SIZES.indexOf(current || "1rem");
+  let newIdx = direction === 1 ? idx + 1 : idx - 1;
+  if (newIdx < 0) newIdx = 0;
+  if (newIdx >= FONT_SIZES.length) newIdx = FONT_SIZES.length - 1;
+  return FONT_SIZES[newIdx];
+};
+
+const getCurrentFontSize = (editor: Editor | null) => {
+  if (!editor) return null;
+  const attrs = editor.getAttributes("fontSize");
+  return attrs.fontSize || null;
+};
+
+const MenuBar = ({ editor }: { editor: Editor | null }) => {
   if (!editor) {
     return null;
   }
 
+  const handleIncreaseFontSize = () => {
+    const current = getCurrentFontSize(editor);
+    const next = getNextFontSize(current, 1);
+    // @ts-expect-error setFontSize is a custom command from FontSize extension
+    editor.chain().focus().setFontSize(next).run();
+  };
+
+  const handleDecreaseFontSize = () => {
+    const current = getCurrentFontSize(editor);
+    const next = getNextFontSize(current, -1);
+    // @ts-expect-error setFontSize is a custom command from FontSize extension
+    editor.chain().focus().setFontSize(next).run();
+  };
+
   return (
-    <div className="bg-gray flex flex-wrap gap-1 pb-2 bg-gray-200 border-b">
+    <div className="bg-gray flex flex-wrap gap-1 pb-2 border-b">
       <Button
         type="button"
         variant="ghost"
@@ -100,31 +133,7 @@ const MenuBar = ({ editor }: { editor: ReturnType<typeof useEditor> }) => {
       >
         <LinkIcon className="h-4 w-4" />
       </Button>
-      <Separator orientation="vertical" className="mx-1 h-6 bg-gray-400" />
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className={cn(
-          "text-black hover:bg-uiblack/30",
-          editor.isActive("heading", { level: 1 }) && "bg-uiblack/30"
-        )}
-      >
-        <Heading1 className="h-4 w-4" />
-      </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={cn(
-          "text-black hover:bg-uiblack/30",
-          editor.isActive("heading", { level: 2 }) && "bg-uiblack/30"
-        )}
-      >
-        <Heading2 className="h-4 w-4" />
-      </Button>
+
       <Separator orientation="vertical" className="mx-1 h-6 bg-uiblack/30" />
       <Button
         type="button"
@@ -163,6 +172,28 @@ const MenuBar = ({ editor }: { editor: ReturnType<typeof useEditor> }) => {
         <Quote className="h-4 w-4" />
       </Button>
       <Separator orientation="vertical" className="mx-1 h-6 bg-gray-400" />
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        aria-label="Decrease font size"
+        onClick={handleDecreaseFontSize}
+        className="text-black hover:bg-uiblack/30"
+        tabIndex={0}
+      >
+        <ChevronDown className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        aria-label="Increase font size"
+        onClick={handleIncreaseFontSize}
+        className="text-black hover:bg-uiblack/30"
+        tabIndex={0}
+      >
+        <ChevronUp className="h-4 w-4" />
+      </Button>
       <div className="flex gap-1">
         <Button
           type="button"
@@ -207,6 +238,8 @@ export const RichTextEditor = ({
           class: "text-blue-500 underline",
         },
       }),
+      TextStyle,
+      FontSize,
     ],
     content: value,
     onUpdate: ({ editor }) => {

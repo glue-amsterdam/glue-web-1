@@ -1,13 +1,5 @@
-import Background from "@/app/components/background";
-import ClickAreas from "@/app/components/home-page/click-areas";
+import HomeClientPage from "./home-client-page";
 
-export default function Home() {
-  return (
-    <>
-      <main>
-        <ClickAreas />
-      </main>
-      <Background />
-    </>
-  );
+export default function Page() {
+  return <HomeClientPage />;
 }

@@ -121,14 +121,21 @@ function transformApiData(data: ApiMainSectionData): MainSectionData {
     triangle: data.mainColors?.triangle ?? "#000000",
   };
 
-  // Ensure mainMenu items have all required fields
-  const transformedMainMenu = (data.mainMenu || []).map((item) => ({
-    menu_id: item.menu_id || uuidv4(),
-    label: item.label || "",
-    section: item.section || "",
-    className: item.className || "",
-    subItems: item.subItems || null,
-  }));
+  // Ensure mainMenu items have all required fields and sort by section order
+  const sectionOrder = ["dashboard", "about", "events", "map"];
+  const transformedMainMenu = (data.mainMenu || [])
+    .map((item) => ({
+      menu_id: item.menu_id || uuidv4(),
+      label: item.label || "",
+      section: item.section || "",
+      className: item.className || "",
+      subItems: item.subItems || null,
+    }))
+    .sort((a, b) => {
+      const indexA = sectionOrder.indexOf(a.section);
+      const indexB = sectionOrder.indexOf(b.section);
+      return indexA - indexB;
+    });
 
   // Ensure mainLinks exists and all items have required fields
   const transformedMainLinks = {
@@ -159,6 +166,7 @@ function transformApiData(data: ApiMainSectionData): MainSectionData {
     })),
     mainLinks: transformedMainLinks,
     eventDays: transformedEventDays,
+    homeText: data.homeText || null,
   };
 }
 

@@ -6,6 +6,8 @@ import {
 
 const CURATED_FALLBACK_DATA: CuratedResponse = {
   headerData: {
+    text_color: "#ffffff",
+    background_color: "#000000",
     title: "GLUE STICKY MEMBER",
     description:
       "Discover the GLUE STICKY MEMBER, a curated group of designers, architects, and creatives who have made a significant impact on the industry.",

@@ -20,6 +20,8 @@ export async function GET() {
         title: "No press items",
         description: "Press items not visible by now",
         is_visible: false,
+        text_color: "#ffffff",
+        background_color: "#000000",
         pressItems: [],
       });
     }
@@ -38,6 +40,8 @@ export async function GET() {
       title: pressData.title,
       description: pressData.description,
       is_visible: pressData.is_visible,
+      text_color: pressData.text_color,
+      background_color: pressData.background_color,
       pressItems:
         pressItemsData?.map(
           ({ id, title, description, image_url, is_visible }) => ({

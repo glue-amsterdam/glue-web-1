@@ -68,6 +68,8 @@ export async function PUT(request: Request) {
         title: body.title,
         description: body.description,
         is_visible: body.is_visible,
+        text_color: body.text_color,
+        background_color: body.background_color,
       })
       .eq("id", "about-citizens-section")
       .select();

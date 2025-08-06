@@ -1,6 +1,6 @@
 "use client";
 
-import { LoadingFallbackMini } from "@/app/components/loading-fallback";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import CreateRouteClientPage from "@/app/dashboard/[userId]/create-route/create-route-client-page";
 import { MapInfoAPICall } from "@/schemas/mapSchema";
 import useSWR from "swr";
@@ -13,7 +13,7 @@ function CreateRoute() {
     isLoading,
   } = useSWR<MapInfoAPICall[]>("/api/maps", fetcher);
 
-  if (isLoading) return <LoadingFallbackMini />;
+  if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Failed to load map data</div>;
 
   console.log(mapInfoList);

@@ -6,6 +6,8 @@ import {
 
 const SPONSORS_FALLBACK_DATA: SponsorsSection = {
   sponsorsHeaderSchema: {
+    text_color: "#ffffff",
+    background_color: "#000000",
     id: "sponsors-section",
     title: "Sponsors",
     is_visible: false,

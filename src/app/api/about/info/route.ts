@@ -38,6 +38,8 @@ export async function GET() {
       title: infoData.title,
       description: infoData.description,
       is_visible: infoData.is_visible,
+      text_color: infoData.text_color,
+      background_color: infoData.background_color,
       infoItems: infoItemsData.map((item) => ({
         description: item.description,
         id: item.id,

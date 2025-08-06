@@ -26,6 +26,8 @@ export async function GET() {
           id: "sponsors-section",
           title: "Sponsor data is not yet available. ",
           is_visible: false,
+          text_color: "#ffffff",
+          background_color: "#000000",
           description: "Sponsor data is not yet available.",
           sponsors_types: [],
         },

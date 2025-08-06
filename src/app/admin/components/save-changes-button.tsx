@@ -20,7 +20,7 @@ export function SaveChangesButton({
   ...props
 }: SaveChangesButtonProps) {
   const {
-    formState: { dirtyFields },
+    formState: { dirtyFields, isDirty: formIsDirty },
   } = useFormContext();
 
   const isDirtyFromWatchFields = watchFields.some((field) => {
@@ -40,7 +40,7 @@ export function SaveChangesButton({
     return !!currentDirtyField;
   });
 
-  const isDirty = isDirtyFromWatchFields || isDirtyProp;
+  const isDirty = isDirtyFromWatchFields || isDirtyProp || formIsDirty;
 
   return (
     <Button

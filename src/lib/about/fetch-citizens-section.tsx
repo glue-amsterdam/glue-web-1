@@ -16,6 +16,8 @@ const FALLBACK_CITIZEN: ClientCitizen = {
 
 const CITIZENS_FALLBACK_DATA: ClientCitizensSection = {
   title: "Creative Citizens of Honour",
+  text_color: "#ffffff",
+  background_color: "#000000",
   description: "Loading citizens of honor information...",
   is_visible: false,
   citizensByYear: {

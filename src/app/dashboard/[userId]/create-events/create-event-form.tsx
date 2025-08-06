@@ -191,7 +191,7 @@ export function EventForm({
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full max-w-[80%] mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Create New Event</CardTitle>
       </CardHeader>

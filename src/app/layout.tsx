@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
-import NavbarBurguer from "@/app/components/navbar/responsive-navbar-with-hamburger";
+
 import { AuthProvider } from "@/app/context/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
-import { Suspense } from "react";
-import { MainDataProvider } from "@/app/context/MainDataProvider";
-import { LoadingFallback } from "@/app/components/loading-fallback";
 import { CookieBanner } from "@/components/cookies/cookies-banner";
 import { config } from "@/env";
+import { MainContextProvider } from "./context/MainContext";
+import { fetchMain } from "@/lib/main/fetch-main";
+import { ViewTransitions } from "next-view-transitions";
 
 export const metadata: Metadata = {
   title: `GLUE ${config.cityName} | Connected by Design`,
@@ -80,20 +80,20 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const initialData = await fetchMain();
   return (
-    <html lang="en">
-      <body className="font-lausanne text-uiwhite antialiased min-h-dvh">
-        <Suspense fallback={<LoadingFallback />}>
-          <MainDataProvider>
+    <ViewTransitions>
+      <html lang="en">
+        <body className="font-lausanne text-uiwhite">
+          <MainContextProvider initialData={initialData}>
             <AuthProvider>
-              <NavbarBurguer />
-              <div className="flex-grow overflow-x-hidden">{children}</div>
+              {children}
               <Toaster />
               <CookieBanner />
             </AuthProvider>
-          </MainDataProvider>
-        </Suspense>
-      </body>
-    </html>
+          </MainContextProvider>
+        </body>
+      </html>
+    </ViewTransitions>
   );
 }

@@ -9,7 +9,7 @@ export async function GET() {
 
     const { data: participantsData } = await supabase
       .from("about_participants")
-      .select("title,description,is_visible")
+      .select("title,description,is_visible,text_color,background_color")
       .single();
 
     if (!participantsData) {
@@ -49,6 +49,8 @@ export async function PUT(request: Request) {
         title: validatedData.title,
         description: validatedData.description,
         is_visible: validatedData.is_visible,
+        text_color: validatedData.text_color,
+        background_color: validatedData.background_color,
       })
       .eq("id", "about-participants");
 

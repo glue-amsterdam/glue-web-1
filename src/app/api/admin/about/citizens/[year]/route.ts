@@ -1,7 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { citizenSchema } from "@/schemas/citizenSchema";
-import { z } from "zod";
 import { config } from "@/env";
 
 export async function GET(
@@ -31,9 +30,7 @@ export async function GET(
   }
 }
 
-const yearCitizensSchema = z.array(citizenSchema).min(3).max(4);
-
-export async function PUT(
+export async function POST(
   request: Request,
   props: { params: Promise<{ year: string }> }
 ) {
@@ -44,103 +41,47 @@ export async function PUT(
   try {
     const body = await request.json();
 
-    // Validate the incoming data
-    const validatedData = yearCitizensSchema.parse(body);
+    // Validate the incoming data (without id for creation)
+    const validatedData = citizenSchema.omit({ id: true }).parse(body);
 
-    // Get existing citizens for this year
-    const { data: existingCitizens, error: fetchError } = await supabase
-      .from("about_citizens")
-      .select("id, image_url")
-      .eq("year", year)
-      .eq("section_id", "about-citizens-section");
+    // Generate a unique ID for the new citizen
+    const citizenId = `${year}-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
-    if (fetchError) throw fetchError;
-
-    // Prepare citizens data for upsert
-    const citizensToUpsert = validatedData.map((citizen) => ({
-      id: citizen.id,
-      name: citizen.name,
-      description: citizen.description,
-      image_url: citizen.image_url,
-      image_name: citizen.image_name,
+    // Prepare citizen data for insertion
+    const citizenToInsert = {
+      id: citizenId,
+      name: validatedData.name,
+      description: validatedData.description,
+      image_url: validatedData.image_url,
+      image_name: validatedData.image_name,
       year,
       section_id: "about-citizens-section",
-    }));
+    };
 
-    // Update the citizens
-    const { error: citizensError, data: upsertedCitizens } = await supabase
+    // Insert the new citizen
+    const { error: insertError, data: insertedCitizen } = await supabase
       .from("about_citizens")
-      .upsert(citizensToUpsert);
+      .insert(citizenToInsert)
+      .select()
+      .single();
 
-    if (citizensError) throw citizensError;
-
-    // Identify citizens to be deleted (if any)
-    const currentCitizenIds = validatedData
-      .map((citizen) => citizen.id)
-      .filter(Boolean);
-    const citizensToDelete = existingCitizens?.filter(
-      (citizen) => !currentCitizenIds.includes(citizen.id)
-    );
-
-    // Identify images to be deleted
-    const imagesToDelete = validatedData
-      .filter(
-        (citizen) =>
-          citizen.oldImageUrl && citizen.oldImageUrl !== citizen.image_url
-      )
-      .map((citizen) => citizen.oldImageUrl);
-
-    // Delete citizens from the database
-    if (citizensToDelete && citizensToDelete.length > 0) {
-      const { error: deleteError } = await supabase
-        .from("about_citizens")
-        .delete()
-        .in(
-          "id",
-          citizensToDelete.map((citizen) => citizen.id)
-        );
-
-      if (deleteError) throw deleteError;
-    }
-
-    // Delete old images from the storage bucket
-    for (const imageUrl of imagesToDelete) {
-      if (imageUrl) {
-        try {
-          const url = new URL(imageUrl);
-          const pathParts = url.pathname.split("/");
-          const filename = pathParts[pathParts.length - 1];
-          const filePath = `about/citizens/${year}/${filename}`;
-
-          console.log(`Attempting to delete image: ${filePath}`);
-
-          const { error: storageError } = await supabase.storage
-            .from(config.bucketName)
-            .remove([filePath]);
-
-          if (storageError) {
-            console.error(`Failed to delete image: ${filePath}`, storageError);
-          } else {
-            console.log(`Successfully deleted image: ${filePath}`);
-          }
-        } catch (error) {
-          console.error(`Error processing image deletion: ${imageUrl}`, error);
-        }
-      }
-    }
+    if (insertError) throw insertError;
 
     return NextResponse.json({
-      message: `Citizens for year ${year} updated successfully`,
-      citizens: upsertedCitizens,
+      message: `Citizen created successfully for year ${year}`,
+      citizen: insertedCitizen,
     });
   } catch (error) {
-    console.error(`Error in PUT /admin/about/citizens/${year}:`, error);
+    console.error(`Error in POST /admin/about/citizens/${year}:`, error);
     return NextResponse.json(
-      { error: `An error occurred while updating citizens for year ${year}` },
+      { error: `An error occurred while creating citizen for year ${year}` },
       { status: 500 }
     );
   }
 }
+
 export async function DELETE(
   request: Request,
   props: { params: Promise<{ year: string }> }

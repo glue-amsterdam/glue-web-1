@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { AN_HOUR_IN_S } from "@/constants";
+const AN_DAY_IN_S = 60 * 60 * 24;
 
 function parseAdminUsers() {
   const adminUsersString = process.env.ADMIN_USERS || "";
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: AN_HOUR_IN_S,
+      maxAge: AN_DAY_IN_S,
       path: "/",
     });
 

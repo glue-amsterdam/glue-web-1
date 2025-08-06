@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LoadingFallbackMini } from "@/app/components/loading-fallback";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useDashboardContext } from "@/app/context/DashboardContext";
 import { UserInfo } from "@/schemas/userInfoSchemas";
 import useSWR from "swr";
@@ -27,7 +27,7 @@ export default function AdminPanelCall() {
 
   if (!isMod) return null;
 
-  if (isLoading) return <LoadingFallbackMini />;
+  if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Failed to load user data</div>;
 
   return (

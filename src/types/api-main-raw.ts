@@ -42,4 +42,5 @@ export type ApiMainSectionData = {
   mainMenu?: ApiMainMenuItem[];
   mainLinks?: ApiMainLinks;
   eventDays?: ApiEventDay[];
+  homeText?: { id: string; label: string; color?: string | null } | null;
 };
