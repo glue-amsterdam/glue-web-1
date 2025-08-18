@@ -235,8 +235,7 @@ const LocationItem = React.memo(
                     />
                   )}
                   <div className="flex-grow flex text-left text-sm gap-2">
-                    <span>{location.hub_name}</span>-
-                    <span>{location.is_hub ? "HUB" : "Collective"}</span>
+                    <span>{location.hub_name}</span>
                   </div>
                   <div
                     onClick={(e) =>
@@ -296,8 +295,8 @@ const LocationItem = React.memo(
               )}
               <span className="flex-grow text-left text-sm">
                 {location.is_special_program
-                  ? `${location.participants[0].user_name} - Special Program`
-                  : `${location.participants[0].user_name} - Participant`}
+                  ? `${location.participants[0].user_name}`
+                  : `${location.participants[0].user_name}`}
               </span>
               <div
                 onClick={(e) =>
