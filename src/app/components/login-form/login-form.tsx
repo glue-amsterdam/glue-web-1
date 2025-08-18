@@ -23,7 +23,7 @@ import {
 import { useAuth } from "@/app/context/AuthContext";
 import GlueLogoSVG from "@/app/components/glue-logo-svg";
 import { motion } from "framer-motion";
-import { Mail, Lock, Loader2, Settings } from "lucide-react";
+import { Mail, Lock, Loader2, Settings, X } from "lucide-react";
 import { z } from "zod";
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
@@ -126,8 +126,18 @@ export default function LoginForm({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[425px] bg-uiwhite backdrop-blur-sm border border-primary/20 rounded-lg shadow-xl p-6 text-black">
-          <DialogHeader>
+        <DialogContent className="scale-75 md:scale-95 lg:scale-100 sm:max-w-[425px] bg-uiwhite backdrop-blur-sm border border-primary/20 rounded-lg shadow-xl p-6 text-black overflow-hidden overflow-y-auto">
+          <DialogHeader className="relative">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="absolute right-0 top-0 h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors"
+              aria-label="Close login modal"
+            >
+              <X className="h-4 w-4" />
+            </Button>
             <DialogTitle className="text-3xl font-bold text-center text-primary">
               Log In
             </DialogTitle>
@@ -141,7 +151,10 @@ export default function LoginForm({
             transition={{ duration: 0.5 }}
             className="flex justify-center w-full mb-6 text-black"
           >
-            <GlueLogoSVG isVisible className="w-32 h-32" />
+            <GlueLogoSVG
+              isVisible
+              className="w-32 h-32 scale-75 md:scale-100"
+            />
           </motion.div>
           {loginError && (
             <div className="text-red-500 text-sm bg-red-100 p-2 rounded">
