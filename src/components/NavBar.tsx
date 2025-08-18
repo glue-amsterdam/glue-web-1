@@ -174,7 +174,7 @@ const NavBar = forwardRef<HTMLElement, NavBarProps>(
           data-lenis-prevent
           ref={overlayRef}
           className="fixed inset-0 bg-white z-40 flex flex-col pt-[5rem]"
-          style={{ display: "none", width: "100vw", height: "100vh" }}
+          style={{ display: "none", width: "100dvw", height: "100dvh" }}
         >
           <div className="flex-1 min-h-[60vh] overflow-y-auto">
             <OverlayNavMenu navItems={navItems} closeOverlay={closeOverlay} />
