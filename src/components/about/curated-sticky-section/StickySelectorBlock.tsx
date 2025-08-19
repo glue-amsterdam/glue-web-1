@@ -16,14 +16,9 @@ export default function StickySelectorBlock({
   participants: {
     userId: string;
     userName: string;
+    slug: string;
   }[];
 }) {
-  const multipleParticipants = [
-    ...participants,
-    ...participants,
-    ...participants,
-  ];
-
   return (
     <div
       data-lenis-prevent={true}
@@ -100,11 +95,11 @@ export default function StickySelectorBlock({
             className="w-full p-2 overflow-x-hidden flex flex-col gap-1"
             style={{ color: textColor }}
           >
-            {multipleParticipants.map((participant, idx) => (
+            {participants.map((participant, idx) => (
               <Link
                 key={participant.userId + idx}
                 target="_blank"
-                href={`/participants/${participant.userId}`}
+                href={`/participants/${participant.slug}`}
                 className="text-sm hover:tracking-widest transition-tracking duration-300"
                 style={{ color: textColor }}
               >
