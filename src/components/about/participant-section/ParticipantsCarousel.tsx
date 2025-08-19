@@ -98,7 +98,7 @@ export default function ParticipantsCarousel({
       >
         These are just 30 randomly chosen participants. Want to explore them
         all?{" "}
-        <Link href="/participants" target="_blank">
+        <Link href="/participants">
           <span
             className="underline transition-all duration-100
           "
