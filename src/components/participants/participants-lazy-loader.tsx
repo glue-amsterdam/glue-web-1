@@ -53,11 +53,7 @@ export default function ParticipantsLazyLoader({
   }, []); // Empty dependencies - observer is created only once
 
   if (!hasMore) {
-    return (
-      <div className="col-span-full text-center py-8">
-        <p className="text-gray-500">No more participants to load</p>
-      </div>
-    );
+    return <div className="col-span-full text-center py-8"></div>;
   }
 
   return (
