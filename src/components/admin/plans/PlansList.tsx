@@ -187,7 +187,7 @@ export default function PlansList({ initialPlans }: PlansListProps) {
   };
 
   return (
-    <div>
+    <div className="text-black">
       <Button onClick={() => setIsAddingPlan(true)} className="mb-4">
         Add New Plan
       </Button>

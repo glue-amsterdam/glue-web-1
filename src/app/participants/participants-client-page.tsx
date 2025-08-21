@@ -5,7 +5,7 @@ import ParticipantCard from "../../components/participants/participant-card";
 import ParticipantsLazyLoader from "../../components/participants/participants-lazy-loader";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import ParticipantsPageHeader from "@/components/participants/participants-page-header";
 import { useColors } from "../context/MainContext";
 
@@ -16,6 +16,8 @@ export default function ParticipantsClientPage() {
 
   // Keep track of previously animated participants
   const animatedParticipantsRef = useRef<Set<string>>(new Set());
+  const [isInitialRender, setIsInitialRender] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Function to determine card size and style
   const getCardConfig = (index: number) => {
@@ -37,7 +39,59 @@ export default function ParticipantsClientPage() {
     return configs[index % configs.length];
   };
 
+  // Set initial render to false after first render
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialRender(false);
+    }, 100); // Small delay to ensure DOM is ready
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Initial animation for first load
   useGSAP(() => {
+    if (!isInitialRender || participants.length === 0 || !containerRef.current)
+      return;
+
+    const participantElements = participants
+      .map((participant) =>
+        containerRef.current?.querySelector(
+          `[data-participant-id="${participant.user_id}"]`
+        )
+      )
+      .filter(Boolean) as Element[];
+
+    if (participantElements.length === 0) return;
+
+    // Mark all initial participants as animated
+    participants.forEach((participant) => {
+      animatedParticipantsRef.current.add(participant.user_id);
+    });
+
+    // Immediately set initial state to prevent flash
+    gsap.set(participantElements, {
+      opacity: 0,
+      y: 100,
+      filter: "grayscale(100%)",
+    });
+
+    // Small delay to ensure state is set, then animate
+    gsap.delayedCall(0.1, () => {
+      gsap.to(participantElements, {
+        opacity: 1,
+        y: 0,
+        filter: "grayscale(0%)",
+        stagger: 0.15,
+        ease: "power2.out",
+        duration: 0.6,
+      });
+    });
+  }, [participants, isInitialRender]);
+
+  // Handle new participants (lazy loading)
+  useGSAP(() => {
+    if (isInitialRender || participants.length === 0 || !containerRef.current)
+      return;
+
     // Find new participants that haven't been animated yet
     const newParticipants = participants.filter(
       (participant) => !animatedParticipantsRef.current.has(participant.user_id)
@@ -48,7 +102,9 @@ export default function ParticipantsClientPage() {
     // Get the DOM elements for new participants only
     const newParticipantElements = newParticipants
       .map((participant) =>
-        document.querySelector(`[data-participant-id="${participant.user_id}"]`)
+        containerRef.current?.querySelector(
+          `[data-participant-id="${participant.user_id}"]`
+        )
       )
       .filter(Boolean) as Element[];
 
@@ -59,24 +115,23 @@ export default function ParticipantsClientPage() {
       animatedParticipantsRef.current.add(participant.user_id);
     });
 
-    // Animate only the new participants
-    gsap.fromTo(
-      newParticipantElements,
-      {
-        opacity: 0,
-        y: 100,
-        filter: "grayscale(100%)",
-        ease: "power2.inOut",
-      },
-      {
-        opacity: 1,
-        y: 0,
-        filter: "grayscale(0%)",
-        stagger: 0.2,
-        ease: "power2.inOut",
-      }
-    );
-  }, [participants]);
+    // Set initial state for new participants
+    gsap.set(newParticipantElements, {
+      opacity: 0,
+      y: 50,
+      filter: "grayscale(100%)",
+    });
+
+    // Animate new participants
+    gsap.to(newParticipantElements, {
+      opacity: 1,
+      y: 0,
+      filter: "grayscale(0%)",
+      stagger: 0.1,
+      ease: "power2.out",
+      duration: 0.5,
+    });
+  }, [participants, isInitialRender]);
 
   if (error) {
     return (
@@ -103,7 +158,10 @@ export default function ParticipantsClientPage() {
     >
       <div className="about-w mx-auto mb-10">
         <ParticipantsPageHeader />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-6 auto-rows-[200px]">
+        <div
+          ref={containerRef}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-6 auto-rows-[200px]"
+        >
           {participants.map((participant, index) => {
             const cardConfig = getCardConfig(index);
 
@@ -115,7 +173,14 @@ export default function ParticipantsClientPage() {
               <div
                 key={participant.user_id}
                 data-participant-id={participant.user_id}
-                className={`${mobileSize} md:${desktopSize} transition-all duration-300`}
+                className={`${mobileSize} md:${desktopSize}`}
+                style={{
+                  opacity: isInitialRender ? 0 : 1,
+                  transform: isInitialRender
+                    ? "translateY(100px)"
+                    : "translateY(0px)",
+                  filter: isInitialRender ? "grayscale(100%)" : "grayscale(0%)",
+                }}
               >
                 <ParticipantCard
                   participant={participant}
