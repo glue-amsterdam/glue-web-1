@@ -18,7 +18,7 @@ function ClickAreas({ setIsLoginModalOpen, refs }: ClickAreasProps) {
   const mainMenu = useMenu();
   const { user } = useAuth();
   const router = useTransitionRouter();
-  const orderedSections = ["dashboard", "about", "events", "map"];
+  const orderedSections = ["dashboard", "events", "map", "about"];
 
   const handleAreaClick = async (
     e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>,
