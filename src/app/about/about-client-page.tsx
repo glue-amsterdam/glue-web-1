@@ -124,7 +124,7 @@ export default function AboutClientPage({
     <ReactLenis root>
       <main
         className="min-h-dvh h-full"
-        style={{ backgroundColor: mainColors?.box2 }}
+        style={{ backgroundColor: mainColors?.box4 }}
         ref={container}
       >
         <NavBar ref={topNavBarRef} />
