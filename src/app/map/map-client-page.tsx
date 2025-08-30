@@ -15,12 +15,12 @@ export default function MapClientPage({
   };
 }) {
   useSetPageDataset("rightButton");
-  const { box4 } = useColors();
+  const { triangle } = useColors();
   const topNavBarRef = useRef<HTMLDivElement>(null);
   return (
     <main
       className="min-h-dvh h-full overflow-x-hidden"
-      style={{ backgroundColor: box4 }}
+      style={{ backgroundColor: triangle }}
       data-page-container
     >
       <NavBar ref={topNavBarRef} />
