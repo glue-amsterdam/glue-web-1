@@ -14,7 +14,7 @@ export default function MapClientPage({
     routes: Route[];
   };
 }) {
-  useSetPageDataset("map");
+  useSetPageDataset("rightButton");
   const { box4 } = useColors();
   const topNavBarRef = useRef<HTMLDivElement>(null);
   return (

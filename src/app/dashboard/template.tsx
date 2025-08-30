@@ -5,7 +5,7 @@ import React from "react";
 import { useColors } from "../context/MainContext";
 
 export default function Template({ children }: { children: React.ReactNode }) {
-  useSetPageDataset("dashboard");
+  useSetPageDataset("leftButton");
   const { box3 } = useColors();
   return (
     <>

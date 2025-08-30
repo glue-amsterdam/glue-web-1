@@ -25,19 +25,19 @@ export interface HomeExitAnimationRefs {
 
 export const homeExitAnimation = ({
   refs,
-  href,
+  buttonType,
 }: {
   refs: HomeExitAnimationRefs;
-  href: string;
+  buttonType: string;
 }) => {
   return new Promise<void>((resolve) => {
-    if (href === "/about") {
+    if (buttonType === "upButton") {
       toAbout({ refs, resolve });
-    } else if (href === "/events") {
+    } else if (buttonType === "rightButton") {
       toEvents({ refs, resolve });
-    } else if (href === "/map") {
+    } else if (buttonType === "downButton") {
       toMap({ refs, resolve });
-    } else if (href.startsWith("/dashboard")) {
+    } else if (buttonType === "leftButton") {
       toDashboard({ refs, resolve });
     } else {
       resolve();

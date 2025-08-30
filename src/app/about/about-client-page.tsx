@@ -42,7 +42,7 @@ export default function AboutClientPage({
   glueInternational: GlueInternationalContent;
   sponsorsData: SponsorsSection;
 }) {
-  useSetPageDataset("about");
+  useSetPageDataset("downButton");
 
   const container = useRef<HTMLDivElement>(null);
   const mainColors = useColors();

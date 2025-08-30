@@ -29,17 +29,17 @@
   background-color: white !important;
 }
 
-/* Cuando vas de home => about */
-:root[data-from="home"][data-to="about"]::view-transition-old(root) {
+/*  home => upButton */
+:root[data-from="home"][data-to="upButton"]::view-transition-old(root) {
   animation: slide-home-to-about-out 0.6s ease forwards;
 }
-:root[data-from="home"][data-to="about"]::view-transition-new(root) {
+:root[data-from="home"][data-to="upButton"]::view-transition-new(root) {
   animation: slide-home-to-about-in 0.6s ease forwards;
 }
-:root[data-from="about"][data-to="home"]::view-transition-old(root) {
+:root[data-from="upButton"][data-to="home"]::view-transition-old(root) {
   animation: slide-about-to-home-out 0.6s ease forwards;
 }
-:root[data-from="about"][data-to="home"]::view-transition-new(root) {
+:root[data-from="upButton"][data-to="home"]::view-transition-new(root) {
   animation: slide-about-to-home-in 0.6s ease forwards;
 }
 @keyframes slide-home-to-about-out {
@@ -79,16 +79,16 @@
 }
 
 /* Cuando vas de home => events */
-:root[data-from="home"][data-to="events"]::view-transition-old(root) {
+:root[data-from="home"][data-to="rightButton"]::view-transition-old(root) {
   animation: slide-home-to-events-out 0.6s ease forwards;
 }
-:root[data-from="home"][data-to="events"]::view-transition-new(root) {
+:root[data-from="home"][data-to="rightButton"]::view-transition-new(root) {
   animation: slide-home-to-events-in 0.6s ease forwards;
 }
-:root[data-from="events"][data-to="home"]::view-transition-old(root) {
+:root[data-from="rightButton"][data-to="home"]::view-transition-old(root) {
   animation: slide-events-to-home-out 0.6s ease forwards;
 }
-:root[data-from="events"][data-to="home"]::view-transition-new(root) {
+:root[data-from="rightButton"][data-to="home"]::view-transition-new(root) {
   animation: slide-events-to-home-in 0.6s ease forwards;
 }
 
@@ -129,16 +129,16 @@
 }
 
 /* Cuando vas de home => map */
-:root[data-from="home"][data-to="map"]::view-transition-old(root) {
+:root[data-from="home"][data-to="downButton"]::view-transition-old(root) {
   animation: slide-home-to-map-out 0.6s ease forwards;
 }
-:root[data-from="home"][data-to="map"]::view-transition-new(root) {
+:root[data-from="home"][data-to="downButton"]::view-transition-new(root) {
   animation: slide-home-to-map-in 0.6s ease forwards;
 }
-:root[data-from="map"][data-to="home"]::view-transition-old(root) {
+:root[data-from="downButton"][data-to="home"]::view-transition-old(root) {
   animation: slide-map-to-home-out 0.6s ease forwards;
 }
-:root[data-from="map"][data-to="home"]::view-transition-new(root) {
+:root[data-from="downButton"][data-to="home"]::view-transition-new(root) {
   animation: slide-map-to-home-in 0.6s ease forwards;
 }
 
@@ -179,16 +179,16 @@
 }
 
 /* Cuando vas de home => dashboard */
-:root[data-from="home"][data-to="dashboard"]::view-transition-old(root) {
+:root[data-from="home"][data-to="leftButton"]::view-transition-old(root) {
   animation: slide-home-to-dashboard-out 0.6s ease forwards;
 }
-:root[data-from="home"][data-to="dashboard"]::view-transition-new(root) {
+:root[data-from="home"][data-to="leftButton"]::view-transition-new(root) {
   animation: slide-home-to-dashboard-in 0.6s ease forwards;
 }
-:root[data-from="dashboard"][data-to="home"]::view-transition-old(root) {
+:root[data-from="leftButton"][data-to="home"]::view-transition-old(root) {
   animation: slide-dashboard-to-home-out 0.6s ease forwards;
 }
-:root[data-from="dashboard"][data-to="home"]::view-transition-new(root) {
+:root[data-from="leftButton"][data-to="home"]::view-transition-new(root) {
   animation: slide-dashboard-to-home-in 0.6s ease forwards;
 }
 
@@ -254,7 +254,7 @@
     @apply text-sm md:text-base;
   }
   .navLabel {
-    @apply text-4xl flex-1 sm:text-[3rem] md:text-6xl lg:text-[4.7rem] xl:text-[4.9rem] [line-height:1.3] group-hover:scale-[1.05] transition-all focus:outline-none pointer-events-auto duration-100;
+    @apply text-4xl flex-1 sm:text-[3rem] md:text-6xl lg:text-[4.7rem] xl:text-[4.9rem] [line-height:1.3] transition-all focus:outline-none pointer-events-auto duration-100;
   }
   .admin-mini-button {
     @apply rounded-md text-xs px-2 py-1 sm:text-sm bg-[var(--color-box4)] hover:scale-105 transition-all;

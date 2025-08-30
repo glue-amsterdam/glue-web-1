@@ -20,7 +20,7 @@ export default function EventsClientPage({
 }: {
   params: URLSearchParams;
 }) {
-  useSetPageDataset("events");
+  useSetPageDataset("upButton");
   /* STATES - REFERENCES - HOOKS CALL*/
   const { triangle } = useColors();
 
