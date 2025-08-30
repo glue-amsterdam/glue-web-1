@@ -85,7 +85,7 @@ function MapMain({ initialData }: MapMainProps) {
     : null;
 
   return (
-    <div className="flex flex-col pt-[5rem] h-dvh">
+    <div className="flex flex-col h-dvh pt-[4rem]">
       <h1 className="sr-only">City Map</h1>
       {isLargeScreen ? (
         <div className="flex flex-1 h-full">
@@ -135,7 +135,7 @@ function MapMain({ initialData }: MapMainProps) {
             aria-label="Participant and route list"
             aria-hidden={!sidebarOpen}
           >
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center justify-between p-4 border-b text-black">
               <h2 className="font-semibold">Locations & Routes</h2>
               <Button
                 variant="ghost"

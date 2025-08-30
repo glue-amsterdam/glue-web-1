@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Accordion,
@@ -16,11 +16,7 @@ import {
   Users,
   User,
 } from "lucide-react";
-import {
-  type MapInfo,
-  type Route as RouteType,
-  RouteZone,
-} from "@/app/hooks/useMapData";
+import { type MapInfo, type Route as RouteType } from "@/app/hooks/useMapData";
 
 interface InfoPanelProps {
   mapInfo: MapInfo[];
@@ -41,26 +37,8 @@ function InfoPanel({
   onRouteSelect,
   className,
 }: InfoPanelProps) {
-  // Always include "participants" in the initial state
-  const [openAccordions, setOpenAccordions] = useState<string[]>([
-    "participants",
-  ]);
-
-  // Group routes by zone
-  const groupedRoutes = useMemo(() => {
-    return routes.reduce((acc, route) => {
-      if (!acc[route.zone]) acc[route.zone] = [];
-      acc[route.zone].push(route);
-      return acc;
-    }, {} as Record<RouteZone, RouteType[]>);
-  }, [routes]);
-
-  const zoneOrder: RouteZone[] = [
-    RouteZone.NORTH,
-    RouteZone.SOUTH,
-    RouteZone.EAST,
-    RouteZone.WEST,
-  ];
+  // Start with no accordions open by default
+  const [openAccordions, setOpenAccordions] = useState<string[]>([]);
 
   const redirectToGoogleMaps = useCallback(
     (lat: number, lng: number, e: React.MouseEvent) => {
@@ -99,7 +77,7 @@ function InfoPanel({
     []
   );
 
-  // Custom handler for accordion value change to ensure participants stays open
+  // Custom handler for accordion value change
   const handleAccordionChange = (value: string[]) => {
     setOpenAccordions(value);
   };
@@ -126,12 +104,11 @@ function InfoPanel({
           value={openAccordions}
           onValueChange={handleAccordionChange}
           className="w-full"
-          defaultValue={["participants"]}
         >
           <AccordionItem value="participants">
             <AccordionTrigger className="text-base font-semibold hover:bg-gray-100 rounded-lg px-2 py-1">
               <Users className="mr-2 h-4 w-4" />
-              Participants
+              PARTICIPANTS
             </AccordionTrigger>
             <AccordionContent>
               {mapInfo.length === 0 ? (
@@ -151,32 +128,27 @@ function InfoPanel({
               )}
             </AccordionContent>
           </AccordionItem>
-          {zoneOrder.map((zone) => {
-            const zoneRoutes = groupedRoutes[zone] || [];
-            if (zoneRoutes.length === 0) return null;
-
-            return (
-              <AccordionItem key={zone} value={zone}>
-                <AccordionTrigger className="text-base font-semibold hover:bg-gray-100 rounded-lg px-2 py-1 cursor-pointer">
-                  <RouteIcon className="mr-2 h-4 w-4" />
-                  {zone} Routes
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-2">
-                    {zoneRoutes.map((route) => (
-                      <RouteItem
-                        key={route.id}
-                        route={route}
-                        selectedRoute={selectedRoute}
-                        onSelect={handleRouteClick}
-                        redirectRouteToGoogleMaps={redirectRouteToGoogleMaps}
-                      />
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            );
-          })}
+          {routes.length > 0 && (
+            <AccordionItem value="routes">
+              <AccordionTrigger className="text-base font-semibold hover:bg-gray-100 rounded-lg px-2 py-1 cursor-pointer">
+                <RouteIcon className="mr-2 h-4 w-4" />
+                ROUTES
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-2">
+                  {routes.map((route) => (
+                    <RouteItem
+                      key={route.id}
+                      route={route}
+                      selectedRoute={selectedRoute}
+                      onSelect={handleRouteClick}
+                      redirectRouteToGoogleMaps={redirectRouteToGoogleMaps}
+                    />
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          )}
         </Accordion>
       </div>
     </ScrollArea>
@@ -330,7 +302,6 @@ const RouteItem = React.memo(
     const handleClick = useCallback(() => {
       onSelect(route.id);
     }, [onSelect, route.id]);
-
     return (
       <Accordion
         type="single"
