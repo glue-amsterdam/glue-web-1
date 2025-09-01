@@ -2,8 +2,8 @@
 
 import { useAuth } from "@/app/context/AuthContext";
 import type { MainMenuItem, SubItem } from "@/schemas/mainSchema";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link } from "next-view-transitions";
+import { useTransitionRouter } from "next-view-transitions";
 import type React from "react";
 import { useState, useCallback } from "react";
 import LoginForm from "@/app/components/login-form/login-form";
@@ -13,11 +13,16 @@ import { cn } from "@/lib/utils";
 type Props = {
   navItems: MainMenuItem[];
   closeOverlay: () => void;
+  handleLoginModal: (e: React.MouseEvent) => void;
 };
 
-export function OverlayNavMenu({ navItems, closeOverlay }: Props) {
-  const router = useRouter();
-  const { user } = useAuth();
+export function OverlayNavMenu({
+  navItems,
+  closeOverlay,
+  handleLoginModal,
+}: Props) {
+  const router = useTransitionRouter();
+  const { user, logout } = useAuth();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const handleRedirect = useCallback(
@@ -72,9 +77,51 @@ export function OverlayNavMenu({ navItems, closeOverlay }: Props) {
     },
     [closeOverlay]
   );
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <div className="flex-1 h-full m-auto flex flex-col justify-between px-10 overflow-y-auto">
+      <div className="text-black">
+        {user ? (
+          <div className="flex flex-col items-end gap-2">
+            <Link
+              className="hover:scale-105 transition-all duration-100"
+              href={`/dashboard/${user?.id}/user-data`}
+            >
+              My GLUE account
+            </Link>
+            <button
+              className="hover:scale-105 transition-all duration-100"
+              onClick={handleLogout}
+            >
+              Log Out
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-end gap-2">
+            <button
+              className="hover:scale-105 transition-all duration-100"
+              onClick={handleLoginModal}
+              type="button"
+            >
+              Log In
+            </button>
+            <Link
+              className="hover:scale-105 transition-all duration-100"
+              href="/signup?step=1"
+            >
+              Sign Up
+            </Link>
+          </div>
+        )}
+      </div>
       <div className="flex flex-col justify-evenly sm:grid sm:grid-cols-2 auto-rows-fr grid-rows-3 gap-1 md:gap-4 h-full">
         {navItems.map((item, i) => {
           const hasSubItems = item.subItems && item.subItems.length > 0;

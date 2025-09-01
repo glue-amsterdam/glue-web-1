@@ -17,7 +17,9 @@ import { useMenu } from "@/app/context/MainContext";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
 import { useOverlayState } from "@/hooks/useOverlayState";
 import { MdMenu } from "react-icons/md";
+import LoginForm from "@/app/components/login-form/login-form";
 import { cn } from "@/lib/utils";
+import { User } from "@supabase/supabase-js";
 
 interface NavBarProps extends React.HTMLAttributes<HTMLElement> {
   ref?: React.RefObject<HTMLElement>;
@@ -30,9 +32,25 @@ const NavBar = forwardRef<HTMLElement, NavBarProps>(
     const router = useRouter();
     const navItems = useMenu();
     const { isOpen, closeOverlay, toggleOverlay } = useOverlayState();
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const isMobile = useMediaQuery("(min-width: 768px)");
 
     const overlayRef = useRef<HTMLDivElement>(null);
+
+    const handleLoginModal = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsLoginModalOpen(true);
+    };
+
+    const handleLoginSuccess = (loggedInUser: User) => {
+      setIsLoginModalOpen(false);
+      if (pathname === "/") {
+        router.push(`/dashboard/${loggedInUser.id}/user-data`);
+      } else {
+        router.refresh();
+      }
+    };
 
     const handleSearch = (query: string) => {
       if (query.trim()) {
@@ -153,15 +171,12 @@ const NavBar = forwardRef<HTMLElement, NavBarProps>(
             >
               <SocialIcons />
             </div>
-            <UserMenu />
+            <UserMenu handleLoginModal={handleLoginModal} />
           </div>
 
           <button
             type="button"
-            className={cn(
-              "z-[60] relative",
-              !isLogoVisible ? "hidden pointer-events-none" : "opacity-100"
-            )}
+            className="z-[60] relative"
             onClick={handleMenuClick}
             aria-label="Toggle navigation menu"
           >
@@ -177,7 +192,11 @@ const NavBar = forwardRef<HTMLElement, NavBarProps>(
           style={{ display: "none", width: "100dvw", height: "100dvh" }}
         >
           <div className="flex-1 min-h-[60vh] overflow-y-auto">
-            <OverlayNavMenu navItems={navItems} closeOverlay={closeOverlay} />
+            <OverlayNavMenu
+              navItems={navItems}
+              closeOverlay={closeOverlay}
+              handleLoginModal={handleLoginModal}
+            />
           </div>
 
           {/* Social icons at the bottom of overlay */}
@@ -194,6 +213,11 @@ const NavBar = forwardRef<HTMLElement, NavBarProps>(
               <SocialIcons />
             </div>
           </div>
+          <LoginForm
+            isOpen={isLoginModalOpen}
+            onClose={() => setIsLoginModalOpen(false)}
+            onLoginSuccess={handleLoginSuccess}
+          />
         </div>
       </>
     );

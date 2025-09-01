@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,21 +11,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CiUser } from "react-icons/ci";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
-import { User } from "@supabase/supabase-js";
-import LoginForm from "@/app/components/login-form/login-form";
+
 import { cn } from "@/lib/utils";
 
 export default function UserMenu({
   className,
+  handleLoginModal,
 }: {
   className?: string;
+  handleLoginModal: (e: React.MouseEvent) => void;
 }): JSX.Element {
   const router = useRouter();
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const pathname = usePathname();
+
   const { user, logout } = useAuth();
 
   const handleLogout = async () => {
@@ -38,27 +36,18 @@ export default function UserMenu({
     }
   };
 
-  const handleLoginModal = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsLoginModalOpen(true);
-  };
-
-  const handleLoginSuccess = (loggedInUser: User) => {
-    setIsLoginModalOpen(false);
-    if (pathname === "/") {
-      router.push(`/dashboard/${loggedInUser.id}/user-data`);
-    } else {
-      router.refresh();
-    }
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className={cn(className)}>
-          <CiUser className="size-6" />
-        </Button>
+        <button
+          type="button"
+          className={cn(
+            className,
+            "hover:scale-95 transition-all duration-100"
+          )}
+        >
+          <CiUser className="size-7 outline-none focus:ring-0 focus:ring-offset-0" />
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {user && (
@@ -70,14 +59,16 @@ export default function UserMenu({
 
         <DropdownMenuGroup>
           {user ? (
-            <>
+            <div className="flex flex-col gap-1">
               <DropdownMenuItem>
-                <Link href={`/dashboard/${user.id}/user-data`}>Dashboard</Link>
+                <Link href={`/dashboard/${user.id}/user-data`}>
+                  My GLUE account
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={handleLogout}>
                 Log Out
               </DropdownMenuItem>
-            </>
+            </div>
           ) : (
             <>
               <DropdownMenuItem onClick={handleLoginModal}>
@@ -90,11 +81,6 @@ export default function UserMenu({
           )}
         </DropdownMenuGroup>
       </DropdownMenuContent>
-      <LoginForm
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onLoginSuccess={handleLoginSuccess}
-      />
     </DropdownMenu>
   );
 }
