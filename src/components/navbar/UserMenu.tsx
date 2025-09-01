@@ -46,7 +46,7 @@ export default function UserMenu({
             "hover:scale-95 transition-all duration-100"
           )}
         >
-          <CiUser className="size-7 outline-none focus:ring-0 focus:ring-offset-0" />
+          <CiUser className="size-8 outline-none focus:ring-0 focus:ring-offset-0" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

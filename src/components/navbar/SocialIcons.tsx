@@ -53,7 +53,7 @@ function SocialIcon({ link, platform, className }: Props) {
       rel="noopener noreferrer"
       className={cn("md:hover:scale-105 md:transition-all", className)}
     >
-      <Icon className="size-6" />
+      <Icon className="size-8" />
       <span className="sr-only">{platform}</span>
     </Link>
   );

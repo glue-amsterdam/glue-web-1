@@ -60,12 +60,12 @@ const NavBar = forwardRef<HTMLElement, NavBarProps>(
     };
 
     useEffect(() => {
-      if (pathname !== "/") {
+      if (pathname !== "/" || isOpen) {
         setIsLogoVisible(true);
       } else {
         setIsLogoVisible(!isMobile);
       }
-    }, [pathname, isMobile]);
+    }, [pathname, isMobile, isOpen]);
 
     const handleMenuClick = () => {
       toggleOverlay();
@@ -165,13 +165,13 @@ const NavBar = forwardRef<HTMLElement, NavBarProps>(
             </Suspense>
             <div
               className={cn(
-                "transition-opacity duration-300",
+                "transition-opacity duration-300 flex items-center justify-center gap-2",
                 isOpen ? "opacity-0" : "opacity-100"
               )}
             >
               <SocialIcons />
+              <UserMenu handleLoginModal={handleLoginModal} />
             </div>
-            <UserMenu handleLoginModal={handleLoginModal} />
           </div>
 
           <button
