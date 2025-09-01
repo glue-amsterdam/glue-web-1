@@ -25,7 +25,6 @@ import GlueLogoSVG from "@/app/components/glue-logo-svg";
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader2, Settings, X } from "lucide-react";
 import { z } from "zod";
-import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { getCookieConsent } from "@/app/actions/cookieConsent";
 import { CookieSettingsModal } from "@/components/cookies/cookies-modal";
@@ -177,22 +176,12 @@ export default function LoginForm({
             </div>
           )}
 
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full text-white hover:text-white bg-black hover:bg-[var(--color-triangle)]"
-          >
-            <Link href="signup/?step=1">Sign up</Link>
-          </Button>
-
           <Form {...loginForm}>
             <form
               onSubmit={loginForm.handleSubmit(onSubmit)}
               className="space-y-4"
             >
-              <p className="text-xs">
-                Already signed in? Log in to your account:
-              </p>
+              <p className="sr-only">Log in to your account:</p>
               <FormField
                 control={loginForm.control}
                 name="email"
