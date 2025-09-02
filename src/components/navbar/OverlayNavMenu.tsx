@@ -87,8 +87,8 @@ export function OverlayNavMenu({
   };
 
   return (
-    <div className="flex-1 h-full m-auto flex flex-col justify-between px-10 overflow-y-auto">
-      <div className="text-black">
+    <div className="m-auto flex flex-col justify-between px-10 overflow-y-auto">
+      <div className="text-black absolute right-10 z-10">
         {user ? (
           <div className="flex flex-col items-end gap-2">
             <Link
@@ -122,7 +122,7 @@ export function OverlayNavMenu({
           </div>
         )}
       </div>
-      <div className="flex flex-col justify-evenly sm:grid sm:grid-cols-2 auto-rows-fr grid-rows-3 gap-1 md:gap-4 h-full">
+      <div className="flex flex-col justify-evenly gap-1 md:gap-4 h-full pb-10">
         {navItems.map((item, i) => {
           const hasSubItems = item.subItems && item.subItems.length > 0;
           const visibleSubItems = hasSubItems
@@ -145,7 +145,7 @@ export function OverlayNavMenu({
                 onClick={(e) => handleRedirect(e, item.section)}
                 className="w-full hover:scale-105  flex items-center justify-center text-left bg-white/5 hover:bg-white/10 active:bg-white/15 rounded-lg transition-all duration-200 min-h-[60px] touch-manipulation"
               >
-                <span className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-overpass font-medium text-black">
+                <span className="text-2xl md:text-3xl font-overpass font-medium text-black">
                   {item.label}
                 </span>
               </button>
@@ -160,7 +160,7 @@ export function OverlayNavMenu({
                           className="block text-sm rounded-md active:bg-gray-200 duration-200 text-gray-700 font-medium text-center hover:scale-95 transition-all text-pretty break-words"
                           onClick={handleSubItemClick}
                         >
-                          <span className="italic font-overpass text-xs md:text-sm lg:text-base">
+                          <span className="italic font-overpass text-xs md:text-sm">
                             {subItem.title}
                           </span>
                         </Link>
@@ -173,7 +173,6 @@ export function OverlayNavMenu({
           );
         })}
       </div>
-
       <LoginForm
         isOpen={isLoginModalOpen}
         onClose={handleCloseLoginModal}
