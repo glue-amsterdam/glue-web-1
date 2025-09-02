@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import useSWR from "swr";
 
 interface Hub {
   id: string;
@@ -13,30 +12,21 @@ interface Hub {
 
 interface ParticipantHubInfoProps {
   userId: string;
+  hubs: Hub[];
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
-export function ParticipantHubInfo({ userId }: ParticipantHubInfoProps) {
-  const { data: hubs, error } = useSWR<Hub[]>(
-    `/api/participant-hubs?userId=${userId}`,
-    fetcher
-  );
-
+export function ParticipantHubInfo({ userId, hubs }: ParticipantHubInfoProps) {
   return (
-    <div className="mt-8">
-      <h2 className="text-xl md:text-2xl font-semibold mb-3">HUBS</h2>
-      {error && <p className="text-red-500">Error loading hub information</p>}
-      {!hubs && !error ? (
-        <p>Loading hub information...</p>
-      ) : hubs && hubs.length > 0 ? (
+    <>
+      {hubs.length > 0 ? (
         <div className="space-y-4">
+          <h2 className="text-xl md:text-2xl font-semibold mb-3">HUBS</h2>
           {hubs.map((hub) => (
             <div key={hub.id} className="flex flex-col">
               <Link
                 href={hub.mapInfoId ? `/map?place=${hub.mapInfoId}` : "#"}
                 target="_blank"
-                className="hover:underline flex flex-col"
+                className="hover:underline flex flex-col hover:scale-95 transition-all duration-300 ease-out"
               >
                 <span className="font-semibold">{hub.name}</span>
                 <span className="text-sm italic mt-1">
@@ -51,8 +41,8 @@ export function ParticipantHubInfo({ userId }: ParticipantHubInfoProps) {
           ))}
         </div>
       ) : (
-        <p>No hubs found</p>
+        <p className="sr-only">This participant is not a hub member or host</p>
       )}
-    </div>
+    </>
   );
 }

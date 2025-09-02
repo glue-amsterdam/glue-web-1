@@ -131,11 +131,14 @@ export default async function ParticipantPage({
   const params = await paramsPromise;
   const { slug } = params;
   const participant: ParticipantClientResponse = await fetchParticipant(slug);
+  const hubs = await fetch(
+    `${config.baseUrl}/api/participant-hubs?userId=${participant.user_id}`
+  ).then((res) => res.json());
 
   // If participant is sticky (now determined by presence in sticky_group_participants table),
   // treat them as accepted regardless of status
   if (participant.is_sticky) {
-    return <ParticipantClientPage participant={participant} />;
+    return <ParticipantClientPage participant={participant} hubs={hubs} />;
   }
 
   switch (participant.status) {
@@ -146,7 +149,7 @@ export default async function ParticipantPage({
     case "accepted":
       return (
         <>
-          <ParticipantClientPage participant={participant} />
+          <ParticipantClientPage participant={participant} hubs={hubs} />
         </>
       );
     default:

@@ -15,11 +15,20 @@ import { ParticipantHubInfo } from "./ParticipantHUBinfo";
 // Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
 
-interface ParticipantInfoProps {
-  participant: ParticipantClientResponse;
+interface Hub {
+  id: string;
+  name: string;
+  hub_host_id: string;
+  mapInfoId: string | null;
+  hub_address: string | null;
 }
 
-function ParticipantInfo({ participant }: ParticipantInfoProps) {
+interface ParticipantInfoProps {
+  participant: ParticipantClientResponse;
+  hubs: Hub[];
+}
+
+function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
   const eventDays = useEventsDays();
   const visitingHours = participant.user_info.visiting_hours?.[0]?.hours;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -232,7 +241,7 @@ function ParticipantInfo({ participant }: ParticipantInfoProps) {
               ))}
             </>
           )}
-          <ParticipantHubInfo userId={participant.user_id} />
+          <ParticipantHubInfo userId={participant.user_id} hubs={hubs} />
         </div>
 
         <div ref={contactRef} className="space-y-3 mt-8">
