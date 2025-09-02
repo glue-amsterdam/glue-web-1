@@ -51,12 +51,33 @@ export const homeTextSchema = z.object({
   color: z.string().nullable().optional(),
 });
 
+export const pressKitLinkSchema = z.object({
+  id: z.number().int().positive(),
+  link: z.string().url("Must be a valid URL"),
+  description: z.string().nullable().optional(),
+});
+
+export const pressKitLinkFormSchema = z.object({
+  id: z.number().int().positive(),
+  link: z.string().min(1, "Link is required").url("Must be a valid URL"),
+  description: z.string().nullable().optional(),
+});
+
+export const pressKitLinksSchema = z.object({
+  pressKitLinks: z.array(pressKitLinkSchema),
+});
+
+export const pressKitLinksFormSchema = z.object({
+  pressKitLinks: z.array(pressKitLinkFormSchema),
+});
+
 export const mainSectionSchema = z.object({
   mainColors: mainColorsSchema,
   mainMenu: z.array(mainMenuItemSchema),
   mainLinks: mainLinksSchema,
   eventDays: z.array(eventDaySchema),
   homeText: homeTextSchema.nullable().optional(),
+  pressKitLinks: pressKitLinksSchema,
 });
 
 export type MainSectionData = z.infer<typeof mainSectionSchema>;

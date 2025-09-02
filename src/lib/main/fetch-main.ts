@@ -109,6 +109,15 @@ const mainSection: MainSectionData = {
       label: "Sunday",
     },
   ],
+  pressKitLinks: {
+    pressKitLinks: [
+      {
+        id: 1,
+        link: "https://www.example.com",
+        description: "Example description",
+      },
+    ],
+  },
 };
 
 function transformApiData(data: ApiMainSectionData): MainSectionData {
@@ -152,6 +161,15 @@ function transformApiData(data: ApiMainSectionData): MainSectionData {
     date: day.date || null,
   }));
 
+  // Ensure pressKitLinks exists and has required structure
+  const transformedPressKitLinks = {
+    pressKitLinks: (data.pressKitLinks?.pressKitLinks || []).map((link) => ({
+      id: link.id,
+      link: link.link || "",
+      description: link.description || null,
+    })),
+  };
+
   return {
     mainColors: transformedMainColors,
     mainMenu: transformedMainMenu.map((item) => ({
@@ -167,6 +185,7 @@ function transformApiData(data: ApiMainSectionData): MainSectionData {
     mainLinks: transformedMainLinks,
     eventDays: transformedEventDays,
     homeText: data.homeText || null,
+    pressKitLinks: transformedPressKitLinks,
   };
 }
 

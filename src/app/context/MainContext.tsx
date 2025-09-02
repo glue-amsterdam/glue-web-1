@@ -80,4 +80,14 @@ export const useHomeText = () => {
   return context.homeText;
 };
 
+export const usePressKitLinks = () => {
+  const context = useContext(MainContext);
+  if (!context) {
+    throw new Error(
+      "usePressKitLinks must be used within a MainContextProvider"
+    );
+  }
+  return context.pressKitLinks;
+};
+
 export { MainContext };
