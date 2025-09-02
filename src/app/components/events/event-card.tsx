@@ -63,7 +63,7 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
 
               {event.organizer.user_name}
             </div>
-            {event.coOrganizers && (
+            {event.coOrganizers && event.coOrganizers.length > 0 && (
               <div className="flex gap-2 items-center flex-wrap">
                 <span className="text-sm md:text-lg font-bold">
                   Co-organisers:
