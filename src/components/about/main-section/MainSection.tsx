@@ -35,28 +35,31 @@ export default function MainSection({
       ref={sectionRef}
       id="main"
       aria-labelledby="about-main-heading carousel-description"
-      className="min-h-dvh py-[6rem] relative"
+      className="h-dvh relative"
       style={{ backgroundColor: bgColor }}
     >
-      <div
-        aria-hidden="true"
-        className="radial-gradient-background absolute inset-0 opacity-50 pointer-events-none z-0 overflow-hidden"
-      />
-      <h1
-        id="about-main-heading"
-        ref={titleRef}
-        dangerouslySetInnerHTML={{ __html: sanitizedTitle }}
-        style={{ color: text_color ?? "#fff" }}
-        className="z-10 absolute px-4 text-5xl md:text-7xl lg:text-7xl xl:text-8xl w-full pointer-events-none text-pretty break-words"
-      />
+      <div className="relative w-full h-[70vh] py-[6rem]">
+        <div
+          aria-hidden="true"
+          className="radial-gradient-background absolute inset-0 opacity-50 pointer-events-none z-20 overflow-hidden"
+        />
+        <h1
+          id="about-main-heading"
+          ref={titleRef}
+          dangerouslySetInnerHTML={{ __html: sanitizedTitle }}
+          style={{ color: text_color ?? "#fff" }}
+          className="z-10 absolute px-4 text-5xl md:text-7xl lg:text-7xl xl:text-8xl w-full pointer-events-none text-pretty break-words"
+        />
+
+        <ImageSlider ref={imageSliderRef} slides={slides} />
+      </div>
       <p
         id="carousel-description"
         ref={descriptionRef}
         dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
         style={{ color: text_color ?? "#fff" }}
-        className="about-description text-right w-full md:w-[80%] bottom-8 absolute right-0 px-2 z-10 text-pretty"
+        className="about-description columns-1 md:columns-2 lg:columns-3 gap-4 z-10 text-pretty h-full px-4 pt-4"
       />
-      <ImageSlider ref={imageSliderRef} slides={slides} />
     </section>
   );
 }

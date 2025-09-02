@@ -133,7 +133,7 @@ export default function AboutClientPage({
           descriptionRef={descriptionRef}
           imageSliderRef={imageSliderRef}
           titleRef={titleRef}
-          bgColor={mainColors?.box2}
+          bgColor={mainColors?.box4}
           carouselData={carouselData}
           sectionRef={sectionRef}
         />
