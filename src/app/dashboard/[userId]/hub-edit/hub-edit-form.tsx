@@ -18,19 +18,29 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { HubApiCall, hubSchemaApiCall } from "@/schemas/hubSchemas";
 import { UserInfo } from "@/schemas/userInfoSchemas";
 import { UserIcon, XIcon, Crown, Search, Plus } from "lucide-react";
+import { HubDisplayNumberField } from "@/app/dashboard/components/hub-display-number-field";
 
 interface EditHubFormProps {
   hub: HubApiCall;
   userInfoList: UserInfo[];
   onSubmit: (data: HubApiCall) => void;
+  isMod?: boolean;
 }
 
-export function EditHubForm({ hub, userInfoList, onSubmit }: EditHubFormProps) {
+export function EditHubForm({
+  hub,
+  userInfoList,
+  onSubmit,
+  isMod = true,
+}: EditHubFormProps) {
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>(
     hub.participants.map((p) => p.user_id)
   );
   const [hubHost, setHubHost] = useState<string>(hub.hub_host.user_id);
   const [participantSearchTerm, setParticipantSearchTerm] = useState("");
+  const [displayNumber, setDisplayNumber] = useState<string | null>(
+    hub.display_number || null
+  );
 
   const {
     register,
@@ -80,6 +90,7 @@ export function EditHubForm({ hub, userInfoList, onSubmit }: EditHubFormProps) {
       ...data,
       hub_host: { user_id: hubHost },
       participants: selectedParticipants.map((id) => ({ user_id: id })),
+      display_number: displayNumber,
     });
   };
 
@@ -104,6 +115,14 @@ export function EditHubForm({ hub, userInfoList, onSubmit }: EditHubFormProps) {
             {errors.description && (
               <p className="text-red-500">{errors.description.message}</p>
             )}
+          </div>
+          <div>
+            <HubDisplayNumberField
+              value={displayNumber}
+              onChange={setDisplayNumber}
+              hubId={hub.id}
+              isMod={isMod}
+            />
           </div>
           <Card>
             <CardHeader>

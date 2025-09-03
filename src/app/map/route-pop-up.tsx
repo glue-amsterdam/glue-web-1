@@ -3,15 +3,21 @@
 import { memo, useCallback } from "react";
 import { X, MapPin } from "lucide-react";
 import { Popup } from "react-map-gl";
-import type { Route } from "@/app/hooks/useMapData";
+import type { Route, MapInfo } from "@/app/hooks/useMapData";
 import { Button } from "@/components/ui/button";
+import { markerColors } from "./legend-config";
 
 interface RoutePopupProps {
   route: Route;
   handlePopupClose: () => void;
+  mapInfo: MapInfo[];
 }
 
-function RoutePopupComponent({ route, handlePopupClose }: RoutePopupProps) {
+function RoutePopupComponent({
+  route,
+  handlePopupClose,
+  mapInfo,
+}: RoutePopupProps) {
   // Use the first dot's coordinates for the popup position
   const firstDot = route.dots[0];
 
@@ -69,17 +75,71 @@ function RoutePopupComponent({ route, handlePopupClose }: RoutePopupProps) {
             )}
             <div className="mt-3">
               <div className="route-stops">
-                {route.dots.map((dot, index) => (
-                  <div key={dot.id} className="route-stop">
-                    <div className="route-stop-number">{index + 1}</div>
-                    <div className="route-stop-details">
-                      <p className="route-stop-name">{dot.user_name}</p>
-                      <p className="route-stop-address">
-                        {dot.formatted_address}
-                      </p>
+                {route.dots.map((dot, index) => {
+                  // Find the corresponding location in mapInfo
+                  const location = mapInfo.find((loc) =>
+                    loc.participants.some((p) => p.user_name === dot.user_name)
+                  );
+
+                  // Get display number
+                  const displayNumber = location
+                    ? location.hub_display_number ||
+                      location.display_number ||
+                      location.participants[0]?.display_number
+                    : null;
+
+                  const hasDisplayNumber = !!displayNumber;
+
+                  // Determine marker type and colors
+                  const isHub =
+                    location?.is_hub ||
+                    (location?.participants &&
+                      location.participants.length >= 3);
+                  const isSpecialProgram = location?.is_special_program;
+
+                  // Get the appropriate colors based on marker type
+                  const getColorsForInlineStyle = () => {
+                    if (hasDisplayNumber) {
+                      if (isHub) {
+                        return {
+                          backgroundColor: markerColors.hub.hex,
+                          color: "white",
+                        };
+                      } else if (isSpecialProgram) {
+                        return {
+                          backgroundColor: markerColors.specialProgram.hex,
+                          color: "white",
+                        };
+                      } else {
+                        return {
+                          backgroundColor: markerColors.participant.hex,
+                          color: "black",
+                        };
+                      }
+                    } else {
+                      return {
+                        backgroundColor: markerColors.route.hex,
+                        color: "white",
+                      };
+                    }
+                  };
+
+                  const inlineStyles = getColorsForInlineStyle();
+
+                  return (
+                    <div key={dot.id} className="route-stop">
+                      <div className="route-stop-number" style={inlineStyles}>
+                        {hasDisplayNumber ? displayNumber : index + 1}
+                      </div>
+                      <div className="route-stop-details">
+                        <p className="route-stop-name">{dot.user_name}</p>
+                        <p className="route-stop-address">
+                          {dot.formatted_address.split(",")[0]}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

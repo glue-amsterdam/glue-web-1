@@ -19,6 +19,7 @@ interface ParticipantDetail {
   status: string;
   special_program: boolean;
   slug: string | null;
+  display_number: string | null;
 }
 
 interface ParticipantImage {
@@ -36,6 +37,7 @@ interface HubInfo {
   name: string;
   description: string | null;
   hub_host_id: string;
+  display_number: string | null;
   hub_participants: MaybeArray<HubParticipant>;
 }
 
@@ -98,7 +100,8 @@ async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]> {
         status,
         special_program,
         is_active,
-        slug
+        slug,
+        display_number
       `
       )
       .eq("status", "accepted")
@@ -108,6 +111,7 @@ async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]> {
         name,
         description,
         hub_host_id,
+        display_number,
         hub_participants (
           user_id,
           user_info:user_id (
@@ -181,11 +185,13 @@ async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]> {
           is_host: true,
           slug: participant.slug,
           image_url: imageMap.get(userInfo.user_id) || null,
+          display_number: participant.display_number,
         },
       ],
       is_hub: false,
       is_collective: false,
       is_special_program: participant.special_program,
+      display_number: participant.display_number,
     });
   });
 
@@ -208,12 +214,15 @@ async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]> {
       const hubParticipants = ensureArray(hub.hub_participants);
       const participantCount = hubParticipants.length;
 
-      // Calculate is_hub and is_collective based on participant count
-      existingLocation.is_hub = participantCount > 3;
+      // Keep the original is_hub flag from the database, but also set is_collective
+      // is_hub should remain true if it was originally a hub, regardless of participant count
       existingLocation.is_collective =
-        participantCount <= 3 && participantCount > 1;
+        !existingLocation.is_hub &&
+        participantCount <= 3 &&
+        participantCount > 1;
       existingLocation.hub_name = hub.name;
       existingLocation.hub_description = hub.description;
+      existingLocation.hub_display_number = hub.display_number;
 
       // Add hub participants
       hubParticipants.forEach((participant) => {
@@ -229,6 +238,7 @@ async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]> {
               is_host: false,
               slug: acceptedParticipant.slug,
               image_url: imageMap.get(participant.user_id) || null,
+              display_number: acceptedParticipant.display_number,
             });
           }
         }

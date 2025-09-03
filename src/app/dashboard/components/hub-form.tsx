@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect } from "react";
 import { hubSchema, HubUser, HubValues } from "@/schemas/hubSchemas";
+import { HubDisplayNumberField } from "./hub-display-number-field";
 
 interface HubFormProps {
   onSubmit: (values: HubValues) => void;
@@ -24,6 +25,8 @@ interface HubFormProps {
   defaultValues?: Partial<HubValues>;
   selectedParticipants: string[];
   hubHost: string | null;
+  isMod?: boolean;
+  hubId?: string; // For editing existing hubs
 }
 
 export function HubForm({
@@ -33,6 +36,8 @@ export function HubForm({
   defaultValues,
   selectedParticipants,
   hubHost,
+  isMod = true,
+  hubId,
 }: HubFormProps) {
   const form = useForm<HubValues>({
     resolver: zodResolver(hubSchema),
@@ -104,6 +109,23 @@ export function HubForm({
               <FormDescription>
                 Provide a brief description of the hub.
               </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="display_number"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <HubDisplayNumberField
+                  value={field.value}
+                  onChange={field.onChange}
+                  hubId={hubId}
+                  isMod={isMod}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

@@ -12,6 +12,11 @@ export const hubSchema = z.object({
   description: z.string().optional(),
   participants: z.array(hubUserSchema),
   hub_host: hubUserSchema,
+  display_number: z
+    .string()
+    .max(10, "Display number must be less than 10 characters")
+    .optional()
+    .nullable(),
 });
 
 export type HubValues = z.infer<typeof hubSchema>;
@@ -28,6 +33,11 @@ export const hubSchemaApiCall = z.object({
     visible_emails: z.array(z.string()).optional().nullable(),
   }),
   participants: z.array(z.object({ user_id: z.string() })),
+  display_number: z
+    .string()
+    .max(10, "Display number must be less than 10 characters")
+    .optional()
+    .nullable(),
 });
 
 export type HubApiCall = z.infer<typeof hubSchemaApiCall>;

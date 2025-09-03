@@ -4,9 +4,9 @@ import {
   MapPin,
   MapPinIcon as MapPinHouse,
   MapPinIcon as MapPinMinusInside,
-  MapPinIcon as MapPinPlus,
   Circle,
 } from "lucide-react";
+import { markerColors } from "./legend-config";
 import { Marker } from "react-map-gl";
 import { memo, useState, useEffect } from "react";
 
@@ -18,6 +18,8 @@ interface Location {
   is_collective?: boolean;
   is_special_program?: boolean;
   isRouteMarker?: boolean;
+  display_number?: string | null;
+  hub_display_number?: string | null;
   participants?: Array<{
     user_name: string;
     is_host: boolean;
@@ -99,49 +101,49 @@ export const MemoizedMarker = memo(
         return {
           containerClass:
             "size-8 rounded-full flex items-center justify-center shadow-md border-2 border-white",
-          bgClass: "bg-red-500",
+          bgClass: markerColors.route.background,
           icon: Circle,
           iconClass: "w-4 h-4 text-white",
         };
       }
 
-      if (location.is_hub) {
+      // Determine if this should be shown as a HUB (3+ participants) or Participant (<3 participants)
+      // According to legend: GLUE HUB = 3 or more participants, Up to 3 GLUE participants = participant
+      // But also respect the is_hub flag from the database
+      const isHub =
+        location.is_hub ||
+        (location.participants && location.participants.length >= 3);
+
+      if (isHub) {
         return {
           containerClass:
             "size-7 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110",
-          bgClass: "bg-green-500 opacity-70 hover:opacity-100",
+          bgClass: markerColors.hub.background,
           icon: MapPinHouse,
           iconClass: "w-5 h-5 text-white",
-        };
-      }
-
-      if (location.is_collective) {
-        return {
-          containerClass:
-            "size-7 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110",
-          bgClass: "bg-yellow-500 opacity-70 hover:opacity-100",
-          icon: MapPinPlus,
-          iconClass: "w-5 h-5 text-white",
+          textClass: markerColors.hub.text,
         };
       }
 
       if (location.is_special_program) {
         return {
           containerClass:
-            "size-7 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110",
-          bgClass: "bg-purple-500 opacity-70 hover:opacity-100",
+            "size-7 rounded-full  flex items-center justify-center shadow-md transition-transform hover:scale-110",
+          bgClass: markerColors.specialProgram.background,
           icon: MapPinMinusInside,
           iconClass: "w-5 h-5 text-white",
+          textClass: markerColors.specialProgram.text,
         };
       }
 
-      // Default participant marker
+      // Default participant marker (including collective with <3 participants)
       return {
         containerClass:
           "size-7 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110",
-        bgClass: "bg-blue-500 opacity-70 hover:opacity-100",
+        bgClass: markerColors.participant.background,
         icon: MapPin,
-        iconClass: "w-5 h-5 text-white",
+        iconClass: "w-5 h-5 text-black",
+        textClass: markerColors.participant.text,
       };
     };
 
@@ -167,8 +169,12 @@ export const MemoizedMarker = memo(
               isAnimating ? "marker-pop" : ""
             }`}
           >
-            {isRouteMarker && routeStep ? (
-              <span className="text-white text-xs font-bold">{routeStep}</span>
+            {location.hub_display_number || location.display_number ? (
+              <span className={`text-sm font-bold ${markerStyle.textClass}`}>
+                {location.hub_display_number || location.display_number}
+              </span>
+            ) : isRouteMarker && routeStep ? (
+              <span className="text-sm font-bold">{routeStep}</span>
             ) : (
               <IconComponent className={markerStyle.iconClass} />
             )}

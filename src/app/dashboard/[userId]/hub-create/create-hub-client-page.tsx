@@ -145,6 +145,7 @@ export default function CreateHubClientPage({
                 submitButtonText="Create Hub"
                 selectedParticipants={selectedParticipants}
                 hubHost={hubHost}
+                isMod={true}
               />
             </CardContent>
           </Card>
