@@ -170,7 +170,7 @@ function InfoPanel({
 
   return (
     <div
-      className={`${className} text-black bg-white md:bg-transparent h-full relative overflow-hidden`}
+      className={`${className} text-black bg-white md:bg-transparent h-full relative flex flex-col`}
     >
       {/* Search Bar - Always visible */}
       <div className="relative pb-2">
@@ -248,7 +248,7 @@ function InfoPanel({
 
       {currentView === "headers" ? (
         // Accordion headers view with transparent background and justify-between
-        <div className="flex-1 flex flex-col md:justify-evenly p-4 animate-in fade-in-0 slide-in-from-left-4 duration-300 h-full">
+        <div className="flex-1 flex flex-col md:justify-evenly p-4 animate-in fade-in-0 slide-in-from-left-4 duration-300 min-h-0">
           {/* Top section - PARTICIPANTS */}
           <Button
             variant="ghost"
@@ -282,9 +282,9 @@ function InfoPanel({
         </div>
       ) : (
         // Content view with back button and list
-        <div className="flex-1 flex flex-col animate-in fade-in-0 slide-in-from-right-4 duration-300">
+        <div className="flex-1 flex flex-col animate-in fade-in-0 slide-in-from-right-4 duration-300 min-h-0">
           {/* Back button header */}
-          <div className="flex items-center p-4 border-b bg-white">
+          <div className="flex items-center p-4 border-b bg-white flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
@@ -302,7 +302,7 @@ function InfoPanel({
           </div>
 
           {/* Content area */}
-          <ScrollArea className="flex-1 bg-white">
+          <ScrollArea className="flex-1 bg-white min-h-0">
             <div className="p-4 space-y-2 bg-white">
               {currentView === "participants" && (
                 <>

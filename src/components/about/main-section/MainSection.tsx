@@ -38,7 +38,7 @@ export default function MainSection({
       className="h-dvh relative"
       style={{ backgroundColor: bgColor }}
     >
-      <div className="relative w-full h-[70vh] py-[6rem]">
+      <div className="relative w-full h-[80vh] py-[6rem]">
         <div
           aria-hidden="true"
           className="radial-gradient-background absolute inset-0 opacity-50 pointer-events-none z-20 overflow-hidden"
