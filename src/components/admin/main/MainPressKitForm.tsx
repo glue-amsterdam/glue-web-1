@@ -9,10 +9,7 @@ import { useState } from "react";
 import { Plus, Trash2, Link as LinkIcon } from "lucide-react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
-import {
-  pressKitLinksFormSchema,
-  pressKitLinkSchema,
-} from "@/schemas/mainSchema";
+import { pressKitLinksFormSchema } from "@/schemas/mainSchema";
 import { mutate } from "swr";
 import { createSubmitHandler } from "@/utils/form-helpers";
 
@@ -177,8 +174,8 @@ export default function MainPressKitForm({
             <div className="text-center py-8 text-gray-500">
               <LinkIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>
-                No press kit links available. Click "Add Link" to create your
-                first link.
+                No press kit links available. Click &quot;Add Link&quot; to
+                create your first link.
               </p>
             </div>
           ) : (

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+
 import { Check, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
@@ -21,7 +21,6 @@ export function DisplayNumberField({
   const {
     register,
     watch,
-    setValue,
     formState: { errors },
   } = useFormContext<ParticipantDetails>();
   const [isChecking, setIsChecking] = useState(false);

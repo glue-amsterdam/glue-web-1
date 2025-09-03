@@ -2,7 +2,7 @@
 import { useAuth } from "@/app/context/AuthContext";
 import { useMenu } from "@/app/context/MainContext";
 import { useTransitionRouter } from "next-view-transitions";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
   homeExitAnimation,
   HomeExitAnimationRefs,
@@ -19,11 +19,97 @@ function ClickAreas({ setIsLoginModalOpen, refs }: ClickAreasProps) {
   const { user } = useAuth();
   const router = useTransitionRouter();
   const orderedSections = ["dashboard", "events", "map", "about"];
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isScrollingRef = useRef(false);
+  const touchStartYRef = useRef<number | null>(null);
 
   const sortedMenu = mainMenu.sort(
     (a, b) =>
       orderedSections.indexOf(a.section) - orderedSections.indexOf(b.section)
   );
+
+  // Function to handle about navigation (same as downbutton click)
+  const handleAboutNavigation = React.useCallback(() => {
+    if (isScrollingRef.current) return; // Prevent multiple triggers
+
+    isScrollingRef.current = true;
+    document.documentElement.dataset.to = "downButton";
+    homeExitAnimation({
+      refs,
+      buttonType: "downButton",
+    }).then(() => {
+      router.push("/about");
+    });
+  }, [refs, router]);
+
+  // Scroll detection effect
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      // Only trigger on scroll down (positive deltaY)
+      if (e.deltaY > 0) {
+        e.preventDefault();
+
+        // Clear any existing timeout
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
+        }
+
+        // Debounce scroll events to prevent multiple triggers
+        scrollTimeoutRef.current = setTimeout(() => {
+          handleAboutNavigation();
+        }, 100);
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      // Store initial touch position
+      const touch = e.touches[0];
+      if (touch) {
+        touchStartYRef.current = touch.clientY;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (touch && touchStartYRef.current !== null) {
+        const deltaY = touchStartYRef.current - touch.clientY;
+
+        // Only trigger on swipe up (positive deltaY)
+        if (deltaY > 50) {
+          // Minimum swipe distance
+          e.preventDefault();
+
+          // Clear any existing timeout
+          if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+          }
+
+          // Debounce touch events
+          scrollTimeoutRef.current = setTimeout(() => {
+            handleAboutNavigation();
+          }, 100);
+        }
+      }
+    };
+
+    // Add event listeners
+    document.addEventListener("wheel", handleWheel, { passive: false });
+    document.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+
+    // Cleanup
+    return () => {
+      document.removeEventListener("wheel", handleWheel);
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchmove", handleTouchMove);
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [handleAboutNavigation]);
 
   return (
     <nav aria-label="Main navigation">
