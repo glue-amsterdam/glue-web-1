@@ -35,4 +35,9 @@ export const participantDetailsSchema = z.object({
     .enum(["pending", "approved", "declined"])
     .optional()
     .nullable(),
+  display_number: z
+    .string()
+    .max(10, "Display number must be less than 10 characters")
+    .optional()
+    .nullable(),
 });

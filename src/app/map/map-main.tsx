@@ -85,12 +85,13 @@ function MapMain({ initialData }: MapMainProps) {
     : null;
 
   return (
-    <div className="flex flex-col pt-[5rem] h-dvh">
+    <div className="flex flex-col h-dvh pt-[4rem]">
       <h1 className="sr-only">City Map</h1>
       {isLargeScreen ? (
-        <div className="flex flex-1 h-full">
+        <div className="flex flex-1 h-full relative">
+          {/* Floating InfoPanel */}
           <aside
-            className="w-1/3 bg-card h-full overflow-auto border-r"
+            className="absolute top-4 left-4 w-80 h-[calc(100vh-6rem)] overflow-auto z-10"
             aria-label="Participant and route list"
           >
             <InfoPanel
@@ -102,7 +103,8 @@ function MapMain({ initialData }: MapMainProps) {
               onRouteSelect={handleRouteSelect}
             />
           </aside>
-          <main className="w-2/3 relative h-full" aria-label="Map">
+          {/* Full screen map */}
+          <main className="w-full h-full relative" aria-label="Map">
             <Suspense fallback={<LoadingSpinner />}>
               <MapComponent
                 mapInfo={mapInfo}
@@ -135,7 +137,7 @@ function MapMain({ initialData }: MapMainProps) {
             aria-label="Participant and route list"
             aria-hidden={!sidebarOpen}
           >
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center justify-between p-4 border-b text-black">
               <h2 className="font-semibold">Locations & Routes</h2>
               <Button
                 variant="ghost"

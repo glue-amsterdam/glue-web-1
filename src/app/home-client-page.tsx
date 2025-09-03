@@ -82,13 +82,13 @@ export default function HomeClientPage() {
       {homeText && (
         <div
           id="home-text-container"
-          className="absolute flex justify-center w-full bottom-0 home-text-container"
+          className="absolute flex justify-center w-full bottom-[5%] home-text-container"
         >
           <h1 className="sr-only">Welcome to GLUE, Connected by Design</h1>
           <p
             dangerouslySetInnerHTML={{ __html: sanitizedLabel }}
             style={{ color: homeText.color ?? "#fff" }}
-            className="about-description max-w-[40%] md:max-w-[80%] text-center"
+            className="text-sm sm:text-base md:tracking-wide lg:text-lg lg:tracking-wider max-w-[40%] md:max-w-[80%] text-center"
           />
         </div>
       )}

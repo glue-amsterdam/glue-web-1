@@ -8,9 +8,11 @@ import { LinkItem, MainColors, MainMenuData } from "@/schemas/mainSchema";
 import MainColorsForm from "./MainColorsForm";
 import MainMenuForm from "./MainMenuForm";
 import MainLinksForm from "./MainLinksForm";
+import MainPressKitForm from "./MainPressKitForm";
 import AdminHeader from "../AdminHeader";
 import AdminBackHeader from "../AdminBackHeader";
 import { config } from "@/env";
+import { ApiPressKitLinks } from "@/types/api-main-raw";
 
 export default function MainClientPage() {
   const [eventDays, setEventDays] = useState<EventDay[]>([]);
@@ -18,6 +20,9 @@ export default function MainClientPage() {
   const [mainColors, setMainColors] = useState<MainColors | null>(null);
   const [mainMenu, setMainMenu] = useState<MainMenuData | null>(null);
   const [mainLinks, setMainLinks] = useState<{ mainLinks: LinkItem[] } | null>(
+    null
+  );
+  const [pressKitLinks, setPressKitLinks] = useState<ApiPressKitLinks | null>(
     null
   );
   const [isLoading, setIsLoading] = useState(true);
@@ -32,12 +37,14 @@ export default function MainClientPage() {
           mainColorsRes,
           mainMenuRes,
           mainLinksRes,
+          pressKitLinksRes,
         ] = await Promise.all([
           fetch(`${config.baseApiUrl}/admin/main/days`),
           fetch(`${config.baseApiUrl}/admin/main/home_text`),
           fetch(`${config.baseApiUrl}/admin/main/colors`),
           fetch(`${config.baseApiUrl}/admin/main/menu`),
           fetch(`${config.baseApiUrl}/admin/main/links`),
+          fetch(`${config.baseApiUrl}/admin/main/press_kit_links`),
         ]);
 
         const [
@@ -46,12 +53,14 @@ export default function MainClientPage() {
           mainColorsData,
           mainMenuData,
           mainLinksData,
+          pressKitLinksData,
         ] = await Promise.all([
           eventDaysRes.json(),
           homeTextRes.json(),
           mainColorsRes.json(),
           mainMenuRes.json(),
           mainLinksRes.json(),
+          pressKitLinksRes.json(),
         ]);
 
         setEventDays(eventDaysData.eventDays || []);
@@ -59,6 +68,7 @@ export default function MainClientPage() {
         setMainColors(mainColorsData);
         setMainMenu(mainMenuData);
         setMainLinks(mainLinksData);
+        setPressKitLinks(pressKitLinksData);
         setDataKey((prev) => prev + 1); // Increment key to force re-render
       } catch (error) {
         console.error("Error fetching admin data:", error);
@@ -103,6 +113,12 @@ export default function MainClientPage() {
         )}
         {mainLinks && (
           <MainLinksForm key={`links-${dataKey}`} initialData={mainLinks} />
+        )}
+        {pressKitLinks && pressKitLinks.pressKitLinks && (
+          <MainPressKitForm
+            key={`press-kit-${dataKey}`}
+            initialData={{ pressKitLinks: pressKitLinks.pressKitLinks }}
+          />
         )}
       </div>
     </div>

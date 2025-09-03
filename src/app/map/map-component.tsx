@@ -13,7 +13,7 @@ import { config } from "@/env";
 import { MemoizedMarker } from "@/app/map/memorized-marker";
 import MemoizedPopUpComponent from "@/app/map/pop-up-component";
 import MemoizedRoutePopupComponent from "@/app/map/route-pop-up";
-import MemoizedMapLegend from "@/app/map/map-legend";
+
 import { usePathname, useSearchParams } from "next/navigation";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
 
@@ -501,21 +501,40 @@ const MapComponent = ({
               }}
             />
           </Source>
-          {selectedRouteObject?.dots.map((dot, index) => (
-            <MemoizedMarker
-              key={dot.id}
-              location={{
-                id: dot.id,
-                longitude: dot.longitude,
-                latitude: dot.latitude,
-                is_special_program: true, // Use special program marker for route dots
-              }}
-              isRouteMarker={true} // Mark as route marker to disable click
-              routeStep={index + 1} // Pass the route step number
-              index={index}
-              mapLoaded={mapLoaded}
-            />
-          ))}
+          {selectedRouteObject?.dots.map((dot, index) => {
+            // Find the corresponding location in mapInfo
+            const location = mapInfo.find((loc) =>
+              loc.participants.some((p) => p.user_name === dot.user_name)
+            );
+
+            // Check if this participant has a display number
+            const hasDisplayNumber = !!(
+              location?.hub_display_number ||
+              location?.display_number ||
+              location?.participants[0]?.display_number
+            );
+
+            return (
+              <MemoizedMarker
+                key={dot.id}
+                location={{
+                  id: dot.id,
+                  longitude: dot.longitude,
+                  latitude: dot.latitude,
+                  is_hub: location?.is_hub || false,
+                  is_collective: location?.is_collective || false,
+                  is_special_program: location?.is_special_program || false,
+                  display_number: location?.display_number || null,
+                  hub_display_number: location?.hub_display_number || null,
+                  participants: location?.participants || [],
+                }}
+                isRouteMarker={!hasDisplayNumber} // Only mark as route marker if no display number
+                routeStep={index + 1} // Pass the route step number
+                index={index}
+                mapLoaded={mapLoaded}
+              />
+            );
+          })}
         </>
       )}
 
@@ -534,11 +553,9 @@ const MapComponent = ({
         <MemoizedRoutePopupComponent
           route={selectedRouteObject}
           handlePopupClose={handlePopupClose}
+          mapInfo={mapInfo}
         />
       )}
-
-      {/* Map Legend */}
-      <MemoizedMapLegend />
     </Map>
   );
 };

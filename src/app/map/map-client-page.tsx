@@ -14,13 +14,13 @@ export default function MapClientPage({
     routes: Route[];
   };
 }) {
-  useSetPageDataset("map");
-  const { box4 } = useColors();
+  useSetPageDataset("rightButton");
+  const { triangle } = useColors();
   const topNavBarRef = useRef<HTMLDivElement>(null);
   return (
     <main
       className="min-h-dvh h-full overflow-x-hidden"
-      style={{ backgroundColor: box4 }}
+      style={{ backgroundColor: triangle }}
       data-page-container
     >
       <NavBar ref={topNavBarRef} />

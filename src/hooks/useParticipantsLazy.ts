@@ -73,7 +73,7 @@ export const useParticipantsLazy = (
         abortControllerRef.current.abort();
       }
     };
-  }, []); // Remove loadInitialParticipants from dependencies
+  }, [loadInitialParticipants]); // Include loadInitialParticipants dependency
 
   const loadMore = useCallback(() => {
     if (loadingMore || !hasMore) {

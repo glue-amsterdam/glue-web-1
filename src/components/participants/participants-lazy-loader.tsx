@@ -50,7 +50,7 @@ export default function ParticipantsLazyLoader({
     return () => {
       observer.disconnect();
     };
-  }, []); // Empty dependencies - observer is created only once
+  }, [handleObserver]); // Include handleObserver dependency
 
   if (!hasMore) {
     return <div className="col-span-full text-center py-8"></div>;

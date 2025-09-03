@@ -25,6 +25,7 @@ import { BasicInfoFields } from "@/app/dashboard/[userId]/participant-details/ba
 import { SlugField } from "@/app/dashboard/[userId]/participant-details/slug-field";
 import { ModeratorSettings } from "@/app/dashboard/[userId]/participant-details/moderator-settings";
 import { ActiveStatusSection } from "@/app/dashboard/[userId]/participant-details/active-status-section";
+import { DisplayNumberField } from "@/app/dashboard/[userId]/participant-details/display-number-field";
 
 import type { z } from "zod";
 import { mapInfoSchema } from "@/schemas/mapInfoSchemas";
@@ -68,6 +69,7 @@ export function ParticipantDetailsForm({
         participantDetails?.reactivation_requested || false,
       reactivation_notes: participantDetails?.reactivation_notes || null,
       reactivation_status: participantDetails?.reactivation_status || null,
+      display_number: participantDetails?.display_number || null,
     },
     mode: "onBlur",
   });
@@ -478,6 +480,10 @@ export function ParticipantDetailsForm({
                 <>
                   <Separator className="my-4" />
                   <ModeratorSettings />
+                  <DisplayNumberField
+                    isMod={isMod}
+                    targetUserId={targetUserId}
+                  />
                 </>
               )}
               <ActiveStatusSection
@@ -509,6 +515,7 @@ export function ParticipantDetailsForm({
                     "status",
                     "special_program",
                     "is_active",
+                    "display_number",
                   ]}
                   isSubmitting={isSubmitting}
                   className="w-full"

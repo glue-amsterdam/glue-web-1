@@ -34,6 +34,8 @@ import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { usePressKitLinks } from "@/app/context/MainContext";
+import { Link as LinkIcon, ExternalLink } from "lucide-react";
 
 // Update the userInfoSchema to include plan_label
 const extendedUserInfoSchema = userInfoSchema.extend({
@@ -41,6 +43,53 @@ const extendedUserInfoSchema = userInfoSchema.extend({
 });
 
 type ExtendedUserInfo = z.infer<typeof extendedUserInfoSchema>;
+
+const PressKitLinksSection = () => {
+  const pressKitLinks = usePressKitLinks();
+
+  if (
+    !pressKitLinks?.pressKitLinks ||
+    pressKitLinks.pressKitLinks.length === 0
+  ) {
+    return (
+      <div className="text-center py-4 text-gray-500">
+        <LinkIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
+        <p>No press kit links available.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {pressKitLinks.pressKitLinks.map((link) => (
+        <div
+          key={link.id}
+          className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+        >
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-2">
+              <LinkIcon className="h-4 w-4 text-gray-500 flex-shrink-0" />
+              <a
+                href={link.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 hover:underline truncate"
+              >
+                {link.link}
+              </a>
+              <ExternalLink className="h-3 w-3 text-gray-400 flex-shrink-0" />
+            </div>
+            {link.description && (
+              <p className="text-sm text-gray-600 mt-1 truncate">
+                {link.description}
+              </p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export function UserInfoForm({
   userInfo,
@@ -547,42 +596,8 @@ export function UserInfoForm({
 
             <Separator className="my-4" />
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">System Information</h3>
-              <FormField
-                control={form.control}
-                name="id"
-                render={({ field }) => (
-                  <FormItem className="sr-only">
-                    <FormLabel>ID (Not Modifiable)</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        disabled
-                        className="bg-gray-100 text-gray-700"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="user_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>User ID (Not Modifiable)</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        disabled
-                        className="bg-gray-100 text-gray-700"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <h3 className="text-lg font-semibold">Press Kit Links</h3>
+              <PressKitLinksSection />
             </div>
 
             <div className="pt-6">

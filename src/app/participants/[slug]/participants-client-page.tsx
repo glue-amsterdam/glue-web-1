@@ -14,15 +14,25 @@ import {
 import ParticipantInfo from "@/components/participant-page/ParticipantInfo";
 import ParticipantImageCarousel from "@/components/participant-page/ParticipantImageCarousel";
 
+interface Hub {
+  id: string;
+  name: string;
+  hub_host_id: string;
+  mapInfoId: string | null;
+  hub_address: string | null;
+}
+
 // Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
 
 interface ParticipantClientPageProps {
   participant: ParticipantClientResponse;
+  hubs: Hub[];
 }
 
 export default function ParticipantClientPage({
   participant,
+  hubs,
 }: ParticipantClientPageProps) {
   const { box1 } = useColors();
   const lettersContainerRef = useRef<HTMLDivElement>(null);
@@ -171,7 +181,7 @@ export default function ParticipantClientPage({
         ref={rightSectionRef}
         className="h-[60vh] lg:h-full overflow-y-auto"
       >
-        <ParticipantInfo participant={participant} />
+        <ParticipantInfo participant={participant} hubs={hubs} />
       </section>
     </main>
   );

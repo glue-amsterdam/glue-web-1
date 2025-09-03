@@ -36,6 +36,10 @@ export type ApiEventDay = {
   date?: string;
 };
 
+export type ApiPressKitLinks = {
+  pressKitLinks?: { id: number; link: string; description?: string | null }[];
+};
+
 // Main type for the API response
 export type ApiMainSectionData = {
   mainColors?: ApiMainColors;
@@ -43,4 +47,5 @@ export type ApiMainSectionData = {
   mainLinks?: ApiMainLinks;
   eventDays?: ApiEventDay[];
   homeText?: { id: string; label: string; color?: string | null } | null;
+  pressKitLinks?: ApiPressKitLinks;
 };

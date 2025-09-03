@@ -166,7 +166,7 @@ export default function CofHonourSection({
     >
       <div
         aria-hidden="true"
-        className="radial-gradient-background absolute inset-0 opacity-10 p0ointer-events-none z-10 overflow-hidden"
+        className="radial-gradient-background absolute inset-0 opacity-10 pointer-events-none z-10 overflow-hidden"
       />
       <div id="citizens-of-honour-header">
         <h2

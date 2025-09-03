@@ -109,7 +109,7 @@ function CarouselPopUp({ popupInfo }: Props) {
                     {participant.user_name}
                   </h3>
                   <p className="text-xs text-white/80 line-clamp-2">
-                    {popupInfo.formatted_address}
+                    {popupInfo.formatted_address.split(",")[0]}
                   </p>
                 </div>
               </div>

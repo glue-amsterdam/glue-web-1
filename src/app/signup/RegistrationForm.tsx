@@ -12,9 +12,15 @@ import { useState } from "react";
 
 interface RegistrationFormProps {
   plansData: PlansArrayType;
+  applicationClosed?: boolean;
+  closedMessage?: string;
 }
 
-export default function RegistrationForm({ plansData }: RegistrationFormProps) {
+export default function RegistrationForm({
+  plansData,
+  applicationClosed = false,
+  closedMessage = "",
+}: RegistrationFormProps) {
   const [step, setStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState<{
     plan_id: string;
@@ -97,7 +103,12 @@ export default function RegistrationForm({ plansData }: RegistrationFormProps) {
         </div>
       )}
       {step === 1 && (
-        <PlanPicker plansData={plansData} onPlanSelected={handlePlanSelected} />
+        <PlanPicker
+          plansData={plansData}
+          onPlanSelected={handlePlanSelected}
+          applicationClosed={applicationClosed}
+          closedMessage={closedMessage}
+        />
       )}
       {step === 2 && selectedPlan && (
         <div className="w-[90%] mx-auto flex flex-col">

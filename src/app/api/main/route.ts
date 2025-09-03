@@ -13,16 +13,23 @@ import type { EventDay } from "@/schemas/eventSchemas";
 export async function GET() {
   try {
     const supabase = await createClient();
-    const [eventsDays, mainColors, mainLinks, mainMenu, homeText] =
-      await Promise.all([
-        supabase.from("events_days").select(),
-        supabase.from("main_colors").select(),
-        supabase.from("main_links").select().order("id"),
-        supabase
-          .from("main_menu")
-          .select("menu_id, label, section, className, subItems"),
-        supabase.from("home_text").select().limit(1),
-      ]);
+    const [
+      eventsDays,
+      mainColors,
+      mainLinks,
+      mainMenu,
+      homeText,
+      pressKitLinks,
+    ] = await Promise.all([
+      supabase.from("events_days").select(),
+      supabase.from("main_colors").select(),
+      supabase.from("main_links").select().order("id"),
+      supabase
+        .from("main_menu")
+        .select("menu_id, label, section, className, subItems"),
+      supabase.from("home_text").select().limit(1),
+      supabase.from("press_kit_links").select(),
+    ]);
 
     if (eventsDays.error)
       throw new Error(
@@ -38,11 +45,16 @@ export async function GET() {
       throw new Error(`Error fetching main_menu: ${mainMenu.error.message}`);
     if (homeText.error)
       throw new Error(`Error fetching home_text: ${homeText.error.message}`);
+    if (pressKitLinks.error)
+      throw new Error(
+        `Error fetching press_kit_links: ${pressKitLinks.error.message}`
+      );
 
     const mainColorsData = mainColors.data?.[0] as MainColors;
     const eventsDaysData = eventsDays.data;
     const mainMenuData = mainMenu.data;
     const homeTextData = homeText.data?.[0] || null;
+    const pressKitLinksData = pressKitLinks.data;
 
     const events_days: EventDay[] = eventsDaysData.map((day) => ({
       dayId: day.dayId,
@@ -76,6 +88,13 @@ export async function GET() {
             color: homeTextData.color,
           }
         : null,
+      pressKitLinks: {
+        pressKitLinks: pressKitLinksData.map(({ id, link, description }) => ({
+          id,
+          link,
+          description,
+        })),
+      },
     };
 
     return NextResponse.json(formattedData);

@@ -105,7 +105,7 @@ export default function CofHonourImages({
                 height={1080}
                 quality={95}
                 sizes="(max-width: 768px) 100vw, 80vw"
-                className="object-cover absolute inset-0 w-full h-full group-hover:grayscale-0 md:grayscale-[0.8] group-hover:scale-105 transition-all duration-300"
+                className="object-cover absolute inset-0 w-full h-full group-hover:grayscale-0 md:grayscale-[1] group-hover:scale-105 transition-all duration-300"
                 tabIndex={0}
                 aria-label={citizen.name}
               />

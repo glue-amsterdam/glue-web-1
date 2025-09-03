@@ -42,7 +42,7 @@ export default function AboutClientPage({
   glueInternational: GlueInternationalContent;
   sponsorsData: SponsorsSection;
 }) {
-  useSetPageDataset("about");
+  useSetPageDataset("downButton");
 
   const container = useRef<HTMLDivElement>(null);
   const mainColors = useColors();
@@ -124,7 +124,7 @@ export default function AboutClientPage({
     <ReactLenis root>
       <main
         className="min-h-dvh h-full"
-        style={{ backgroundColor: mainColors?.box2 }}
+        style={{ backgroundColor: mainColors?.box4 }}
         ref={container}
       >
         <NavBar ref={topNavBarRef} />
@@ -133,7 +133,7 @@ export default function AboutClientPage({
           descriptionRef={descriptionRef}
           imageSliderRef={imageSliderRef}
           titleRef={titleRef}
-          bgColor={mainColors?.box2}
+          bgColor={mainColors?.box4}
           carouselData={carouselData}
           sectionRef={sectionRef}
         />

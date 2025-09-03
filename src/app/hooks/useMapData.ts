@@ -18,6 +18,7 @@ export interface Participant {
   is_host: boolean;
   slug?: string | null;
   image_url?: string | null;
+  display_number?: string | null;
 }
 
 export interface MapInfo {
@@ -31,6 +32,8 @@ export interface MapInfo {
   hub_description?: string | null;
   is_collective: boolean;
   is_special_program: boolean;
+  display_number?: string | null;
+  hub_display_number?: string | null;
 }
 
 export enum RouteZone {

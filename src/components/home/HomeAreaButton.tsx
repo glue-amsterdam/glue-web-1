@@ -2,34 +2,13 @@ import React from "react";
 
 interface HomeAreaButtonProps {
   label: string;
-  section: string;
-  className?: string;
-  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  onKeyDown: (e: React.KeyboardEvent<HTMLButtonElement>) => void;
-  ariaLabel?: string;
 }
 
-const HomeAreaButton: React.FC<HomeAreaButtonProps> = ({
-  label,
-  section,
-  className = "",
-  onClick,
-  onKeyDown,
-  ariaLabel,
-}) => {
+const HomeAreaButton: React.FC<HomeAreaButtonProps> = ({ label }) => {
   return (
-    <button
-      type="button"
-      tabIndex={0}
-      role="button"
-      aria-label={ariaLabel || label}
-      aria-labelledby={`label-${section}`}
-      className={className}
-      onClick={onClick}
-      onKeyDown={onKeyDown}
-    >
-      <span>{label}</span>
-    </button>
+    <span className="inline-block group-hover:scale-110 group-hover:border-b-2 group-hover:border-white transition-all duration-100 origin-center">
+      {label}
+    </span>
   );
 };
 

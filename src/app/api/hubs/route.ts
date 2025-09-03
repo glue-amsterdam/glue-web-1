@@ -22,6 +22,7 @@ export async function GET() {
         name,
         description,
         hub_host_id,
+        display_number,
         participants: hub_participants (user_id)
       `
       )
@@ -56,6 +57,7 @@ export async function GET() {
       id: hub.id,
       name: hub.name,
       description: hub.description,
+      display_number: hub.display_number,
       hub_host: hostUserMap.get(hub.hub_host_id) || {
         user_id: hub.hub_host_id,
         user_name: null,
@@ -79,7 +81,8 @@ export async function POST(req: Request) {
     const supabase = await createClient();
 
     const body = await req.json();
-    const { name, description, participants, hub_host } = hubSchema.parse(body);
+    const { name, description, participants, hub_host, display_number } =
+      hubSchema.parse(body);
 
     const {
       data: { user },
@@ -95,6 +98,7 @@ export async function POST(req: Request) {
         name,
         description,
         hub_host_id: typeof hub_host === "string" ? hub_host : hub_host.user_id,
+        display_number,
       })
       .select()
       .single();
@@ -169,6 +173,7 @@ export async function PUT(request: Request) {
         name: hubData.name,
         description: hubData.description,
         hub_host_id: hubData.hub_host.user_id,
+        display_number: hubData.display_number,
       })
       .eq("id", hubData.id)
       .select();

@@ -2,7 +2,7 @@
 import { useAuth } from "@/app/context/AuthContext";
 import { useMenu } from "@/app/context/MainContext";
 import { useTransitionRouter } from "next-view-transitions";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
   homeExitAnimation,
   HomeExitAnimationRefs,
@@ -18,71 +18,98 @@ function ClickAreas({ setIsLoginModalOpen, refs }: ClickAreasProps) {
   const mainMenu = useMenu();
   const { user } = useAuth();
   const router = useTransitionRouter();
-  const orderedSections = ["dashboard", "about", "events", "map"];
-
-  const handleAreaClick = async (
-    e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>,
-    requiresAuth: boolean,
-    href: string
-  ) => {
-    if (requiresAuth && !user) {
-      e.preventDefault();
-      setIsLoginModalOpen(true);
-      return;
-    }
-    if (href && href !== "#") {
-      e.preventDefault();
-
-      if (href === "/about") {
-        document.documentElement.dataset.to = "about";
-      } else if (href === "/events") {
-        document.documentElement.dataset.to = "events";
-      } else if (href === "/map") {
-        document.documentElement.dataset.to = "map";
-      } else if (href.startsWith("/dashboard")) {
-        document.documentElement.dataset.to = "dashboard";
-      }
-
-      await homeExitAnimation({ refs, href });
-      router.push(href);
-    }
-  };
-
-  const handleAreaKeyDown = async (
-    e: React.KeyboardEvent<HTMLButtonElement | HTMLAnchorElement>,
-    requiresAuth: boolean,
-    href: string
-  ) => {
-    if (e.key === "Enter" || e.key === " ") {
-      if (requiresAuth && !user) {
-        e.preventDefault();
-        setIsLoginModalOpen(true);
-        return;
-      }
-      if (href && href !== "#") {
-        e.preventDefault();
-
-        // Configurar el dataset.to antes de la animación
-        if (href === "/about") {
-          document.documentElement.dataset.to = "about";
-        } else if (href === "/events") {
-          document.documentElement.dataset.to = "events";
-        } else if (href === "/map") {
-          document.documentElement.dataset.to = "map";
-        } else if (href.startsWith("/dashboard")) {
-          document.documentElement.dataset.to = "dashboard";
-        }
-
-        await homeExitAnimation({ refs, href });
-        router.push(href);
-      }
-    }
-  };
+  const orderedSections = ["dashboard", "events", "map", "about"];
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isScrollingRef = useRef(false);
+  const touchStartYRef = useRef<number | null>(null);
 
   const sortedMenu = mainMenu.sort(
     (a, b) =>
       orderedSections.indexOf(a.section) - orderedSections.indexOf(b.section)
   );
+
+  // Function to handle about navigation (same as downbutton click)
+  const handleAboutNavigation = React.useCallback(() => {
+    if (isScrollingRef.current) return; // Prevent multiple triggers
+
+    isScrollingRef.current = true;
+    document.documentElement.dataset.to = "downButton";
+    homeExitAnimation({
+      refs,
+      buttonType: "downButton",
+    }).then(() => {
+      router.push("/about");
+    });
+  }, [refs, router]);
+
+  // Scroll detection effect
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      // Only trigger on scroll down (positive deltaY)
+      if (e.deltaY > 0) {
+        e.preventDefault();
+
+        // Clear any existing timeout
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
+        }
+
+        // Debounce scroll events to prevent multiple triggers
+        scrollTimeoutRef.current = setTimeout(() => {
+          handleAboutNavigation();
+        }, 100);
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      // Store initial touch position
+      const touch = e.touches[0];
+      if (touch) {
+        touchStartYRef.current = touch.clientY;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (touch && touchStartYRef.current !== null) {
+        const deltaY = touchStartYRef.current - touch.clientY;
+
+        // Only trigger on swipe up (positive deltaY)
+        if (deltaY > 50) {
+          // Minimum swipe distance
+          e.preventDefault();
+
+          // Clear any existing timeout
+          if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+          }
+
+          // Debounce touch events
+          scrollTimeoutRef.current = setTimeout(() => {
+            handleAboutNavigation();
+          }, 100);
+        }
+      }
+    };
+
+    // Add event listeners
+    document.addEventListener("wheel", handleWheel, { passive: false });
+    document.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+
+    // Cleanup
+    return () => {
+      document.removeEventListener("wheel", handleWheel);
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchmove", handleTouchMove);
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [handleAboutNavigation]);
 
   return (
     <nav aria-label="Main navigation">
@@ -91,77 +118,34 @@ function ClickAreas({ setIsLoginModalOpen, refs }: ClickAreasProps) {
           .filter((area) => area?.section && area.className)
           .map((area) => {
             const requiresAuth = area.section === "dashboard";
-            let targetHref = `/${area.section}`;
-            if (requiresAuth && user?.id) {
-              targetHref = `/dashboard/${user.id}/user-data`;
-            }
-            if (requiresAuth && !user) {
-              targetHref = "#";
-            }
             return (
               <li
                 key={area.section}
                 ref={refs.buttonsAreaRef}
-                className={`absolute button-area hover:bg-white/10 ${area.className}`}
+                className={`absolute button-area hover:bg-white/10 ${area.className} group`}
               >
-                <div className="block w-full h-full group">
+                <div className="block w-full h-full">
                   {!mainMenu || mainMenu.length < 4 ? (
                     <div>Problems with menu items, not enough</div>
                   ) : (
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                       <div className="relative w-[90%] md:w-[85%] h-[60%]">
-                        {/* DASHBOARD BUTTON */}
-                        <HomeAreaButton
-                          label={mainMenu[0]?.label}
-                          section={mainMenu[0]?.section}
-                          className="w-[12vh] md:w-[30vw] navLabel absolute left-0 top-1/2 -translate-y-1/2 text-start"
-                          onClick={(e) =>
-                            handleAreaClick(
-                              e,
-                              true,
-                              user ? `/dashboard/${user.id}/user-data` : "#"
-                            )
-                          }
-                          onKeyDown={(e) =>
-                            handleAreaKeyDown(
-                              e,
-                              true,
-                              user ? `/dashboard/${user.id}/user-data` : "#"
-                            )
-                          }
-                          ariaLabel={mainMenu[0]?.label}
-                        />
-                        {/* EVENTS BUTTON */}
-                        <HomeAreaButton
-                          label={mainMenu[2]?.label}
-                          section={mainMenu[2]?.section}
-                          className="navLabel absolute right-0 top-1/2 -translate-y-1/2"
-                          onClick={(e) => handleAreaClick(e, false, "/events")}
-                          onKeyDown={(e) =>
-                            handleAreaKeyDown(e, false, "/events")
-                          }
-                          ariaLabel={mainMenu[2]?.label}
-                        />
-                        {/* ABOUT BUTTON */}
-                        <HomeAreaButton
-                          label={mainMenu[1]?.label}
-                          section={mainMenu[1]?.section}
-                          className="navLabel absolute top-0 left-1/2 -translate-x-1/2"
-                          onClick={(e) => handleAreaClick(e, false, "/about")}
-                          onKeyDown={(e) =>
-                            handleAreaKeyDown(e, false, "/about")
-                          }
-                          ariaLabel={mainMenu[1]?.label}
-                        />
-                        {/* MAP BUTTON */}
-                        <HomeAreaButton
-                          label={mainMenu[3]?.label}
-                          section={mainMenu[3]?.section}
-                          className="navLabel absolute bottom-0 right-1/2 translate-x-1/2"
-                          onClick={(e) => handleAreaClick(e, false, "/map")}
-                          onKeyDown={(e) => handleAreaKeyDown(e, false, "/map")}
-                          ariaLabel={mainMenu[3]?.label}
-                        />
+                        {/* LEFT BUTTON */}
+                        <div className="w-[12vh] md:w-[30vw] navLabel absolute left-0 top-1/2 -translate-y-1/2 text-start">
+                          <HomeAreaButton label={mainMenu[0]?.label} />
+                        </div>
+                        {/* RIGHT BUTTON */}
+                        <div className="navLabel absolute right-0 top-1/2 -translate-y-1/2">
+                          <HomeAreaButton label={mainMenu[2]?.label} />
+                        </div>
+                        {/* UPPER BUTTON */}
+                        <div className="navLabel absolute top-0 left-1/2 -translate-x-1/2">
+                          <HomeAreaButton label={mainMenu[1]?.label} />
+                        </div>
+                        {/* DOWN BUTTON */}
+                        <div className="navLabel absolute bottom-0 right-1/2 translate-x-1/2">
+                          <HomeAreaButton label={mainMenu[3]?.label} />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -173,10 +157,50 @@ function ClickAreas({ setIsLoginModalOpen, refs }: ClickAreasProps) {
                   aria-label={area.label}
                   aria-labelledby={`label-${area?.section}`}
                   className="absolute inset-0 w-full h-full z-10"
-                  onClick={(e) => handleAreaClick(e, requiresAuth, targetHref)}
-                  onKeyDown={(e) =>
-                    handleAreaKeyDown(e, requiresAuth, targetHref)
-                  }
+                  onClick={(e) => {
+                    if (area.className === "leftbutton") {
+                      if (requiresAuth && !user) {
+                        e.preventDefault();
+                        setIsLoginModalOpen(true);
+                        return;
+                      }
+                      const href = user
+                        ? `/dashboard/${user.id}/user-data`
+                        : "#";
+                      if (href !== "#") {
+                        document.documentElement.dataset.to = "leftButton";
+                        homeExitAnimation({
+                          refs,
+                          buttonType: "leftButton",
+                        }).then(() => {
+                          router.push(href);
+                        });
+                      }
+                    } else if (area.className === "upperbutton") {
+                      document.documentElement.dataset.to = "upButton";
+                      homeExitAnimation({ refs, buttonType: "upButton" }).then(
+                        () => {
+                          router.push("/events");
+                        }
+                      );
+                    } else if (area.className === "rightbutton") {
+                      document.documentElement.dataset.to = "rightButton";
+                      homeExitAnimation({
+                        refs,
+                        buttonType: "rightButton",
+                      }).then(() => {
+                        router.push("/map");
+                      });
+                    } else if (area.className === "downbutton") {
+                      document.documentElement.dataset.to = "downButton";
+                      homeExitAnimation({
+                        refs,
+                        buttonType: "downButton",
+                      }).then(() => {
+                        router.push("/about");
+                      });
+                    }
+                  }}
                 />
               </li>
             );
