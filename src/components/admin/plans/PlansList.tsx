@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import PlanEditDialog from "./PlanEditDialog";
 import PlanAddDialog from "./PlanAddDialog";
+import ApplicationStatusManager from "./ApplicationStatusManager";
 
 interface PlansListProps {
   initialPlans: PlanType[];
@@ -188,6 +189,7 @@ export default function PlansList({ initialPlans }: PlansListProps) {
 
   return (
     <div className="text-black">
+      <ApplicationStatusManager />
       <Button onClick={() => setIsAddingPlan(true)} className="mb-4">
         Add New Plan
       </Button>

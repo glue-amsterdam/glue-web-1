@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import type { PlansArrayType, PlanType } from "@/schemas/plansSchema";
 import { useRef, useEffect, useState } from "react";
 import PlanCard from "@/app/components/signup/plan-card";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const planSchema = z.object({
   plan_id: z.string(),
@@ -19,11 +20,15 @@ type PlanFormData = z.infer<typeof planSchema>;
 interface PlanPickerProps {
   plansData: PlansArrayType;
   onPlanSelected: (plan: PlanType) => void;
+  applicationClosed?: boolean;
+  closedMessage?: string;
 }
 
 export default function PlanPicker({
   plansData,
   onPlanSelected,
+  applicationClosed = false,
+  closedMessage = "",
 }: PlanPickerProps) {
   const { control, handleSubmit, watch, setValue } = useForm<PlanFormData>({
     resolver: zodResolver(planSchema),
@@ -196,8 +201,22 @@ export default function PlanPicker({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className={`main-container flex flex-col pb-4 px-2`}
+      className={`flex flex-col pb-4 px-2 h-full`}
     >
+      {applicationClosed && (
+        <div className="mb-6">
+          <Alert className="bg-red-50 border-red-200">
+            <AlertCircle className="h-5 w-5 text-red-600" />
+            <AlertTitle className="text-red-800 sr-only">
+              Applications Closed
+            </AlertTitle>
+            <AlertDescription className="text-red-700 whitespace-pre-line text-base">
+              {closedMessage ||
+                "Applications are currently closed. Please check back later."}
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
       <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center md:mt-2 md:mb-3">
         Select a Plan
       </h2>
