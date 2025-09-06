@@ -14,7 +14,7 @@ interface ClickAreasProps {
   refs: HomeExitAnimationRefs;
 }
 
-function ClickAreas({ setIsLoginModalOpen, refs }: ClickAreasProps) {
+function ClickAreas({ refs }: ClickAreasProps) {
   const mainMenu = useMenu();
   const { user } = useAuth();
   const router = useTransitionRouter();
@@ -161,7 +161,13 @@ function ClickAreas({ setIsLoginModalOpen, refs }: ClickAreasProps) {
                     if (area.className === "leftbutton") {
                       if (requiresAuth && !user) {
                         e.preventDefault();
-                        setIsLoginModalOpen(true);
+                        document.documentElement.dataset.to = "leftButton";
+                        homeExitAnimation({
+                          refs,
+                          buttonType: "leftButton",
+                        }).then(() => {
+                          router.push("/signup?step=1");
+                        });
                         return;
                       }
                       const href = user
