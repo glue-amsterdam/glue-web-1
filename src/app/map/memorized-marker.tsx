@@ -117,7 +117,7 @@ export const MemoizedMarker = memo(
       if (isHub) {
         return {
           containerClass:
-            "size-7 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110",
+            "size-9 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110 opacity-90",
           bgClass: markerColors.hub.background,
           icon: MapPinHouse,
           iconClass: "w-5 h-5 text-white",
@@ -128,7 +128,7 @@ export const MemoizedMarker = memo(
       if (location.is_special_program) {
         return {
           containerClass:
-            "size-7 rounded-full  flex items-center justify-center shadow-md transition-transform hover:scale-110",
+            "size-7 rounded-full  flex items-center justify-center shadow-md transition-transform hover:scale-110 opacity-90",
           bgClass: markerColors.specialProgram.background,
           icon: MapPinMinusInside,
           iconClass: "w-5 h-5 text-white",
@@ -139,7 +139,7 @@ export const MemoizedMarker = memo(
       // Default participant marker (including collective with <3 participants)
       return {
         containerClass:
-          "size-7 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110",
+          "size-7 rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110 opacity-90",
         bgClass: markerColors.participant.background,
         icon: MapPin,
         iconClass: "w-5 h-5 text-black",
@@ -165,9 +165,9 @@ export const MemoizedMarker = memo(
           onMouseLeave={() => setShowTooltip(false)}
         >
           <div
-            className={`${markerStyle.containerClass} ${markerStyle.bgClass} ${
-              isAnimating ? "marker-pop" : ""
-            }`}
+            className={`z-0 ${markerStyle.containerClass} ${
+              markerStyle.bgClass
+            } ${isAnimating ? "marker-pop" : ""}`}
           >
             {location.hub_display_number || location.display_number ? (
               <span className={`text-sm font-bold ${markerStyle.textClass}`}>
@@ -182,7 +182,7 @@ export const MemoizedMarker = memo(
 
           {/* Tooltip */}
           {showTooltip && !isRouteMarker && (
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded whitespace-nowrap z-10">
+            <div className="absolute bottom-full z-10 left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded whitespace-nowrap">
               {getParticipantName()}
               <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black"></div>
             </div>
