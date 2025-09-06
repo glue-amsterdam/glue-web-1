@@ -39,10 +39,6 @@ export default function MainSection({
       style={{ backgroundColor: bgColor }}
     >
       <div className="relative w-full h-[80vh] py-[6rem]">
-        <div
-          aria-hidden="true"
-          className="radial-gradient-background absolute inset-0 opacity-60 pointer-events-none z-20 overflow-hidden"
-        />
         <h1
           id="about-main-heading"
           ref={titleRef}
