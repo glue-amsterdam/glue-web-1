@@ -273,16 +273,6 @@
   src: url("/lausanne.woff2") format("woff2");
 }
 
-.sand-clock-clip {
-  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' fill='none' viewBox='0 0 40 40'><path fill='white' d='M0 0h40L20 20l20 20H0l20-20z'/></svg>");
-  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' fill='none' viewBox='0 0 40 40'><path fill='white' d='M0 0h40L20 20l20 20H0l20-20z'/></svg>");
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: cover;
-  mask-size: cover;
-  background: black;
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;

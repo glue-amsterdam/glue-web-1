@@ -318,7 +318,7 @@ const CuratedStickySection: React.FC<CuratedStickySectionProps> = ({
       <div
         id="curated-background-black-gradient"
         aria-hidden="true"
-        className="radial-gradient-background absolute inset-0 opacity-50 pointer-events-none z-[9]"
+        className="absolute inset-0 opacity-50 pointer-events-none z-[9]"
       />
       <CuratedStickyHeader
         textColor={headerData.text_color}

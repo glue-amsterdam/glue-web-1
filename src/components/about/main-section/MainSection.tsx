@@ -35,13 +35,13 @@ export default function MainSection({
       ref={sectionRef}
       id="main"
       aria-labelledby="about-main-heading carousel-description"
-      className="h-dvh relative"
+      className="min-h-dvh relative"
       style={{ backgroundColor: bgColor }}
     >
       <div className="relative w-full h-[80vh] py-[6rem]">
         <div
           aria-hidden="true"
-          className="radial-gradient-background absolute inset-0 opacity-50 pointer-events-none z-20 overflow-hidden"
+          className="radial-gradient-background absolute inset-0 opacity-60 pointer-events-none z-20 overflow-hidden"
         />
         <h1
           id="about-main-heading"
@@ -58,7 +58,7 @@ export default function MainSection({
         ref={descriptionRef}
         dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
         style={{ color: text_color ?? "#fff" }}
-        className="about-description columns-1 md:columns-2 lg:columns-3 gap-4 z-10 text-pretty h-full px-4 pt-4"
+        className="relative about-description columns-1 md:columns-2 lg:columns-3 gap-4 z-10 text-pretty h-full px-4 py-4"
       />
     </section>
   );
