@@ -31,9 +31,7 @@ import { CookieSettingsModal } from "@/components/cookies/cookies-modal";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters" }),
+  password: z.string(),
 });
 
 const resetPasswordSchema = z.object({
