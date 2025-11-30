@@ -90,7 +90,7 @@ export default function PlanPicker({
     };
   }, []);
 
-  // Simplified wheel event handling
+  // Simplified wheel event handling with smart scroll detection
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
     if (!scrollContainer) return;
@@ -102,32 +102,46 @@ export default function PlanPicker({
         (ref) => ref && ref.contains(target)
       );
 
+      // Calculate scroll intent: prioritize direction with larger delta
+      const absDeltaX = Math.abs(event.deltaX);
+      const absDeltaY = Math.abs(event.deltaY);
+      const isVerticalIntent = absDeltaY > absDeltaX * 1.5; // Vertical scroll is significantly larger
+      const isHorizontalIntent = absDeltaX > absDeltaY * 1.5; // Horizontal scroll is significantly larger
+
       // If we're in a card's content area that can scroll vertically
       if (cardContent) {
-        const { scrollHeight, clientHeight, scrollTop } = cardContent;
+        const { scrollHeight, clientHeight } = cardContent;
         const isScrollable = scrollHeight > clientHeight;
 
-        // If the card content is scrollable and not at the boundaries, let it scroll naturally
-        if (isScrollable) {
-          const isAtTop = scrollTop <= 0;
-          const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
+        // If the card content is scrollable and user has vertical intent, let it scroll
+        if (isScrollable && isVerticalIntent) {
+          return; // Let the default scroll behavior happen
+        }
 
-          if (
-            (event.deltaY > 0 && !isAtBottom) ||
-            (event.deltaY < 0 && !isAtTop)
-          ) {
-            return; // Let the default scroll behavior happen
-          }
+        // If user has clear horizontal intent, prioritize carousel scroll
+        if (
+          isHorizontalIntent &&
+          scrollContainer.scrollWidth > scrollContainer.clientWidth
+        ) {
+          event.preventDefault();
+          scrollContainer.scrollBy({
+            left: event.deltaX || event.deltaY,
+            behavior: "smooth",
+          });
+          return;
         }
       }
 
-      // Otherwise, handle horizontal scrolling
+      // If not in card content or no clear vertical intent, handle horizontal scrolling for carousel
       if (scrollContainer.scrollWidth > scrollContainer.clientWidth) {
-        event.preventDefault();
-        scrollContainer.scrollBy({
-          left: event.deltaY,
-          behavior: "smooth",
-        });
+        // Only prevent default if we're not clearly trying to scroll vertically in card content
+        if (!cardContent || !isVerticalIntent) {
+          event.preventDefault();
+          scrollContainer.scrollBy({
+            left: event.deltaY,
+            behavior: "smooth",
+          });
+        }
       }
     };
 
@@ -217,10 +231,17 @@ export default function PlanPicker({
           </Alert>
         </div>
       )}
-      <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center md:mt-2 md:mb-3">
+      <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center md:mt-2 md:mb-3 flex-shrink-0">
         Select a Plan
       </h2>
-      <div className="relative flex-grow overflow-hidden">
+      <div
+        className="relative overflow-hidden flex-shrink-0"
+        style={{
+          height: applicationClosed
+            ? "calc(100vh - 4rem - 280px)" // Account for navbar (4rem), alert, header, button, and padding
+            : "calc(100vh - 4rem - 200px)", // Account for navbar (4rem), header, button, and padding
+        }}
+      >
         {showLeftScrollIndicator && (
           <button
             type="button"
@@ -233,7 +254,7 @@ export default function PlanPicker({
         )}
         <div
           ref={scrollContainerRef}
-          className="flex-grow h-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory custom-scrollbar"
+          className="h-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory custom-scrollbar"
           style={{
             scrollbarWidth: "auto", // For Firefox - "thick" doesn't exist, use "auto" instead
             msOverflowStyle: "none", // For IE and Edge
@@ -278,7 +299,7 @@ export default function PlanPicker({
       </div>
       <Button
         type="submit"
-        className={`w-full md:w-[80%] mx-auto mt-4 group ${
+        className={`w-full md:w-[80%] mx-auto mt-4 group flex-shrink-0 ${
           selectedPlanId &&
           "bg-[var(--color-box1)] mt-6 text-white py-10 hover:bg-[var(--color-box1)]/50"
         }`}

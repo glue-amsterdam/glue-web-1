@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useState } from "react";
+import { forwardRef, useState, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -25,6 +25,9 @@ const PlanCard = forwardRef<HTMLDivElement, PlanCardProps>(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ({ plan, isSelected, onSelect, contentRef }, ref) => {
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+    const [isContentScrollable, setIsContentScrollable] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const contentElementRef = useRef<HTMLDivElement | null>(null);
 
     const isLongDescription = plan.plan_description.length > 100;
 
@@ -32,6 +35,48 @@ const PlanCard = forwardRef<HTMLDivElement, PlanCardProps>(
       isLongDescription && !isDescriptionExpanded
         ? `${plan.plan_description.substring(0, 100)}...`
         : plan.plan_description;
+
+    // Check if content is scrollable and detect mobile
+    useEffect(() => {
+      const checkScrollable = () => {
+        if (contentElementRef.current) {
+          const { scrollHeight, clientHeight } = contentElementRef.current;
+          setIsContentScrollable(scrollHeight > clientHeight);
+        }
+      };
+
+      const checkMobile = () => {
+        setIsMobile(window.innerWidth < 768); // md breakpoint
+      };
+
+      checkMobile();
+      checkScrollable();
+
+      // Use ResizeObserver to detect when content size changes
+      const resizeObserver = new ResizeObserver(() => {
+        checkScrollable();
+      });
+
+      if (contentElementRef.current) {
+        resizeObserver.observe(contentElementRef.current);
+      }
+
+      window.addEventListener("resize", () => {
+        checkMobile();
+        checkScrollable();
+      });
+
+      return () => {
+        resizeObserver.disconnect();
+        window.removeEventListener("resize", checkMobile);
+      };
+    }, [plan.plan_items]);
+
+    // Combined ref callback
+    const handleContentRef = (el: HTMLDivElement | null) => {
+      contentElementRef.current = el;
+      contentRef(el);
+    };
 
     return (
       <Card
@@ -89,15 +134,19 @@ const PlanCard = forwardRef<HTMLDivElement, PlanCardProps>(
         </CardContent>
         <div className="w-full h-px bg-gray-200" />
         <CardContent
-          ref={contentRef}
-          className={`flex-grow overflow-x-hidden overflow-y-auto scrollbar-thin p-4
+          ref={handleContentRef}
+          className={`flex-grow overflow-x-hidden overflow-y-auto scrollbar-thin p-4 relative
           ${
             isSelected
               ? "scrollbar-track-transparent scrollbar-thumb-white"
               : "scrollbar-track-white scrollbar-thumb-gray-400"
           }`}
         >
-          <ul className="space-y-2">
+          <ul
+            className={`space-y-2 ${
+              isMobile && isContentScrollable ? "pb-8" : ""
+            }`}
+          >
             {plan.plan_items.map((feature, idx) => (
               <li key={feature.label + idx} className="flex items-start">
                 <Check
@@ -115,6 +164,17 @@ const PlanCard = forwardRef<HTMLDivElement, PlanCardProps>(
               </li>
             ))}
           </ul>
+          {isMobile && isContentScrollable && (
+            <div
+              className={`absolute bottom-0 left-0 right-0 text-center py-2 text-xs ${
+                isSelected
+                  ? "text-white/70 bg-[var(--color-box1)]/80"
+                  : "text-gray-500 bg-white/80"
+              }`}
+            >
+              Scroll for more
+            </div>
+          )}
         </CardContent>
         <CardFooter className="p-4">
           <Button
