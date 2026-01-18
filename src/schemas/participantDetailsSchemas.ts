@@ -11,6 +11,7 @@ export const reactivationNotesSchema = z.object({
   longitude: z.number().optional().nullable(),
   no_address: z.boolean().optional().default(true),
   notes: z.string().optional().nullable(),
+  exhibition_space_preference: z.string().optional().nullable(),
 });
 
 export type ReactivationNotes = z.infer<typeof reactivationNotesSchema>;

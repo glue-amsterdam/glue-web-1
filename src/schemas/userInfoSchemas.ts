@@ -14,6 +14,7 @@ export const userInfoSchema = z.object({
     .optional(),
   social_media: z.record(z.string(), z.any()).nullable().optional(),
   visible_emails: z.array(z.string()).max(3, "Only 3 items max").nullable(),
+  glue_communication_email: z.string().email().nullable().optional(),
   visible_websites: z
     .array(z.string())
     .max(3, "Only 3 items max")

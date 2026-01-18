@@ -38,6 +38,7 @@ export async function POST(request: Request) {
       phone_numbers: validatedData.phone_numbers,
       social_media: validatedData.social_media,
       visible_emails: validatedData.visible_emails,
+      glue_communication_email: validatedData.glue_communication_email || validatedData.email,
       visible_websites: validatedData.visible_websites,
       is_mod: false,
     });
@@ -99,6 +100,7 @@ export async function POST(request: Request) {
           : validatedData.formatted_address,
         latitude: validatedData.no_address ? null : validatedData.latitude,
         longitude: validatedData.no_address ? null : validatedData.longitude,
+        exhibition_space_preference: validatedData.exhibition_space_preference || null,
       };
 
       const { error: mapError } = await supabase

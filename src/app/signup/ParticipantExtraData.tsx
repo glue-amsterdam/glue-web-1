@@ -27,6 +27,10 @@ export const participantExtraDataSchema = z.object({
     .optional(),
   social_media: z.record(z.string(), z.any()).nullable().optional(),
   visible_emails: z.array(z.string()).max(3, "Only 3 items max").nullable(),
+  glue_communication_email: z
+    .string()
+    .min(1, "Email for practical GLUE communication is required")
+    .email("Please enter a valid email address"),
   visible_websites: z
     .array(z.string())
     .max(3, "Only 3 items max")
@@ -52,6 +56,7 @@ export function ParticipantExtraDataForm({
     defaultValues: {
       phone_numbers: [],
       visible_emails: [],
+      glue_communication_email: "",
       visible_websites: [],
       social_media: {},
     },
@@ -79,6 +84,29 @@ export function ParticipantExtraDataForm({
               </FormControl>
               <FormDescription>
                 Provide a brief description (max 500 characters)
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="glue_communication_email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email for Practical GLUE Communication</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  type="email"
+                  value={typeof field.value === "string" ? field.value : ""}
+                  onChange={(e) => field.onChange(e.target.value)}
+                  placeholder="Enter email for practical GLUE communication"
+                />
+              </FormControl>
+              <FormDescription>
+                This email will be used for practical GLUE communication
               </FormDescription>
               <FormMessage />
             </FormItem>

@@ -16,6 +16,7 @@ const baseUserSchema = z.object({
     })
     .optional(),
   visible_emails: z.array(z.string()).optional(),
+  glue_communication_email: z.string().email().optional(),
   visible_websites: z.array(z.string()).optional(),
 });
 

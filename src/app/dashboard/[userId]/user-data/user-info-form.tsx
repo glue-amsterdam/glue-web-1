@@ -569,6 +569,29 @@ export function UserInfoForm({
 
               <FormField
                 control={form.control}
+                name="glue_communication_email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email for Practical GLUE Communication</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="email"
+                        value={field.value || ""}
+                        className="bg-white text-black"
+                        placeholder="Enter email for practical GLUE communication"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      This email will be used for practical GLUE communication
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="visible_websites"
                 render={({ field }) => (
                   <FormItem>
@@ -605,6 +628,7 @@ export function UserInfoForm({
                 isDirty={form.formState.isDirty}
                 watchFields={[
                   "visible_emails",
+                  "glue_communication_email",
                   "visible_websites",
                   "plan_id",
                   "plan_type",

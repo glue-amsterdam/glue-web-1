@@ -94,8 +94,10 @@ export async function sendModeratorParticipantNotification(
     latitude: number | null;
     longitude: number | null;
     no_address?: boolean;
+    exhibition_space_preference?: string | null;
     social_media?: Record<string, string>;
     visible_emails?: string[];
+    glue_communication_email?: string;
     visible_websites?: string[];
     phone_numbers?: string[];
     email: string;
@@ -109,6 +111,7 @@ export async function sendModeratorParticipantNotification(
       <li>User ID: ${userData.user_id}</li>
       <li>Username: ${userData.user_name || "N/A"}</li>
       <li>Email: ${userData.email}</li>
+      <li>Email for Practical GLUE Communication: ${userData.glue_communication_email || "N/A"}</li>
       <li>Phone Numbers: ${userData.phone_numbers?.join(", ") || "N/A"}</li>
       <li>Social Media: ${
         userData.social_media
@@ -135,6 +138,7 @@ export async function sendModeratorParticipantNotification(
       <li>Latitude: ${userData.latitude || "N/A"}</li>
       <li>Longitude: ${userData.longitude || "N/A"}</li>
       <li>No Address: ${userData.no_address ? "Yes" : "No"}</li>
+      <li>Exhibition Space Preference: ${userData.exhibition_space_preference || "N/A"}</li>
     </ul>
     
     <h2>Invoice Information</h2>

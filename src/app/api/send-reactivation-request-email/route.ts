@@ -109,6 +109,11 @@ export async function POST(request: Request) {
       addressInfo = reactivationData.formatted_address;
     }
 
+    // Format exhibition space preference
+    const exhibitionSpaceInfo = reactivationData.exhibition_space_preference 
+      ? reactivationData.exhibition_space_preference 
+      : "No preference provided";
+
     const adminEmails = config.adminEmails
       .split(",")
       .filter((email) => email.trim() !== "");
@@ -133,6 +138,7 @@ export async function POST(request: Request) {
           <p><strong>User ID:</strong> ${userId}</p>
           <p><strong>Plan:</strong> ${planInfo}</p>
           <p><strong>Address:</strong> ${addressInfo}</p>
+          <p><strong>Exhibition Space Preference:</strong> ${exhibitionSpaceInfo}</p>
           <p><strong>Notes:</strong> ${
             reactivationData.notes || "No notes provided"
           }</p>

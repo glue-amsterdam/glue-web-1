@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import mapboxSdk from "@mapbox/mapbox-sdk/services/geocoding";
 import { MapInfo, mapInfoSchema } from "@/schemas/mapInfoSchemas";
 import { config } from "@/env";
@@ -34,6 +35,7 @@ export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
     resolver: zodResolver(mapInfoSchema),
     defaultValues: {
       no_address: false,
+      exhibition_space_preference: null,
     },
   });
 
@@ -106,14 +108,14 @@ export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
               }}
             />
             <Label htmlFor="no_address">
-              {`I don't have an address, please provide me one`}
+              {`I don't have a location to present during GLUE, please provide me one`}
             </Label>
           </div>
         )}
       />
       {hasAddress && (
         <div>
-          <Label htmlFor="address">{` Address in ${config.cityName}`}</Label>
+          <Label htmlFor="address">{`Location to present during GLUE`}</Label>
           <Controller
             name="formatted_address"
             control={control}
@@ -150,6 +152,29 @@ export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
           )}
         </div>
       )}
+      <div>
+        <Label htmlFor="exhibition_space_preference">
+          What sort of exhibition space would you like to have?
+        </Label>
+        <Controller
+          name="exhibition_space_preference"
+          control={control}
+          render={({ field }) => (
+            <Textarea
+              id="exhibition_space_preference"
+              {...field}
+              value={field.value ?? ""}
+              placeholder="Describe your preferred exhibition space (optional)"
+              className="mt-1 min-h-[100px]"
+            />
+          )}
+        />
+        {errors.exhibition_space_preference && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.exhibition_space_preference.message}
+          </p>
+        )}
+      </div>
       <div className="flex justify-between gap-2 flex-wrap">
         <Button type="button" variant="outline" onClick={onBack}>
           Back
