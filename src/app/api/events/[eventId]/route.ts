@@ -29,10 +29,6 @@ export async function GET(
               slug
             )
           ),
-          event_day:events_days!dayId (
-            label,
-            date
-          ),
           location:map_info!location_id (
             id,
             formatted_address
@@ -40,6 +36,7 @@ export async function GET(
         `
       )
       .eq("id", eventId)
+      .eq("event_day_out", false)
       .single();
 
     if (eventError) {
@@ -49,6 +46,34 @@ export async function GET(
 
     if (!event) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    }
+
+    // Additional check: ensure event is not marked as day-off
+    if (event.event_day_out || event.dayId === "day-off") {
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    }
+
+    // Fetch event day separately (since foreign key constraint was removed)
+    // Only show events that have a valid dayId that exists in events_days
+    let eventDay = null;
+    if (event.dayId) {
+      const { data: dayData, error: dayError } = await supabase
+        .from("events_days")
+        .select("dayId, label, date")
+        .eq("dayId", event.dayId)
+        .single();
+
+      if (!dayError && dayData) {
+        eventDay = { label: dayData.label, date: dayData.date };
+      }
+    }
+
+    // If event doesn't have a valid day, return 404
+    if (!event.dayId || !eventDay) {
+      return NextResponse.json(
+        { error: "Event not found or event day is not valid" },
+        { status: 404 }
+      );
     }
 
     // Fetch co-organizers
@@ -81,8 +106,8 @@ export async function GET(
       type: event.type || "",
       date: {
         dayId: event.dayId,
-        label: event.event_day?.label || "",
-        date: event.event_day?.date || "",
+        label: eventDay?.label || "",
+        date: eventDay?.date || "",
       },
       startTime: event.start_time || "",
       endTime: event.end_time || "",

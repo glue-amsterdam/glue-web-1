@@ -2,7 +2,6 @@ import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { EventDay, eventDaysResponseSchema } from "@/schemas/eventSchemas";
-import { config } from "@/env";
 
 export async function GET() {
   try {
@@ -70,36 +69,51 @@ export async function PUT(request: Request) {
       (dayId: string) => !newDayIds.includes(dayId)
     );
 
-    // Handle image deletion for events associated with days to be removed
+    // Mark events as "day-off" before removing days
+    // This preserves the original day date/time and prevents events from reappearing
+    // if a new day with the same ID is created later
     if (daysToRemove.length > 0) {
-      // Fetch events for days to be removed
-      const { data: eventsToDelete, error: eventsFetchError } = await supabase
-        .from("events")
-        .select("id, image_url, organizer_id")
+      // Fetch the days to be removed to get their date information
+      const { data: daysToRemoveData, error: daysFetchError } = await supabase
+        .from("events_days")
+        .select("dayId, date")
         .in("dayId", daysToRemove);
 
-      if (eventsFetchError) {
+      if (daysFetchError) {
         throw new Error(
-          `Error fetching events for deletion: ${eventsFetchError.message}`
+          `Error fetching days to remove: ${daysFetchError.message}`
         );
       }
 
-      // Delete image files from storage
-      for (const event of eventsToDelete) {
-        if (event.image_url && event.organizer_id) {
-          const filename = event.image_url.split("/").pop();
-          const imagePath = `events/${event.organizer_id}/${filename}`;
-          const { error: deleteError } = await supabase.storage
-            .from(config.bucketName)
-            .remove([imagePath]);
+      // For each day being removed, update associated events
+      for (const day of daysToRemoveData || []) {
+        // Fetch events associated with this day
+        const { data: eventsToUpdate, error: eventsFetchError } = await supabase
+          .from("events")
+          .select("id")
+          .eq("dayId", day.dayId);
 
-          if (deleteError) {
-            console.error(
-              `Failed to delete image for event ${event.id}: ${deleteError.message}`
+        if (eventsFetchError) {
+          throw new Error(
+            `Error fetching events for day ${day.dayId}: ${eventsFetchError.message}`
+          );
+        }
+
+        // Update events: mark as day-off, preserve original day date, set dayId to 'day-off'
+        if (eventsToUpdate && eventsToUpdate.length > 0) {
+          const { error: updateError } = await supabase
+            .from("events")
+            .update({
+              event_day_out: true,
+              event_day_time: day.date ? new Date(day.date).toISOString() : null,
+              dayId: "day-off",
+            })
+            .eq("dayId", day.dayId);
+
+          if (updateError) {
+            throw new Error(
+              `Error updating events for day ${day.dayId}: ${updateError.message}`
             );
-            // Log the error but continue with the process
-          } else {
-            console.log(`Successfully deleted image for event ${event.id}`);
           }
         }
       }
@@ -128,7 +142,9 @@ export async function PUT(request: Request) {
       }
     }
 
-    // Remove days (this will cascade delete associated events)
+    // Remove days (events are preserved - their dayId will remain but point to a deleted day)
+    // Note: If the database has ON DELETE CASCADE constraint, events will still be deleted
+    // This constraint needs to be changed in the database to preserve events
     for (const dayId of daysToRemove) {
       const { error: deleteError } = await supabase
         .from("events_days")

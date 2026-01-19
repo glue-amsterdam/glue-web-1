@@ -22,9 +22,10 @@ import { useRouter } from "next/navigation";
 
 interface EventDaysFormProps {
   initialData: { eventDays: EventDay[] };
+  onDataUpdated?: () => void;
 }
 
-export default function MainDaysForm({ initialData }: EventDaysFormProps) {
+export default function MainDaysForm({ initialData, onDataUpdated }: EventDaysFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -50,6 +51,7 @@ export default function MainDaysForm({ initialData }: EventDaysFormProps) {
 
   useEffect(() => {
     // Only reset if the form is not dirty to avoid losing user changes
+    // This ensures the form stays in sync with the initialData prop
     if (!methods.formState.isDirty) {
       reset(initialData);
     }
@@ -64,15 +66,22 @@ export default function MainDaysForm({ initialData }: EventDaysFormProps) {
 
   const onSubmit = createSubmitHandler<{ eventDays: EventDay[] }>(
     "/api/admin/main/days",
-    async (data) => {
+    async (responseData) => {
       toast({
         title: "Event days updated",
         description:
           "The event day labels and dates have been successfully updated.",
       });
 
-      // Reset the form with the submitted data to clear dirty state
-      reset(data);
+      // Notify parent component to reload data first
+      if (onDataUpdated) {
+        onDataUpdated();
+      }
+      
+      // Reset the form with the server response to clear dirty state
+      // This ensures the form is in sync with what the server returned
+      reset(responseData);
+      
       router.refresh();
     },
     (error) => {

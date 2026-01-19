@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import MainDaysForm from "./MainDaysForm";
 import { EventDay } from "@/schemas/eventSchemas";
 import MainTextForm, { HomeTextFormValues } from "./MainTextForm";
@@ -28,8 +28,7 @@ export default function MainClientPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [dataKey, setDataKey] = useState(0); // Add a key to force re-render when data changes
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = async () => {
       try {
         const [
           eventDaysRes,
@@ -77,7 +76,21 @@ export default function MainClientPage() {
       }
     };
 
+  useEffect(() => {
     fetchData();
+  }, []);
+
+  const handleEventDaysUpdate = useCallback(() => {
+    // Fetch only event days data and update state
+    fetch(`${config.baseApiUrl}/admin/main/days`)
+      .then((res) => res.json())
+      .then((data) => {
+        setEventDays(data.eventDays || []);
+        setDataKey((prev) => prev + 1);
+      })
+      .catch((error) => {
+        console.error("Error refreshing event days:", error);
+      });
   }, []);
 
   if (isLoading) {
@@ -100,7 +113,11 @@ export default function MainClientPage() {
         <AdminHeader />
         <AdminBackHeader backLink="/admin" sectionTitle="Main" />
         {eventDays && (
-          <MainDaysForm key={`days-${dataKey}`} initialData={{ eventDays }} />
+          <MainDaysForm 
+            key={`days-${dataKey}`} 
+            initialData={{ eventDays }}
+            onDataUpdated={handleEventDaysUpdate}
+          />
         )}
         {homeText && (
           <MainTextForm key={`text-${dataKey}`} initialData={homeText} />
