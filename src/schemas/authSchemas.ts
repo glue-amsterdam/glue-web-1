@@ -46,6 +46,7 @@ const mapInfoSchema = z.object({
   formatted_address: z.string().nullable(),
   latitude: z.number().nullable(),
   longitude: z.number().nullable(),
+  exhibition_space_preference: z.string().nullable().optional(),
 });
 
 export const userSchema = z.discriminatedUnion("plan_type", [
