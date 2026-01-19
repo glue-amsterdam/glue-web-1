@@ -1,8 +1,11 @@
-import { sendParticipantAcceptedEmail } from "@/components/emails/participant-details-emails";
 import { config } from "@/env";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import {
+  getEmailTemplateWithFallback,
+  processEmailTemplate,
+} from "@/utils/email-templates";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -39,11 +42,18 @@ export async function POST(request: Request) {
     }
 
     try {
+      const template = await getEmailTemplateWithFallback(
+        "participant-accepted"
+      );
+      const htmlContent = processEmailTemplate(template.html_content, {
+        email: user.email,
+      });
+
       await resend.emails.send({
         from: `GLUE <${config.baseEmail}>`,
         to: user.email,
-        subject: "Your Participant Application Has Been Accepted",
-        html: sendParticipantAcceptedEmail(user.email),
+        subject: template.subject,
+        html: htmlContent,
       });
     } catch (emailError) {
       console.error("Error sending email:", emailError);

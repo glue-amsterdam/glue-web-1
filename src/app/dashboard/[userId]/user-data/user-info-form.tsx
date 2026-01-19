@@ -215,8 +215,23 @@ export function UserInfoForm({
             }),
           }
         );
-        if (!createRes.ok)
-          throw new Error("Failed to create participant details");
+      if (!createRes.ok)
+        throw new Error("Failed to create participant details");
+      }
+
+      // 3. Send acceptance email
+      try {
+        const emailRes = await fetch("/api/send-participant-accepted-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: targetUserId }),
+        });
+        if (!emailRes.ok) {
+          console.warn("Failed to send acceptance email, but upgrade was successful");
+        }
+      } catch (emailError) {
+        console.error("Error sending acceptance email:", emailError);
+        // Don't fail the upgrade if email fails
       }
 
       toast({

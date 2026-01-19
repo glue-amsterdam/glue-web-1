@@ -4,6 +4,7 @@ const adminSections = [
   { name: "Main", href: "/admin/main" },
   { name: "About", href: "/admin/about" },
   { name: "Plans", href: "/admin/plans" },
+  { name: "Email Templates", href: "/admin/email-templates" },
   { name: "Terms and Conditions", href: "/admin/terms" },
 ];
 
