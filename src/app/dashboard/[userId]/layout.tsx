@@ -14,7 +14,7 @@ export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
-  params: { userId?: string };
+  params: Promise<{ userId: string }>;
 }) {
   const supabase = await createClient();
   const paramsData = await params;

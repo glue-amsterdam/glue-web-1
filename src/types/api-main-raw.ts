@@ -2,6 +2,7 @@ import { z } from "zod";
 import { mainSectionSchema } from "@/schemas/mainSchema";
 
 // Create a partial version of the schema that allows undefined fields
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const partialMainSectionSchema = mainSectionSchema.partial();
 
 // Define the type based on the partial schema
@@ -48,4 +49,5 @@ export type ApiMainSectionData = {
   eventDays?: ApiEventDay[];
   homeText?: { id: string; label: string; color?: string | null } | null;
   pressKitLinks?: ApiPressKitLinks;
+  currentTourStatus?: "new" | "older";
 };

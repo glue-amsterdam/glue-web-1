@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const realUserId = authData.user.id; // The real user_id
 
     // Insert user info
-    const { error: profileError } = await supabase.from("user_info").insert({
+    const userInfoData: Record<string, unknown> = {
       user_id: realUserId,
       user_name: validatedData.user_name || "",
       plan_id: validatedData.plan_id,
@@ -40,7 +40,16 @@ export async function POST(request: Request) {
       visible_emails: validatedData.visible_emails,
       visible_websites: validatedData.visible_websites,
       is_mod: false,
-    });
+    };
+
+    // Add glue_communication_email if it exists in validatedData (safe access)
+    if ("glue_communication_email" in validatedData && validatedData.glue_communication_email) {
+      userInfoData.glue_communication_email = validatedData.glue_communication_email;
+    } else {
+      userInfoData.glue_communication_email = validatedData.email;
+    }
+
+    const { error: profileError } = await supabase.from("user_info").insert(userInfoData);
     if (profileError) throw new Error(`Profile Error: ${profileError.message}`);
 
     // Handle invoice data
@@ -90,7 +99,6 @@ export async function POST(request: Request) {
         throw new Error(`Participant Error: ${participantError.message}`);
 
       // Handle map info
-
       const mapData = {
         user_id: realUserId,
         no_address: validatedData.no_address,
@@ -99,6 +107,7 @@ export async function POST(request: Request) {
           : validatedData.formatted_address,
         latitude: validatedData.no_address ? null : validatedData.latitude,
         longitude: validatedData.no_address ? null : validatedData.longitude,
+        exhibition_space_preference: validatedData.exhibition_space_preference || null,
       };
 
       const { error: mapError } = await supabase

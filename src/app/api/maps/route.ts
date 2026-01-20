@@ -22,13 +22,37 @@ export async function GET() {
     // Extract user_ids from map_info
     const userIds = mapData.map((item) => item.user_id);
 
-    // 2. Fetch participant_details for these user_ids and filter for accepted status
-    const { data: participantDetails, error: participantError } = await supabase
+    // Fetch tour status to determine filtering logic
+    const { data: tourStatus, error: tourStatusError } = await supabase
+      .from("tour_status")
+      .select("current_tour_status")
+      .single();
+
+    if (tourStatusError) {
+      console.error("Error fetching tour status:", tourStatusError);
+      // Default to "new" if tour status fetch fails
+    }
+
+    const currentTourStatus = tourStatus?.current_tour_status || "new";
+
+    // 2. Fetch participant_details for these user_ids and filter based on tour status
+    let participantQuery = supabase
       .from("participant_details")
       .select("user_id, status, is_active")
       .in("user_id", userIds)
-      .eq("status", "accepted")
-      .eq("is_active", true);
+      .eq("status", "accepted");
+
+    // Filter by tour status
+    // If "new": filter by is_active = true
+    // If "older": filter by was_active_last_year = true
+    if (currentTourStatus === "new") {
+      participantQuery = participantQuery.eq("is_active", true);
+    } else if (currentTourStatus === "older") {
+      participantQuery = participantQuery.eq("was_active_last_year", true);
+    }
+
+    const { data: participantDetails, error: participantError } =
+      await participantQuery;
 
     if (participantError) {
       console.error("Error fetching participant details:", participantError);

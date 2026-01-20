@@ -16,6 +16,7 @@ const baseUserSchema = z.object({
     })
     .optional(),
   visible_emails: z.array(z.string()).optional(),
+  glue_communication_email: z.string().email().optional(),
   visible_websites: z.array(z.string()).optional(),
 });
 
@@ -45,6 +46,7 @@ const mapInfoSchema = z.object({
   formatted_address: z.string().nullable(),
   latitude: z.number().nullable(),
   longitude: z.number().nullable(),
+  exhibition_space_preference: z.string().nullable().optional(),
 });
 
 export const userSchema = z.discriminatedUnion("plan_type", [

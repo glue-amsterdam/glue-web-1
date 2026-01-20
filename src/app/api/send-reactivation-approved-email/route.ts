@@ -2,7 +2,10 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { config } from "@/env";
-import { sendReactivationApprovedEmail } from "@/components/emails/participant-details-emails";
+import {
+  getEmailTemplateWithFallback,
+  processEmailTemplate,
+} from "@/utils/email-templates";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -133,11 +136,19 @@ export async function POST(request: Request) {
 
     // Send email to participant
     try {
+      const template = await getEmailTemplateWithFallback(
+        "participant-reactivated"
+      );
+      const htmlContent = processEmailTemplate(template.html_content, {
+        email: user.email,
+        user_name: userData.user_name || user.email,
+      });
+
       await resend.emails.send({
         from: `GLUE <${config.baseEmail}>`,
         to: user.email,
-        subject: "Your GLUE Account Has Been Reactivated",
-        html: sendReactivationApprovedEmail(userData.user_name, user.email),
+        subject: template.subject,
+        html: htmlContent,
       });
     } catch (emailError) {
       console.error("Error sending reactivation email:", emailError);

@@ -31,44 +31,118 @@ export async function GET() {
       });
     }
 
-    // Llama al nuevo RPC que ya trae todo lo necesario
-    const { data: participants, error: participantsError } = await supabase.rpc(
-      "get_random_participants_full",
-      {
-        limit_count: 20,
-      }
-    );
+    // Fetch tour status to determine filtering logic
+    const { data: tourStatus, error: tourStatusError } = await supabase
+      .from("tour_status")
+      .select("current_tour_status")
+      .single();
+
+    if (tourStatusError) {
+      console.error("Error fetching tour status:", tourStatusError);
+      // Default to "new" if tour status fetch fails
+    }
+
+    const currentTourStatus = tourStatus?.current_tour_status || "new";
+
+    // Query participants based on tour status
+    // If "new": filter by is_active = true
+    // If "older": filter by was_active_last_year = true
+    let participantQuery = supabase
+      .from("participant_details")
+      .select(
+        `
+        slug,
+        user_id,
+        status,
+        short_description,
+        user_info!participant_details_user_id_fkey (
+          user_id,
+          user_name
+        )
+      `
+      )
+      .eq("status", "accepted");
+
+    if (currentTourStatus === "new") {
+      participantQuery = participantQuery.eq("is_active", true);
+    } else if (currentTourStatus === "older") {
+      participantQuery = participantQuery.eq("was_active_last_year", true);
+    }
+
+    const { data: participantsData, error: participantsError } =
+      await participantQuery;
 
     if (participantsError) {
       console.error("Error fetching participants:", participantsError);
       throw participantsError;
     }
 
-    interface ParticipantResponse {
-      slug: string;
-      status: "accepted" | "pending" | "rejected";
-      short_description: string;
-      user_id: string;
-      image_url: string | null;
-      user_name: string;
+    if (!participantsData || participantsData.length === 0) {
+      return NextResponse.json({
+        headerData,
+        participants: [],
+      });
     }
 
-    // Transforma los datos para el frontend
-    const transformedParticipants = participants.map(
-      (participant: ParticipantResponse) => ({
+    // Shuffle participants randomly and limit to 20
+    const shuffled = [...participantsData].sort(() => Math.random() - 0.5);
+    const participants = shuffled.slice(0, 20);
+
+    // Define type for participant data
+    type ParticipantData = {
+      slug: string | null;
+      user_id: string;
+      status: string;
+      short_description: string | null;
+      user_info: {
+        user_id: string;
+        user_name: string;
+      } | {
+        user_id: string;
+        user_name: string;
+      }[];
+    };
+
+    // Fetch participant images separately (no foreign key relationship exists)
+    const participantIds = participants.map((p: ParticipantData) => p.user_id);
+    const { data: imageData, error: imageError } = await supabase
+      .from("participant_image")
+      .select("user_id, image_url")
+      .in("user_id", participantIds);
+
+    if (imageError) {
+      console.error("Error fetching participant images:", imageError);
+      // Don't throw - continue without images
+    }
+
+    // Create image lookup map
+    const imageMap = new Map<string, string>();
+    imageData?.forEach((image) => {
+      if (!imageMap.has(image.user_id)) {
+        imageMap.set(image.user_id, image.image_url);
+      }
+    });
+
+    // Transform data for frontend
+    const transformedParticipants = participants.map((participant: ParticipantData) => {
+      const userInfo = Array.isArray(participant.user_info)
+        ? participant.user_info[0]
+        : participant.user_info;
+
+      return {
         slug: participant.slug || "",
         short_description: participant.short_description || "",
-        userName: participant.user_name || "Unknown User",
+        userName: userInfo?.user_name || "Unknown User",
         image: {
-          image_url: participant.image_url || "/placeholder.jpg",
+          image_url: imageMap.get(participant.user_id) || "/placeholder.jpg",
           alt: `${
-            participant.user_name || "Unknown User"
+            userInfo?.user_name || "Unknown User"
           } profile image - participant from GLUE design routes in ${
             config.cityName
           }`,
         },
-      })
-    );
+      };
+    });
 
     const response = {
       headerData,

@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import mapboxSdk from "@mapbox/mapbox-sdk/services/geocoding";
 import { MapInfo, mapInfoSchema } from "@/schemas/mapInfoSchemas";
@@ -102,7 +103,7 @@ function FormFields() {
               onCheckedChange={field.onChange}
             />
             <Label htmlFor="no_address">
-              {`I don't have an address, please provide me one`}
+              {`I don't have a location to present during GLUE, please provide me one`}
             </Label>
           </div>
         )}
@@ -110,7 +111,7 @@ function FormFields() {
 
       {!noAddress && (
         <div>
-          <Label htmlFor="address">{`Address in ${config.cityName}`}</Label>
+          <Label htmlFor="address">{`Location to present during GLUE`}</Label>
           <Controller
             name="formatted_address"
             control={control}
@@ -146,6 +147,25 @@ function FormFields() {
           )}
         </div>
       )}
+
+      <div>
+        <Label htmlFor="exhibition_space_preference">
+          What sort of exhibition space would you like to have?
+        </Label>
+        <Controller
+          name="exhibition_space_preference"
+          control={control}
+          render={({ field }) => (
+            <Textarea
+              id="exhibition_space_preference"
+              {...field}
+              value={field.value ?? ""}
+              placeholder="Describe your preferred exhibition space (optional)"
+              className="mt-1 min-h-[100px]"
+            />
+          )}
+        />
+      </div>
     </>
   );
 }
@@ -166,6 +186,9 @@ export function MapInfoForm({ initialData, targetUserId }: MapInfoFormProps) {
       latitude: isError ? null : initialData?.latitude || null,
       longitude: isError ? null : initialData?.longitude || null,
       no_address: isError ? true : initialData?.no_address || false,
+      exhibition_space_preference: isError
+        ? null
+        : initialData?.exhibition_space_preference || null,
     },
   });
 
@@ -229,6 +252,7 @@ export function MapInfoForm({ initialData, targetUserId }: MapInfoFormProps) {
                   "latitude",
                   "longitude",
                   "no_address",
+                  "exhibition_space_preference",
                 ]}
                 isSubmitting={isSubmitting}
                 label={

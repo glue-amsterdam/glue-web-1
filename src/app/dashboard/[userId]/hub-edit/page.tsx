@@ -195,16 +195,16 @@ export default function HubsList() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
+            <AlertDialogTitle className="text-black">
               Are you sure you want to delete this hub?
             </AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="text-black">
               This action cannot be undone. This will permanently delete the hub
               and remove all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="text-black">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteHub}>
               Delete
             </AlertDialogAction>

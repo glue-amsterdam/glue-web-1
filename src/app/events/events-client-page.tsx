@@ -17,8 +17,10 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function EventsClientPage({
   params,
+  headerTitle,
 }: {
   params: URLSearchParams;
+  headerTitle: string;
 }) {
   useSetPageDataset("upButton");
   /* STATES - REFERENCES - HOOKS CALL*/
@@ -84,7 +86,7 @@ export default function EventsClientPage({
           id="main-block-container"
           className="container mx-auto px-4 pt-[6rem] opacity-0"
         >
-          <EventHeader />
+          <EventHeader headerTitle={headerTitle} />
           <section aria-label="Event search and filters">
             <SearchAndFilter />
           </section>

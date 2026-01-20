@@ -7,6 +7,7 @@ interface UserInfo {
   user_id: string;
   user_name: string;
   visible_emails: string[] | null;
+  glue_communication_email: string | null;
   plan_type: string;
   is_mod: boolean;
   created_at: string;
@@ -63,6 +64,7 @@ export async function GET() {
           "user_id",
           "user_name",
           "visible_emails",
+          "glue_communication_email",
           "plan_type",
           "is_mod",
           "created_at",

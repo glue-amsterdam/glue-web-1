@@ -70,7 +70,7 @@ export default function RoutesPage() {
           title: "Success",
           description: "Route deleted successfully.",
         });
-      } catch (error) {
+      } catch {
         toast({
           title: "Error",
           description: "Failed to delete route. Please try again.",

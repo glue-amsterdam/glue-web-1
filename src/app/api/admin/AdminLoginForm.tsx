@@ -45,7 +45,7 @@ const AdminLoginForm = () => {
       } else {
         throw new Error("Login failed");
       }
-    } catch (error) {
+    } catch {
       form.setError("root", {
         type: "manual",
         message: "Invalid username or password",

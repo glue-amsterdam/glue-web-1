@@ -73,7 +73,7 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
         title: "Plan created",
         description: `${data.plan_label} plan has been successfully created.`,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to create the plan. Please try again.",

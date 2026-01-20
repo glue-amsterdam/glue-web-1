@@ -215,8 +215,23 @@ export function UserInfoForm({
             }),
           }
         );
-        if (!createRes.ok)
-          throw new Error("Failed to create participant details");
+      if (!createRes.ok)
+        throw new Error("Failed to create participant details");
+      }
+
+      // 3. Send acceptance email
+      try {
+        const emailRes = await fetch("/api/send-participant-accepted-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: targetUserId }),
+        });
+        if (!emailRes.ok) {
+          console.warn("Failed to send acceptance email, but upgrade was successful");
+        }
+      } catch (emailError) {
+        console.error("Error sending acceptance email:", emailError);
+        // Don't fail the upgrade if email fails
       }
 
       toast({
@@ -225,7 +240,7 @@ export function UserInfoForm({
       });
       await mutate(`/api/users/participants/${targetUserId}/info`);
       router.refresh();
-    } catch (e) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to approve upgrade.",
@@ -260,7 +275,7 @@ export function UserInfoForm({
       });
       await mutate(`/api/users/participants/${targetUserId}/info`);
       router.refresh();
-    } catch (e) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to reject upgrade.",
@@ -569,6 +584,29 @@ export function UserInfoForm({
 
               <FormField
                 control={form.control}
+                name="glue_communication_email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email for Practical GLUE Communication</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="email"
+                        value={field.value || ""}
+                        className="bg-white text-black"
+                        placeholder="Enter email for practical GLUE communication"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      This email will be used for practical GLUE communication
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="visible_websites"
                 render={({ field }) => (
                   <FormItem>
@@ -605,6 +643,7 @@ export function UserInfoForm({
                 isDirty={form.formState.isDirty}
                 watchFields={[
                   "visible_emails",
+                  "glue_communication_email",
                   "visible_websites",
                   "plan_id",
                   "plan_type",

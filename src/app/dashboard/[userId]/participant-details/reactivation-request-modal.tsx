@@ -81,6 +81,7 @@ export function ReactivationRequestModal({
       longitude: null,
       no_address: true,
       notes: "",
+      exhibition_space_preference: null,
     },
   });
 
@@ -263,7 +264,7 @@ export function ReactivationRequestModal({
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>{`I don't have an address, please provide me one`}</FormLabel>
+                      <FormLabel>{`I don't have a location to present during GLUE, please provide me one`}</FormLabel>
                     </div>
                   </FormItem>
                 )}
@@ -275,7 +276,7 @@ export function ReactivationRequestModal({
                   name="formatted_address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{`Address in ${config.cityName}`}</FormLabel>
+                      <FormLabel>{`Location to present during GLUE`}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
@@ -310,6 +311,27 @@ export function ReactivationRequestModal({
                 />
               )}
             </div>
+
+            <FormField
+              control={form.control}
+              name="exhibition_space_preference"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    What sort of exhibition space would you like to have?
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Describe your preferred exhibition space (optional)"
+                      className="min-h-[100px]"
+                      {...field}
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

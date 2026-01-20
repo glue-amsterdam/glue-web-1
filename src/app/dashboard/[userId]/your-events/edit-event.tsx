@@ -33,8 +33,11 @@ import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { config } from "@/env";
 import { CoOrganizerSearch } from "@/app/dashboard/components/co-organizers-search";
 import { LocationSelector } from "@/app/dashboard/[userId]/create-events/location-selector";
-import { useEventsDays } from "@/app/context/MainContext";
 import Image from "next/image";
+import useSWR from "swr";
+import type { EventDay } from "@/schemas/eventSchemas";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 interface EditEventFormProps {
   event: EventType;
@@ -51,7 +54,12 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const eventDays = useEventsDays();
+  // Fetch current event days (always from events_days table, not from snapshot)
+  // Dashboard should always use current days for creating/editing events
+  const { data: eventDays = [] } = useSWR<EventDay[]>(
+    "/api/events/days/current",
+    fetcher
+  );
 
   const form = useForm<EventType>({
     resolver: zodResolver(eventSchema),

@@ -19,6 +19,7 @@ import {
 } from "@/app/signup/ParticipantExtraData";
 import { MapInfo, mapInfoSchema } from "@/schemas/mapInfoSchemas";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const participantUserSchema = z
   .object({
     plan_id: z.enum(["planId-2", "planId-3", "planId-4", "planId-5"]),

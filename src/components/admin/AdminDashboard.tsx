@@ -1,9 +1,13 @@
 import { Link } from "next-view-transitions";
 
 const adminSections = [
+  { name: "Tour Management", href: "/admin/tour-management" },
   { name: "Main", href: "/admin/main" },
   { name: "About", href: "/admin/about" },
+  { name: "Events", href: "/admin/events" },
   { name: "Plans", href: "/admin/plans" },
+  { name: "Email Templates", href: "/admin/email-templates" },
+  { name: "Terms and Conditions", href: "/admin/terms" },
 ];
 
 export default function AdminDashboard() {
