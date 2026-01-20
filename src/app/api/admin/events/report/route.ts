@@ -76,12 +76,24 @@ export async function GET() {
 
     const coOrganizerResults = await Promise.all(coOrganizerPromises);
 
+    // Utility function to handle both single item and array
+    const ensureSingle = <T,>(data: T | T[]): T | null => {
+      if (Array.isArray(data)) {
+        return data[0] || null;
+      }
+      return data || null;
+    };
+
     // Format events for report
     const reportData = (events || []).map((event, index) => {
       // Get day information - use event_day_time if dayId doesn't exist in current days
       const dayInfo = eventDaysMap.get(event.dayId);
       const dayDate = dayInfo?.date || event.event_day_time || null;
       const dayLabel = dayInfo?.label || event.dayId || "N/A";
+
+      // Handle organizer (can be array or single object)
+      const organizer = ensureSingle(event.organizer);
+      const location = ensureSingle(event.location);
 
       return {
         id: event.id,
@@ -94,8 +106,8 @@ export async function GET() {
           : "N/A",
         startTime: event.start_time || "N/A",
         endTime: event.end_time || "N/A",
-        organizer: event.organizer?.user_name || "Unknown",
-        location: event.location?.formatted_address || "N/A",
+        organizer: organizer?.user_name || "Unknown",
+        location: location?.formatted_address || "N/A",
         coOrganizers:
           coOrganizerResults[index]?.data
             ?.map((co) => co.user_name)

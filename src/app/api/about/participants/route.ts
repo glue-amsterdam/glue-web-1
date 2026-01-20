@@ -88,8 +88,23 @@ export async function GET() {
     const shuffled = [...participantsData].sort(() => Math.random() - 0.5);
     const participants = shuffled.slice(0, 20);
 
+    // Define type for participant data
+    type ParticipantData = {
+      slug: string | null;
+      user_id: string;
+      status: string;
+      short_description: string | null;
+      user_info: {
+        user_id: string;
+        user_name: string;
+      } | {
+        user_id: string;
+        user_name: string;
+      }[];
+    };
+
     // Fetch participant images separately (no foreign key relationship exists)
-    const participantIds = participants.map((p: any) => p.user_id);
+    const participantIds = participants.map((p: ParticipantData) => p.user_id);
     const { data: imageData, error: imageError } = await supabase
       .from("participant_image")
       .select("user_id, image_url")
@@ -109,7 +124,7 @@ export async function GET() {
     });
 
     // Transform data for frontend
-    const transformedParticipants = participants.map((participant: any) => {
+    const transformedParticipants = participants.map((participant: ParticipantData) => {
       const userInfo = Array.isArray(participant.user_info)
         ? participant.user_info[0]
         : participant.user_info;

@@ -85,7 +85,7 @@ export async function GET() {
         `Error fetching press_kit_links: ${pressKitLinks.error.message}`
       );
     const mainColorsData = mainColors.data?.[0] as MainColors;
-    const eventsDaysData = eventsDays.data;
+    const eventsDaysData = eventsDays.data || [];
     const mainMenuData = mainMenu.data;
     const homeTextData = homeText.data?.[0] || null;
     const pressKitLinksData = pressKitLinks.data;

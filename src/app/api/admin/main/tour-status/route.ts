@@ -136,7 +136,17 @@ export async function PUT(request: Request) {
 
       try {
         // Fetch the complete processed map data for the current tour
-        mapInfoSnapshot = await fetchMapInfo(supabase);
+        const mapInfo = await fetchMapInfo(supabase);
+        // Transform to match snapshot type (convert undefined to null for optional fields)
+        mapInfoSnapshot = mapInfo.map((location) => ({
+          ...location,
+          participants: location.participants.map((participant) => ({
+            ...participant,
+            slug: participant.slug ?? null,
+            image_url: participant.image_url ?? null,
+            display_number: participant.display_number ?? null,
+          })),
+        }));
       } catch (mapError) {
         console.error("Error fetching map info for snapshot:", mapError);
         return NextResponse.json(

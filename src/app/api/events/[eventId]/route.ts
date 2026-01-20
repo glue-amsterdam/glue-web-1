@@ -109,10 +109,6 @@ export async function GET(
           }
         }
       }
-
-      if (!dayError && dayData) {
-        eventDay = { label: dayData.label, date: dayData.date };
-      }
     }
 
     // If event doesn't have a valid day, return 404

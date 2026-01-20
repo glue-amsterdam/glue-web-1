@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -553,21 +554,26 @@ export const EmailRichTextEditor = ({
                 <Label className="text-black text-sm font-semibold mb-2 block">
                   Preview
                 </Label>
-                <img
-                  src={imageUrl}
-                  alt="Preview"
-                  style={{
-                    width: imageWidth || "auto",
-                    height: imageHeight || "auto",
-                    maxWidth: "100%",
-                    display: "block",
-                  }}
-                  className="mx-auto"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = "none";
-                  }}
-                />
+                <div className="mx-auto relative" style={{ maxWidth: "100%" }}>
+                  <Image
+                    src={imageUrl}
+                    alt="Preview"
+                    width={imageWidth ? parseInt(imageWidth.toString()) : 800}
+                    height={imageHeight ? parseInt(imageHeight.toString()) : 600}
+                    className="mx-auto"
+                    style={{
+                      width: imageWidth || "auto",
+                      height: imageHeight || "auto",
+                      maxWidth: "100%",
+                      display: "block",
+                      objectFit: "contain",
+                    }}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = "none";
+                    }}
+                  />
+                </div>
               </div>
             )}
           </div>

@@ -218,7 +218,6 @@ export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]>
   }
 
   // DEBUG: Check how many participants have map_info
-  const participantUserIds = new Set(participantData.map((p) => p.user_id));
   const mapInfoUserIds = new Set(mapInfoData.map((m) => m.user_id));
   const participantsWithMapInfo = participantData.filter((p) =>
     mapInfoUserIds.has(p.user_id)

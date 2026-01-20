@@ -34,7 +34,65 @@ export async function GET(
 
   try {
     const supabase = await createClient();
-    const { data, error: participantError } = (await supabase
+
+    // Fetch tour status to determine filtering logic
+    const { data: tourStatus, error: tourStatusError } = await supabase
+      .from("tour_status")
+      .select("current_tour_status")
+      .single();
+
+    if (tourStatusError) {
+      console.error("Error fetching tour status:", tourStatusError);
+      // Default to "new" if tour status fetch fails
+    }
+
+    const currentTourStatus = tourStatus?.current_tour_status || "new";
+
+    // First, get the participant by slug to check if they exist and get their user_id
+    const { data: participantForStickyCheck, error: participantCheckError } =
+      await supabase
+        .from("participant_details")
+        .select("user_id")
+        .eq("slug", slug)
+        .eq("status", "accepted")
+        .single();
+
+    if (participantCheckError) {
+      if (participantCheckError.code === "PGRST116") {
+        return NextResponse.json(
+          { error: "Participant not found" },
+          { status: 404 }
+        );
+      }
+      throw participantCheckError;
+    }
+
+    if (!participantForStickyCheck?.user_id) {
+      return NextResponse.json(
+        { error: "Participant not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check if participant is sticky by looking at sticky_group_participants table
+    const { data: stickyData, error: stickyError } = await supabase
+      .from("sticky_group_participants")
+      .select("participant_user_id")
+      .eq("participant_user_id", participantForStickyCheck.user_id);
+
+    // Determine if participant is sticky based on presence in sticky_group_participants
+    // If stickyError is PGRST116 (no rows found), participant is not sticky
+    // If stickyData has any rows, participant is sticky
+    const isSticky = !stickyError && stickyData && stickyData.length > 0;
+
+    // Build query based on tour status
+    // Sticky participants are always accessible (no tour status filter)
+    // Non-sticky participants must match tour status:
+    // If "new": filter by is_active = true
+    // If "older": filter by was_active_last_year = true OR is_active = true
+    //   (This allows new active users to see their profile even in "older" mode,
+    //   and previous year participants to remain visible)
+    let participantQuery = supabase
       .from("participant_details")
       .select(
         `
@@ -56,8 +114,24 @@ export async function GET(
       `
       )
       .eq("slug", slug)
-      .or("is_active.eq.true")
-      .single()) as { data: ParticipantDetails | null; error: PostgrestError };
+      .eq("status", "accepted");
+
+    // If not sticky, apply tour status filter
+    if (!isSticky) {
+      if (currentTourStatus === "new") {
+        participantQuery = participantQuery.eq("is_active", true);
+      } else if (currentTourStatus === "older") {
+        // Show participants from last year OR active users (new users editing their profile)
+        participantQuery = participantQuery.or(
+          "was_active_last_year.eq.true,is_active.eq.true"
+        );
+      }
+    }
+
+    const { data, error: participantError } = (await participantQuery.single()) as {
+      data: ParticipantDetails | null;
+      error: PostgrestError;
+    };
 
     if (participantError) {
       if (participantError.code === "PGRST116") {
@@ -82,17 +156,6 @@ export async function GET(
     if (!data.user_id) {
       return NextResponse.json({ error: "User ID not found" }, { status: 404 });
     }
-
-    // Check if participant is sticky by looking at sticky_group_participants table
-    const { data: stickyData, error: stickyError } = await supabase
-      .from("sticky_group_participants")
-      .select("participant_user_id")
-      .eq("participant_user_id", data.user_id);
-
-    // Determine if participant is sticky based on presence in sticky_group_participants
-    // If stickyError is PGRST116 (no rows found), participant is not sticky
-    // If stickyData has any rows, participant is sticky
-    const isSticky = !stickyError && stickyData && stickyData.length > 0;
 
     // Fetch additional related data
     const [imageData, mapInfo, visitingHoursData, events] = await Promise.all([
