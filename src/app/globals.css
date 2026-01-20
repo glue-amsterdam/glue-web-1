@@ -362,17 +362,29 @@
 }
 
 /* STYLES FOR SANITIZED HTML (BEAUTY TEXT EDITOR) */
-.prose.text-black * {
-  color: black !important;
-}
 .prose {
   max-width: none;
 }
-.prose * {
-  color: inherit;
+/* Force black color only for elements without inline color styles */
+.prose.text-black {
+  color: black;
 }
-.prose strong {
+.prose.text-black *:not([style*="color"]) {
+  color: black !important;
+}
+/* All descendants of elements with inline color should inherit that color */
+/* This ensures strong, em, etc. inside colored spans keep the color */
+.prose.text-black [style*="color"] * {
+  color: inherit !important;
+}
+/* Formatting elements */
+.prose strong,
+.prose b {
   font-weight: 600;
+}
+.prose em,
+.prose i {
+  font-style: italic;
 }
 .prose h1,
 .prose h2,

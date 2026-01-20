@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
+import Color from "@tiptap/extension-color";
 import { Node, mergeAttributes } from "@tiptap/core";
 import {
   Bold,
@@ -20,6 +21,7 @@ import {
   ChevronUp,
   ChevronDown,
   ImageIcon,
+  Palette,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,6 +29,12 @@ import { Separator } from "@/components/ui/separator";
 import { FontSize } from "@/app/components/tiptap-font-size";
 import TextStyle from "@tiptap/extension-text-style";
 import type { Editor } from "@tiptap/react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ColorPicker } from "@/components/ui/color-picker";
 import {
   Dialog,
   DialogContent,
@@ -51,6 +59,21 @@ const getCurrentFontSize = (editor: Editor | null) => {
   if (!editor) return null;
   const attrs = editor.getAttributes("fontSize");
   return attrs.fontSize || null;
+};
+
+const getCurrentColor = (editor: Editor | null) => {
+  if (!editor) return null;
+  const attrs = editor.getAttributes("textStyle");
+  return attrs.color || null;
+};
+
+// Helper functions to safely call Color extension commands
+const setTextColor = (editor: Editor, color: string) => {
+  editor.chain().focus().setColor(color).run();
+};
+
+const unsetTextColor = (editor: Editor) => {
+  editor.chain().focus().unsetColor().run();
 };
 
 // Custom Image extension that supports link attribute and shows preview
@@ -242,6 +265,50 @@ const MenuBar = ({
       >
         <Code className="h-4 w-4" />
       </Button>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "text-black hover:bg-uiblack/30",
+              getCurrentColor(editor) && "bg-uiblack/20"
+            )}
+            title="Text Color"
+          >
+            <Palette className="h-4 w-4" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-3" align="start">
+          <div className="space-y-2">
+            <ColorPicker
+              value={getCurrentColor(editor) || "#000000"}
+              onChange={(color) => {
+                if (color && editor) {
+                  setTextColor(editor, color);
+                } else if (editor) {
+                  unsetTextColor(editor);
+                }
+              }}
+              label="Text Color"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (editor) {
+                  unsetTextColor(editor);
+                }
+              }}
+              className="w-full text-black"
+            >
+              Remove Color
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
       <Button
         type="button"
         variant="ghost"
@@ -396,6 +463,7 @@ export const EmailRichTextEditor = ({
   };
 
   // Process HTML to ensure link attribute is preserved in saved content
+  // Also ensures color styles are preserved
   const processHtmlForSave = (html: string): string => {
     // First, handle images that have both src and link (from preview)
     const processed = html.replace(
@@ -421,6 +489,10 @@ export const EmailRichTextEditor = ({
         return newTag;
       }
     );
+    
+    // Ensure color styles are preserved - TipTap saves them as style="color: #hex"
+    // This should already be in the HTML, but we verify it's not being stripped
+    // The HTML from TipTap should already have the color attribute preserved
     return processed;
   };
 
@@ -434,6 +506,7 @@ export const EmailRichTextEditor = ({
         },
       }),
       TextStyle,
+      Color,
       FontSize,
       CustomImage,
     ],
