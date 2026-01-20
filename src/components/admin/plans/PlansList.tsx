@@ -112,7 +112,7 @@ export default function PlansList({ initialPlans }: PlansListProps) {
           title: "Plan deleted",
           description: "The plan has been successfully deleted.",
         });
-      } catch (error) {
+      } catch {
         toast({
           title: "Error",
           description: "Failed to delete the plan. Please try again.",
@@ -145,7 +145,7 @@ export default function PlansList({ initialPlans }: PlansListProps) {
           } for ${updatedPlan.plan_label}.`,
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update the plan. Please try again.",
@@ -165,7 +165,7 @@ export default function PlansList({ initialPlans }: PlansListProps) {
         title: "Plan created",
         description: `${createdPlan.plan_label} has been successfully created.`,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to create the plan. Please try again.",

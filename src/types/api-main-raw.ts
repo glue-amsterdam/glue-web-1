@@ -2,6 +2,7 @@ import { z } from "zod";
 import { mainSectionSchema } from "@/schemas/mainSchema";
 
 // Create a partial version of the schema that allows undefined fields
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const partialMainSectionSchema = mainSectionSchema.partial();
 
 // Define the type based on the partial schema

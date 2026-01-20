@@ -240,7 +240,7 @@ export function UserInfoForm({
       });
       await mutate(`/api/users/participants/${targetUserId}/info`);
       router.refresh();
-    } catch (e) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to approve upgrade.",
@@ -275,7 +275,7 @@ export function UserInfoForm({
       });
       await mutate(`/api/users/participants/${targetUserId}/info`);
       router.refresh();
-    } catch (e) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to reject upgrade.",

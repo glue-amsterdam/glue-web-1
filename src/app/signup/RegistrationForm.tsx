@@ -85,7 +85,7 @@ export default function RegistrationForm({
       } else {
         setError(result.error || "Registration failed");
       }
-    } catch (error) {
+    } catch {
       setError("An error occurred during registration");
     } finally {
       setLoading(false);

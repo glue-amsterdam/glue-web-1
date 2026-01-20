@@ -11,6 +11,7 @@ import {
   EmailPasswordFormData,
 } from "@/app/signup/EmailPasswordForm";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const paidUserSchema = z
   .object({
     plan_id: z.string(),

@@ -72,7 +72,7 @@ export default function PlanEditDialog({
         title: `${data.plan_label} plan updated`,
         description: `${data.plan_label} plan has been successfully updated.`,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: `Failed to update ${data.plan_label} plan. Please try again.`,

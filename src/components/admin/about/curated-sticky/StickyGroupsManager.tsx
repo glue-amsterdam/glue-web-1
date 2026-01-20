@@ -58,7 +58,7 @@ export const StickyGroupsManager = () => {
         const yearsData = await res.json();
         setYears(yearsData);
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to load years.",
@@ -81,7 +81,7 @@ export const StickyGroupsManager = () => {
         const participantsData = await res.json();
         setAllParticipants(participantsData);
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to load participants.",
@@ -118,7 +118,7 @@ export const StickyGroupsManager = () => {
           participants: [],
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to load group data.",

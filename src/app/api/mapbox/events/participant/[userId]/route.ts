@@ -24,7 +24,7 @@ export async function GET(
       );
     }
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "An Error occured fetching participant map" },
       { status: 500 }
