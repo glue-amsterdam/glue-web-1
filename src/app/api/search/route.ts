@@ -40,6 +40,19 @@ export async function GET(request: Request) {
   try {
     const supabase = await createClient();
 
+    // Fetch tour status to determine filtering logic
+    const { data: tourStatus, error: tourStatusError } = await supabase
+      .from("tour_status")
+      .select("current_tour_status")
+      .single();
+
+    if (tourStatusError) {
+      console.error("Error fetching tour status:", tourStatusError);
+      // Default to "new" if tour status fetch fails
+    }
+
+    const currentTourStatus = tourStatus?.current_tour_status || "new";
+
     // Query participants
     const participantsQuery = supabase
       .from("user_info")
@@ -53,8 +66,8 @@ export async function GET(request: Request) {
       .filter("user_name", "ilike", `%${query}%`)
       .limit(5);
 
-    // Query events by title or description
-    const eventsByTitleQuery = supabase
+    // Query events by title or description, filtered by tour status
+    let eventsByTitleQuery = supabase
       .from("events")
       .select(
         `
@@ -67,7 +80,18 @@ export async function GET(request: Request) {
       `
       )
       .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
-      .limit(5);
+      .eq("event_day_out", false);
+
+    // Filter events by tour status
+    // If "new": show only current tour events (is_last_year_event = false)
+    // If "older": show only previous tour events (is_last_year_event = true)
+    if (currentTourStatus === "new") {
+      eventsByTitleQuery = eventsByTitleQuery.eq("is_last_year_event", false);
+    } else if (currentTourStatus === "older") {
+      eventsByTitleQuery = eventsByTitleQuery.eq("is_last_year_event", true);
+    }
+
+    eventsByTitleQuery = eventsByTitleQuery.limit(5);
 
     const [participantsResult, eventsByTitleResult] = await Promise.all([
       participantsQuery,
@@ -93,9 +117,9 @@ export async function GET(request: Request) {
       );
     }
 
-    // Fetch participant details
+    // Fetch participant details, filtered by tour status
     const participantIds = participantsResult.data.map((p) => p.user_id);
-    const participantDetailsQuery = supabase
+    let participantDetailsQuery = supabase
       .from("participant_details")
       .select(
         `
@@ -107,8 +131,19 @@ export async function GET(request: Request) {
       `
       )
       .in("user_id", participantIds)
-      .eq("is_active", true)
       .eq("status", "accepted");
+
+    // Filter participants by tour status
+    // If "new": filter by is_active = true
+    // If "older": filter by was_active_last_year = true
+    if (currentTourStatus === "new") {
+      participantDetailsQuery = participantDetailsQuery.eq("is_active", true);
+    } else if (currentTourStatus === "older") {
+      participantDetailsQuery = participantDetailsQuery.eq(
+        "was_active_last_year",
+        true
+      );
+    }
 
     // Fetch participant images
     const participantImagesQuery = supabase

@@ -5,7 +5,8 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    // First, fetch accepted participants
+    // For hub creation/editing, always show only currently active participants
+    // regardless of tour_status - hubs are for active tour management
     const { data: acceptedParticipants, error: participantError } =
       await supabase
         .from("participant_details")

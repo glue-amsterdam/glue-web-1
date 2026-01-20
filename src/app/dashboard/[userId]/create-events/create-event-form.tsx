@@ -30,8 +30,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { eventSchema, EventType } from "@/schemas/eventsSchemas";
 import { useDashboardContext } from "@/app/context/DashboardContext";
-import { useEventsDays } from "@/app/context/MainContext";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
+import type { EventDay } from "@/schemas/eventSchemas";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, ImageIcon } from "lucide-react";
 import { CoOrganizerSearch } from "@/app/dashboard/components/co-organizers-search";
@@ -45,6 +46,8 @@ interface EventFormProps {
   canCreateEvent: boolean;
 }
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export function EventForm({
   existingEventCount,
   canCreateEvent,
@@ -52,7 +55,14 @@ export function EventForm({
   const { targetUserId } = useDashboardContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const eventDays = useEventsDays();
+  
+  // Fetch current event days (always from events_days table, not from snapshot)
+  // Dashboard should always use current days for creating/editing events
+  const { data: eventDays = [], isLoading: isLoadingEventDays } = useSWR<EventDay[]>(
+    "/api/events/days/current",
+    fetcher
+  );
+  
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -79,6 +89,18 @@ export function EventForm({
   const { isDirty } = useFormState({
     control: form.control,
   });
+
+  if (isLoadingEventDays) {
+    return (
+      <Alert variant="default" className="mt-10">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Loading Event Days</AlertTitle>
+        <AlertDescription>
+          Please wait while we load the available event days...
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   if (!eventDays || eventDays.length === 0) {
     return (

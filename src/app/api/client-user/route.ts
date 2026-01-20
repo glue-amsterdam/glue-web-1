@@ -37,8 +37,23 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    // Fetch all participants with user_name from user_info
-    const { data: participantData, error: participantError } = (await supabase
+    // Fetch tour status to determine filtering logic
+    const { data: tourStatus, error: tourStatusError } = await supabase
+      .from("tour_status")
+      .select("current_tour_status")
+      .single();
+
+    if (tourStatusError) {
+      console.error("Error fetching tour status:", tourStatusError);
+      // Default to "new" if tour status fetch fails
+    }
+
+    const currentTourStatus = tourStatus?.current_tour_status || "new";
+
+    // Build query based on tour status
+    // If "new": filter by is_active = true
+    // If "older": filter by was_active_last_year = true
+    let participantQuery = supabase
       .from("participant_details")
       .select(
         `
@@ -51,11 +66,20 @@ export async function GET() {
           )
         `
       )
-      .eq("status", "accepted")
-      .eq("is_active", true)) as {
-      data: ParticipantDetails[] | null;
-      error: PostgrestError;
-    };
+      .eq("status", "accepted");
+
+    if (currentTourStatus === "new") {
+      participantQuery = participantQuery.eq("is_active", true);
+    } else if (currentTourStatus === "older") {
+      participantQuery = participantQuery.eq("was_active_last_year", true);
+    }
+
+    // Fetch all participants with user_name from user_info
+    const { data: participantData, error: participantError } =
+      (await participantQuery) as {
+        data: ParticipantDetails[] | null;
+        error: PostgrestError;
+      };
 
     if (participantError) {
       throw participantError;

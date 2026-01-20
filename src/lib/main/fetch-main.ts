@@ -118,6 +118,7 @@ const mainSection: MainSectionData = {
       },
     ],
   },
+  currentTourStatus: "new" as const,
 };
 
 function transformApiData(data: ApiMainSectionData): MainSectionData {
@@ -186,6 +187,7 @@ function transformApiData(data: ApiMainSectionData): MainSectionData {
     eventDays: transformedEventDays,
     homeText: data.homeText || null,
     pressKitLinks: transformedPressKitLinks,
+    currentTourStatus: (data.currentTourStatus as "new" | "older") || "new",
   };
 }
 

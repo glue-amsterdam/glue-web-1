@@ -7,6 +7,8 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
+    // Admin always manages current event days (from events_days table)
+    // The snapshot in tour_status is only for viewing the "older" tour
     const { data: eventDays, error } = await supabase
       .from("events_days")
       .select("*")
@@ -69,52 +71,35 @@ export async function PUT(request: Request) {
       (dayId: string) => !newDayIds.includes(dayId)
     );
 
-    // Mark events as "day-off" before removing days
-    // This preserves the original day date/time and prevents events from reappearing
-    // if a new day with the same ID is created later
+    // Mark events as last year events when their days are removed
+    // With the snapshot approach, we simply mark events as previous tour events
+    // instead of changing their dayId
     if (daysToRemove.length > 0) {
-      // Fetch the days to be removed to get their date information
-      const { data: daysToRemoveData, error: daysFetchError } = await supabase
-        .from("events_days")
-        .select("dayId, date")
-        .in("dayId", daysToRemove);
+      // Fetch events associated with the days being removed
+      const { data: eventsToUpdate, error: eventsFetchError } = await supabase
+        .from("events")
+        .select("id")
+        .in("dayId", daysToRemove)
+        .eq("is_last_year_event", false);
 
-      if (daysFetchError) {
+      if (eventsFetchError) {
         throw new Error(
-          `Error fetching days to remove: ${daysFetchError.message}`
+          `Error fetching events for removed days: ${eventsFetchError.message}`
         );
       }
 
-      // For each day being removed, update associated events
-      for (const day of daysToRemoveData || []) {
-        // Fetch events associated with this day
-        const { data: eventsToUpdate, error: eventsFetchError } = await supabase
+      // Mark events as last year events
+      if (eventsToUpdate && eventsToUpdate.length > 0) {
+        const eventIds = eventsToUpdate.map((e) => e.id);
+        const { error: updateError } = await supabase
           .from("events")
-          .select("id")
-          .eq("dayId", day.dayId);
+          .update({ is_last_year_event: true })
+          .in("id", eventIds);
 
-        if (eventsFetchError) {
+        if (updateError) {
           throw new Error(
-            `Error fetching events for day ${day.dayId}: ${eventsFetchError.message}`
+            `Error marking events as last year: ${updateError.message}`
           );
-        }
-
-        // Update events: mark as day-off, preserve original day date, set dayId to 'day-off'
-        if (eventsToUpdate && eventsToUpdate.length > 0) {
-          const { error: updateError } = await supabase
-            .from("events")
-            .update({
-              event_day_out: true,
-              event_day_time: day.date ? new Date(day.date).toISOString() : null,
-              dayId: "day-off",
-            })
-            .eq("dayId", day.dayId);
-
-          if (updateError) {
-            throw new Error(
-              `Error updating events for day ${day.dayId}: ${updateError.message}`
-            );
-          }
         }
       }
     }

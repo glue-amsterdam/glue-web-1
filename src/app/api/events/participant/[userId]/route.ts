@@ -13,10 +13,15 @@ export async function GET(
 
   try {
     const supabase = await createClient();
+    
+    // Fetch only current tour events (not last year's events)
+    // Dashboard should only show events that users can edit/create
     const { data: events, error } = await supabase
       .from("events")
       .select("*")
-      .eq("organizer_id", userId);
+      .eq("organizer_id", userId)
+      .eq("is_last_year_event", false)
+      .eq("event_day_out", false);
 
     if (error) {
       console.error("Error fetching events:", error);

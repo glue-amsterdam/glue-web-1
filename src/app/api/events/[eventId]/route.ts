@@ -17,7 +17,20 @@ export async function GET(
   try {
     const supabase = await createClient();
 
-    const { data: event, error: eventError } = await supabase
+    // Fetch tour status to determine filtering logic
+    const { data: tourStatus, error: tourStatusError } = await supabase
+      .from("tour_status")
+      .select("current_tour_status")
+      .single();
+
+    if (tourStatusError) {
+      console.error("Error fetching tour status:", tourStatusError);
+      // Default to "new" if tour status fetch fails
+    }
+
+    const currentTourStatus = tourStatus?.current_tour_status || "new";
+
+    let eventQuery = supabase
       .from("events")
       .select(
         `
@@ -36,8 +49,18 @@ export async function GET(
         `
       )
       .eq("id", eventId)
-      .eq("event_day_out", false)
-      .single();
+      .eq("event_day_out", false);
+
+    // Filter by tour status
+    // If "new": show only current tour events (is_last_year_event = false)
+    // If "older": show only previous tour events (is_last_year_event = true)
+    if (currentTourStatus === "new") {
+      eventQuery = eventQuery.eq("is_last_year_event", false);
+    } else if (currentTourStatus === "older") {
+      eventQuery = eventQuery.eq("is_last_year_event", true);
+    }
+
+    const { data: event, error: eventError } = await eventQuery.single();
 
     if (eventError) {
       console.error("Error fetching event:", eventError);
@@ -53,15 +76,39 @@ export async function GET(
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    // Fetch event day separately (since foreign key constraint was removed)
-    // Only show events that have a valid dayId that exists in events_days
+    // Fetch event day separately based on tour status
+    // If "new": fetch from events_days table
+    // If "older": use snapshot from tour_status
     let eventDay = null;
     if (event.dayId) {
-      const { data: dayData, error: dayError } = await supabase
-        .from("events_days")
-        .select("dayId, label, date")
-        .eq("dayId", event.dayId)
-        .single();
+      if (currentTourStatus === "new") {
+        // Fetch from events_days table
+        const { data: dayData, error: dayError } = await supabase
+          .from("events_days")
+          .select("dayId, label, date")
+          .eq("dayId", event.dayId)
+          .single();
+
+        if (!dayError && dayData) {
+          eventDay = { label: dayData.label, date: dayData.date };
+        }
+      } else if (currentTourStatus === "older") {
+        // Fetch from snapshot in tour_status
+        const { data: tourStatusData, error: tourStatusError } = await supabase
+          .from("tour_status")
+          .select("previous_tour_event_days")
+          .single();
+
+        if (!tourStatusError && tourStatusData) {
+          const snapshot = tourStatusData.previous_tour_event_days as
+            | Array<{ dayId: string; label: string; date: string | null }>
+            | null;
+          const dayData = snapshot?.find((day) => day.dayId === event.dayId);
+          if (dayData) {
+            eventDay = { label: dayData.label, date: dayData.date };
+          }
+        }
+      }
 
       if (!dayError && dayData) {
         eventDay = { label: dayData.label, date: dayData.date };

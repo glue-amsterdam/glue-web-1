@@ -90,4 +90,13 @@ export const usePressKitLinks = () => {
   return context.pressKitLinks;
 };
 
+export const useTourStatus = () => {
+  const context = useContext(MainContext);
+  
+  if (!context) {
+    throw new Error("useTourStatus must be used within a MainContextProvider");
+  }
+  return context.currentTourStatus;
+};
+
 export { MainContext };

@@ -13,15 +13,50 @@ import type { EventDay } from "@/schemas/eventSchemas";
 export async function GET() {
   try {
     const supabase = await createClient();
+    // Fetch tour status first to determine which event days to show
+    const { data: tourStatus, error: tourStatusError } = await supabase
+      .from("tour_status")
+      .select("current_tour_status, previous_tour_event_days")
+      .single();
+
+    if (tourStatusError) {
+      console.error("Error fetching tour status:", tourStatusError);
+    }
+
+    const currentTourStatus = tourStatus?.current_tour_status || "new";
+    const previousTourEventDays = (tourStatus?.previous_tour_event_days as
+      | Array<{ dayId: string; label: string; date: string | null }>
+      | null) || null;
+
+    // Build event days query based on tour status
+    // If "new": show current tour days from events_days table
+    // If "older": show previous tour days from snapshot in tour_status
+    let eventsDays;
+    if (currentTourStatus === "new") {
+      // Fetch current event days from events_days table
+      const { data, error } = await supabase
+        .from("events_days")
+        .select();
+      eventsDays = { data, error };
+    } else if (currentTourStatus === "older") {
+      // Use snapshot from tour_status for older tour
+      eventsDays = {
+        data: previousTourEventDays || [],
+        error: null,
+      };
+    } else {
+      // Fallback to current days
+      const { data, error } = await supabase.from("events_days").select();
+      eventsDays = { data, error };
+    }
+
     const [
-      eventsDays,
       mainColors,
       mainLinks,
       mainMenu,
       homeText,
       pressKitLinks,
     ] = await Promise.all([
-      supabase.from("events_days").select(),
       supabase.from("main_colors").select(),
       supabase.from("main_links").select().order("id"),
       supabase
@@ -49,12 +84,12 @@ export async function GET() {
       throw new Error(
         `Error fetching press_kit_links: ${pressKitLinks.error.message}`
       );
-
     const mainColorsData = mainColors.data?.[0] as MainColors;
     const eventsDaysData = eventsDays.data;
     const mainMenuData = mainMenu.data;
     const homeTextData = homeText.data?.[0] || null;
     const pressKitLinksData = pressKitLinks.data;
+    const tourStatusData = currentTourStatus;
 
     const events_days: EventDay[] = eventsDaysData.map((day) => ({
       dayId: day.dayId,
@@ -95,6 +130,7 @@ export async function GET() {
           description,
         })),
       },
+      currentTourStatus: tourStatusData as "new" | "older",
     };
 
     return NextResponse.json(formattedData);

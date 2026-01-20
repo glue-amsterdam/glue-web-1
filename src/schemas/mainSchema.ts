@@ -71,6 +71,8 @@ export const pressKitLinksFormSchema = z.object({
   pressKitLinks: z.array(pressKitLinkFormSchema),
 });
 
+export const tourStatusSchema = z.enum(["new", "older"]);
+
 export const mainSectionSchema = z.object({
   mainColors: mainColorsSchema,
   mainMenu: z.array(mainMenuItemSchema),
@@ -78,6 +80,7 @@ export const mainSectionSchema = z.object({
   eventDays: z.array(eventDaySchema),
   homeText: homeTextSchema.nullable().optional(),
   pressKitLinks: pressKitLinksSchema,
+  currentTourStatus: tourStatusSchema,
 });
 
 export type MainSectionData = z.infer<typeof mainSectionSchema>;
@@ -86,3 +89,4 @@ export type MainLinks = z.infer<typeof mainLinksSchema>;
 export type MainColors = z.infer<typeof mainColorsSchema>;
 export type MainLink = z.infer<typeof linkItemSchema>;
 export type SubItem = z.infer<typeof subMenuItemSchema>;
+export type TourStatus = z.infer<typeof tourStatusSchema>;

@@ -48,4 +48,5 @@ export type ApiMainSectionData = {
   eventDays?: ApiEventDay[];
   homeText?: { id: string; label: string; color?: string | null } | null;
   pressKitLinks?: ApiPressKitLinks;
+  currentTourStatus?: "new" | "older";
 };

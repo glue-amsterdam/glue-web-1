@@ -11,6 +11,19 @@ export async function GET(request: Request) {
 
   const supabase = await createClient();
 
+  // Fetch tour status first to determine filtering logic
+  const { data: tourStatus, error: tourStatusError } = await supabase
+    .from("tour_status")
+    .select("current_tour_status")
+    .single();
+
+  if (tourStatusError) {
+    console.error("Error fetching tour status:", tourStatusError);
+    // Default to "new" if tour status fetch fails
+  }
+
+  const currentTourStatus = tourStatus?.current_tour_status || "new";
+
   let query = supabase.from("events").select(`
     *,
     organizer:user_info!organizer_id (
@@ -37,6 +50,15 @@ export async function GET(request: Request) {
   // Exclude events marked as "day-off" (events that lost their day)
   query = query.eq("event_day_out", false);
 
+  // Filter by tour status
+  // If "new": show only current tour events (is_last_year_event = false)
+  // If "older": show only previous tour events (is_last_year_event = true)
+  if (currentTourStatus === "new") {
+    query = query.eq("is_last_year_event", false);
+  } else if (currentTourStatus === "older") {
+    query = query.eq("is_last_year_event", true);
+  }
+
   // Remove the problematic OR query - we'll filter in JavaScript instead
   // if (search) {
   //   query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
@@ -59,13 +81,45 @@ export async function GET(request: Request) {
     ];
     let eventDaysMap = new Map();
 
+    // Fetch event days based on tour status
+    // If "new": fetch from events_days table
+    // If "older": use snapshot from tour_status
+    let eventDays: Array<{ dayId: string; label: string; date: string | null }> = [];
+    
     if (uniqueDayIds.length > 0) {
-      const { data: eventDays, error: daysError } = await supabase
-        .from("events_days")
-        .select("dayId, label, date")
-        .in("dayId", uniqueDayIds);
+      if (currentTourStatus === "new") {
+        // Fetch current event days from events_days table
+        const { data: eventDaysData, error: daysError } = await supabase
+          .from("events_days")
+          .select("dayId, label, date")
+          .in("dayId", uniqueDayIds);
 
-      if (!daysError && eventDays) {
+        if (daysError) {
+          console.error("Error fetching event days:", daysError);
+        } else {
+          eventDays = eventDaysData || [];
+        }
+      } else if (currentTourStatus === "older") {
+        // Fetch snapshot from tour_status
+        const { data: tourStatusData, error: tourStatusError } = await supabase
+          .from("tour_status")
+          .select("previous_tour_event_days")
+          .single();
+
+        if (tourStatusError) {
+          console.error("Error fetching tour status:", tourStatusError);
+        } else {
+          const snapshot = tourStatusData?.previous_tour_event_days as
+            | Array<{ dayId: string; label: string; date: string | null }>
+            | null;
+          // Filter snapshot to only include days that match the events' dayIds
+          eventDays = (snapshot || []).filter((day) =>
+            uniqueDayIds.includes(day.dayId)
+          );
+        }
+      }
+
+      if (eventDays && eventDays.length > 0) {
         eventDaysMap = new Map(
           eventDays.map((day) => [day.dayId, { label: day.label, date: day.date }])
         );
