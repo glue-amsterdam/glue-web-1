@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { getAllDefaultEmailTemplates } from "@/utils/email-templates";
 
 const emailTemplateSchema = z.object({
   slug: z.string().min(1, "Slug is required"),
@@ -25,7 +26,38 @@ export async function GET() {
       throw error;
     }
 
-    return NextResponse.json(data || []);
+    const existingTemplates = data || [];
+    const existingSlugs = new Set(existingTemplates.map((t) => t.slug));
+    const defaultTemplates = getAllDefaultEmailTemplates();
+
+    // Initialize missing default templates
+    const templatesToCreate = Object.entries(defaultTemplates)
+      .filter(([slug]) => !existingSlugs.has(slug))
+      .map(([slug, template]) => ({
+        slug,
+        subject: template.subject,
+        html_content: template.html_content,
+        description: template.description,
+        updated_at: new Date().toISOString(),
+      }));
+
+    if (templatesToCreate.length > 0) {
+      const { data: newTemplates, error: insertError } = await supabase
+        .from("email_templates")
+        .insert(templatesToCreate)
+        .select();
+
+      if (insertError) {
+        console.error("Error initializing default templates:", insertError);
+        // Continue anyway, return existing templates
+      } else if (newTemplates) {
+        // Merge new templates with existing ones
+        existingTemplates.push(...newTemplates);
+        existingTemplates.sort((a, b) => a.slug.localeCompare(b.slug));
+      }
+    }
+
+    return NextResponse.json(existingTemplates);
   } catch (error) {
     console.error("Error in GET /api/admin/email-templates:", error);
     return NextResponse.json(

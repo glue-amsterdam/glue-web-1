@@ -1,6 +1,10 @@
 import { Resend } from "resend";
 import { UserData } from "@/schemas/authSchemas";
 import { config } from "@/env";
+import {
+  getEmailTemplateWithFallback,
+  processEmailTemplate,
+} from "@/utils/email-templates";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -155,4 +159,29 @@ export async function sendModeratorParticipantNotification(
   `;
 
   await sendEmail("New Participant Registration", htmlContent);
+}
+
+export async function sendParticipantRegistrationEmail(userData: {
+  email: string;
+  user_name?: string;
+}) {
+  try {
+    const template = await getEmailTemplateWithFallback(
+      "participant-registration"
+    );
+    const htmlContent = processEmailTemplate(template.html_content, {
+      email: userData.email,
+      user_name: userData.user_name || userData.email,
+    });
+
+    await resend.emails.send({
+      from: `GLUE <${config.baseEmail}>`,
+      to: userData.email,
+      subject: template.subject,
+      html: htmlContent,
+    });
+  } catch (error) {
+    console.error("Error sending participant registration email:", error);
+    // No lanzamos el error para que el registro no falle si el email falla
+  }
 }

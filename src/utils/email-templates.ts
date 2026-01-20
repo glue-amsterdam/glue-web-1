@@ -94,21 +94,24 @@ export const getEmailTemplate = async (
 };
 
 /**
- * Gets default email templates (fallback)
+ * Gets all default email templates with their metadata
  */
-export const getDefaultEmailTemplate = (
-  slug: string
-): { subject: string; html_content: string } | null => {
-  const defaultTemplates: Record<
-    string,
-    { subject: string; html_content: string }
-  > = {
+export const getAllDefaultEmailTemplates = (): Record<
+  string,
+  {
+    subject: string;
+    html_content: string;
+    description: string;
+  }
+> => {
+  return {
     "participant-accepted": {
       subject: "Your Participant Application Has Been Accepted",
       html_content: `<h1>Hello {{email}}</h1>
         <p>Congratulations! Your application to become a GLUE participant has been accepted.</p>
         <p>You can now start modifying your participant data and creating events.</p>
         <p>Log in to your account to get started!</p>`,
+      description: "Sent when a participant application is accepted",
     },
     "participant-reactivated": {
       subject: "Your GLUE Account Has Been Reactivated",
@@ -116,6 +119,7 @@ export const getDefaultEmailTemplate = (
         <p>Your GLUE account has been successfully reactivated.</p>
         <p>You now have full access to all features and can start creating events and interacting with the community.</p>
         <p>Log in to your account to get started!</p>`,
+      description: "Sent when a participant account is reactivated",
     },
     "upgrade-request-accepted": {
       subject: "Your Participant Application Has Been Accepted",
@@ -123,10 +127,36 @@ export const getDefaultEmailTemplate = (
         <p>Congratulations! Your application to become a GLUE participant has been accepted.</p>
         <p>You can now start modifying your participant data and creating events.</p>
         <p>Log in to your account to get started!</p>`,
+      description:
+        "Sent when a user's upgrade request to become a participant is accepted",
+    },
+    "participant-registration": {
+      subject: "Your GLUE Participant Registration Has Been Received",
+      html_content: `<h1>Hello {{user_name}}!</h1>
+        <p>Thank you for registering as a GLUE participant!</p>
+        <p>We have received your registration and a moderator will review your application shortly.</p>
+        <p>You will receive an email notification once your application has been reviewed and approved.</p>
+        <p>If you have any questions, please don't hesitate to contact us.</p>
+        <p>Best regards,<br>The GLUE Team</p>`,
+      description: "Sent when a new participant completes registration",
     },
   };
+};
 
-  return defaultTemplates[slug] || null;
+/**
+ * Gets default email templates (fallback)
+ */
+export const getDefaultEmailTemplate = (
+  slug: string
+): { subject: string; html_content: string } | null => {
+  const allTemplates = getAllDefaultEmailTemplates();
+  const template = allTemplates[slug];
+  if (!template) return null;
+  
+  return {
+    subject: template.subject,
+    html_content: template.html_content,
+  };
 };
 
 /**

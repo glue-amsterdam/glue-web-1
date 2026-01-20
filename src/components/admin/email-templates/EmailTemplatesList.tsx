@@ -47,6 +47,11 @@ const getTemplateDisplayInfo = (slug: string) => {
         "Sent when a user's upgrade request to become a participant is accepted",
       color: "bg-purple-500",
     },
+    "participant-registration": {
+      label: "Participant Registration",
+      description: "Sent when a new participant completes registration",
+      color: "bg-orange-500",
+    },
   };
 
   return (

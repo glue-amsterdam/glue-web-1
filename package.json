@@ -38,6 +38,7 @@
     "@studio-freight/react-lenis": "^0.0.47",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.46.2",
+    "@tiptap/extension-color": "^2.27.2",
     "@tiptap/extension-link": "^2.11.2",
     "@tiptap/extension-text-style": "^2.25.0",
     "@tiptap/pm": "^2.9.1",

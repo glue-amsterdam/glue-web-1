@@ -7,6 +7,7 @@ import {
   sendModeratorFreeUserNotification,
   sendModeratorMemberNotification,
   sendModeratorParticipantNotification,
+  sendParticipantRegistrationEmail,
 } from "@/lib/email";
 
 type UserData = z.infer<typeof userSchema>;
@@ -146,6 +147,11 @@ export async function POST(request: Request) {
         await sendModeratorParticipantNotification({
           ...userData,
           user_id: realUserId,
+        });
+        // Send confirmation email to participant
+        await sendParticipantRegistrationEmail({
+          email: userData.email,
+          user_name: userData.user_name,
         });
         break;
     }
