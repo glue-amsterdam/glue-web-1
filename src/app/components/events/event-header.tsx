@@ -2,7 +2,11 @@
 import { fadeInConfig } from "@/utils/animations";
 import { motion } from "framer-motion";
 
-function EventHeader() {
+export interface EventHeaderProps {
+  headerTitle: string;
+}
+
+const EventHeader = ({ headerTitle }: EventHeaderProps) => {
   return (
     <motion.header {...fadeInConfig}>
       <motion.h1
@@ -12,10 +16,10 @@ function EventHeader() {
         viewport={{ once: true }}
         transition={{ delay: 0.8, duration: 0.5 }}
       >
-        Events
+        {headerTitle}
       </motion.h1>
     </motion.header>
   );
-}
+};
 
 export default EventHeader;
