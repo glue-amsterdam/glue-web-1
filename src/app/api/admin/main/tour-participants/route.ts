@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/adminClient";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -14,7 +14,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    const supabase = await createClient();
+    // Use admin client to bypass RLS when fetching participants for tour management
+    const supabase = await createAdminClient();
     
     // Check if we need to fetch current active participants (before closing) or previous tour participants (after closing)
     const { searchParams } = new URL(request.url);
@@ -80,7 +81,8 @@ export async function PUT(request: Request) {
   }
 
   try {
-    const supabase = await createClient();
+    // Use admin client to bypass RLS when updating participant status during tour closing
+    const supabase = await createAdminClient();
     const { participantIds } = await request.json();
 
     if (!Array.isArray(participantIds)) {
