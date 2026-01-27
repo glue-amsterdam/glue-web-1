@@ -74,8 +74,10 @@ export function EmailPasswordForm({
         )}
       </div>
       <div>
-        <Label htmlFor="user_name">User Name</Label>
-        <Input id="user_name" {...register("user_name")} />
+        <Label htmlFor="user_name">
+          User Name <span className="text-red-500">*</span>
+        </Label>
+        <Input id="user_name" {...register("user_name")} required />
         {errors.user_name && (
           <p className="text-red-500 text-sm mt-1">
             {errors.user_name.message}

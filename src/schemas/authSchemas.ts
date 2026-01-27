@@ -4,7 +4,7 @@ import { z } from "zod";
 const baseUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  user_name: z.string().optional(),
+  user_name: z.string().min(1, "User name is required").max(50),
   plan_id: z.string(),
   plan_type: z.enum(["free", "member", "participant"]),
   phone_numbers: z.array(z.string()).optional(),
