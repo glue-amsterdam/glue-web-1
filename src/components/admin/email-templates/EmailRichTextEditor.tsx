@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { FontSize } from "@/app/components/tiptap-font-size";
-import TextStyle from "@tiptap/extension-text-style";
+import { TextStyle } from "@tiptap/extension-text-style";
 import type { Editor } from "@tiptap/react";
 import {
   Popover,
@@ -240,14 +240,12 @@ const MenuBar = ({
   const handleIncreaseFontSize = () => {
     const current = getCurrentFontSize(editor);
     const next = getNextFontSize(current, 1);
-    // @ts-expect-error setFontSize is a custom command from FontSize extension
     editor.chain().focus().setFontSize(next).run();
   };
 
   const handleDecreaseFontSize = () => {
     const current = getCurrentFontSize(editor);
     const next = getNextFontSize(current, -1);
-    // @ts-expect-error setFontSize is a custom command from FontSize extension
     editor.chain().focus().setFontSize(next).run();
   };
 
@@ -660,6 +658,7 @@ export const EmailRichTextEditor = ({
   };
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Underline,

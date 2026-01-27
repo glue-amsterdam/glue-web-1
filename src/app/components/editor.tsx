@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { FontSize } from "./tiptap-font-size";
-import TextStyle from "@tiptap/extension-text-style";
+import { TextStyle } from "@tiptap/extension-text-style";
 import type { Editor } from "@tiptap/react";
 
 const FONT_SIZES = ["0.75rem", "0.875rem", "1rem", "1.125rem", "1.5rem"];
@@ -49,14 +49,12 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
   const handleIncreaseFontSize = () => {
     const current = getCurrentFontSize(editor);
     const next = getNextFontSize(current, 1);
-    // @ts-expect-error setFontSize is a custom command from FontSize extension
     editor.chain().focus().setFontSize(next).run();
   };
 
   const handleDecreaseFontSize = () => {
     const current = getCurrentFontSize(editor);
     const next = getNextFontSize(current, -1);
-    // @ts-expect-error setFontSize is a custom command from FontSize extension
     editor.chain().focus().setFontSize(next).run();
   };
 
@@ -230,6 +228,7 @@ export const RichTextEditor = ({
   const [isMounted, setIsMounted] = useState(false);
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Link.configure({
