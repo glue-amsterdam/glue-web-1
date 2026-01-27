@@ -19,11 +19,11 @@ import {
   Quote,
   Undo,
   Redo,
-  LinkIcon,
   ChevronUp,
   ChevronDown,
   ImageIcon,
   Palette,
+  LinkIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -249,6 +249,29 @@ const MenuBar = ({
     editor.chain().focus().setFontSize(next).run();
   };
 
+  const handleLinkClick = () => {
+    if (editor.isActive("link")) {
+      editor.chain().focus().unsetLink().run();
+      return;
+    }
+
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("Enter the URL", previousUrl || "");
+    
+    if (url) {
+      const { from, to } = editor.state.selection;
+      const selectedText = editor.state.doc.textBetween(from, to);
+      
+      if (selectedText) {
+        // Text is selected, apply link to selection
+        editor.chain().focus().setLink({ href: url }).run();
+      } else {
+        // No text selected, insert link with URL as text
+        editor.chain().focus().insertContent(`<a href="${url}">${url}</a>`).run();
+      }
+    }
+  };
+
   return (
     <div className="bg-gray flex flex-wrap gap-1 pb-2 border-b">
       <Button
@@ -364,18 +387,12 @@ const MenuBar = ({
         type="button"
         variant="ghost"
         size="icon"
-        onClick={() => {
-          const url = window.prompt("Enter the URL");
-          if (url) {
-            editor.chain().focus().setLink({ href: url }).run();
-          } else {
-            editor.chain().focus().unsetLink().run();
-          }
-        }}
+        onClick={handleLinkClick}
         className={cn(
           "text-black hover:bg-uiblack/30",
           editor.isActive("link") && "bg-uiblack/20"
         )}
+        title="Insert Link"
       >
         <LinkIcon className="h-4 w-4" />
       </Button>
@@ -665,7 +682,7 @@ export const EmailRichTextEditor = ({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: "text-blue-500 underline",
+          class: "text-blue-500 underline cursor-pointer",
         },
       }),
       TextStyle,
@@ -682,7 +699,7 @@ export const EmailRichTextEditor = ({
     editorProps: {
       attributes: {
         class:
-          "min-h-[200px] bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm max-w-none",
+          "min-h-[200px] bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm max-w-none [&_a]:text-blue-500 [&_a]:underline [&_a]:cursor-pointer",
       },
     },
   });
@@ -856,6 +873,18 @@ export const EmailRichTextEditor = ({
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .ProseMirror a {
+            color: #3b82f6 !important;
+            text-decoration: underline !important;
+            cursor: pointer !important;
+          }
+          .ProseMirror a:hover {
+            color: #2563eb !important;
+          }
+        `
+      }} />
       <div className="border rounded-md overflow-hidden">
         {editor && (
           <MenuBar
