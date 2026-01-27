@@ -163,7 +163,7 @@ export async function sendModeratorParticipantNotification(
 
 export async function sendParticipantRegistrationEmail(userData: {
   email: string;
-  user_name?: string;
+  user_name: string;
 }) {
   try {
     const template = await getEmailTemplateWithFallback(
@@ -171,7 +171,7 @@ export async function sendParticipantRegistrationEmail(userData: {
     );
     const htmlContent = processEmailTemplate(template.html_content, {
       email: userData.email,
-      user_name: userData.user_name || userData.email,
+      user_name: userData.user_name,
     });
 
     await resend.emails.send({

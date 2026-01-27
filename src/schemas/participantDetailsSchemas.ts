@@ -12,6 +12,9 @@ export const reactivationNotesSchema = z.object({
   no_address: z.boolean().optional().default(true),
   notes: z.string().optional().nullable(),
   exhibition_space_preference: z.string().optional().nullable(),
+  termsAccepted: z.boolean().refine((val) => val === true, {
+    message: "You must accept the General terms and conditions",
+  }),
 });
 
 export type ReactivationNotes = z.infer<typeof reactivationNotesSchema>;

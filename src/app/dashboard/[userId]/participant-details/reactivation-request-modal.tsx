@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +38,7 @@ import { config } from "@/env";
 import { strToNumber } from "@/constants";
 import useSWR from "swr";
 import { PlanType } from "@/schemas/plansSchema";
+import TermsContent from "@/app/signup/components/TermsContent";
 
 // Props for the modal
 interface ReactivationRequestModalProps {
@@ -61,6 +63,7 @@ export function ReactivationRequestModal({
   const [suggestions, setSuggestions] = useState<
     Array<{ place_name: string; center: [number, number] }>
   >([]);
+  const [isTermsDialogOpen, setIsTermsDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const {
@@ -82,8 +85,13 @@ export function ReactivationRequestModal({
       no_address: true,
       notes: "",
       exhibition_space_preference: null,
+      termsAccepted: false,
     },
   });
+
+  const handleOpenTerms = () => {
+    setIsTermsDialogOpen(true);
+  };
 
   const noAddress = form.watch("no_address");
 
@@ -352,6 +360,44 @@ export function ReactivationRequestModal({
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="termsAccepted"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-start space-x-2">
+                    <FormControl>
+                      <Checkbox
+                        id="termsAccepted"
+                        checked={field.value}
+                        onCheckedChange={(checked) =>
+                          field.onChange(checked === true)
+                        }
+                      />
+                    </FormControl>
+                    <div className="grid gap-1.5 leading-none">
+                      <FormLabel
+                        htmlFor="termsAccepted"
+                        className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        I accept the{" "}
+                        <button
+                          type="button"
+                          onClick={handleOpenTerms}
+                          className="text-primary underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded"
+                          tabIndex={0}
+                          aria-label="Open General terms and conditions"
+                        >
+                          General terms and conditions
+                        </button>
+                      </FormLabel>
+                    </div>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
@@ -363,6 +409,19 @@ export function ReactivationRequestModal({
           </form>
         </Form>
       </DialogContent>
+      <Dialog open={isTermsDialogOpen} onOpenChange={setIsTermsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="sr-only">General Terms and Conditions</DialogTitle>
+            <DialogDescription className="sr-only">
+              Please read the following terms and conditions carefully.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 space-y-4">
+            {isTermsDialogOpen && <TermsContent />}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }

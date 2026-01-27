@@ -1,4 +1,4 @@
-import { Mark, mergeAttributes, type RawCommands } from "@tiptap/core";
+import { Mark, mergeAttributes } from "@tiptap/core";
 
 export interface FontSizeOptions {
   types: string[];
@@ -46,14 +46,14 @@ export const FontSize = Mark.create<FontSizeOptions>({
     return {
       setFontSize:
         (fontSize: string) =>
-        ({ commands }: { commands: RawCommands }) => {
-          return commands.setMark(this.name, { fontSize });
+        ({ chain }) => {
+          return chain().setMark(this.name, { fontSize }).run();
         },
       unsetFontSize:
         () =>
-        ({ commands }: { commands: RawCommands }) => {
-          return commands.unsetMark(this.name);
+        ({ chain }) => {
+          return chain().unsetMark(this.name).run();
         },
-    } as Partial<RawCommands>;
+    };
   },
 });

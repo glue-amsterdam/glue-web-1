@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
 
+import { Analytics } from '@vercel/analytics/next'
+
 import { AuthProvider } from "@/app/context/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 import { CookieBanner } from "@/components/cookies/cookies-banner";
@@ -88,6 +90,7 @@ export default async function RootLayout({
           <MainContextProvider initialData={initialData}>
             <AuthProvider>
               {children}
+              <Analytics />
               <Toaster />
               <CookieBanner />
             </AuthProvider>

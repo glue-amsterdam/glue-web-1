@@ -399,11 +399,11 @@ export function ParticipantDetailsForm({
 
     return (
       <div className="space-y-2 mt-2 p-3 bg-gray-50 rounded-md">
-        {reactivationNotes?.plan_id && (
+        {reactivationNotes?.plan_label && (
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-gray-500" />
             <span className="text-sm">
-              <strong>Plan ID:</strong> {reactivationNotes.plan_id}
+              <strong>Plan:</strong> {reactivationNotes.plan_label}
             </span>
           </div>
         )}

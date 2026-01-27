@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/adminClient";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { config } from "@/env";
@@ -41,7 +42,10 @@ export async function PUT(request: Request) {
   }
 
   try {
-    const supabase = await createClient();
+    // Use admin client to bypass RLS when closing/opening tours
+    // This is required for all database operations: updating participants, events, 
+    // fetching/deleting old events, and updating tour_status
+    const supabase = await createAdminClient();
     const { current_tour_status, action } = await request.json();
 
     // Validate action type

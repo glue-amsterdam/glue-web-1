@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     // Insert user info
     const userInfoData: Record<string, unknown> = {
       user_id: realUserId,
-      user_name: validatedData.user_name || "",
+      user_name: validatedData.user_name,
       plan_id: validatedData.plan_id,
       plan_type: validatedData.plan_type,
       phone_numbers: validatedData.phone_numbers,

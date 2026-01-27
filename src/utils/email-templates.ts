@@ -9,30 +9,92 @@ type EmailTemplateVariables = {
 
 /**
  * Processes image tags: converts <img link="..."/> to <img src="..."/>
+ * If the image has clickable="true", wraps the image in an anchor tag
+ * - If link attribute exists, uses it as the href
+ * - If no link attribute, uses the image src as the href (links to itself)
  * This allows users to use a simpler syntax for images
  */
 export const processImageTags = (html: string): string => {
-  // Match <img link="..." /> or <img link="..."/> with optional attributes
-  const imgLinkRegex = /<img\s+([^>]*?)link\s*=\s*["']([^"']+)["']([^>]*?)\/?>/gi;
+  // Process all clickable images in one pass
+  const imgClickableRegex = /<img\s+([^>]*?)clickable\s*=\s*["']true["']([^>]*?)\/?>/gi;
   
-  return html.replace(imgLinkRegex, (match, before, linkUrl, after) => {
+  let processed = html.replace(imgClickableRegex, (match, before, after) => {
+    // Extract link and src attributes
+    const linkMatch = before.match(/link\s*=\s*["']([^"']+)["']/) || after.match(/link\s*=\s*["']([^"']+)["']/);
+    const srcMatch = before.match(/src\s*=\s*["']([^"']+)["']/) || after.match(/src\s*=\s*["']([^"']+)["']/);
+    
+    const linkUrl = linkMatch ? linkMatch[1] : null;
+    const src = srcMatch ? srcMatch[1] : linkUrl; // Fallback to linkUrl if no src
+    
+    if (!src) {
+      // No src or link found, return as-is (shouldn't happen)
+      return match;
+    }
+    
+    // If link equals src, it means redirect is unchecked (image links to itself)
+    // Use src as href in this case
+    const isRedirect = linkUrl && linkUrl !== src;
+    const href = isRedirect ? linkUrl : src;
+    
+    // Remove clickable and link attributes
+    const cleanedBefore = before.replace(/\s+/g, " ").trim();
+    const cleanedAfter = after.replace(/\s+/g, " ").trim();
+    
+    const beforeWithoutAttrs = cleanedBefore
+      .replace(/clickable\s*=\s*["'][^"']*["']/gi, "")
+      .replace(/link\s*=\s*["'][^"']*["']/gi, "")
+      .trim();
+    const afterWithoutAttrs = cleanedAfter
+      .replace(/clickable\s*=\s*["'][^"']*["']/gi, "")
+      .replace(/link\s*=\s*["'][^"']*["']/gi, "")
+      .trim();
+    
+    // Build the img tag
+    let imgTag = "<img";
+    if (beforeWithoutAttrs) {
+      imgTag += ` ${beforeWithoutAttrs}`;
+    }
+    // Ensure src exists
+    if (!beforeWithoutAttrs.includes('src=') && !afterWithoutAttrs.includes('src=')) {
+      imgTag += ` src="${src}"`;
+    }
+    if (afterWithoutAttrs) {
+      imgTag += ` ${afterWithoutAttrs}`;
+    }
+    imgTag += ">";
+    
+    // Use href (linkUrl if redirect, src if links to itself)
+    return `<a href="${href}" target="_blank" rel="noopener noreferrer">${imgTag}</a>`;
+  });
+  
+  // Handle images with link but no clickable (for backward compatibility, treat as non-clickable)
+  // Match <img link="..." /> without clickable="true"
+  const imgLinkRegex = /<img\s+([^>]*?)(?!clickable\s*=\s*["']true["'])link\s*=\s*["']([^"']+)["']([^>]*?)\/?>/gi;
+  
+  processed = processed.replace(imgLinkRegex, (match, before, linkUrl, after) => {
     // Remove the link attribute and add src attribute
     const cleanedBefore = before.replace(/\s+/g, " ").trim();
     const cleanedAfter = after.replace(/\s+/g, " ").trim();
     
-    // Build the new img tag with src instead of link
-    let newTag = "<img";
-    if (cleanedBefore) {
-      newTag += ` ${cleanedBefore}`;
-    }
-    newTag += ` src="${linkUrl}"`;
-    if (cleanedAfter) {
-      newTag += ` ${cleanedAfter}`;
-    }
-    newTag += ">";
+    // Remove link attribute from the attributes string
+    const beforeWithoutLink = cleanedBefore.replace(/link\s*=\s*["'][^"']*["']/gi, "").trim();
+    const afterWithoutLink = cleanedAfter.replace(/link\s*=\s*["'][^"']*["']/gi, "").trim();
     
-    return newTag;
+    // Build the img tag with src instead of link (NOT wrapped in anchor)
+    let imgTag = "<img";
+    if (beforeWithoutLink) {
+      imgTag += ` ${beforeWithoutLink}`;
+    }
+    imgTag += ` src="${linkUrl}"`;
+    if (afterWithoutLink) {
+      imgTag += ` ${afterWithoutLink}`;
+    }
+    imgTag += ">";
+    
+    return imgTag;
   });
+  
+  return processed;
 };
 
 /**

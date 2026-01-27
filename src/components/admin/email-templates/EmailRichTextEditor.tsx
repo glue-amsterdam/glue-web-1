@@ -1,33 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Color from "@tiptap/extension-color";
+import Underline from "@tiptap/extension-underline";
 import { Node, mergeAttributes } from "@tiptap/core";
 import {
   Bold,
   Italic,
   Strikethrough,
+  Underline as UnderlineIcon,
   Code,
   List,
   ListOrdered,
   Quote,
   Undo,
   Redo,
-  LinkIcon,
   ChevronUp,
   ChevronDown,
   ImageIcon,
   Palette,
+  LinkIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { FontSize } from "@/app/components/tiptap-font-size";
-import TextStyle from "@tiptap/extension-text-style";
+import { TextStyle } from "@tiptap/extension-text-style";
 import type { Editor } from "@tiptap/react";
 import {
   Popover,
@@ -44,6 +46,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const FONT_SIZES = ["0.75rem", "0.875rem", "1rem", "1.125rem", "1.5rem"];
 
@@ -124,6 +127,22 @@ const CustomImage = Node.create({
           };
         },
       },
+      clickable: {
+        default: false,
+        parseHTML: (element) => {
+          const clickableAttr = element.getAttribute("clickable");
+          // Return true if clickable="true", false otherwise
+          return clickableAttr === "true" ? true : false;
+        },
+        renderHTML: (attributes) => {
+          if (!attributes.clickable) {
+            return {};
+          }
+          return {
+            clickable: attributes.clickable === true ? "true" : attributes.clickable,
+          };
+        },
+      },
       alt: {
         default: null,
         parseHTML: (element) => element.getAttribute("alt"),
@@ -173,16 +192,37 @@ const CustomImage = Node.create({
       {
         tag: 'img[link]',
       },
+      {
+        tag: 'img[clickable]',
+      },
     ];
   },
 
   renderHTML({ HTMLAttributes }) {
     const attrs = mergeAttributes(this.options.HTMLAttributes, HTMLAttributes);
-    // If link exists, use it as src for preview
-    if (attrs.link && !attrs.src) {
-      attrs.src = attrs.link;
+    const link = attrs.link;
+    const src = attrs.src || link;
+    const clickable = attrs.clickable;
+    
+    // Keep clickable and link in HTML output so they can be saved
+    // We'll remove them in processHtmlForSave if needed, but we need them in the HTML
+    const imgAttrs = { ...attrs };
+    
+    // In editor preview, NEVER wrap in anchor tag - just show as image
+    // The wrapping will happen in processImageTags when sending emails
+    if (src && !imgAttrs.src) {
+      imgAttrs.src = src;
     }
-    return ["img", attrs];
+    
+    // Ensure clickable and link are preserved in HTML output
+    if (clickable) {
+      imgAttrs.clickable = clickable;
+    }
+    if (link) {
+      imgAttrs.link = link;
+    }
+    
+    return ["img", imgAttrs];
   },
 });
 
@@ -200,15 +240,36 @@ const MenuBar = ({
   const handleIncreaseFontSize = () => {
     const current = getCurrentFontSize(editor);
     const next = getNextFontSize(current, 1);
-    // @ts-expect-error setFontSize is a custom command from FontSize extension
     editor.chain().focus().setFontSize(next).run();
   };
 
   const handleDecreaseFontSize = () => {
     const current = getCurrentFontSize(editor);
     const next = getNextFontSize(current, -1);
-    // @ts-expect-error setFontSize is a custom command from FontSize extension
     editor.chain().focus().setFontSize(next).run();
+  };
+
+  const handleLinkClick = () => {
+    if (editor.isActive("link")) {
+      editor.chain().focus().unsetLink().run();
+      return;
+    }
+
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("Enter the URL", previousUrl || "");
+    
+    if (url) {
+      const { from, to } = editor.state.selection;
+      const selectedText = editor.state.doc.textBetween(from, to);
+      
+      if (selectedText) {
+        // Text is selected, apply link to selection
+        editor.chain().focus().setLink({ href: url }).run();
+      } else {
+        // No text selected, insert link with URL as text
+        editor.chain().focus().insertContent(`<a href="${url}">${url}</a>`).run();
+      }
+    }
   };
 
   return (
@@ -238,6 +299,19 @@ const MenuBar = ({
         )}
       >
         <Italic className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+        disabled={!editor.can().chain().focus().toggleUnderline().run()}
+        className={cn(
+          "text-black hover:bg-uiblack/30",
+          editor.isActive("underline") && "bg-uiblack/20"
+        )}
+      >
+        <UnderlineIcon className="h-4 w-4" />
       </Button>
       <Button
         type="button"
@@ -313,18 +387,12 @@ const MenuBar = ({
         type="button"
         variant="ghost"
         size="icon"
-        onClick={() => {
-          const url = window.prompt("Enter the URL");
-          if (url) {
-            editor.chain().focus().setLink({ href: url }).run();
-          } else {
-            editor.chain().focus().unsetLink().run();
-          }
-        }}
+        onClick={handleLinkClick}
         className={cn(
           "text-black hover:bg-uiblack/30",
           editor.isActive("link") && "bg-uiblack/20"
         )}
+        title="Insert Link"
       >
         <LinkIcon className="h-4 w-4" />
       </Button>
@@ -438,21 +506,42 @@ export const EmailRichTextEditor = ({
   const [imageUrl, setImageUrl] = useState("");
   const [imageWidth, setImageWidth] = useState("");
   const [imageHeight, setImageHeight] = useState("");
+  
+  // Image properties panel state
+  const [selectedImageAttrs, setSelectedImageAttrs] = useState<{
+    src: string | null;
+    link: string | null;
+    clickable: boolean;
+  } | null>(null);
+  
+  // Store original redirect URL when unchecked (so it can be restored when re-checked)
+  // Using ref to avoid dependency issues in useEffect
+  const preservedRedirectUrlRef = useRef<string | null>(null);
 
   // Process HTML to convert <img link="..."> to <img src="..." link="..."> for preview
+  // Also handle clickable attribute
   const processHtmlForPreview = (html: string): string => {
-    return html.replace(
-      /<img\s+([^>]*?)link\s*=\s*["']([^"']+)["']([^>]*?)\/?>/gi,
-      (match, before, linkUrl, after) => {
-        // Check if src already exists
-        if (before.includes('src=') || after.includes('src=')) {
-          return match; // Already has src, don't modify
-        }
+    let processed = html;
+    
+    // Handle images with link attribute (add src if missing, preserve clickable)
+    processed = processed.replace(
+      /<img\s+([^>]*?)(?:clickable\s*=\s*["']([^"']+)["']\s+)?(?:src\s*=\s*["']([^"']+)["']\s+)?link\s*=\s*["']([^"']+)["']([^>]*?)\/?>/gi,
+      (match, before, clickableValue, srcUrl, linkUrl, after) => {
         let newTag = "<img";
         if (before) {
           newTag += ` ${before.trim()}`;
         }
-        newTag += ` src="${linkUrl}" link="${linkUrl}"`;
+        // Preserve clickable attribute if present
+        if (clickableValue === "true") {
+          newTag += ` clickable="true"`;
+        }
+        // Use existing src if present, otherwise use linkUrl (backward compatibility)
+        const finalSrc = srcUrl || linkUrl;
+        if (finalSrc) {
+          newTag += ` src="${finalSrc}"`;
+        }
+        // Keep link separate (redirect URL)
+        newTag += ` link="${linkUrl}"`;
         if (after) {
           newTag += ` ${after.trim()}`;
         }
@@ -460,35 +549,124 @@ export const EmailRichTextEditor = ({
         return newTag;
       }
     );
-  };
-
-  // Process HTML to ensure link attribute is preserved in saved content
-  // Also ensures color styles are preserved
-  const processHtmlForSave = (html: string): string => {
-    // First, handle images that have both src and link (from preview)
-    const processed = html.replace(
-      /<img\s+([^>]*?)(?:src\s*=\s*["']([^"']+)["']\s+)?link\s*=\s*["']([^"']+)["']([^>]*?)\/?>/gi,
-      (match, before, srcUrl, linkUrl, after) => {
+    
+    // Handle images with clickable but no link (clickable images that link to themselves)
+    processed = processed.replace(
+      /<img\s+([^>]*?)clickable\s*=\s*["']true["']([^>]*?)(?!link\s*=\s*["'])([^>]*?)\/?>/gi,
+      (match, before, middle, after) => {
+        // Skip if already has link
+        if (before.includes('link=') || middle.includes('link=') || after.includes('link=')) {
+          return match;
+        }
+        
+        // Extract src
+        const srcMatch = before.match(/src\s*=\s*["']([^"']+)["']/) || 
+                         middle.match(/src\s*=\s*["']([^"']+)["']/) || 
+                         after.match(/src\s*=\s*["']([^"']+)["']/);
+        
+        if (!srcMatch) {
+          return match; // No src found
+        }
+        
+        const src = srcMatch[1];
         let newTag = "<img";
         if (before) {
-          // Remove src from before if it exists
-          const cleanedBefore = before.replace(/src\s*=\s*["'][^"']*["']/gi, "").trim();
-          if (cleanedBefore) {
-            newTag += ` ${cleanedBefore}`;
-          }
+          newTag += ` ${before.trim()}`;
         }
-        newTag += ` link="${linkUrl}"`;
+        if (middle) {
+          newTag += ` ${middle.trim()}`;
+        }
+        // Keep clickable and src, but don't add link (it links to itself)
+        newTag += ` clickable="true" src="${src}"`;
         if (after) {
-          // Remove src from after if it exists
-          const cleanedAfter = after.replace(/src\s*=\s*["'][^"']*["']/gi, "").trim();
-          if (cleanedAfter) {
-            newTag += ` ${cleanedAfter}`;
-          }
+          newTag += ` ${after.trim()}`;
         }
-        newTag += "/>";
+        newTag += ">";
         return newTag;
       }
     );
+    
+    return processed;
+  };
+
+  // Process HTML to ensure link and clickable attributes are preserved in saved content
+  // Also ensures color styles are preserved
+  // Removes src attribute if it matches link (to keep storage clean)
+  const processHtmlForSave = (html: string): string => {
+    let processed = html;
+    
+    // Process all img tags to ensure clickable and link attributes are preserved
+    const allImgRegex = /<img\s+([^>]*?)\/?>/gi;
+    
+    processed = processed.replace(allImgRegex, (match, attrs) => {
+      // Extract attributes (order doesn't matter)
+      const clickableMatch = attrs.match(/clickable\s*=\s*["']([^"']+)["']/i);
+      const linkMatch = attrs.match(/link\s*=\s*["']([^"']+)["']/i);
+      const srcMatch = attrs.match(/src\s*=\s*["']([^"']+)["']/i);
+      
+      const isClickable = clickableMatch && clickableMatch[1] === "true";
+      let linkUrl = linkMatch ? linkMatch[1] : null;
+      let src = srcMatch ? srcMatch[1] : null;
+      
+      // Remove temporary redirect marker if present
+      if (linkUrl && linkUrl.endsWith("#redirect")) {
+        linkUrl = linkUrl.replace("#redirect", "");
+      }
+      
+      // If link equals src, it means redirect is unchecked - treat as no redirect
+      // Use src as the image source, don't save link
+      if (linkUrl && linkUrl === src) {
+        linkUrl = null; // Don't save link if it equals src
+      }
+      
+      // If no src but we have linkUrl (and they're different), use linkUrl as src fallback
+      if (!src && linkUrl) {
+        src = linkUrl;
+      }
+      
+      // CRITICAL: For clickable images, src MUST exist (it's used as href when no redirect)
+      // If src is missing, we can't make the image clickable, so skip processing
+      if (isClickable && !src) {
+        return match; // Can't process clickable image without src
+      }
+      
+      // Remove clickable, link, and src from attributes (we'll add them back in correct format)
+      const cleanedAttrs = attrs
+        .replace(/clickable\s*=\s*["'][^"']*["']/gi, "")
+        .replace(/link\s*=\s*["'][^"']*["']/gi, "")
+        .replace(/src\s*=\s*["'][^"']*["']/gi, "")
+        .trim();
+      
+      let newTag = "<img";
+      if (cleanedAttrs) {
+        newTag += ` ${cleanedAttrs}`;
+      }
+      
+      // Always preserve src for the image (required for image to display and clickability)
+      // This is critical - src must always be present for clickable images to work
+      if (src) {
+        newTag += ` src="${src}"`;
+      }
+      
+      // If clickable, save clickable attribute
+      if (isClickable) {
+        newTag += ` clickable="true"`;
+        // Only save link if it's different from src (actual redirect)
+        // If link equals src or doesn't exist, don't save link (image links to itself)
+        if (linkUrl && linkUrl !== src) {
+          newTag += ` link="${linkUrl}"`;
+        }
+      } else if (linkUrl) {
+        // Not clickable but has link (old format, keep for backward compatibility)
+        newTag += ` link="${linkUrl}"`;
+        if (!src) {
+          newTag += ` src="${linkUrl}"`;
+        }
+      }
+      
+      newTag += "/>";
+      return newTag;
+    });
     
     // Ensure color styles are preserved - TipTap saves them as style="color: #hex"
     // This should already be in the HTML, but we verify it's not being stripped
@@ -497,12 +675,14 @@ export const EmailRichTextEditor = ({
   };
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
+      Underline,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: "text-blue-500 underline",
+          class: "text-blue-500 underline cursor-pointer",
         },
       }),
       TextStyle,
@@ -519,7 +699,7 @@ export const EmailRichTextEditor = ({
     editorProps: {
       attributes: {
         class:
-          "min-h-[200px] bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm max-w-none",
+          "min-h-[200px] bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm max-w-none [&_a]:text-blue-500 [&_a]:underline [&_a]:cursor-pointer",
       },
     },
   });
@@ -534,12 +714,55 @@ export const EmailRichTextEditor = ({
     }
   }, [editor, value]);
 
+  // Update selected image attributes when selection changes
+  useEffect(() => {
+    if (!editor) return;
+
+    const updateSelection = () => {
+      if (editor.isActive("image")) {
+        const attrs = editor.getAttributes("image") as Record<string, string | boolean | null>;
+        const src = attrs.src as string;
+        const link = attrs.link as string;
+        const clickable = (attrs.clickable as boolean) || false;
+        
+        // Check if it's a temporary redirect marker
+        const isTemporaryRedirect = link && link.endsWith("#redirect");
+        // Determine if redirect is actually set (link exists and is different from src)
+        // If link equals src, it means redirect is unchecked (but URL preserved for re-checking)
+        const hasRedirect = link && link !== src && !isTemporaryRedirect;
+        
+      // If link equals src, it means redirect was unchecked - preserve the original URL if we have it
+      // Otherwise, if we're switching to a different image, clear preserved URL
+      if (link !== src && !isTemporaryRedirect) {
+        // Different image or redirect is active - clear preserved URL
+        preservedRedirectUrlRef.current = null;
+      }
+        
+        setSelectedImageAttrs({
+          src: src || link?.replace("#redirect", "") || null, // Use src first, fallback to link for display
+          link: hasRedirect ? link : (isTemporaryRedirect ? "" : null), // Show link if redirect, empty if temporary, null if unchecked
+          clickable: clickable,
+        });
+      } else {
+        setSelectedImageAttrs(null);
+        preservedRedirectUrlRef.current = null; // Clear when deselecting
+      }
+    };
+
+    editor.on("selectionUpdate", updateSelection);
+    updateSelection();
+
+    return () => {
+      editor.off("selectionUpdate", updateSelection);
+    };
+  }, [editor]);
+
   const handleInsertImage = () => {
     if (!imageUrl.trim()) {
       return;
     }
 
-    let imgTag = `<img link="${imageUrl.trim()}"`;
+    let imgTag = `<img link="${imageUrl.trim()}" clickable="false"`;
     if (imageWidth.trim()) {
       imgTag += ` width="${imageWidth.trim()}"`;
     }
@@ -559,12 +782,109 @@ export const EmailRichTextEditor = ({
     setIsImageDialogOpen(false);
   };
 
+  const handleUpdateImageAttrs = (updates: { link?: string | null; clickable?: boolean; removeLink?: boolean }) => {
+    if (!editor || !editor.isActive("image")) return;
+
+    const currentAttrs = editor.getAttributes("image");
+    // Always preserve the original src - never change it
+    const currentSrc = (currentAttrs.src as string) || null;
+    const newAttrs: Record<string, string | boolean | null> = { ...currentAttrs };
+    
+    // Always preserve src
+    if (currentSrc) {
+      newAttrs.src = currentSrc;
+    }
+    
+    // Handle clickable update
+    if (updates.clickable !== undefined) {
+      newAttrs.clickable = updates.clickable;
+      // If unchecking clickable, remove link
+      if (updates.clickable === false) {
+        delete newAttrs.link;
+      }
+    }
+    
+    // Handle link update
+    if (updates.removeLink) {
+      // When unchecking redirect, preserve the original redirect URL
+      // Store it separately so it can be restored when re-checking
+      const currentLink = (currentAttrs.link as string) || null;
+      if (currentLink && currentLink !== currentSrc && !currentLink.endsWith("#redirect")) {
+        // Preserve the original redirect URL
+        preservedRedirectUrlRef.current = currentLink;
+      }
+      // Set link to src (marks as "no redirect" for save function)
+      // The save function will not save link if it equals src
+      // IMPORTANT: Also ensure src is explicitly set so it's in the HTML output
+      if (currentSrc) {
+        newAttrs.link = currentSrc;
+        newAttrs.src = currentSrc; // Ensure src is explicitly set
+      } else {
+        delete newAttrs.link;
+      }
+    } else if (updates.link !== undefined) {
+      // Update link
+      if (updates.link === null) {
+        // Explicitly remove link (no redirect, just clickable)
+        if (currentSrc) {
+          newAttrs.link = currentSrc; // Set to src instead of removing
+        } else {
+          delete newAttrs.link;
+        }
+      } else if (updates.link === "" && currentSrc) {
+        // Empty string when enabling redirect - use a temporary placeholder
+        // Add a marker so it's different from src and checkbox stays checked
+        newAttrs.link = currentSrc + "#redirect";
+      } else {
+        // Set link (redirect URL) - but keep src unchanged
+        newAttrs.link = updates.link;
+        // Ensure src is preserved
+        if (currentSrc) {
+          newAttrs.src = currentSrc;
+        }
+      }
+    }
+
+    // Update attributes in editor
+    editor.chain().focus().updateAttributes("image", newAttrs).run();
+    
+    // Immediately update local state
+    const finalLink = (newAttrs.link as string) || null;
+    // Check if it's a temporary redirect marker (src + "#redirect")
+    const isTemporaryRedirect = finalLink && finalLink.endsWith("#redirect");
+    // Determine if redirect is actually set (different from src, or temporary marker exists)
+    // If link equals src, it means redirect is unchecked (but URL is preserved for re-checking)
+    const hasRedirect = finalLink && finalLink !== currentSrc && !isTemporaryRedirect;
+    
+    const newState = {
+      src: currentSrc || (finalLink && !isTemporaryRedirect ? finalLink.replace("#redirect", "") : null) || null,
+      // Show link in state if it's a real redirect (different from src)
+      // If it's temporary (equals src + marker), show as empty string so user can enter URL
+      // If link equals src (redirect unchecked), show as null (checkbox unchecked, but URL preserved in editor)
+      link: hasRedirect ? finalLink : (isTemporaryRedirect ? "" : null),
+      clickable: (newAttrs.clickable as boolean) || false,
+    };
+    setSelectedImageAttrs(newState);
+  };
+
   if (!isMounted) {
     return null;
   }
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .ProseMirror a {
+            color: #3b82f6 !important;
+            text-decoration: underline !important;
+            cursor: pointer !important;
+          }
+          .ProseMirror a:hover {
+            color: #2563eb !important;
+          }
+        `
+      }} />
       <div className="border rounded-md overflow-hidden">
         {editor && (
           <MenuBar
@@ -573,6 +893,104 @@ export const EmailRichTextEditor = ({
           />
         )}
         <EditorContent editor={editor} />
+        {selectedImageAttrs && (
+          <div className="border-t bg-gray-50 p-3 space-y-3">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="img-clickable"
+                checked={selectedImageAttrs.clickable}
+                onCheckedChange={(checked) => {
+                  const isClickable = checked === true;
+                  handleUpdateImageAttrs({ 
+                    clickable: isClickable,
+                    // If unchecking clickable, remove redirect URL
+                    link: isClickable ? selectedImageAttrs.link : null
+                  });
+                }}
+              />
+              <Label
+                htmlFor="img-clickable"
+                className="text-black text-sm font-medium cursor-pointer"
+              >
+                Clickable image
+              </Label>
+            </div>
+            {selectedImageAttrs.clickable && (
+              <>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="img-redirect"
+                    checked={selectedImageAttrs.link !== null}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        // When enabling redirect, restore preserved URL if available, otherwise use placeholder
+                        if (preservedRedirectUrlRef.current) {
+                          // Restore the original redirect URL that was preserved when unchecked
+                          handleUpdateImageAttrs({ 
+                            link: preservedRedirectUrlRef.current
+                          });
+                          preservedRedirectUrlRef.current = null; // Clear preserved URL
+                        } else if (selectedImageAttrs.link === selectedImageAttrs.src || !selectedImageAttrs.link) {
+                          // Was unchecked or no redirect - use placeholder
+                          const placeholder = (selectedImageAttrs.src || "") + "#redirect";
+                          handleUpdateImageAttrs({ 
+                            link: placeholder
+                          });
+                        } else {
+                          // Already has redirect URL - keep it
+                          handleUpdateImageAttrs({ 
+                            link: selectedImageAttrs.link
+                          });
+                        }
+                      } else {
+                        // When disabling redirect, preserve the URL and set link to src
+                        // Save function will not save link if it equals src
+                        handleUpdateImageAttrs({ removeLink: true });
+                      }
+                    }}
+                  />
+                  <Label
+                    htmlFor="img-redirect"
+                    className="text-black text-sm font-medium cursor-pointer"
+                  >
+                    Redirect to other URL
+                  </Label>
+                </div>
+                {selectedImageAttrs.link !== null && (
+                  <div>
+                    <Label htmlFor="img-hyperlink-url" className="text-black text-sm font-semibold">
+                      Redirect URL
+                    </Label>
+                    <Input
+                      id="img-hyperlink-url"
+                      type="url"
+                      placeholder={selectedImageAttrs.src || "https://example.com"}
+                      value={selectedImageAttrs.link || ""}
+                      onChange={(e) => {
+                        const url = e.target.value;
+                        // Update link immediately while typing (don't trim or set to null)
+                        // This prevents the image from being deleted while typing
+                        handleUpdateImageAttrs({ link: url });
+                      }}
+                      onBlur={(e) => {
+                        // Only trim and validate on blur
+                        const url = e.target.value.trim();
+                        if (url && url !== selectedImageAttrs.src) {
+                          // Only update if URL is different from src (actual redirect)
+                          handleUpdateImageAttrs({ link: url });
+                        } else if (!url || url === selectedImageAttrs.src) {
+                          // If empty or same as src, remove redirect (will link to itself)
+                          handleUpdateImageAttrs({ removeLink: true });
+                        }
+                      }}
+                      className="text-black mt-1"
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
@@ -668,6 +1086,7 @@ export const EmailRichTextEditor = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </>
   );
 };
