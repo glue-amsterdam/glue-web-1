@@ -41,12 +41,24 @@ export async function POST(request: Request) {
       );
     }
 
+    // Get user information to retrieve user_name
+    const { data: userData, error: userError } = await supabase
+      .from("user_info")
+      .select("user_name")
+      .eq("user_id", userId)
+      .single();
+
+    if (userError || !userData) {
+      console.warn("Failed to fetch user_info, using email as fallback");
+    }
+
     try {
       const template = await getEmailTemplateWithFallback(
         "participant-accepted"
       );
       const htmlContent = processEmailTemplate(template.html_content, {
         email: user.email,
+        user_name: userData?.user_name || user.email,
       });
 
       await resend.emails.send({
