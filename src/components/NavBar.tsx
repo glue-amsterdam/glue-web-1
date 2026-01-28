@@ -20,6 +20,7 @@ import { MdMenu } from "react-icons/md";
 import LoginForm from "@/app/components/login-form/login-form";
 import { cn } from "@/lib/utils";
 import { User } from "@supabase/supabase-js";
+import { useGSAP } from "@gsap/react";
 
 interface NavBarProps extends React.HTMLAttributes<HTMLElement> {
   ref?: React.RefObject<HTMLElement>;
@@ -72,7 +73,7 @@ const NavBar = forwardRef<HTMLElement, NavBarProps>(
     };
 
     // GSAP animations for overlay
-    useEffect(() => {
+    useGSAP(() => {
       if (!overlayRef.current) return;
 
       if (isOpen) {
@@ -136,7 +137,10 @@ const NavBar = forwardRef<HTMLElement, NavBarProps>(
             "fixed top-0 left-0 right-0 px-4 py-2 flex items-center justify-center md:justify-between gap-4 z-50",
             isOpen
               ? "bg-black"
-              : isLogoVisible && pathname !== "/"
+              : isLogoVisible &&
+                pathname != null &&
+                pathname !== "" &&
+                pathname !== "/"
               ? "bg-black/50 backdrop-blur-lg"
               : "bg-transparent",
             className

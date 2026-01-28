@@ -125,19 +125,21 @@ export default function EmailTemplatesList({
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto text-black">
-          <DialogHeader>
+        <DialogContent className="max-w-[90vw] md:max-w-4xl h-[90vh] overflow-y-auto overflow-x-hidden px-1 md:px-4 text-black w-[90vw] md:w-auto">
+          <DialogHeader className="w-full max-w-full">
             <DialogTitle className="text-black">
               {selectedTemplate &&
                 getTemplateDisplayInfo(selectedTemplate.slug).label}
             </DialogTitle>
           </DialogHeader>
           {selectedTemplate && (
-            <EmailTemplateForm
-              template={selectedTemplate}
-              onSave={handleSave}
-              onCancel={handleClose}
-            />
+            <div className="w-full max-w-full overflow-x-hidden">
+              <EmailTemplateForm
+                template={selectedTemplate}
+                onSave={handleSave}
+                onCancel={handleClose}
+              />
+            </div>
           )}
         </DialogContent>
       </Dialog>

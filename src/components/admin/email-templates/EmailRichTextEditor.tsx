@@ -273,7 +273,7 @@ const MenuBar = ({
   };
 
   return (
-    <div className="bg-gray flex flex-wrap gap-1 pb-2 border-b">
+    <div className="bg-gray flex flex-wrap gap-1 pb-2 border-b w-full max-w-full overflow-x-auto">
       <Button
         type="button"
         variant="ghost"
@@ -699,7 +699,7 @@ export const EmailRichTextEditor = ({
     editorProps: {
       attributes: {
         class:
-          "min-h-[200px] bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm max-w-none [&_a]:text-blue-500 [&_a]:underline [&_a]:cursor-pointer",
+          "min-h-[200px] max-h-[40dvh] overflow-y-auto bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm max-w-none [&_a]:text-blue-500 [&_a]:underline [&_a]:cursor-pointer",
       },
     },
   });
@@ -885,17 +885,17 @@ export const EmailRichTextEditor = ({
           }
         `
       }} />
-      <div className="border rounded-md overflow-hidden">
+      <div className="border rounded-md overflow-hidden w-full max-w-full">
         {editor && (
           <MenuBar
             editor={editor}
             onImageClick={() => setIsImageDialogOpen(true)}
           />
         )}
-        <EditorContent editor={editor} />
+        <EditorContent editor={editor} className="w-full max-w-full" />
         {selectedImageAttrs && (
-          <div className="border-t bg-gray-50 p-3 space-y-3">
-            <div className="flex items-center space-x-2">
+          <div className="border-t bg-gray-50 p-3 space-y-3 w-full max-w-full">
+            <div className="flex items-center space-x-2 w-full max-w-full">
               <Checkbox
                 id="img-clickable"
                 checked={selectedImageAttrs.clickable}
@@ -917,7 +917,7 @@ export const EmailRichTextEditor = ({
             </div>
             {selectedImageAttrs.clickable && (
               <>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 w-full max-w-full">
                   <Checkbox
                     id="img-redirect"
                     checked={selectedImageAttrs.link !== null}
@@ -957,7 +957,7 @@ export const EmailRichTextEditor = ({
                   </Label>
                 </div>
                 {selectedImageAttrs.link !== null && (
-                  <div>
+                  <div className="w-full max-w-full">
                     <Label htmlFor="img-hyperlink-url" className="text-black text-sm font-semibold">
                       Redirect URL
                     </Label>
@@ -983,7 +983,7 @@ export const EmailRichTextEditor = ({
                           handleUpdateImageAttrs({ removeLink: true });
                         }
                       }}
-                      className="text-black mt-1"
+                      className="text-black mt-1 w-full max-w-full"
                     />
                   </div>
                 )}

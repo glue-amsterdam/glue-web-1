@@ -48,15 +48,15 @@ export default function EventContent({ event }: EventContentProps) {
           </article>
         </div>
         <article className="flex flex-col space-y-4">
-          <figure className="relative w-full h-60 lg:h-[40vh] overflow-hidden">
+          <figure className="relative w-full flex justify-center items-start overflow-hidden">
             <Image
               src={event.thumbnail.image_url || "/placeholder.svg"}
               width={1920}
               height={1080}
               alt={`Event from the GLUE community: ${event.name} - ${event.type} type`}
-              sizes="60vw"
-              className="absolute inset-0 w-full h-full object-cover"
-              quality={85}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 60vw"
+              className="w-full h-auto max-h-[60vh] object-contain"
+              quality={95}
             />
           </figure>
           <div className="flex flex-col lg:flex-row gap-4 text-black">
@@ -108,12 +108,12 @@ export default function EventContent({ event }: EventContentProps) {
           {event.location && (
             <div>
               <a
-                className="flex gap-1"
+                className="flex gap-1 items-center"
                 target="_blank"
                 href={`/map?place=${event.location.id}`}
                 rel="noreferrer"
               >
-                <MapPinCheck />
+                <MapPinCheck className="text-black" />
                 <p className="text-black">{event.location.formatted_address}</p>
               </a>
             </div>

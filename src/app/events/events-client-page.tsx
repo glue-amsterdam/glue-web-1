@@ -2,10 +2,11 @@
 
 import { useSetPageDataset } from "@/hooks/useSetPageDataset";
 import { useColors } from "../context/MainContext";
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import gsap from "gsap";
+import { useSearchParams } from "next/navigation";
 import NavBar from "@/components/NavBar";
 import EventHeader from "../components/events/event-header";
 import SearchAndFilter from "../components/events/search-and-filter-events";
@@ -16,10 +17,8 @@ import ReactLenis from "@studio-freight/react-lenis";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function EventsClientPage({
-  params,
   headerTitle,
 }: {
-  params: URLSearchParams;
   headerTitle: string;
 }) {
   useSetPageDataset("upButton");
@@ -30,6 +29,25 @@ export default function EventsClientPage({
   const container = useRef<HTMLDivElement>(null);
   const topNavBarRef = useRef<HTMLDivElement>(null);
   const animationBlockRef = useRef<HTMLDivElement>(null);
+
+  // Use useSearchParams to get current search params (updates on navigation)
+  // This ensures we always have a proper URLSearchParams object
+  const searchParams = useSearchParams();
+
+  // Filter out eventId from params to prevent list reload when modal opens/closes
+  // eventId is only needed for the modal, not for filtering events
+  // Extract filter values to compare by value, not reference
+  const searchValue = searchParams.get("search") || "";
+  const typeValue = searchParams.get("type") || "";
+  const dayValue = searchParams.get("day") || "";
+
+  const filterParams = useMemo(() => {
+    const filtered = new URLSearchParams();
+    if (searchValue) filtered.set("search", searchValue);
+    if (typeValue) filtered.set("type", typeValue);
+    if (dayValue) filtered.set("day", dayValue);
+    return filtered;
+  }, [searchValue, typeValue, dayValue]);
 
   useGSAP(
     () => {
@@ -91,7 +109,7 @@ export default function EventsClientPage({
             <SearchAndFilter />
           </section>
 
-          <EventListContainer params={params} />
+          <EventListContainer params={filterParams} />
 
           <EventModal />
         </div>
