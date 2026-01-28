@@ -87,7 +87,7 @@ export function OverlayNavMenu({
   };
 
   return (
-    <div className="m-auto flex flex-col justify-between px-10 overflow-y-auto">
+    <div className="m-auto flex flex-col justify-between px-10 overflow-y-auto overflow-x-hidden">
       <div className="text-black absolute right-10 z-10">
         {user ? (
           <div className="flex flex-col items-end gap-2">
