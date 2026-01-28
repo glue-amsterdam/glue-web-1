@@ -21,15 +21,14 @@ export default function EventListContainer({
   params: URLSearchParams;
 }) {
   // Extract filter parameters
-  const filterParams = useMemo(() => {
-    const searchParams =
-      params instanceof URLSearchParams ? params : new URLSearchParams(params);
+  // Use actual filter values as dependencies to prevent re-renders when only eventId changes
+  const searchValue = params.get("search") || "";
+  const typeValue = params.get("type") || "";
+  const dayValue = params.get("day") || "";
 
-    const search = searchParams.get("search") || "";
-    const type = searchParams.get("type") || "";
-    const day = searchParams.get("day") || "";
-    return { search, type, day };
-  }, [params]);
+  const filterParams = useMemo(() => {
+    return { search: searchValue, type: typeValue, day: dayValue };
+  }, [searchValue, typeValue, dayValue]);
 
   return (
     <section aria-label="Event list">

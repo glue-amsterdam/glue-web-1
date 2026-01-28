@@ -12,15 +12,24 @@ const LazyEventsList = memo(function LazyEventsList({
   searchParams: { [key: string]: string };
 }) {
   // Convert searchParams object to URLSearchParams
+  // Use individual values as dependencies to prevent re-renders when object reference changes but values are the same
+  const searchValue = searchParams.search || "";
+  const typeValue = searchParams.type || "";
+  const dayValue = searchParams.day || "";
+
   const urlSearchParams = useMemo(() => {
     const params = new URLSearchParams();
-    Object.entries(searchParams).forEach(([key, value]) => {
-      if (value && value.trim() !== "") {
-        params.set(key, value);
-      }
-    });
+    if (searchValue && searchValue.trim() !== "") {
+      params.set("search", searchValue);
+    }
+    if (typeValue && typeValue.trim() !== "") {
+      params.set("type", typeValue);
+    }
+    if (dayValue && dayValue.trim() !== "") {
+      params.set("day", dayValue);
+    }
     return params;
-  }, [searchParams]);
+  }, [searchValue, typeValue, dayValue]);
 
   const { events, loading, hasMore, loadMore, error, retry, totalEvents } =
     useEventsLazy(urlSearchParams, 12);
@@ -72,10 +81,10 @@ const LazyEventsList = memo(function LazyEventsList({
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Loading...
+                <p className="sr-only">Loading...</p>
               </>
             ) : (
-              `Load More (${events.length} of ${totalEvents})`
+              `More (${events.length}/${totalEvents})`
             )}
           </Button>
         </div>
