@@ -264,7 +264,7 @@ export const RichTextEditor = ({
     editorProps: {
       attributes: {
         class:
-          "min-h-[200px] bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm max-w-none [&_a]:text-blue-500 [&_a]:underline [&_a]:cursor-pointer",
+          "min-h-[200px] max-h-[50dvh] lg:max-h-[40dvh] overflow-y-auto bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm max-w-none [&_a]:text-blue-500 [&_a]:underline [&_a]:cursor-pointer",
       },
     },
   });

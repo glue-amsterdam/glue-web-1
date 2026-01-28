@@ -151,16 +151,16 @@ export default function EmailTemplateForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="space-y-6 text-black"
+        className="space-y-6 text-black w-full max-w-full overflow-x-hidden px-1 md:px-4"
       >
         <FormField
           control={form.control}
           name="subject"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="w-full max-w-full">
               <FormLabel className="text-black">Subject Line</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Email subject" className="text-black" />
+                <Input {...field} placeholder="Email subject" className="text-black w-full max-w-full" />
               </FormControl>
               <FormDescription className="text-black">
                 {`The subject line that will appear in the recipient's inbox.`}
@@ -174,13 +174,15 @@ export default function EmailTemplateForm({
           control={form.control}
           name="html_content"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="w-full max-w-full">
               <FormLabel className="text-black">Email Content</FormLabel>
               <FormControl>
-                <EmailRichTextEditor
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                />
+                <div className="w-full max-w-full">
+                  <EmailRichTextEditor
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                  />
+                </div>
               </FormControl>
               <FormDescription className="text-black">
                 You can use variables{" "}
@@ -208,14 +210,14 @@ export default function EmailTemplateForm({
               >
                 Send Test Email
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full max-w-full">
                 <Input
                   id="test-email"
                   type="email"
                   placeholder="Enter email address to send test"
                   value={testEmail}
                   onChange={(e) => setTestEmail(e.target.value)}
-                  className="text-black flex-1"
+                  className="text-black flex-1 min-w-0"
                   disabled={isSendingTest || isSubmitting}
                 />
                 <Button
@@ -223,6 +225,7 @@ export default function EmailTemplateForm({
                   variant="outline"
                   onClick={handleSendTest}
                   disabled={isSendingTest || isSubmitting || !testEmail}
+                  className="flex-shrink-0"
                 >
                   {isSendingTest ? "Sending..." : "Send Test"}
                 </Button>
@@ -235,16 +238,17 @@ export default function EmailTemplateForm({
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 pt-4">
+        <div className="flex justify-end gap-2 pt-4 w-full max-w-full flex-wrap">
           <Button
             type="button"
             variant="outline"
             onClick={onCancel}
             disabled={isSubmitting || isSendingTest}
+            className="flex-shrink-0"
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting || isSendingTest}>
+          <Button type="submit" disabled={isSubmitting || isSendingTest} className="flex-shrink-0">
             {isSubmitting ? "Saving..." : "Save Changes"}
           </Button>
         </div>
