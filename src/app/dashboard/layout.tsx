@@ -9,7 +9,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="min-h-dvh" data-page-container>
+    <main className="h-full flex flex-col min-h-0" data-page-container>
       {children}
     </main>
   );

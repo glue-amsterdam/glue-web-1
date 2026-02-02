@@ -56,7 +56,7 @@ export default function DashboardMenu({
   // Filter dashboard sections based on is_active status
 
   const SidebarContent = () => (
-    <nav className="flex flex-col gap-4 p-6">
+    <nav className="flex flex-col gap-2 p-6">
       <AnimatePresence>
         {filteredDashboardSections.map((item, index) => (
           <motion.div
@@ -169,7 +169,7 @@ export default function DashboardMenu({
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
         style={{ backgroundColor: box1 }}
-        className="pt-[5rem] hidden md:block w-80 shadow-xl overflow-y-auto scrollbar scrollbar-thumb-white scrollbar-track-white/10 border-r-2 border-white"
+        className="hidden md:block h-full flex-shrink-0 w-80 shadow-xl overflow-y-auto scrollbar scrollbar-thumb-white scrollbar-track-white/10 border-r-2 border-white"
       >
         <div className="p-6">
           <h2 className="text-white text-xl font-bold mb-2">

@@ -38,7 +38,10 @@ export const DashboardProvider: React.FC<
         loggedPlanType,
       }}
     >
-      <div className="w-full py-4" style={{ backgroundColor: box3 }}>
+      <div
+        className="w-full flex-1 min-h-0 overflow-y-auto py-4"
+        style={{ backgroundColor: box3 }}
+      >
         {children}
       </div>
     </DashboardContext.Provider>
