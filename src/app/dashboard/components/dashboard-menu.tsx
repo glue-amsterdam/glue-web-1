@@ -29,13 +29,45 @@ type DashboardMenuProps = {
   isMod?: boolean;
   userName?: string;
   targetUserId?: string;
+  targetParticipantName?: string | null;
+  targetParticipantSlug?: string | null;
   is_active: boolean;
+};
+
+const ModifyingProfileSection = ({
+  targetParticipantName,
+  targetParticipantSlug,
+  targetUserId,
+}: {
+  targetParticipantName?: string | null;
+  targetParticipantSlug?: string | null;
+  targetUserId?: string;
+}) => {
+  const hasNameOrSlug = targetParticipantName || targetParticipantSlug;
+
+  if (!hasNameOrSlug && !targetUserId) return null;
+
+  return (
+    <div className="text-xs text-white space-y-1 border border-white p-1">
+      <p className="font-medium mb-1">Modifying profile of:</p>
+      {hasNameOrSlug ? (
+        <>
+          {targetParticipantName && <p>User Name: {targetParticipantName}</p>}
+          {targetParticipantSlug && <p>User Slug: /{targetParticipantSlug}</p>}
+        </>
+      ) : (
+        <p>ID: {targetUserId}</p>
+      )}
+    </div>
+  );
 };
 
 export default function DashboardMenu({
   isMod,
   userName,
   targetUserId,
+  targetParticipantName,
+  targetParticipantSlug,
   is_active,
 }: DashboardMenuProps) {
   const { box1, box2 } = useColors();
@@ -56,7 +88,7 @@ export default function DashboardMenu({
   // Filter dashboard sections based on is_active status
 
   const SidebarContent = () => (
-    <nav className="flex flex-col gap-4 p-6">
+    <nav className="flex flex-col gap-2 p-6">
       <AnimatePresence>
         {filteredDashboardSections.map((item, index) => (
           <motion.div
@@ -153,10 +185,12 @@ export default function DashboardMenu({
               <h2 className="text-white text-xl font-bold mb-2">
                 Hello, {userName || user.email}
               </h2>
-              {isMod && targetUserId && (
-                <p className="text-xs text-white mb-6">
-                  Modifying profile of ID: {targetUserId}
-                </p>
+              {isMod && (
+                <ModifyingProfileSection
+                  targetParticipantName={targetParticipantName}
+                  targetParticipantSlug={targetParticipantSlug}
+                  targetUserId={targetUserId}
+                />
               )}
             </div>
             <SidebarContent />
@@ -169,16 +203,18 @@ export default function DashboardMenu({
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
         style={{ backgroundColor: box1 }}
-        className="pt-[5rem] hidden md:block w-80 shadow-xl overflow-y-auto scrollbar scrollbar-thumb-white scrollbar-track-white/10 border-r-2 border-white"
+        className="hidden md:block h-full flex-shrink-0 w-80 shadow-xl overflow-y-auto scrollbar scrollbar-thumb-white scrollbar-track-white/10 border-r-2 border-white"
       >
         <div className="p-6">
           <h2 className="text-white text-xl font-bold mb-2">
             Hello, {userName || user.email}
           </h2>
-          {isMod && targetUserId && (
-            <p className="text-xs italic text-white mb-4">
-              Modifying profile for: {targetUserId}
-            </p>
+          {isMod && (
+            <ModifyingProfileSection
+              targetParticipantName={targetParticipantName}
+              targetParticipantSlug={targetParticipantSlug}
+              targetUserId={targetUserId}
+            />
           )}
         </div>
         <SidebarContent />

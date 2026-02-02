@@ -14,9 +14,11 @@ export default function Template({ children }: { children: React.ReactNode }) {
         style={{
           backgroundColor: box3,
         }}
-        className="min-h-dvh pt-[4rem]"
+        className="h-dvh flex flex-col pt-[4rem] overflow-hidden"
       >
-        {children}
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          {children}
+        </div>
       </div>
     </>
   );

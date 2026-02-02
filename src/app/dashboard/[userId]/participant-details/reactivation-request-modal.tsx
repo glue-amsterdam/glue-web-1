@@ -32,7 +32,7 @@ import {
   Form,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { reactivationNotesSchema } from "@/schemas/participantDetailsSchemas";
+import { reactivationRequestSubmissionSchema } from "@/schemas/participantDetailsSchemas";
 import mapboxSdk from "@mapbox/mapbox-sdk/services/geocoding";
 import { config } from "@/env";
 import { strToNumber } from "@/constants";
@@ -44,7 +44,9 @@ import TermsContent from "@/app/signup/components/TermsContent";
 interface ReactivationRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: z.infer<typeof reactivationNotesSchema>) => Promise<void>;
+  onSubmit: (
+    data: z.infer<typeof reactivationRequestSubmissionSchema>
+  ) => Promise<void>;
   userId: string;
 }
 
@@ -74,8 +76,8 @@ export function ReactivationRequestModal({
 
   const plans: PlanType[] = plansData?.plans || [];
 
-  const form = useForm<z.infer<typeof reactivationNotesSchema>>({
-    resolver: zodResolver(reactivationNotesSchema),
+  const form = useForm<z.infer<typeof reactivationRequestSubmissionSchema>>({
+    resolver: zodResolver(reactivationRequestSubmissionSchema),
     defaultValues: {
       plan_id: "",
       plan_type: "",
@@ -155,7 +157,7 @@ export function ReactivationRequestModal({
   }, [noAddress, form]);
 
   const handleFormSubmit = async (
-    data: z.infer<typeof reactivationNotesSchema>
+    data: z.infer<typeof reactivationRequestSubmissionSchema>
   ) => {
     setIsSubmitting(true);
     try {
@@ -200,12 +202,13 @@ export function ReactivationRequestModal({
                     <FormItem>
                       <FormLabel>Plan</FormLabel>
                       <Select
+                        value={field.value || ""}
                         onValueChange={(value) => {
+                          field.onChange(value);
                           const selectedPlan = plans.find(
                             (p) => p.plan_id === value
                           );
                           if (selectedPlan) {
-                            form.setValue("plan_id", selectedPlan.plan_id);
                             form.setValue("plan_type", selectedPlan.plan_type);
                             form.setValue(
                               "plan_label",
@@ -213,7 +216,6 @@ export function ReactivationRequestModal({
                             );
                           }
                         }}
-                        defaultValue={field.value || undefined}
                       >
                         <FormControl>
                           <SelectTrigger className="bg-white text-black">
@@ -228,30 +230,6 @@ export function ReactivationRequestModal({
                           ))}
                         </SelectContent>
                       </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="plan_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Plan Type{" "}
-                        <span className="text-xs text-orange-500/50">
-                          -Read only info
-                        </span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          className="bg-white text-black"
-                          readOnly
-                          value={field.value || ""}
-                        />
-                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -412,7 +390,9 @@ export function ReactivationRequestModal({
       <Dialog open={isTermsDialogOpen} onOpenChange={setIsTermsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="sr-only">General Terms and Conditions</DialogTitle>
+            <DialogTitle className="sr-only">
+              General Terms and Conditions
+            </DialogTitle>
             <DialogDescription className="sr-only">
               Please read the following terms and conditions carefully.
             </DialogDescription>
