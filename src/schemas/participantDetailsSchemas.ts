@@ -19,6 +19,16 @@ export const reactivationNotesSchema = z.object({
 
 export type ReactivationNotes = z.infer<typeof reactivationNotesSchema>;
 
+/** Stricter schema for new reactivation request submissions (plan required). */
+export const reactivationRequestSubmissionSchema =
+  reactivationNotesSchema.extend({
+    plan_id: z.string().min(1, "You must select a plan"),
+  });
+
+export type ReactivationRequestSubmission = z.infer<
+  typeof reactivationRequestSubmissionSchema
+>;
+
 export const participantDetailsSchema = z.object({
   user_id: z.string().uuid(),
   short_description: z

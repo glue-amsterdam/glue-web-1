@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { reactivationNotesSchema } from "@/schemas/participantDetailsSchemas";
+import { reactivationRequestSubmissionSchema } from "@/schemas/participantDetailsSchemas";
 import { Resend } from "resend";
 import { config } from "@/env";
 
@@ -46,9 +46,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate reactivation data
+    // Validate reactivation data (plan_id required for new requests)
     try {
-      reactivationNotesSchema.parse(reactivationData);
+      reactivationRequestSubmissionSchema.parse(reactivationData);
     } catch (error) {
       return NextResponse.json(
         { error: "Invalid reactivation data", details: error },
@@ -110,8 +110,8 @@ export async function POST(request: Request) {
     }
 
     // Format exhibition space preference
-    const exhibitionSpaceInfo = reactivationData.exhibition_space_preference 
-      ? reactivationData.exhibition_space_preference 
+    const exhibitionSpaceInfo = reactivationData.exhibition_space_preference
+      ? reactivationData.exhibition_space_preference
       : "No preference provided";
 
     const adminEmails = config.adminEmails
