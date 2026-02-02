@@ -29,13 +29,45 @@ type DashboardMenuProps = {
   isMod?: boolean;
   userName?: string;
   targetUserId?: string;
+  targetParticipantName?: string | null;
+  targetParticipantSlug?: string | null;
   is_active: boolean;
+};
+
+const ModifyingProfileSection = ({
+  targetParticipantName,
+  targetParticipantSlug,
+  targetUserId,
+}: {
+  targetParticipantName?: string | null;
+  targetParticipantSlug?: string | null;
+  targetUserId?: string;
+}) => {
+  const hasNameOrSlug = targetParticipantName || targetParticipantSlug;
+
+  if (!hasNameOrSlug && !targetUserId) return null;
+
+  return (
+    <div className="text-xs text-white space-y-1 border border-white p-1">
+      <p className="font-medium mb-1">Modifying profile of:</p>
+      {hasNameOrSlug ? (
+        <>
+          {targetParticipantName && <p>User Name: {targetParticipantName}</p>}
+          {targetParticipantSlug && <p>User Slug: /{targetParticipantSlug}</p>}
+        </>
+      ) : (
+        <p>ID: {targetUserId}</p>
+      )}
+    </div>
+  );
 };
 
 export default function DashboardMenu({
   isMod,
   userName,
   targetUserId,
+  targetParticipantName,
+  targetParticipantSlug,
   is_active,
 }: DashboardMenuProps) {
   const { box1, box2 } = useColors();
@@ -153,10 +185,12 @@ export default function DashboardMenu({
               <h2 className="text-white text-xl font-bold mb-2">
                 Hello, {userName || user.email}
               </h2>
-              {isMod && targetUserId && (
-                <p className="text-xs text-white mb-6">
-                  Modifying profile of ID: {targetUserId}
-                </p>
+              {isMod && (
+                <ModifyingProfileSection
+                  targetParticipantName={targetParticipantName}
+                  targetParticipantSlug={targetParticipantSlug}
+                  targetUserId={targetUserId}
+                />
               )}
             </div>
             <SidebarContent />
@@ -175,10 +209,12 @@ export default function DashboardMenu({
           <h2 className="text-white text-xl font-bold mb-2">
             Hello, {userName || user.email}
           </h2>
-          {isMod && targetUserId && (
-            <p className="text-xs italic text-white mb-4">
-              Modifying profile for: {targetUserId}
-            </p>
+          {isMod && (
+            <ModifyingProfileSection
+              targetParticipantName={targetParticipantName}
+              targetParticipantSlug={targetParticipantSlug}
+              targetUserId={targetUserId}
+            />
           )}
         </div>
         <SidebarContent />

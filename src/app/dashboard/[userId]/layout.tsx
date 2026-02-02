@@ -45,6 +45,27 @@ export default async function DashboardLayout({
 
   const participantStatus = participantDetails?.status;
 
+  // When mod is viewing a profile, fetch target's user_name and slug for display (including own profile)
+  let targetParticipantName: string | null = null;
+  let targetParticipantSlug: string | null = null;
+  if (isModerator) {
+    const [targetUserInfoRes, targetParticipantDetailsRes] = await Promise.all([
+      supabase
+        .from("user_info")
+        .select("user_name")
+        .eq("user_id", targetUserId)
+        .single(),
+      supabase
+        .from("participant_details")
+        .select("slug")
+        .eq("user_id", targetUserId)
+        .single(),
+    ]);
+
+    targetParticipantName = targetUserInfoRes.data?.user_name ?? null;
+    targetParticipantSlug = targetParticipantDetailsRes.data?.slug ?? null;
+  }
+
   // If user is not a moderator and not a participant, show insufficient access
   if (!isModerator && !isParticipant) {
     return (
@@ -105,6 +126,8 @@ export default async function DashboardLayout({
         userName={loggedUserInfo?.user_name}
         is_active={participantDetails?.is_active}
         targetUserId={targetUserId}
+        targetParticipantName={targetParticipantName}
+        targetParticipantSlug={targetParticipantSlug}
       />
       <DashboardProvider {...propData}>{children}</DashboardProvider>
     </section>
