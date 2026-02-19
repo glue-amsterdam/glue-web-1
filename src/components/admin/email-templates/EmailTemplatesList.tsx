@@ -108,9 +108,7 @@ export default function EmailTemplatesList({
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{displayInfo.label}</CardTitle>
-                  <Badge className={displayInfo.color}>
-                    {template.slug}
-                  </Badge>
+                  <Badge className={displayInfo.color}>{template.slug}</Badge>
                 </div>
               </CardHeader>
               <CardContent>
@@ -120,8 +118,7 @@ export default function EmailTemplatesList({
                 <p className="text-sm font-medium">Subject:</p>
                 <p className="text-sm text-gray-700 mb-2">{template.subject}</p>
                 <p className="text-xs text-gray-500">
-                  Last updated:{" "}
-                  {new Date(template.updated_at).toLocaleString()}
+                  Last updated: {new Date(template.updated_at).toLocaleString()}
                 </p>
               </CardContent>
             </Card>
