@@ -23,7 +23,7 @@ const resetPasswordSchema = z
     token: z.string().length(6, { message: "Token must be 6 digits" }),
     password: z
       .string()
-      .min(6, { message: "Password must be at least 6 characters" }),
+      .min(8, { message: "Password must be at least 8 characters" }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -81,7 +81,7 @@ export default function ResetPasswordForm() {
     } catch (error) {
       console.error("Error resetting password:", error);
       setError(
-        "Failed to reset password. Please check your email and token, then try again."
+        "Failed to reset password. Please check your email and token, then try again.",
       );
     } finally {
       setIsLoading(false);

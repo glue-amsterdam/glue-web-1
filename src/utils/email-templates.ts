@@ -98,20 +98,49 @@ export const processImageTags = (html: string): string => {
 };
 
 /**
+ * Normalizes template placeholders so that {{<span>variable</span>}} (or any
+ * HTML wrapping only the variable name) becomes {{variable}}. TipTap sometimes
+ * wraps styled text in <span>, which breaks literal {{variable}} matching.
+ */
+const normalizeTemplatePlaceholders = (html: string): string => {
+  return html.replace(/\{\{([\s\S]*?)\}\}/g, (_, inner) => {
+    const variableName = inner.replace(/<[^>]+>/g, "").trim();
+    return variableName ? `{{${variableName}}}` : `{{${inner}}}`;
+  });
+};
+
+/**
  * Replaces template variables in HTML content
  * Variables should be in the format {{variableName}}
+ * - Normalizes placeholders first (strips HTML inside {{...}}, e.g. TipTap spans)
+ * - Replaces literal {{key}} and HTML-entity-encoded form
  */
 export const replaceTemplateVariables = (
   template: string,
   variables: EmailTemplateVariables
 ): string => {
-  let result = template;
+  let result = normalizeTemplatePlaceholders(template);
+  const replacement = (value: string) => value ?? "";
+
   Object.entries(variables).forEach(([key, value]) => {
-    const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
-    result = result.replace(regex, value || "");
+    const val = replacement(value);
+
+    // Literal {{key}}
+    const literalRegex = new RegExp(`\\{\\{${escapeRegExp(key)}\\}\\}`, "g");
+    result = result.replace(literalRegex, val);
+
+    // HTML-entity-encoded {{key}} (&#123;&#123;key&#125;&#125;) - e.g. from TipTap saving href="{{reset_link}}"
+    const encodedOpen = "&#123;&#123;";
+    const encodedClose = "&#125;&#125;";
+    const encodedPattern = encodedOpen + escapeRegExp(key) + encodedClose;
+    result = result.split(encodedPattern).join(val);
   });
+
   return result;
 };
+
+const escapeRegExp = (s: string): string =>
+  s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /**
  * Gets an email template from the database by slug
@@ -204,8 +233,8 @@ export const getAllDefaultEmailTemplates = (): Record<
     },
     "password-reset": {
       subject: "Reset your password",
-      html_content: `<h1>Hello!</h1>
-        <p>You requested a password reset for your GLUE account.</p>
+      html_content: `<h1>Hello {{user_name}}!</h1>
+        <p>You requested a password reset for your GLUE account ({{email}}).</p>
         <p>Click the link below to set a new password:</p>
         <p><a href="{{reset_link}}">Reset your password</a></p>
         <p>If you did not request this, you can ignore this email.</p>

@@ -56,10 +56,14 @@ export async function POST(
     }
 
     // Process template: replace variables and process image tags
-    const htmlContent = processEmailTemplate(finalHtmlContent, {
+    const templateVariables: Record<string, string> = {
       email: testEmail,
       user_name: "Test User",
-    });
+    };
+    if (slug === "password-reset") {
+      templateVariables.reset_link = `${config.baseUrl}/reset-password?token=test-token-placeholder`;
+    }
+    const htmlContent = processEmailTemplate(finalHtmlContent, templateVariables);
 
     try {
       await resend.emails.send({
