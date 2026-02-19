@@ -109,7 +109,15 @@ export default function LoginForm({
           email: data.email,
         }),
       });
-      if (!response.ok) throw new Error("Failed to send reset email");
+      const dataRes = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message =
+          typeof dataRes?.error === "string"
+            ? dataRes.error
+            : "Failed to send reset email. Please try again.";
+        alert(message);
+        return;
+      }
       alert("Password reset email sent. Please check your inbox.");
       setIsResetPasswordOpen(false);
     } catch (error) {

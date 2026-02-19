@@ -26,6 +26,15 @@ const emailTemplateSchema = z.object({
 
 export type EmailTemplateFormValues = z.infer<typeof emailTemplateSchema>;
 
+/** Variables available per template slug (used for admin hint and test replacement) */
+const getTemplateVariableNames = (slug: string): string[] => {
+  const base = ["email", "user_name"];
+  if (slug === "password-reset") {
+    return [...base, "reset_link"];
+  }
+  return base;
+};
+
 interface EmailTemplateFormProps {
   template: {
     id: string;
@@ -186,13 +195,18 @@ export default function EmailTemplateForm({
               </FormControl>
               <FormDescription className="text-black">
                 You can use variables{" "}
-                <code className="bg-gray-100 px-1 rounded text-black">
-                  {"{{email}}"}
-                </code>{" "}
-                and{" "}
-                <code className="bg-gray-100 px-1 rounded text-black">
-                  {"{{user_name}}"}
-                </code>{" "}
+                {(() => {
+                  const vars = getTemplateVariableNames(template.slug);
+                  const last = vars.length - 1;
+                  return vars.map((name, i) => (
+                    <span key={name}>
+                      {i > 0 && (i === last ? " and " : ", ")}
+                      <code className="bg-gray-100 px-1 rounded text-black">
+                        {"{{" + name + "}}"}
+                      </code>
+                    </span>
+                  ));
+                })()}{" "}
                 which will be replaced with actual values when the email is
                 sent.
               </FormDescription>
