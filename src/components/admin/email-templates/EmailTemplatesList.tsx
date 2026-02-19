@@ -52,6 +52,11 @@ const getTemplateDisplayInfo = (slug: string) => {
       description: "Sent when a new participant completes registration",
       color: "bg-orange-500",
     },
+    "password-reset": {
+      label: "Password Reset",
+      description: "Sent when a user requests a password reset",
+      color: "bg-amber-500",
+    },
   };
 
   return (

@@ -202,6 +202,16 @@ export const getAllDefaultEmailTemplates = (): Record<
         <p>Best regards,<br>The GLUE Team</p>`,
       description: "Sent when a new participant completes registration",
     },
+    "password-reset": {
+      subject: "Reset your password",
+      html_content: `<h1>Hello!</h1>
+        <p>You requested a password reset for your GLUE account.</p>
+        <p>Click the link below to set a new password:</p>
+        <p><a href="{{reset_link}}">Reset your password</a></p>
+        <p>If you did not request this, you can ignore this email.</p>
+        <p>Best regards,<br>The GLUE Team</p>`,
+      description: "Sent when a user requests a password reset",
+    },
   };
 };
 
