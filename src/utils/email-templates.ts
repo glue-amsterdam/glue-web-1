@@ -120,7 +120,7 @@ export const replaceTemplateVariables = (
   variables: EmailTemplateVariables
 ): string => {
   let result = normalizeTemplatePlaceholders(template);
-  const replacement = (value: string) => value ?? "";
+  const replacement = (value: string | undefined) => value ?? "";
 
   Object.entries(variables).forEach(([key, value]) => {
     const val = replacement(value);
