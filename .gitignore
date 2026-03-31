@@ -37,3 +37,6 @@ next-env.d.ts
 
 #cursor
 .cursor/
+.agents/
+
+skills-lock.json
