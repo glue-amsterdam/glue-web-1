@@ -23,7 +23,7 @@ import {
 import { useAuth } from "@/app/context/AuthContext";
 import GlueLogoSVG from "@/app/components/glue-logo-svg";
 import { motion } from "framer-motion";
-import { Mail, Lock, Loader2, Settings, X } from "lucide-react";
+import { Mail, Lock, Loader2, Settings } from "lucide-react";
 import { z } from "zod";
 import { User } from "@supabase/supabase-js";
 import { getCookieConsent } from "@/app/actions/cookieConsent";
@@ -83,7 +83,7 @@ export default function LoginForm({
       const hasConsent = await getCookieConsent();
       if (!hasConsent) {
         setCookieError(
-          "Cookie consent is required to log in. Please enable cookies."
+          "Cookie consent is required to log in. Please enable cookies.",
         );
         setIsLoading(false);
         return;
@@ -130,19 +130,14 @@ export default function LoginForm({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (!open) onClose();
+        }}
+      >
         <DialogContent className="scale-75 md:scale-95 lg:scale-100 sm:max-w-[425px] bg-uiwhite backdrop-blur-sm border border-primary/20 rounded-lg shadow-xl p-6 text-black overflow-hidden overflow-y-auto">
           <DialogHeader className="relative">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="absolute right-0 top-0 h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors"
-              aria-label="Close login modal"
-            >
-              <X className="h-4 w-4" />
-            </Button>
             <DialogTitle className="text-3xl font-bold text-center text-primary">
               Log In
             </DialogTitle>

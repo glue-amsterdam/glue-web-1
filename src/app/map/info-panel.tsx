@@ -20,6 +20,9 @@ import {
 } from "lucide-react";
 import { type MapInfo, type Route as RouteType } from "@/app/hooks/useMapData";
 import { legendItems, markerColors } from "./legend-config";
+import { useAuth } from "@/app/context/AuthContext";
+import LoginForm from "@/app/components/login-form/login-form";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface InfoPanelProps {
   mapInfo: MapInfo[];
@@ -40,10 +43,19 @@ function InfoPanel({
   onRouteSelect,
   className,
 }: InfoPanelProps) {
+  const { user, isLoading } = useAuth();
+
   // State for managing the current view
   const [currentView, setCurrentView] = useState<
     "headers" | "participants" | "routes" | "legend"
   >("headers");
+
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [pendingRoutesAction, setPendingRoutesAction] = useState<
+    | { type: "openRoutesView" }
+    | { type: "selectRoute"; routeId: string }
+    | null
+  >(null);
 
   // State for search functionality
   const [searchQuery, setSearchQuery] = useState("");
@@ -92,9 +104,14 @@ function InfoPanel({
   // Handler for accordion header clicks
   const handleAccordionClick = useCallback(
     (view: "participants" | "routes" | "legend") => {
+      if (view === "routes" && !isLoading && !user) {
+        setPendingRoutesAction({ type: "openRoutesView" });
+        setIsLoginModalOpen(true);
+        return;
+      }
       setCurrentView(view);
     },
-    []
+    [isLoading, user]
   );
 
   // Handler for back button
@@ -146,12 +163,17 @@ function InfoPanel({
       if (type === "participant") {
         onLocationSelect(id);
       } else {
+        if (!isLoading && !user) {
+          setPendingRoutesAction({ type: "selectRoute", routeId: id });
+          setIsLoginModalOpen(true);
+          return;
+        }
         onRouteSelect(id);
       }
       setSearchQuery("");
       setSearchResults({ participants: [], routes: [] });
     },
-    [onLocationSelect, onRouteSelect]
+    [isLoading, user, onLocationSelect, onRouteSelect]
   );
 
   const handleLocationClick = useCallback(
@@ -163,10 +185,37 @@ function InfoPanel({
 
   const handleRouteClick = useCallback(
     (routeId: string) => {
+      if (!isLoading && !user) {
+        setPendingRoutesAction({ type: "selectRoute", routeId });
+        setIsLoginModalOpen(true);
+        return;
+      }
       onRouteSelect(routeId);
     },
-    [onRouteSelect]
+    [isLoading, user, onRouteSelect]
   );
+
+  const handleLoginSuccess = (_loggedInUser: SupabaseUser) => {
+    setIsLoginModalOpen(false);
+
+    const action = pendingRoutesAction;
+    setPendingRoutesAction(null);
+
+    if (!action) return;
+
+    if (action.type === "openRoutesView") {
+      setCurrentView("routes");
+      return;
+    }
+
+    onRouteSelect(action.routeId);
+    setCurrentView("routes");
+  };
+
+  const handleCloseLoginModal = () => {
+    setIsLoginModalOpen(false);
+    setPendingRoutesAction(null);
+  };
 
   return (
     <div
@@ -380,6 +429,12 @@ function InfoPanel({
           </ScrollArea>
         </div>
       )}
+
+      <LoginForm
+        isOpen={isLoginModalOpen}
+        onClose={handleCloseLoginModal}
+        onLoginSuccess={handleLoginSuccess}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 export async function GET() {
   try {
     const supabase = await createClient();
+
     const { data, error } = await supabase
       .from("event_settings")
       .select("header_title")

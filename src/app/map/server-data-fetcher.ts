@@ -70,7 +70,24 @@ interface MapInfoRaw {
   user_id: string;
 }
 
-export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]> {
+type FetchMapInfoOptions = {
+  debug?: boolean;
+};
+
+export async function fetchMapInfo(
+  supabase: SupabaseClient,
+  options: FetchMapInfoOptions = {},
+): Promise<MapInfo[]> {
+  const debug = options.debug ?? process.env.DATA_DEBUG === "true";
+  const dlog = (...args: unknown[]) => {
+    if (!debug) return;
+    console.log(...args);
+  };
+  const dwarn = (...args: unknown[]) => {
+    if (!debug) return;
+    console.warn(...args);
+  };
+
   // Fetch tour status first to determine filtering logic
   const { data: tourStatus, error: tourStatusError } = await supabase
     .from("tour_status")
@@ -83,19 +100,22 @@ export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]>
   }
 
   const currentTourStatus = tourStatus?.current_tour_status || "new";
-  const previousTourMapInfo = (tourStatus?.previous_tour_map_info as
-    | MapInfo[]
-    | null) || null;
+  const previousTourMapInfo =
+    (tourStatus?.previous_tour_map_info as MapInfo[] | null) || null;
 
   // If viewing older tour and snapshot exists, return it directly
-  if (currentTourStatus === "older" && previousTourMapInfo && previousTourMapInfo.length > 0) {
-    console.log(`Returning map snapshot with ${previousTourMapInfo.length} locations`);
+  if (
+    currentTourStatus === "older" &&
+    previousTourMapInfo &&
+    previousTourMapInfo.length > 0
+  ) {
+    dlog(`Returning map snapshot with ${previousTourMapInfo.length} locations`);
     return previousTourMapInfo;
   }
 
   // DEBUG: Fetch all participants to see totals
-  console.log("=== MAP FILTERING DEBUG ===");
-  console.log(`Current tour status: ${currentTourStatus}`);
+  dlog("=== MAP FILTERING DEBUG ===");
+  dlog(`Current tour status: ${currentTourStatus}`);
 
   if (currentTourStatus === "new") {
     // Debug for "new" tour status
@@ -105,14 +125,12 @@ export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]>
       .eq("is_active", true);
 
     if (!debugError && allIsActive) {
-      console.log(
-        `Total participants with is_active=true: ${allIsActive.length}`
-      );
+      dlog(`Total participants with is_active=true: ${allIsActive.length}`);
       const acceptedIsActive = allIsActive.filter(
-        (p) => p.status === "accepted"
+        (p) => p.status === "accepted",
       );
-      console.log(
-        `Participants with is_active=true AND status=accepted: ${acceptedIsActive.length}`
+      dlog(
+        `Participants with is_active=true AND status=accepted: ${acceptedIsActive.length}`,
       );
     }
   } else if (currentTourStatus === "older") {
@@ -123,14 +141,14 @@ export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]>
       .eq("was_active_last_year", true);
 
     if (!debugError && allWasActiveLastYear) {
-      console.log(
-        `Total participants with was_active_last_year=true: ${allWasActiveLastYear.length}`
+      dlog(
+        `Total participants with was_active_last_year=true: ${allWasActiveLastYear.length}`,
       );
       const acceptedWasActive = allWasActiveLastYear.filter(
-        (p) => p.status === "accepted"
+        (p) => p.status === "accepted",
       );
-      console.log(
-        `Participants with was_active_last_year=true AND status=accepted: ${acceptedWasActive.length}`
+      dlog(
+        `Participants with was_active_last_year=true AND status=accepted: ${acceptedWasActive.length}`,
       );
     }
   }
@@ -147,7 +165,7 @@ export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]>
         was_active_last_year,
         slug,
         display_number
-      `
+      `,
     )
     .eq("status", "accepted");
 
@@ -161,7 +179,8 @@ export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]>
   }
 
   // Fetch current hubs from database (only for "new" tour status)
-  const { data: hubsDataRaw, error: hubsError } = await supabase.from("hubs").select(`
+  const { data: hubsDataRaw, error: hubsError } = await supabase.from("hubs")
+    .select(`
       id,
       name,
       description,
@@ -176,29 +195,26 @@ export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]>
   const hubsData = (hubsDataRaw as HubInfo[]) || [];
 
   // Fetch all other required data in parallel
-  const [
-    mapInfoResult,
-    participantResult,
-    participantImagesResult,
-  ] = await Promise.all([
-    supabase.from("map_info").select(`
+  const [mapInfoResult, participantResult, participantImagesResult] =
+    await Promise.all([
+      supabase.from("map_info").select(`
         id,
         formatted_address,
         latitude,
         longitude,
         user_id
       `),
-    participantQuery,
-    supabase
-      .from("participant_image")
-      .select(
-        `
+      participantQuery,
+      supabase
+        .from("participant_image")
+        .select(
+          `
         user_id,
         image_url
-      `
-      )
-      .order("id", { ascending: true }),
-  ]);
+      `,
+        )
+        .order("id", { ascending: true }),
+    ]);
 
   if (mapInfoResult.error) throw mapInfoResult.error;
   if (participantResult.error) throw participantResult.error;
@@ -209,9 +225,11 @@ export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]>
   const participantImagesData =
     participantImagesResult.data as ParticipantImage[];
 
-  console.log(`Participants after status + tour filter: ${participantData?.length || 0}`);
-  console.log(`Map_info entries: ${mapInfoData?.length || 0}`);
-  console.log(`Total hubs fetched from database: ${hubsData?.length || 0}`);
+  dlog(
+    `Participants after status + tour filter: ${participantData?.length || 0}`,
+  );
+  dlog(`Map_info entries: ${mapInfoData?.length || 0}`);
+  dlog(`Total hubs fetched from database: ${hubsData?.length || 0}`);
 
   if (!mapInfoData || !participantData) {
     throw new Error("No map info or participant data returned from Supabase");
@@ -220,18 +238,18 @@ export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]>
   // DEBUG: Check how many participants have map_info
   const mapInfoUserIds = new Set(mapInfoData.map((m) => m.user_id));
   const participantsWithMapInfo = participantData.filter((p) =>
-    mapInfoUserIds.has(p.user_id)
+    mapInfoUserIds.has(p.user_id),
   );
   const participantsWithoutMapInfo = participantData.filter(
-    (p) => !mapInfoUserIds.has(p.user_id)
+    (p) => !mapInfoUserIds.has(p.user_id),
   );
 
-  console.log(`Participants WITH map_info: ${participantsWithMapInfo.length}`);
-  console.log(`Participants WITHOUT map_info: ${participantsWithoutMapInfo.length}`);
+  dlog(`Participants WITH map_info: ${participantsWithMapInfo.length}`);
+  dlog(`Participants WITHOUT map_info: ${participantsWithoutMapInfo.length}`);
   if (participantsWithoutMapInfo.length > 0) {
-    console.log(
+    dlog(
       "Participants without map_info user_ids:",
-      participantsWithoutMapInfo.map((p) => p.user_id).slice(0, 10)
+      participantsWithoutMapInfo.map((p) => p.user_id).slice(0, 10),
     );
   }
 
@@ -265,17 +283,17 @@ export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]>
 
   // Create lookup maps for efficient data access
   const acceptedParticipants = new Map(
-    participantData.map((p) => [p.user_id, p])
+    participantData.map((p) => [p.user_id, p]),
   );
 
   // DEBUG: Check which hubs have hosts that match tour status
   if (hubsData && hubsData.length > 0) {
     const hubHostIds = hubsData.map((h) => h.hub_host_id);
     const matchingHosts = hubHostIds.filter((hostId) =>
-      acceptedParticipants.has(hostId)
+      acceptedParticipants.has(hostId),
     );
-    console.log(
-      `Hubs with hosts matching tour status: ${matchingHosts.length} out of ${hubHostIds.length}`
+    dlog(
+      `Hubs with hosts matching tour status: ${matchingHosts.length} out of ${hubHostIds.length}`,
     );
   }
 
@@ -309,8 +327,8 @@ export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]>
     const userInfo = userInfoMap.get(item.user_id);
     if (!userInfo || typeof userInfo.user_name !== "string") {
       skippedNoUserInfo++;
-      console.warn(
-        `Missing or invalid user_info for map_info item with id: ${item.id}, user_id: ${item.user_id}`
+      dwarn(
+        `Missing or invalid user_info for map_info item with id: ${item.id}, user_id: ${item.user_id}`,
       );
       return;
     }
@@ -349,18 +367,18 @@ export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]>
     const hostParticipant = acceptedParticipants.get(hub.hub_host_id);
     if (!hostParticipant) {
       hubsSkippedNoHost++;
-      console.log(
-        `Hub ${hub.id} (host: ${hub.hub_host_id}) skipped - host not in acceptedParticipants (tour status: ${currentTourStatus})`
+      dlog(
+        `Hub ${hub.id} (host: ${hub.hub_host_id}) skipped - host not in acceptedParticipants (tour status: ${currentTourStatus})`,
       );
       return;
     }
 
     const hostMapInfo = mapInfoData.find(
-      (info) => info.user_id === hub.hub_host_id
+      (info) => info.user_id === hub.hub_host_id,
     );
     if (!hostMapInfo) {
-      console.warn(
-        `No map_info found for hub host with id: ${hub.hub_host_id} (hub: ${hub.id})`
+      dwarn(
+        `No map_info found for hub host with id: ${hub.hub_host_id} (hub: ${hub.id})`,
       );
       return;
     }
@@ -424,9 +442,9 @@ export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]>
 
         // Check if this participant matches the tour status filter
         const acceptedParticipant = acceptedParticipants.get(
-          participant.user_id
+          participant.user_id,
         );
-        
+
         if (acceptedParticipant) {
           const userInfo = userInfoMap.get(participant.user_id);
           if (userInfo && typeof userInfo.user_name === "string") {
@@ -441,38 +459,39 @@ export async function fetchMapInfo(supabase: SupabaseClient): Promise<MapInfo[]>
             });
           } else {
             hubParticipantsSkipped++;
-            console.warn(
-              `Hub participant ${participant.user_id} in hub ${hub.id} has no user_info`
+            dwarn(
+              `Hub participant ${participant.user_id} in hub ${hub.id} has no user_info`,
             );
           }
         } else {
           hubParticipantsSkipped++;
           // Debug: log why hub participants are being skipped
-          console.log(
-            `Hub participant ${participant.user_id} in hub ${hub.id} (host: ${hub.hub_host_id}) skipped - not in acceptedParticipants (tour status: ${currentTourStatus})`
+          dlog(
+            `Hub participant ${participant.user_id} in hub ${hub.id} (host: ${hub.hub_host_id}) skipped - not in acceptedParticipants (tour status: ${currentTourStatus})`,
           );
         }
       });
     }
   });
 
-  console.log(`Total hubs processed: ${hubsData.length}`);
-  console.log(`Hubs skipped (host not matching tour filter): ${hubsSkippedNoHost}`);
-  console.log(`Total hub participants found: ${totalHubParticipants}`);
-  console.log(`Hub participants added: ${hubParticipantsAdded}`);
-  console.log(`Hub participants skipped (not matching tour filter): ${hubParticipantsSkipped}`);
+  dlog(`Total hubs processed: ${hubsData.length}`);
+  dlog(`Hubs skipped (host not matching tour filter): ${hubsSkippedNoHost}`);
+  dlog(`Total hub participants found: ${totalHubParticipants}`);
+  dlog(`Hub participants added: ${hubParticipantsAdded}`);
+  dlog(
+    `Hub participants skipped (not matching tour filter): ${hubParticipantsSkipped}`,
+  );
 
-  console.log(`Locations added to map: ${addedLocations}`);
-  console.log(`Map_info entries skipped (no participant): ${skippedNoParticipant}`);
-  console.log(`Map_info entries skipped (no user_info): ${skippedNoUserInfo}`);
-  console.log(`Final locations on map: ${locationMap.size}`);
-  console.log("=== END MAP FILTERING DEBUG ===");
+  dlog(`Locations added to map: ${addedLocations}`);
+  dlog(`Map_info entries skipped (no participant): ${skippedNoParticipant}`);
+  dlog(`Map_info entries skipped (no user_info): ${skippedNoUserInfo}`);
+  dlog(`Final locations on map: ${locationMap.size}`);
+  dlog("=== END MAP FILTERING DEBUG ===");
 
   return Array.from(locationMap.values());
 }
 
 export async function fetchRoutes(supabase: SupabaseClient): Promise<Route[]> {
-
   const [routesResult, routeDotsResult] = await Promise.all([
     supabase.from("routes").select(`
         id,
@@ -500,7 +519,7 @@ export async function fetchRoutes(supabase: SupabaseClient): Promise<Route[]> {
         hubs (
           name
         )
-      `
+      `,
       )
       .order("route_step"),
   ]);
@@ -515,7 +534,7 @@ export async function fetchRoutes(supabase: SupabaseClient): Promise<Route[]> {
   const routeDotUserIds = new Set<string>(
     routeDotsData
       .filter((dot) => !dot.hub_id) // Only fetch user_info for non-hub dots
-      .map((dot) => dot.user_id)
+      .map((dot) => dot.user_id),
   );
 
   // Fetch hubs for route_dots with hub_id
@@ -523,7 +542,7 @@ export async function fetchRoutes(supabase: SupabaseClient): Promise<Route[]> {
     routeDotsData
       .filter((dot) => dot.hub_id)
       .map((dot) => dot.hub_id!)
-      .filter((id): id is string => id !== null)
+      .filter((id): id is string => id !== null),
   );
 
   // Fetch hubs for route dots (always from database, snapshot handled in map info)
@@ -565,9 +584,9 @@ export async function fetchRoutes(supabase: SupabaseClient): Promise<Route[]> {
       .map((dot) => {
         const mapInfo = ensureArray(dot.map_info)[0];
         const userName = dot.hub_id
-          ? (routeDotHubsMap.get(dot.hub_id) ||
-              ensureArray(dot.hubs)[0]?.name ||
-              "Unknown Hub")
+          ? routeDotHubsMap.get(dot.hub_id) ||
+            ensureArray(dot.hubs)[0]?.name ||
+            "Unknown Hub"
           : routeDotUserInfoMap.get(dot.user_id) || "Unknown User";
 
         return {
