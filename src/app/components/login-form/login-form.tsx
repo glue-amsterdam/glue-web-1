@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -23,11 +23,12 @@ import {
 import { useAuth } from "@/app/context/AuthContext";
 import GlueLogoSVG from "@/app/components/glue-logo-svg";
 import { motion } from "framer-motion";
-import { Mail, Lock, Loader2, Settings } from "lucide-react";
+import { ArrowLeft, Mail, Lock, Loader2, Settings } from "lucide-react";
 import { z } from "zod";
 import { User } from "@supabase/supabase-js";
 import { getCookieConsent } from "@/app/actions/cookieConsent";
 import { CookieSettingsModal } from "@/components/cookies/cookies-modal";
+import { LoginAlreadyRegisteredTeaser } from "@/app/components/login-form/login-already-registered-teaser";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -45,14 +46,18 @@ interface LoginFormProps {
   isOpen: boolean;
   onClose: () => void;
   onLoginSuccess: (user: User) => void;
+  /** When true, show “Already registered?” first; revealing shows the login fields below. */
+  hasPrev?: boolean;
 }
 
 export default function LoginForm({
   isOpen,
   onClose,
   onLoginSuccess,
+  hasPrev = false,
 }: LoginFormProps) {
   const { login, loginError, clearLoginError } = useAuth();
+  const [hasRevealedLogin, setHasRevealedLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isResetLoading, setIsResetLoading] = useState(false);
   const [cookieError, setCookieError] = useState<string | null>(null);
@@ -73,6 +78,22 @@ export default function LoginForm({
       email: "",
     },
   });
+
+  const showLoginChrome = !hasPrev || hasRevealedLogin;
+
+  useEffect(() => {
+    if (!isOpen) {
+      setHasRevealedLogin(false);
+    }
+  }, [isOpen]);
+
+  const handleRevealRegisteredLogin = () => {
+    setHasRevealedLogin(true);
+  };
+
+  const handleBackToRegisteredTeaser = () => {
+    setHasRevealedLogin(false);
+  };
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
@@ -137,120 +158,147 @@ export default function LoginForm({
         }}
       >
         <DialogContent className="scale-75 md:scale-95 lg:scale-100 sm:max-w-[425px] bg-uiwhite backdrop-blur-sm border border-primary/20 rounded-lg shadow-xl p-6 text-black overflow-hidden overflow-y-auto">
-          <DialogHeader className="relative">
-            <DialogTitle className="text-3xl font-bold text-center text-primary">
-              Log In
-            </DialogTitle>
-            <DialogDescription className="text-center text-muted-foreground">
-              Enter your credentials to access your account.
-            </DialogDescription>
-          </DialogHeader>
-          <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="flex justify-center w-full mb-6 text-black"
-          >
-            <GlueLogoSVG
-              isVisible
-              className="w-32 h-32 scale-75 md:scale-100"
+          {hasPrev && !hasRevealedLogin ? (
+            <LoginAlreadyRegisteredTeaser
+              onRevealLogin={handleRevealRegisteredLogin}
             />
-          </motion.div>
-          {loginError && (
-            <div className="text-red-500 text-sm bg-red-100 p-2 rounded">
-              {loginError}
-            </div>
-          )}
-          {cookieError && (
-            <div className="text-red-500 text-sm bg-red-100 p-2 rounded flex flex-col flex-wrap">
-              <span>{cookieError}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsCookieSettingsOpen(true)}
-                className="text-sm text-primary hover:underline"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Change Settings
-              </Button>
-            </div>
-          )}
+          ) : null}
 
-          <Form {...loginForm}>
-            <form
-              onSubmit={loginForm.handleSubmit(onSubmit)}
-              className="space-y-4"
+          {showLoginChrome ? (
+            <div
+              id="login-form-main-panel"
+              className={hasPrev ? "mt-4 space-y-0" : undefined}
             >
-              <p className="sr-only">Log in to your account:</p>
-              <FormField
-                control={loginForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-primary">Email</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          placeholder="Enter your email"
-                          {...field}
-                          className="pl-10 bg-white"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={loginForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-primary">Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          type="password"
-                          placeholder="Enter your password"
-                          {...field}
-                          className="pl-10 bg-white"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
-                <Button
-                  type="submit"
-                  className="w-full hover:bg-[var(--color-box2)]"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Logging in...
-                    </>
-                  ) : (
-                    "Log In"
-                  )}
-                </Button>
-              </div>
-
-              <Button
-                type="button"
-                variant="link"
-                onClick={() => setIsResetPasswordOpen(true)}
-                className="text-sm text-primary hover:underline text-center w-full"
+              {hasPrev && hasRevealedLogin ? (
+                <div className="mb-2 flex w-full justify-start">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 text-primary hover:bg-primary/10"
+                    onClick={handleBackToRegisteredTeaser}
+                    aria-label="Go back to already registered options"
+                  >
+                    <ArrowLeft className="size-6" aria-hidden />
+                  </Button>
+                </div>
+              ) : null}
+              <DialogHeader className="relative">
+                <DialogTitle className="text-3xl font-bold text-center text-primary">
+                  Log In
+                </DialogTitle>
+                <DialogDescription className="text-center text-muted-foreground">
+                  Enter your credentials to access your account.
+                </DialogDescription>
+              </DialogHeader>
+              <motion.div
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="flex justify-center w-full mb-6 text-black"
               >
-                Forgot your password?
-              </Button>
-            </form>
-          </Form>
+                <GlueLogoSVG
+                  isVisible
+                  className="w-32 h-32 scale-75 md:scale-100"
+                />
+              </motion.div>
+              {loginError && (
+                <div className="text-red-500 text-sm bg-red-100 p-2 rounded">
+                  {loginError}
+                </div>
+              )}
+              {cookieError && (
+                <div className="text-red-500 text-sm bg-red-100 p-2 rounded flex flex-col flex-wrap">
+                  <span>{cookieError}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsCookieSettingsOpen(true)}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Change Settings
+                  </Button>
+                </div>
+              )}
+
+              <Form {...loginForm}>
+                <form
+                  onSubmit={loginForm.handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
+                  <p className="sr-only">Log in to your account:</p>
+                  <FormField
+                    control={loginForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-primary">Email</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              placeholder="Enter your email"
+                              {...field}
+                              className="pl-10 bg-white"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={loginForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-primary">Password</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              type="password"
+                              placeholder="Enter your password"
+                              {...field}
+                              className="pl-10 bg-white"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
+                    <Button
+                      type="submit"
+                      className="w-full hover:bg-[var(--color-box2)]"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Logging in...
+                        </>
+                      ) : (
+                        "Log In"
+                      )}
+                    </Button>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={() => setIsResetPasswordOpen(true)}
+                    className="text-sm text-primary hover:underline text-center w-full"
+                  >
+                    Forgot your password?
+                  </Button>
+                </form>
+              </Form>
+            </div>
+          ) : null}
         </DialogContent>
       </Dialog>
       <Dialog open={isResetPasswordOpen} onOpenChange={setIsResetPasswordOpen}>

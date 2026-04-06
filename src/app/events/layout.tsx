@@ -68,6 +68,7 @@ export default function EventsLayout({
       </div>
 
       <LoginForm
+        hasPrev={true}
         isOpen={isLoginModalOpen}
         onClose={handleCloseLoginModal}
         onLoginSuccess={handleLoginSuccess}
@@ -75,4 +76,3 @@ export default function EventsLayout({
     </div>
   );
 }
-
