@@ -1,52 +1,53 @@
 "use client";
 
 import { memo, useCallback } from "react";
-import { X, MapPin } from "lucide-react";
+import { X, MapPin, FileDown } from "lucide-react";
 import { Popup } from "react-map-gl";
 import type { Route, MapInfo } from "@/app/hooks/useMapData";
 import { Button } from "@/components/ui/button";
-import { markerColors } from "./legend-config";
+import { getRouteStopsForDisplay } from "@/app/map/route-stop-display";
 
 interface RoutePopupProps {
   route: Route;
   handlePopupClose: () => void;
   mapInfo: MapInfo[];
+  onDownloadRoutePdf: () => void | Promise<void>;
 }
 
 function RoutePopupComponent({
   route,
   handlePopupClose,
   mapInfo,
+  onDownloadRoutePdf,
 }: RoutePopupProps) {
-  // Use the first dot's coordinates for the popup position
   const firstDot = route.dots[0];
+  const stops = getRouteStopsForDisplay(route, mapInfo);
 
-  // Fixed Google Maps redirection function
   const redirectRouteToGoogleMaps = useCallback(() => {
     if (route.dots.length === 0) return;
 
-    // Get first and last points
     const origin = `${route.dots[0].latitude},${route.dots[0].longitude}`;
     const destination = `${route.dots[route.dots.length - 1].latitude},${
       route.dots[route.dots.length - 1].longitude
     }`;
 
-    // Get waypoints (excluding first and last points)
     const waypoints = route.dots
-      .slice(1, -1) // Remove first and last dots to avoid duplication
+      .slice(1, -1)
       .map((dot) => `${dot.latitude},${dot.longitude}`)
       .join("|");
 
-    // Build the URL
     let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
 
-    // Only add waypoints parameter if there are waypoints
     if (waypoints) {
       url += `&waypoints=${waypoints}`;
     }
 
     window.open(url, "_blank");
   }, [route.dots]);
+
+  const handleDownloadPdfClick = useCallback(() => {
+    void onDownloadRoutePdf();
+  }, [onDownloadRoutePdf]);
 
   return (
     <Popup
@@ -57,10 +58,11 @@ function RoutePopupComponent({
       closeOnClick={false}
       className="custom-map-popup route-popup transition-all text-black"
       anchor="top"
-      offset={[0, -15]} // Add offset to avoid covering dots
+      offset={[0, -15]}
     >
       <div className="popup-wrapper">
         <button
+          type="button"
           onClick={handlePopupClose}
           className="popup-close-btn"
           aria-label="Close popup"
@@ -75,81 +77,43 @@ function RoutePopupComponent({
             )}
             <div className="mt-3">
               <div className="route-stops">
-                {route.dots.map((dot, index) => {
-                  // Find the corresponding location in mapInfo
-                  const location = mapInfo.find((loc) =>
-                    loc.participants.some((p) => p.user_name === dot.user_name)
-                  );
-
-                  // Get display number
-                  const displayNumber = location
-                    ? location.hub_display_number ||
-                      location.display_number ||
-                      location.participants[0]?.display_number
-                    : null;
-
-                  const hasDisplayNumber = !!displayNumber;
-
-                  // Determine marker type and colors
-                  const isHub =
-                    location?.is_hub ||
-                    (location?.participants &&
-                      location.participants.length >= 3);
-                  const isSpecialProgram = location?.is_special_program;
-
-                  // Get the appropriate colors based on marker type
-                  const getColorsForInlineStyle = () => {
-                    if (hasDisplayNumber) {
-                      if (isHub) {
-                        return {
-                          backgroundColor: markerColors.hub.hex,
-                          color: "white",
-                        };
-                      } else if (isSpecialProgram) {
-                        return {
-                          backgroundColor: markerColors.specialProgram.hex,
-                          color: "white",
-                        };
-                      } else {
-                        return {
-                          backgroundColor: markerColors.participant.hex,
-                          color: "black",
-                        };
-                      }
-                    } else {
-                      return {
-                        backgroundColor: markerColors.route.hex,
-                        color: "white",
-                      };
-                    }
-                  };
-
-                  const inlineStyles = getColorsForInlineStyle();
-
-                  return (
-                    <div key={dot.id} className="route-stop">
-                      <div className="route-stop-number" style={inlineStyles}>
-                        {hasDisplayNumber ? displayNumber : index + 1}
-                      </div>
-                      <div className="route-stop-details">
-                        <p className="route-stop-name">{dot.user_name}</p>
-                        <p className="route-stop-address">
-                          {dot.formatted_address.split(",")[0]}
-                        </p>
-                      </div>
+                {stops.map((stop) => (
+                  <div key={stop.dotId} className="route-stop">
+                    <div
+                      className="route-stop-number"
+                      style={{
+                        backgroundColor: stop.backgroundColor,
+                        color: stop.color,
+                      }}
+                    >
+                      {stop.label}
                     </div>
-                  );
-                })}
+                    <div className="route-stop-details">
+                      <p className="route-stop-name">{stop.userName}</p>
+                      <p className="route-stop-address">{stop.addressLine}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Google Maps Button */}
-            <div className="mt-4 pb-2">
+            <div className="mt-4 pb-2 flex flex-col gap-2">
               <Button
+                type="button"
+                variant="outline"
+                onClick={handleDownloadPdfClick}
+                className="w-full"
+                aria-label="Download route as PDF"
+              >
+                <FileDown className="w-4 h-4 mr-2" aria-hidden="true" />
+                Download PDF
+              </Button>
+              <Button
+                type="button"
                 onClick={redirectRouteToGoogleMaps}
                 className="w-full bg-primary hover:bg-primary/90"
               >
-                <MapPin className="w-4 h-4 mr-2" />
+                <MapPin className="w-4 h-4 mr-2" aria-hidden="true" />
                 View Route in Google Maps
               </Button>
             </div>

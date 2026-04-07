@@ -1,6 +1,14 @@
 "use client";
 
-import { useRef, useCallback, useMemo, useEffect, useState } from "react";
+import {
+  forwardRef,
+  useRef,
+  useCallback,
+  useMemo,
+  useEffect,
+  useState,
+  useImperativeHandle,
+} from "react";
 import Map, {
   NavigationControl,
   type MapRef,
@@ -13,6 +21,8 @@ import { config } from "@/env";
 import { MemoizedMarker } from "@/app/map/memorized-marker";
 import MemoizedPopUpComponent from "@/app/map/pop-up-component";
 import MemoizedRoutePopupComponent from "@/app/map/route-pop-up";
+import { getRouteStopsForDisplay } from "@/app/map/route-stop-display";
+import { composeRoutePrintMapDataUrl } from "@/app/map/route-static-map";
 
 import { usePathname, useSearchParams } from "next/navigation";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
@@ -58,6 +68,12 @@ const ZOOM_LEVELS = {
 // Duración de las animaciones de transición
 const ANIMATION_DURATION = 1000; // 1 segundo
 
+const MAP_STYLE_URI = "mapbox://styles/mapbox/dark-v11";
+
+export type MapComponentHandle = {
+  downloadSelectedRoutePdf: () => Promise<void>;
+};
+
 interface MapComponentProps {
   mapInfo: MapInfo[];
   routes: RouteType[];
@@ -67,14 +83,18 @@ interface MapComponentProps {
   onRouteSelect: (routeId: string) => void;
 }
 
-const MapComponent = ({
-  mapInfo,
-  routes,
-  selectedLocation,
-  selectedRoute,
-  onLocationSelect,
-  onRouteSelect,
-}: MapComponentProps) => {
+const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>(
+  function MapComponent(
+    {
+      mapInfo,
+      routes,
+      selectedLocation,
+      selectedRoute,
+      onLocationSelect,
+      onRouteSelect,
+    },
+    forwardedRef,
+  ) {
   const mapRef = useRef<MapRef>(null);
   const prevSelectedLocation = useRef<string | null>(null);
   const prevSelectedRoute = useRef<string | null>(null);
@@ -249,6 +269,43 @@ const MapComponent = ({
       });
     },
     [routes]
+  );
+
+  const downloadSelectedRoutePdf = useCallback(async () => {
+    if (!selectedRoute || !selectedRouteObject || !mapLoaded) return;
+
+    const routeForPrint = selectedRouteObject;
+    const stops = getRouteStopsForDisplay(routeForPrint, mapInfo);
+
+    if (stops.length === 0) return;
+
+    let mapDataUrl: string;
+    try {
+      mapDataUrl = await composeRoutePrintMapDataUrl(
+        routeForPrint,
+        stops,
+        config.mapboxAccesToken,
+        mapRef.current?.getMap(),
+      );
+    } catch (e) {
+      console.error("Route PDF: map image failed", e);
+      return;
+    }
+
+    try {
+      const { downloadRoutePdf } = await import("@/app/map/route-pdf");
+      downloadRoutePdf(routeForPrint, mapDataUrl, stops);
+    } catch (e) {
+      console.error("Route PDF: generation failed", e);
+    }
+  }, [selectedRoute, selectedRouteObject, mapLoaded, mapInfo]);
+
+  useImperativeHandle(
+    forwardedRef,
+    () => ({
+      downloadSelectedRoutePdf,
+    }),
+    [downloadSelectedRoutePdf],
   );
 
   const handlePopupClose = useCallback(() => {
@@ -465,7 +522,7 @@ const MapComponent = ({
       mapboxAccessToken={config.mapboxAccesToken}
       initialViewState={initialViewState}
       style={{ width: "100%", height: "100%" }}
-      mapStyle="mapbox://styles/mapbox/dark-v11"
+      mapStyle={MAP_STYLE_URI}
       maxBounds={CITY_BOUNDS}
       onClick={shouldDisableMapInteractions ? undefined : handleMapClick}
       onMoveEnd={shouldDisableMapInteractions ? undefined : () => {}}
@@ -554,10 +611,12 @@ const MapComponent = ({
           route={selectedRouteObject}
           handlePopupClose={handlePopupClose}
           mapInfo={mapInfo}
+          onDownloadRoutePdf={downloadSelectedRoutePdf}
         />
       )}
     </Map>
   );
-};
+  },
+);
 
 export default MapComponent;

@@ -1,14 +1,16 @@
 "use client";
 
 import type React from "react";
-import { useCallback, useState, useEffect, Suspense } from "react";
+import { useCallback, useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { MenuIcon, X } from "lucide-react";
 import { type MapInfo, type Route, useMapData } from "@/app/hooks/useMapData";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
 import { cn } from "@/lib/utils";
-import MapComponent from "@/app/map/map-component";
+import MapComponent, {
+  type MapComponentHandle,
+} from "@/app/map/map-component";
 import InfoPanel from "@/app/map/info-panel";
 import RouteFooter from "@/app/map/route-footer";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -44,6 +46,7 @@ function MapMain({ initialData }: MapMainProps) {
   );
 
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
+  const mapComponentRef = useRef<MapComponentHandle>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [promptLoginForRouteId, setPromptLoginForRouteId] = useState<
     string | null
@@ -119,6 +122,13 @@ function MapMain({ initialData }: MapMainProps) {
     ? routes.find((r) => r.id === selectedRoute) || null
     : null;
 
+  const handleDownloadRoutePdf = useCallback(() => {
+    return (
+      mapComponentRef.current?.downloadSelectedRoutePdf() ??
+      Promise.resolve()
+    );
+  }, []);
+
   return (
     <div className="flex flex-col h-dvh pt-[4rem]">
       <h1 className="sr-only">City Map</h1>
@@ -144,6 +154,7 @@ function MapMain({ initialData }: MapMainProps) {
           <main className="w-full h-full relative" aria-label="Map">
             <Suspense fallback={<LoadingSpinner />}>
               <MapComponent
+                ref={mapComponentRef}
                 mapInfo={mapInfo}
                 routes={routes}
                 selectedLocation={selectedLocation}
@@ -233,6 +244,7 @@ function MapMain({ initialData }: MapMainProps) {
           >
             <Suspense fallback={<LoadingSpinner />}>
               <MapComponent
+                ref={mapComponentRef}
                 mapInfo={mapInfo}
                 routes={routes}
                 selectedLocation={selectedLocation}
@@ -247,6 +259,8 @@ function MapMain({ initialData }: MapMainProps) {
           {selectedRouteObject && (
             <RouteFooter
               route={selectedRouteObject}
+              mapInfo={mapInfo}
+              onDownloadRoutePdf={handleDownloadRoutePdf}
               onClose={() => setSelectedRoute("")}
             />
           )}
