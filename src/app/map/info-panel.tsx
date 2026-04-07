@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +21,10 @@ import {
 import { type MapInfo, type Route as RouteType } from "@/app/hooks/useMapData";
 import { legendItems, markerColors } from "./legend-config";
 import { useAuth } from "@/app/context/AuthContext";
-import LoginForm from "@/app/components/login-form/login-form";
+import { useVisitor } from "@/app/context/VisitorContext";
+import LoginForm, {
+  type LoginFormCloseReason,
+} from "@/app/components/login-form/login-form";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface InfoPanelProps {
@@ -31,6 +34,9 @@ interface InfoPanelProps {
   selectedRoute: string | null;
   onLocationSelect: (locationId: string) => void;
   onRouteSelect: (routeId: string) => void;
+  /** When set (e.g. deep link `/map?route=`), open the same login flow as clicking a route without identity. */
+  promptLoginForRouteId?: string | null;
+  onRouteLoginPromptConsumed?: () => void;
   className?: string;
 }
 
@@ -41,9 +47,15 @@ function InfoPanel({
   selectedRoute,
   onLocationSelect,
   onRouteSelect,
+  promptLoginForRouteId = null,
+  onRouteLoginPromptConsumed,
   className,
 }: InfoPanelProps) {
   const { user, isLoading } = useAuth();
+  const { visitor, isVisitorLoading } = useVisitor();
+
+  const identity = user ?? visitor;
+  const isLoadingIdentity = isLoading || isVisitorLoading;
 
   // State for managing the current view
   const [currentView, setCurrentView] = useState<
@@ -63,6 +75,26 @@ function InfoPanel({
     participants: MapInfo[];
     routes: RouteType[];
   }>({ participants: [], routes: [] });
+
+  const lastDeepLinkAutoPromptRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!promptLoginForRouteId) {
+      lastDeepLinkAutoPromptRef.current = null;
+      return;
+    }
+
+    if (isLoadingIdentity || identity) return;
+
+    if (lastDeepLinkAutoPromptRef.current === promptLoginForRouteId) return;
+    lastDeepLinkAutoPromptRef.current = promptLoginForRouteId;
+
+    setPendingRoutesAction({
+      type: "selectRoute",
+      routeId: promptLoginForRouteId,
+    });
+    setIsLoginModalOpen(true);
+  }, [promptLoginForRouteId, isLoadingIdentity, identity]);
 
   const redirectToGoogleMaps = useCallback(
     (lat: number, lng: number, e: React.MouseEvent) => {
@@ -104,14 +136,14 @@ function InfoPanel({
   // Handler for accordion header clicks
   const handleAccordionClick = useCallback(
     (view: "participants" | "routes" | "legend") => {
-      if (view === "routes" && !isLoading && !user) {
+      if (view === "routes" && !isLoadingIdentity && !identity) {
         setPendingRoutesAction({ type: "openRoutesView" });
         setIsLoginModalOpen(true);
         return;
       }
       setCurrentView(view);
     },
-    [isLoading, user]
+    [isLoadingIdentity, identity]
   );
 
   // Handler for back button
@@ -163,7 +195,7 @@ function InfoPanel({
       if (type === "participant") {
         onLocationSelect(id);
       } else {
-        if (!isLoading && !user) {
+        if (!isLoadingIdentity && !identity) {
           setPendingRoutesAction({ type: "selectRoute", routeId: id });
           setIsLoginModalOpen(true);
           return;
@@ -173,7 +205,7 @@ function InfoPanel({
       setSearchQuery("");
       setSearchResults({ participants: [], routes: [] });
     },
-    [isLoading, user, onLocationSelect, onRouteSelect]
+    [isLoadingIdentity, identity, onLocationSelect, onRouteSelect]
   );
 
   const handleLocationClick = useCallback(
@@ -185,19 +217,17 @@ function InfoPanel({
 
   const handleRouteClick = useCallback(
     (routeId: string) => {
-      if (!isLoading && !user) {
+      if (!isLoadingIdentity && !identity) {
         setPendingRoutesAction({ type: "selectRoute", routeId });
         setIsLoginModalOpen(true);
         return;
       }
       onRouteSelect(routeId);
     },
-    [isLoading, user, onRouteSelect]
+    [isLoadingIdentity, identity, onRouteSelect]
   );
 
-  const handleLoginSuccess = (_loggedInUser: SupabaseUser) => {
-    setIsLoginModalOpen(false);
-
+  const flushPendingRoutesAfterAuth = () => {
     const action = pendingRoutesAction;
     setPendingRoutesAction(null);
 
@@ -212,9 +242,23 @@ function InfoPanel({
     setCurrentView("routes");
   };
 
-  const handleCloseLoginModal = () => {
+  const handleLoginSuccess = (_loggedInUser: SupabaseUser) => {
+    setIsLoginModalOpen(false);
+    onRouteLoginPromptConsumed?.();
+    flushPendingRoutesAfterAuth();
+  };
+
+  const handleCloseLoginModal = (reason?: LoginFormCloseReason) => {
+    if (reason === "visitor-restored") {
+      setIsLoginModalOpen(false);
+      onRouteLoginPromptConsumed?.();
+      flushPendingRoutesAfterAuth();
+      return;
+    }
+
     setIsLoginModalOpen(false);
     setPendingRoutesAction(null);
+    onRouteLoginPromptConsumed?.();
   };
 
   return (
@@ -431,6 +475,7 @@ function InfoPanel({
       )}
 
       <LoginForm
+        hasPrev={true}
         isOpen={isLoginModalOpen}
         onClose={handleCloseLoginModal}
         onLoginSuccess={handleLoginSuccess}

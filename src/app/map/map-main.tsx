@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useCallback, useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { MenuIcon, X } from "lucide-react";
 import { type MapInfo, type Route, useMapData } from "@/app/hooks/useMapData";
@@ -11,6 +12,8 @@ import MapComponent from "@/app/map/map-component";
 import InfoPanel from "@/app/map/info-panel";
 import RouteFooter from "@/app/map/route-footer";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { useAuth } from "@/app/context/AuthContext";
+import { useVisitor } from "@/app/context/VisitorContext";
 
 interface MapMainProps {
   initialData: {
@@ -20,6 +23,13 @@ interface MapMainProps {
 }
 
 function MapMain({ initialData }: MapMainProps) {
+  const searchParams = useSearchParams();
+  const { user, isLoading } = useAuth();
+  const { visitor, isVisitorLoading } = useVisitor();
+  const identity = user ?? visitor;
+  const canAccessRoutes = Boolean(identity);
+  const isLoadingIdentity = isLoading || isVisitorLoading;
+
   const {
     mapInfo,
     routes,
@@ -27,10 +37,35 @@ function MapMain({ initialData }: MapMainProps) {
     selectedRoute,
     setSelectedLocation,
     setSelectedRoute,
-  } = useMapData(initialData);
+  } = useMapData(
+    initialData,
+    // While identity is loading, do not strip `?route=` — stripping ran too early and blocked the login prompt.
+    isLoadingIdentity ? true : canAccessRoutes,
+  );
 
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [promptLoginForRouteId, setPromptLoginForRouteId] = useState<
+    string | null
+  >(null);
+
+  useEffect(() => {
+    if (isLoadingIdentity) return;
+
+    if (identity) {
+      setPromptLoginForRouteId(null);
+      return;
+    }
+
+    const routeFromUrl = searchParams.get("route");
+    if (routeFromUrl) {
+      setPromptLoginForRouteId((prev) => prev ?? routeFromUrl);
+    }
+  }, [isLoadingIdentity, identity, searchParams]);
+
+  const handleRouteLoginPromptConsumed = useCallback(() => {
+    setPromptLoginForRouteId(null);
+  }, []);
 
   useEffect(() => {
     const setVH = () => {
@@ -101,6 +136,8 @@ function MapMain({ initialData }: MapMainProps) {
               selectedRoute={selectedRoute}
               onLocationSelect={handleLocationSelect}
               onRouteSelect={handleRouteSelect}
+              promptLoginForRouteId={promptLoginForRouteId}
+              onRouteLoginPromptConsumed={handleRouteLoginPromptConsumed}
             />
           </aside>
           {/* Full screen map */}
@@ -162,6 +199,8 @@ function MapMain({ initialData }: MapMainProps) {
                 selectedRoute={selectedRoute}
                 onLocationSelect={handleLocationSelect}
                 onRouteSelect={handleRouteSelect}
+                promptLoginForRouteId={promptLoginForRouteId}
+                onRouteLoginPromptConsumed={handleRouteLoginPromptConsumed}
               />
             </div>
           </aside>

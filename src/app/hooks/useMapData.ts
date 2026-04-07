@@ -59,10 +59,13 @@ export interface Route {
   }[];
 }
 
-export function useMapData(initialData: {
-  mapInfo: MapInfo[];
-  routes: Route[];
-}) {
+export function useMapData(
+  initialData: {
+    mapInfo: MapInfo[];
+    routes: Route[];
+  },
+  canAccessRoutes = false,
+) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -75,15 +78,38 @@ export function useMapData(initialData: {
   const initialRouteId = searchParams.get("route");
 
   const [selectedLocation, setSelectedLocation] = useState<string | null>(
-    initialLocationId
+    initialLocationId,
   );
   const [selectedRoute, setSelectedRoute] = useState<string | null>(
-    initialRouteId
+    initialRouteId,
   );
+
+  useEffect(() => {
+    if (pathname !== "/map") return;
+
+    if (canAccessRoutes) return;
+
+    const routeId = searchParams.get("route");
+    if (!routeId) return;
+
+    setSelectedRoute(null);
+    isUpdatingUrl.current = true;
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+    nextSearchParams.delete("route");
+
+    const newURL = `/map${
+      nextSearchParams.toString() ? `?${nextSearchParams.toString()}` : ""
+    }`;
+
+    router.replace(newURL, { scroll: false });
+
+    setTimeout(() => {
+      isUpdatingUrl.current = false;
+    }, 100);
+  }, [canAccessRoutes, pathname, router, searchParams]);
 
   // Update state when URL changes
   useEffect(() => {
-    // Si estamos en medio de una actualización de URL, no procesamos este cambio
     if (isUpdatingUrl.current) {
       return;
     }
@@ -123,23 +149,21 @@ export function useMapData(initialData: {
   const filteredMapInfo = useMemo(
     () =>
       initialData.mapInfo.filter((location) =>
-        isWithinBounds(location.longitude, location.latitude)
+        isWithinBounds(location.longitude, location.latitude),
       ),
-    [initialData.mapInfo, isWithinBounds]
+    [initialData.mapInfo, isWithinBounds],
   );
 
   const filteredRoutes = useMemo(
     () =>
       initialData.routes.filter((route) =>
-        route.dots.every((dot) => isWithinBounds(dot.longitude, dot.latitude))
+        route.dots.every((dot) => isWithinBounds(dot.longitude, dot.latitude)),
       ),
-    [initialData.routes, isWithinBounds]
+    [initialData.routes, isWithinBounds],
   );
 
-  // Función para actualizar la URL
   const updateURL = useCallback(
     (params: { place?: string; route?: string }) => {
-      // Marcar que estamos actualizando la URL para evitar ciclos
       isUpdatingUrl.current = true;
 
       try {
@@ -155,60 +179,50 @@ export function useMapData(initialData: {
           newSearchParams.toString() ? `?${newSearchParams.toString()}` : ""
         }`;
 
-        // Usar replace en lugar de push para evitar entradas duplicadas en el historial
         router.replace(newURL, { scroll: false });
       } finally {
-        // Asegurarnos de restablecer la bandera después de un breve retraso
         setTimeout(() => {
           isUpdatingUrl.current = false;
         }, 100);
       }
     },
-    [router]
+    [router],
   );
 
   const handleLocationSelect = useCallback(
     (locationId: string) => {
-      // Si se hace clic en la misma ubicación, no hacemos nada
       if (locationId === selectedLocation) return;
 
-      // Don't update URL if we're not on the map page
       if (pathname !== "/map") return;
 
-      // Actualizamos el estado local
       setSelectedLocation(locationId || null);
       if (locationId) setSelectedRoute(null);
 
-      // Actualizamos la URL solo si hay un ID válido
       if (locationId) {
         updateURL({ place: locationId });
       } else {
         updateURL({});
       }
     },
-    [updateURL, selectedLocation, setSelectedRoute, pathname]
+    [updateURL, selectedLocation, setSelectedRoute, pathname],
   );
 
   const handleRouteSelect = useCallback(
     (routeId: string) => {
-      // Si se hace clic en la misma ruta, no hacemos nada
       if (routeId === selectedRoute) return;
 
-      // Don't update URL if we're not on the map page
       if (pathname !== "/map") return;
 
-      // Actualizamos el estado local
       setSelectedRoute(routeId || null);
       if (routeId) setSelectedLocation(null);
 
-      // Actualizamos la URL solo si hay un ID válido
       if (routeId) {
         updateURL({ route: routeId });
       } else {
         updateURL({});
       }
     },
-    [updateURL, selectedRoute, setSelectedLocation, pathname]
+    [updateURL, selectedRoute, setSelectedLocation, pathname],
   );
 
   return {
