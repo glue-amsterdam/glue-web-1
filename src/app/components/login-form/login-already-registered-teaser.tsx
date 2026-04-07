@@ -30,7 +30,7 @@ export const LoginAlreadyRegisteredTeaser = ({
         id={headingId}
         className="text-center text-sm font-medium text-foreground"
       >
-        Already registered?
+        Participant?
       </p>
       <Button
         type="button"

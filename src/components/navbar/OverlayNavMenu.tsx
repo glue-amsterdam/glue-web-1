@@ -1,19 +1,25 @@
 "use client";
 
 import { useAuth } from "@/app/context/AuthContext";
+import { useVisitor } from "@/app/context/VisitorContext";
 import type { MainMenuItem, SubItem } from "@/schemas/mainSchema";
 import { Link } from "next-view-transitions";
 import { useTransitionRouter } from "next-view-transitions";
 import type React from "react";
 import { useState, useCallback } from "react";
-import LoginForm from "@/app/components/login-form/login-form";
+import LoginForm, {
+  type LoginModalOpenOptions,
+} from "@/app/components/login-form/login-form";
 import type { User } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
 
 type Props = {
   navItems: MainMenuItem[];
   closeOverlay: () => void;
-  handleLoginModal: (e: React.MouseEvent) => void;
+  handleLoginModal: (
+    e: React.MouseEvent,
+    options?: LoginModalOpenOptions,
+  ) => void;
 };
 
 export function OverlayNavMenu({
@@ -23,7 +29,10 @@ export function OverlayNavMenu({
 }: Props) {
   const router = useTransitionRouter();
   const { user, logout } = useAuth();
+  const { visitor, visitorLogout } = useVisitor();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [overlayMemberLoginFirst, setOverlayMemberLoginFirst] =
+    useState(false);
 
   const handleRedirect = useCallback(
     (e: React.MouseEvent, section: string) => {
@@ -36,7 +45,13 @@ export function OverlayNavMenu({
           setTimeout(() => {
             router.push(`/dashboard/${user.id}/user-data`);
           }, 100);
+        } else if (visitor) {
+          closeOverlay();
+          setTimeout(() => {
+            router.push("/events");
+          }, 100);
         } else {
+          setOverlayMemberLoginFirst(false);
           setIsLoginModalOpen(true);
         }
       } else {
@@ -44,7 +59,7 @@ export function OverlayNavMenu({
         router.push(`/${section}`);
       }
     },
-    [user, router, closeOverlay]
+    [user, visitor, router, closeOverlay]
   );
 
   const sortSubItems = useCallback(
@@ -68,6 +83,7 @@ export function OverlayNavMenu({
 
   const handleCloseLoginModal = useCallback(() => {
     setIsLoginModalOpen(false);
+    setOverlayMemberLoginFirst(false);
   }, []);
 
   const handleSubItemClick = useCallback(
@@ -86,6 +102,12 @@ export function OverlayNavMenu({
     }
   };
 
+  const handleExitVisitor = async () => {
+    await visitorLogout();
+    closeOverlay();
+    router.push("/");
+  };
+
   return (
     <div className="m-auto flex flex-col justify-between px-10 overflow-y-auto overflow-x-hidden">
       <div className="text-black absolute right-10 z-10">
@@ -102,6 +124,35 @@ export function OverlayNavMenu({
               onClick={handleLogout}
             >
               Log Out
+            </button>
+          </div>
+        ) : visitor ? (
+          <div className="flex max-w-[220px] flex-col items-end gap-2 text-right">
+            <span className="text-xs text-gray-600">
+              Visitor · {visitor.full_name}
+            </span>
+            <Link
+              className="hover:scale-105 transition-all duration-100"
+              href="/events"
+              onClick={() => closeOverlay()}
+            >
+              Events
+            </Link>
+            <button
+              type="button"
+              className="hover:scale-105 transition-all duration-100"
+              onClick={() => void handleExitVisitor()}
+            >
+              Exit visitor session
+            </button>
+            <button
+              type="button"
+              className="hover:scale-105 transition-all duration-100"
+              onClick={(e) =>
+                handleLoginModal(e, { memberLoginFirst: true })
+              }
+            >
+              Log in with full account
             </button>
           </div>
         ) : (
@@ -175,6 +226,7 @@ export function OverlayNavMenu({
       </div>
       <LoginForm
         isOpen={isLoginModalOpen}
+        memberLoginFirst={overlayMemberLoginFirst}
         onClose={handleCloseLoginModal}
         onLoginSuccess={handleLoginSuccess}
       />

@@ -4,7 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { User } from "@supabase/supabase-js";
 import { useAuth } from "@/app/context/AuthContext";
-import LoginForm from "@/app/components/login-form/login-form";
+import { useVisitor } from "@/app/context/VisitorContext";
+import LoginForm, {
+  type LoginFormCloseReason,
+} from "@/app/components/login-form/login-form";
 
 export default function EventsLayout({
   children,
@@ -13,8 +16,17 @@ export default function EventsLayout({
 }>) {
   const router = useRouter();
   const { user, isLoading } = useAuth();
+  const { visitor, isVisitorLoading } = useVisitor();
 
-  const isLocked = useMemo(() => !isLoading && !user, [isLoading, user]);
+  const identity = user ?? visitor;
+  const isLoadingIdentity = isLoading || isVisitorLoading;
+  const isAuthenticated = Boolean(user);
+  const isGuest = !user && Boolean(visitor);
+
+  const isLocked = useMemo(
+    () => !isLoadingIdentity && !identity,
+    [isLoadingIdentity, identity],
+  );
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const reopenTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -41,7 +53,16 @@ export default function EventsLayout({
     router.refresh();
   };
 
-  const handleCloseLoginModal = () => {
+  const handleCloseLoginModal = (reason?: LoginFormCloseReason) => {
+    if (reason === "visitor-restored") {
+      if (reopenTimeoutRef.current) {
+        clearTimeout(reopenTimeoutRef.current);
+        reopenTimeoutRef.current = null;
+      }
+      setIsLoginModalOpen(false);
+      return;
+    }
+
     if (isLocked) {
       setIsLoginModalOpen(false);
 

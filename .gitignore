@@ -40,3 +40,6 @@ next-env.d.ts
 .agents/
 
 skills-lock.json
+
+#snippets sql
+*.sql

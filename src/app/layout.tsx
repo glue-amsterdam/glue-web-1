@@ -4,6 +4,7 @@ import "@/app/globals.css";
 import { Analytics } from '@vercel/analytics/next'
 
 import { AuthProvider } from "@/app/context/AuthContext";
+import { VisitorProvider } from "@/app/context/VisitorContext";
 import { Toaster } from "@/components/ui/toaster";
 import { CookieBanner } from "@/components/cookies/cookies-banner";
 import { config } from "@/env";
@@ -89,10 +90,12 @@ export default async function RootLayout({
         <body className="font-lausanne text-uiwhite">
           <MainContextProvider initialData={initialData}>
             <AuthProvider>
-              {children}
-              <Analytics />
-              <Toaster />
-              <CookieBanner />
+              <VisitorProvider>
+                {children}
+                <Analytics />
+                <Toaster />
+                <CookieBanner />
+              </VisitorProvider>
             </AuthProvider>
           </MainContextProvider>
         </body>

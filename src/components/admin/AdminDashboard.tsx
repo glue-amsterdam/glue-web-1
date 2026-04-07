@@ -8,6 +8,7 @@ const adminSections = [
   { name: "Plans", href: "/admin/plans" },
   { name: "Email Templates", href: "/admin/email-templates" },
   { name: "Terms and Conditions", href: "/admin/terms" },
+  { name: "Visitors", href: "/admin/visitors" },
 ];
 
 export default function AdminDashboard() {

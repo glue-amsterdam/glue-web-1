@@ -17,7 +17,9 @@ import { useMenu } from "@/app/context/MainContext";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
 import { useOverlayState } from "@/hooks/useOverlayState";
 import { MdMenu } from "react-icons/md";
-import LoginForm from "@/app/components/login-form/login-form";
+import LoginForm, {
+  type LoginModalOpenOptions,
+} from "@/app/components/login-form/login-form";
 import { cn } from "@/lib/utils";
 import { User } from "@supabase/supabase-js";
 import { useGSAP } from "@gsap/react";
@@ -34,18 +36,24 @@ const NavBar = forwardRef<HTMLElement, NavBarProps>(
     const navItems = useMenu();
     const { isOpen, closeOverlay, toggleOverlay } = useOverlayState();
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [memberLoginFirst, setMemberLoginFirst] = useState(false);
     const isMobile = useMediaQuery("(min-width: 768px)");
 
     const overlayRef = useRef<HTMLDivElement>(null);
 
-    const handleLoginModal = (e: React.MouseEvent) => {
+    const handleLoginModal = (
+      e: React.MouseEvent,
+      options?: LoginModalOpenOptions,
+    ) => {
       e.preventDefault();
       e.stopPropagation();
+      setMemberLoginFirst(options?.memberLoginFirst ?? false);
       setIsLoginModalOpen(true);
     };
 
     const handleLoginSuccess = (loggedInUser: User) => {
       setIsLoginModalOpen(false);
+      setMemberLoginFirst(false);
       if (pathname === "/") {
         router.push(`/dashboard/${loggedInUser.id}/user-data`);
       } else {
@@ -219,7 +227,11 @@ const NavBar = forwardRef<HTMLElement, NavBarProps>(
           </div>
           <LoginForm
             isOpen={isLoginModalOpen}
-            onClose={() => setIsLoginModalOpen(false)}
+            memberLoginFirst={memberLoginFirst}
+            onClose={() => {
+              setIsLoginModalOpen(false);
+              setMemberLoginFirst(false);
+            }}
             onLoginSuccess={handleLoginSuccess}
           />
         </div>

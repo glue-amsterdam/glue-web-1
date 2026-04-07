@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/app/context/AuthContext";
+import { useVisitor } from "@/app/context/VisitorContext";
 import GlueLogoSVG from "@/app/components/glue-logo-svg";
 import { motion } from "framer-motion";
 import { ArrowLeft, Mail, Lock, Loader2, Settings } from "lucide-react";
@@ -29,6 +30,8 @@ import { User } from "@supabase/supabase-js";
 import { getCookieConsent } from "@/app/actions/cookieConsent";
 import { CookieSettingsModal } from "@/components/cookies/cookies-modal";
 import { LoginAlreadyRegisteredTeaser } from "@/app/components/login-form/login-already-registered-teaser";
+import { LoginVisitorSignupForm } from "@/app/components/login-form/login-visitor-signup-form";
+import { LoginVisitorReturnForm } from "@/app/components/login-form/login-visitor-return-form";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -42,12 +45,21 @@ const resetPasswordSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
+export type LoginModalOpenOptions = {
+  /** Skip visitor signup step and show member email/password immediately. */
+  memberLoginFirst?: boolean;
+};
+
+export type LoginFormCloseReason = "visitor-restored";
+
 interface LoginFormProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (reason?: LoginFormCloseReason) => void;
   onLoginSuccess: (user: User) => void;
   /** When true, show “Already registered?” first; revealing shows the login fields below. */
   hasPrev?: boolean;
+  /** When true (e.g. “Log in with full account”), member login is shown first when `hasPrev` is true. */
+  memberLoginFirst?: boolean;
 }
 
 export default function LoginForm({
@@ -55,9 +67,12 @@ export default function LoginForm({
   onClose,
   onLoginSuccess,
   hasPrev = false,
+  memberLoginFirst = false,
 }: LoginFormProps) {
   const { login, loginError, clearLoginError } = useAuth();
+  const { visitor, refreshVisitor, visitorLogout } = useVisitor();
   const [hasRevealedLogin, setHasRevealedLogin] = useState(false);
+  const [visitorReturnMode, setVisitorReturnMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isResetLoading, setIsResetLoading] = useState(false);
   const [cookieError, setCookieError] = useState<string | null>(null);
@@ -84,8 +99,19 @@ export default function LoginForm({
   useEffect(() => {
     if (!isOpen) {
       setHasRevealedLogin(false);
+      setVisitorReturnMode(false);
+      return;
     }
-  }, [isOpen]);
+    if (memberLoginFirst) {
+      setHasRevealedLogin(true);
+    }
+  }, [isOpen, memberLoginFirst]);
+
+  useEffect(() => {
+    if (isOpen && visitor?.email && hasRevealedLogin) {
+      loginForm.setValue("email", visitor.email);
+    }
+  }, [isOpen, visitor, hasRevealedLogin, loginForm]);
 
   const handleRevealRegisteredLogin = () => {
     setHasRevealedLogin(true);
@@ -111,6 +137,7 @@ export default function LoginForm({
       }
 
       const user = await login(data.email, data.password);
+      await visitorLogout();
       onClose();
       onLoginSuccess(user);
     } catch (error) {
@@ -149,6 +176,11 @@ export default function LoginForm({
     }
   };
 
+  const handleVisitorSessionRestored = async () => {
+    await refreshVisitor();
+    onClose("visitor-restored");
+  };
+
   return (
     <>
       <Dialog
@@ -157,11 +189,33 @@ export default function LoginForm({
           if (!open) onClose();
         }}
       >
-        <DialogContent className="scale-75 md:scale-95 lg:scale-100 sm:max-w-[425px] bg-uiwhite backdrop-blur-sm border border-primary/20 rounded-lg shadow-xl p-6 text-black overflow-hidden overflow-y-auto">
+        <DialogContent className="scale-75 md:scale-95 lg:scale-100 sm:max-w-[480px] bg-uiwhite backdrop-blur-sm border border-primary/20 rounded-lg shadow-xl p-6 text-black overflow-hidden overflow-y-auto">
           {hasPrev && !hasRevealedLogin ? (
-            <LoginAlreadyRegisteredTeaser
-              onRevealLogin={handleRevealRegisteredLogin}
-            />
+            <div className="space-y-4">
+              {visitorReturnMode ? (
+                <LoginVisitorReturnForm
+                  isOpen={isOpen}
+                  onBack={() => setVisitorReturnMode(false)}
+                  onSessionRestored={handleVisitorSessionRestored}
+                />
+              ) : (
+                <>
+                  <LoginVisitorSignupForm isOpen={isOpen} />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full border-primary/30 text-sm"
+                    onClick={() => setVisitorReturnMode(true)}
+                    aria-label="I am already a visitor — sign in with email"
+                  >
+                    Already a visitor
+                  </Button>
+                  <LoginAlreadyRegisteredTeaser
+                    onRevealLogin={handleRevealRegisteredLogin}
+                  />
+                </>
+              )}
+            </div>
           ) : null}
 
           {showLoginChrome ? (
