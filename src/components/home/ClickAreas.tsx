@@ -27,7 +27,7 @@ function ClickAreas({ refs, setIsLoginModalOpen }: ClickAreasProps) {
 
   const sortedMenu = mainMenu.sort(
     (a, b) =>
-      orderedSections.indexOf(a.section) - orderedSections.indexOf(b.section)
+      orderedSections.indexOf(a.section) - orderedSections.indexOf(b.section),
   );
 
   // Function to handle about navigation (same as downbutton click)
@@ -186,7 +186,7 @@ function ClickAreas({ refs, setIsLoginModalOpen }: ClickAreasProps) {
                       homeExitAnimation({ refs, buttonType: "upButton" }).then(
                         () => {
                           router.push("/events");
-                        }
+                        },
                       );
                     } else if (area.className === "rightbutton") {
                       document.documentElement.dataset.to = "rightButton";
