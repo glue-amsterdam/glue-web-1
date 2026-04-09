@@ -31,6 +31,7 @@ import {
   NotebookPen,
   Speech,
   Coffee,
+  QrCode,
 } from "lucide-react";
 
 export const USER_DASHBOARD_SECTIONS = [
@@ -73,6 +74,14 @@ export const USER_DASHBOARD_SECTIONS = [
     href: `your-events`,
     label: "Your Events",
     icon: Calendar,
+  },
+];
+
+export const VISITOR_DASHBOARD_SECTIONS = [
+  {
+    href: `qr-code`,
+    label: "QR Code",
+    icon: QrCode,
   },
 ];
 

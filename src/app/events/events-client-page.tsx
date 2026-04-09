@@ -83,7 +83,7 @@ export default function EventsClientPage({
         ease: "power2.inOut",
       });
     },
-    { scope: container }
+    { scope: container },
   );
 
   return (

@@ -1,5 +1,6 @@
 "use client";
 import { useAuth } from "@/app/context/AuthContext";
+import { useVisitor } from "@/app/context/VisitorContext";
 import { useMenu } from "@/app/context/MainContext";
 import { useTransitionRouter } from "next-view-transitions";
 import React, { useEffect, useRef } from "react";
@@ -14,9 +15,10 @@ interface ClickAreasProps {
   refs: HomeExitAnimationRefs;
 }
 
-function ClickAreas({ refs }: ClickAreasProps) {
+function ClickAreas({ refs, setIsLoginModalOpen }: ClickAreasProps) {
   const mainMenu = useMenu();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  const { visitor, isVisitorLoading } = useVisitor();
   const router = useTransitionRouter();
   const orderedSections = ["dashboard", "events", "map", "about"];
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -117,7 +119,7 @@ function ClickAreas({ refs }: ClickAreasProps) {
         {sortedMenu
           .filter((area) => area?.section && area.className)
           .map((area) => {
-            const requiresAuth = area.section === "dashboard";
+            const requiresIdentity = area.section === "dashboard";
             return (
               <li
                 key={area.section}
@@ -159,20 +161,17 @@ function ClickAreas({ refs }: ClickAreasProps) {
                   className="absolute inset-0 w-full h-full z-10"
                   onClick={(e) => {
                     if (area.className === "leftbutton") {
-                      if (requiresAuth && !user) {
+                      if (requiresIdentity && !user && !visitor) {
                         e.preventDefault();
-                        document.documentElement.dataset.to = "leftButton";
-                        homeExitAnimation({
-                          refs,
-                          buttonType: "leftButton",
-                        }).then(() => {
-                          router.push("/signup?step=1");
-                        });
+                        if (isLoading || isVisitorLoading) return;
+                        setIsLoginModalOpen(true);
                         return;
                       }
                       const href = user
                         ? `/dashboard/${user.id}/user-data`
-                        : "#";
+                        : visitor
+                          ? `/dashboard/${visitor.id}/qr-code`
+                          : "#";
                       if (href !== "#") {
                         document.documentElement.dataset.to = "leftButton";
                         homeExitAnimation({

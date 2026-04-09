@@ -1,9 +1,11 @@
 "use client";
 
 import { useTransitionRouter } from "next-view-transitions";
-import React, { useState } from "react";
-import { usePathname } from "next/navigation";
-import LoginForm from "@/app/components/login-form/login-form";
+import React, { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import LoginForm, {
+  type LoginFormCloseReason,
+} from "@/app/components/login-form/login-form";
 import { useMenu } from "@/app/context/MainContext";
 import CenteredLoader from "@/app/components/centered-loader";
 import { User } from "@supabase/supabase-js";
@@ -12,9 +14,20 @@ import ClickAreas from "./ClickAreas";
 
 export default function HomeWrapper({ refs }: { refs: HomeExitAnimationRefs }) {
   const router = useTransitionRouter();
+  const nextRouter = useRouter();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const reopenTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
   const mainMenu = useMenu();
+
+  useEffect(() => {
+    return () => {
+      if (reopenTimeoutRef.current) {
+        clearTimeout(reopenTimeoutRef.current);
+        reopenTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const handleLoginSuccess = (loggedInUser: User) => {
     setIsLoginModalOpen(false);
@@ -22,8 +35,21 @@ export default function HomeWrapper({ refs }: { refs: HomeExitAnimationRefs }) {
       const finalHref = `/dashboard/${loggedInUser.id}/user-data`;
       router.push(finalHref);
     } else {
-      router.refresh();
+      nextRouter.refresh();
     }
+  };
+
+  const handleCloseLoginModal = (reason?: LoginFormCloseReason) => {
+    if (reason === "visitor-restored") {
+      if (reopenTimeoutRef.current) {
+        clearTimeout(reopenTimeoutRef.current);
+        reopenTimeoutRef.current = null;
+      }
+      setIsLoginModalOpen(false);
+      return;
+    }
+
+    setIsLoginModalOpen(false);
   };
 
   if (!mainMenu || !Array.isArray(mainMenu)) {
@@ -34,8 +60,9 @@ export default function HomeWrapper({ refs }: { refs: HomeExitAnimationRefs }) {
     <nav>
       <ClickAreas refs={refs} setIsLoginModalOpen={setIsLoginModalOpen} />
       <LoginForm
+        hasPrev={true}
         isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
+        onClose={handleCloseLoginModal}
         onLoginSuccess={handleLoginSuccess}
       />
     </nav>

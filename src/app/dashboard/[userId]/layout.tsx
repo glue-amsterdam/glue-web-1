@@ -5,7 +5,9 @@ import DashboardMenu from "@/app/dashboard/components/dashboard-menu";
 import InsufficientAccess from "@/app/dashboard/insufficient-access";
 import WrongCredentials from "@/app/dashboard/wrong-credentials-access";
 import { NAVBAR_HEIGHT } from "@/constants";
+import { createAdminClient } from "@/utils/supabase/adminClient";
 import { createClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -17,15 +19,59 @@ export default async function DashboardLayout({
   params: Promise<{ userId: string }>;
 }) {
   const supabase = await createClient();
+  const supabaseAdmin = await createAdminClient();
   const paramsData = await params;
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const cookieStore = await cookies();
+  const visitorToken = cookieStore.get("visitor_token")?.value?.trim();
 
-  if (!user) redirect("/");
+  let visitor: { id: string; full_name: string; email: string } | null = null;
+  if (visitorToken) {
+    const { data: visitorData } = await supabaseAdmin
+      .from("visitor_data")
+      .select("id, full_name, email, email_verified")
+      .eq("visitor_token", visitorToken)
+      .maybeSingle();
+
+    if (visitorData?.email_verified) {
+      visitor = {
+        id: visitorData.id,
+        full_name: visitorData.full_name,
+        email: visitorData.email,
+      };
+    }
+  }
+
+  if (!user && !visitor) redirect("/");
+
+  const isVisitor = !user && Boolean(visitor);
 
   const targetUserId = paramsData.userId;
-  const loggedInUserId = user.id;
+  const loggedInUserId = user?.id ?? visitor?.id ?? "";
+
+  if (isVisitor) {
+    const propData = {
+      isMod: false,
+      loggedInUserId,
+      targetUserId,
+      loggedPlanType: "visitor",
+    };
+
+    return (
+      <section className="flex flex-1 min-h-0">
+        <DashboardMenu
+          isMod={false}
+          isVisitor={true}
+          userName={visitor?.full_name || visitor?.email}
+          is_active={true}
+          targetUserId={targetUserId}
+        />
+        <DashboardProvider {...propData}>{children}</DashboardProvider>
+      </section>
+    );
+  }
 
   const { data: loggedUserInfo } = await supabase
     .from("user_info")
@@ -72,7 +118,7 @@ export default async function DashboardLayout({
       <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
         <InsufficientAccess
           userId={loggedInUserId}
-          userName={user.email || loggedUserInfo?.user_name || ""}
+          userName={user?.email || loggedUserInfo?.user_name || ""}
         />
       </section>
     );
@@ -83,7 +129,7 @@ export default async function DashboardLayout({
     return (
       <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
         <PendingApproval
-          userName={user.email || loggedUserInfo?.user_name || ""}
+          userName={user?.email || loggedUserInfo?.user_name || ""}
         />
       </section>
     );
@@ -94,7 +140,7 @@ export default async function DashboardLayout({
     return (
       <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
         <RejectedAccess
-          userName={user.email || loggedUserInfo?.user_name || ""}
+          userName={user?.email || loggedUserInfo?.user_name || ""}
         />
       </section>
     );
@@ -106,7 +152,7 @@ export default async function DashboardLayout({
       <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
         <WrongCredentials
           userId={loggedInUserId}
-          userName={user.email || loggedUserInfo?.user_name || ""}
+          userName={user?.email || loggedUserInfo?.user_name || ""}
         />
       </section>
     );

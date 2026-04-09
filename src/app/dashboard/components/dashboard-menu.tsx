@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useAuth } from "@/app/context/AuthContext";
+import { useVisitor } from "@/app/context/VisitorContext";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -12,7 +13,11 @@ import {
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu } from "lucide-react";
-import { ADMIN_DASHBOARD_SECTIONS, USER_DASHBOARD_SECTIONS } from "@/constants";
+import {
+  ADMIN_DASHBOARD_SECTIONS,
+  USER_DASHBOARD_SECTIONS,
+  VISITOR_DASHBOARD_SECTIONS,
+} from "@/constants";
 import { useColors } from "@/app/context/MainContext";
 
 // List of sections that should only be visible when is_active is true
@@ -27,6 +32,7 @@ const ACTIVE_ONLY_SECTIONS = [
 
 type DashboardMenuProps = {
   isMod?: boolean;
+  isVisitor?: boolean;
   userName?: string;
   targetUserId?: string;
   targetParticipantName?: string | null;
@@ -64,6 +70,7 @@ const ModifyingProfileSection = ({
 
 export default function DashboardMenu({
   isMod,
+  isVisitor = false,
   userName,
   targetUserId,
   targetParticipantName,
@@ -72,6 +79,7 @@ export default function DashboardMenu({
 }: DashboardMenuProps) {
   const { box1, box2 } = useColors();
   const filteredDashboardSections = useMemo(() => {
+    if (isVisitor) return VISITOR_DASHBOARD_SECTIONS;
     if (isMod) return USER_DASHBOARD_SECTIONS;
 
     return is_active
@@ -79,11 +87,14 @@ export default function DashboardMenu({
       : USER_DASHBOARD_SECTIONS.filter(
           (section) => !ACTIVE_ONLY_SECTIONS.includes(section.href)
         );
-  }, [is_active, isMod]);
+  }, [isVisitor, is_active, isMod]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user } = useAuth();
+  const { visitor } = useVisitor();
+  const identityName = userName || user?.email || visitor?.email;
+  const adminBaseUserId = user?.id ?? targetUserId ?? "";
 
-  if (!user) return null;
+  if (!user && !visitor) return null;
 
   // Filter dashboard sections based on is_active status
 
@@ -130,7 +141,7 @@ export default function DashboardMenu({
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Link href={`/dashboard/${user.id}/${item.href}`}>
+                <Link href={`/dashboard/${adminBaseUserId}/${item.href}`}>
                   <Button
                     variant="ghost"
                     className="w-full justify-start gap-3 text-white ransition-all duration-200"
@@ -183,7 +194,7 @@ export default function DashboardMenu({
             ></Button>
             <div className="p-6 pt-16">
               <h2 className="text-white text-xl font-bold mb-2">
-                Hello, {userName || user.email}
+                Hello, {identityName}
               </h2>
               {isMod && (
                 <ModifyingProfileSection
@@ -207,7 +218,7 @@ export default function DashboardMenu({
       >
         <div className="p-6">
           <h2 className="text-white text-xl font-bold mb-2">
-            Hello, {userName || user.email}
+            Hello, {identityName}
           </h2>
           {isMod && (
             <ModifyingProfileSection
