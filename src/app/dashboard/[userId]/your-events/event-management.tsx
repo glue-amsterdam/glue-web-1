@@ -4,12 +4,14 @@ import { EventList } from "@/app/dashboard/[userId]/your-events/event-list";
 import { EventType } from "@/schemas/eventsSchemas";
 
 interface EventManagementProps {
+  targetUserId: string;
   events: EventType[];
   onEventUpdated: (updatedEvent: EventType) => void;
   onEventDeleted: (deletedEventId: string) => void;
 }
 
 export function EventManagement({
+  targetUserId,
   events,
   onEventUpdated,
   onEventDeleted,
@@ -20,6 +22,7 @@ export function EventManagement({
         <h2 className="text-2xl font-bold text-white">Your Events</h2>
       </div>
       <EventList
+        targetUserId={targetUserId}
         events={events}
         onEventUpdated={onEventUpdated}
         onEventDeleted={onEventDeleted}

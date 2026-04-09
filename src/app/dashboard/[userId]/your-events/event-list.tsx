@@ -2,12 +2,14 @@ import { EventCard } from "@/app/dashboard/[userId]/your-events/event-card";
 import { EventType } from "@/schemas/eventsSchemas";
 
 interface EventListProps {
+  targetUserId: string;
   events: EventType[];
   onEventUpdated: (updatedEvent: EventType) => void;
   onEventDeleted: (deletedEventId: string) => void;
 }
 
 export function EventList({
+  targetUserId,
   events,
   onEventUpdated,
   onEventDeleted,
@@ -17,6 +19,7 @@ export function EventList({
       {events.map((event) => (
         <EventCard
           key={event.id}
+          targetUserId={targetUserId}
           event={event}
           onEventUpdated={onEventUpdated}
           onEventDeleted={onEventDeleted}

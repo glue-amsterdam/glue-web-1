@@ -62,6 +62,7 @@ function EventsPage() {
 
   return (
     <EventManagement
+      targetUserId={targetUserId}
       events={events}
       onEventUpdated={handleEventUpdated}
       onEventDeleted={handleEventDeleted}

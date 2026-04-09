@@ -25,22 +25,23 @@ import { CalendarIcon, ClockIcon, PencilIcon, TrashIcon } from "lucide-react";
 import { EditEventForm } from "@/app/dashboard/[userId]/your-events/edit-event";
 import { deleteImage } from "@/utils/supabase/storage/client";
 import Image from "next/image";
+import Link from "next/link";
 
 interface EventCardProps {
+  targetUserId: string;
   event: EventType;
   onEventUpdated: (updatedEvent: EventType) => void;
   onEventDeleted: (eventId: string) => void;
 }
 
 export function EventCard({
+  targetUserId,
   event,
   onEventUpdated,
   onEventDeleted,
 }: EventCardProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
-  console.log(event);
 
   const handleDeleteEvent = async () => {
     try {
@@ -94,6 +95,7 @@ export function EventCard({
         </p>
       </CardContent>
       <CardFooter className="flex flex-wrap gap-2">
+        <p className="w-full text-sm font-semibold text-white/80">Manage</p>
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="secondary" className="w-full">
@@ -142,6 +144,14 @@ export function EventCard({
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        <Link
+          href={`/dashboard/${targetUserId}/events/${event.id}/scan`}
+          className="w-full"
+        >
+          <Button variant="outline" className="w-full">
+            Scan Check-Ins
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );
