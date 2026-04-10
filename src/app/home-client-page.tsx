@@ -39,10 +39,15 @@ export default function HomeClientPage() {
   const lu_line = useRef<SVGLineElement>(null);
   const eg_line = useRef<SVGLineElement>(null);
   const buttonsAreaRef = useRef<HTMLLIElement>(null);
+  const animatedLayerRef = useRef<HTMLDivElement>(null);
   useGSAP(
     () => {
       const { from, to } = document.documentElement.dataset;
       console.log(from, to);
+      if (animatedLayerRef.current) {
+        // Avoid first-paint flash before GSAP sets initial tween values.
+        gsap.set(animatedLayerRef.current, { visibility: "visible" });
+      }
       const tl = gsap.timeline();
       tl.addLabel("start", 0);
       if (from === undefined || to === undefined) {
@@ -67,6 +72,9 @@ export default function HomeClientPage() {
           },
           previousUrl,
         });
+      } else if (topNavBarRef.current) {
+        // Keep navbar visible when intro animation is skipped.
+        gsap.set(topNavBarRef.current, { autoAlpha: 1, y: 0, visibility: "visible" });
       }
     },
     { scope: container }
@@ -77,7 +85,7 @@ export default function HomeClientPage() {
       ref={container}
       className="relative min-h-dvh h-full overflow-hidden bg-uiwhite z-0 page-content"
     >
-      <NavBar ref={topNavBarRef} />
+      <NavBar ref={topNavBarRef} className="invisible" />
       {/*   <NavbarBurger ref={topNavBarRef} /> */}
       {homeText && (
         <div
@@ -113,7 +121,7 @@ export default function HomeClientPage() {
           scope: container,
         }}
       />
-      <div className="absolute inset-0 -z-10">
+      <div ref={animatedLayerRef} className="absolute inset-0 -z-10 invisible">
         <HomeLogo
           lettersContainerRef={lettersContainerRef}
           g_letterRef={g_letterRef}

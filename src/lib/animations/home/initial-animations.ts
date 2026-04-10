@@ -43,6 +43,12 @@ export function initialAnimations(refs: {
     e_letterRef.current,
   ];
 
+  // Prevent first-paint flashes for elements animated later in the timeline.
+  if (topNavBarRef.current) {
+    gsap.set(topNavBarRef.current, { autoAlpha: 0, y: -30 });
+  }
+  gsap.set(".home-text-container", { autoAlpha: 0, y: 100 });
+
   /* SET LINES FOR ANIMATION */
   setLines({ gl_line, ue_line, lu_line, eg_line });
 
@@ -241,21 +247,21 @@ function lastAnimation(refs: {
 }) {
   const { tl, topNavBarRef, allLetters } = refs;
   if (topNavBarRef.current)
-    tl.from(
+    tl.to(
       ".home-text-container",
       {
-        autoAlpha: 0,
-        y: 100,
+        autoAlpha: 1,
+        y: 0,
         duration: 0.5,
         ease: "power2.inOut",
       },
       "glue-logo-and-lines-animation-end+=0.2"
     )
-      .from(
+      .to(
         topNavBarRef.current,
         {
-          autoAlpha: 0,
-          y: -30,
+          autoAlpha: 1,
+          y: 0,
           duration: 0.5,
           ease: "power2.inOut",
         },
