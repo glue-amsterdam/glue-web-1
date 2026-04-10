@@ -1,6 +1,5 @@
 import EventsClientPage from "./events-client-page";
 import { createClient } from "@/utils/supabase/server";
-import { Suspense } from "react";
 
 export const metadata = {
   title: "GLUE Events",
@@ -31,9 +30,5 @@ async function fetchHeaderTitle(): Promise<string> {
 export default async function EventsPage() {
   const headerTitle = await fetchHeaderTitle();
 
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <EventsClientPage headerTitle={headerTitle} />
-    </Suspense>
-  );
+  return <EventsClientPage headerTitle={headerTitle} />;
 }

@@ -46,6 +46,15 @@ function ClickAreas({ refs, setIsLoginModalOpen }: ClickAreasProps) {
 
   // Scroll detection effect
   useEffect(() => {
+    router.prefetch("/events");
+    router.prefetch("/map");
+    router.prefetch("/about");
+    if (user?.id) {
+      router.prefetch(`/dashboard/${user.id}/user-data`);
+    } else if (visitor?.id) {
+      router.prefetch(`/dashboard/${visitor.id}/qr-code`);
+    }
+
     const handleWheel = (e: WheelEvent) => {
       // Only trigger on scroll down (positive deltaY)
       if (e.deltaY > 0) {
@@ -111,7 +120,7 @@ function ClickAreas({ refs, setIsLoginModalOpen }: ClickAreasProps) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [handleAboutNavigation]);
+  }, [handleAboutNavigation, router, user?.id, visitor?.id]);
 
   return (
     <nav aria-label="Main navigation">

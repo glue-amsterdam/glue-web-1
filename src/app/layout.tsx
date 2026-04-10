@@ -87,7 +87,7 @@ export default async function RootLayout({
   return (
     <ViewTransitions>
       <html lang="en">
-        <body className="font-lausanne text-uiwhite">
+        <body className="font-lausanne text-uiwhite bg-black">
           <MainContextProvider initialData={initialData}>
             <AuthProvider>
               <VisitorProvider>
