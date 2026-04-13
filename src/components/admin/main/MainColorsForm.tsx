@@ -56,7 +56,7 @@ export default function MainColorsForm({ initialData }: MainColorsFormProps) {
         description: "Failed to update colors. Please try again." + error,
         variant: "destructive",
       });
-    }
+    },
   );
 
   const handleFormSubmit = async (data: MainColors) => {
@@ -69,11 +69,13 @@ export default function MainColorsForm({ initialData }: MainColorsFormProps) {
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <h2 className="text-xl font-semibold">Main Colors</h2>
-        <div className="h-36 bg-gray-200 rounded-lg relative aspect-[4/3]">
+        <div className="relative h-96 aspect-square overflow-hidden">
           <Image
             src={"/admin/colors.jpg"}
             fill
             alt="Color scheme representation"
+            className="object-contain"
+            unoptimized
             priority={false}
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 30vw, 30vw"
           />
@@ -94,7 +96,7 @@ export default function MainColorsForm({ initialData }: MainColorsFormProps) {
                   <p className="text-red-500">{errors[key]?.message}</p>
                 )}
               </div>
-            )
+            ),
           )}
         </div>
         <SaveChangesButton
