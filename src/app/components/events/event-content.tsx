@@ -70,13 +70,17 @@ export default function EventContent({ event }: EventContentProps) {
               <div className="text-center">
                 <h3 className="font-bold text-lg mb-1">Organiser</h3>
                 <div className="flex items-center justify-center gap-2">
-                  <Link
-                    href={`/participants/${event.organizer.slug}`}
-                    className="text-sm hover:underline"
-                    target="_blank"
-                  >
-                    {event.organizer.user_name}
-                  </Link>
+                  {event.organizer.slug ? (
+                    <Link
+                      href={`/participants/${event.organizer.slug}`}
+                      className="text-sm hover:underline"
+                      target="_blank"
+                    >
+                      {event.organizer.user_name}
+                    </Link>
+                  ) : (
+                    <span className="text-sm">{event.organizer.user_name}</span>
+                  )}
                 </div>
               </div>
               {event.coOrganizers && event.coOrganizers.length > 0 && (
@@ -85,18 +89,20 @@ export default function EventContent({ event }: EventContentProps) {
                   <ul className="flex flex-col gap-2">
                     {event.coOrganizers.map((contributor: EnhancedUser) => (
                       <li
-                        key={
-                          contributor.user_id + (Math.random() * 100).toString()
-                        }
+                        key={contributor.user_id}
                         className="flex items-center justify-center gap-2"
                       >
-                        <Link
-                          href={`/participants/${contributor.slug}`}
-                          className="text-sm hover:underline"
-                          target="_blank"
-                        >
-                          {contributor.user_name}
-                        </Link>
+                        {contributor.slug ? (
+                          <Link
+                            href={`/participants/${contributor.slug}`}
+                            className="text-sm hover:underline"
+                            target="_blank"
+                          >
+                            {contributor.user_name}
+                          </Link>
+                        ) : (
+                          <span className="text-sm">{contributor.user_name}</span>
+                        )}
                       </li>
                     ))}
                   </ul>
