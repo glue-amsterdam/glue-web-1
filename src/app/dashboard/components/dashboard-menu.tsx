@@ -149,7 +149,7 @@ export default function DashboardMenu({
   );
 
   return (
-    <>
+    <div className="max-md:w-0 max-md:min-w-0 max-md:overflow-visible md:flex md:h-full md:min-h-0 md:w-80 md:flex-shrink-0 md:flex-col">
       <motion.div
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -203,7 +203,7 @@ export default function DashboardMenu({
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
         style={{ backgroundColor: box1 }}
-        className="hidden md:block h-full flex-shrink-0 w-80 shadow-xl overflow-y-auto scrollbar scrollbar-thumb-white scrollbar-track-white/10 border-r-2 border-white"
+        className="hidden h-full min-h-0 w-full overflow-y-auto border-r-2 border-white shadow-xl scrollbar scrollbar-thumb-white scrollbar-track-white/10 md:block md:flex-shrink-0"
       >
         <div className="p-6">
           <h2 className="text-white text-xl font-bold mb-2">
@@ -219,6 +219,6 @@ export default function DashboardMenu({
         </div>
         <SidebarContent />
       </motion.aside>
-    </>
+    </div>
   );
 }

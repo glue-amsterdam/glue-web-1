@@ -39,7 +39,7 @@ export const DashboardProvider: React.FC<
       }}
     >
       <div
-        className="w-full flex-1 min-h-0 overflow-y-auto py-4"
+        className="h-full min-h-0 w-full min-w-0 flex-1 overflow-y-auto overscroll-contain py-4"
         style={{ backgroundColor: box3 }}
       >
         {children}
