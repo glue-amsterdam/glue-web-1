@@ -54,7 +54,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
       tl.fromTo(
         titleRef.current,
         { y: 50, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8 }
+        { y: 0, opacity: 1, duration: 0.8 },
       );
 
       // Animate description sections
@@ -66,7 +66,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
           descriptionRef.current.querySelector("p"),
           { y: 30, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.6 },
-          "-=0.4"
+          "-=0.4",
         );
       }
 
@@ -78,7 +78,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
           descriptionRef.current.querySelector("div"),
           { y: 30, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.6 },
-          "-=0.3"
+          "-=0.3",
         );
       }
 
@@ -88,7 +88,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
           addressRef.current,
           { y: 30, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.6 },
-          "-=0.2"
+          "-=0.2",
         );
       }
 
@@ -97,7 +97,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
         contactRef.current,
         { y: 30, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6 },
-        "-=0.2"
+        "-=0.2",
       );
 
       // Animate social media icons
@@ -106,7 +106,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
           socialRef.current,
           { y: 30, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.6 },
-          "-=0.2"
+          "-=0.2",
         );
 
         // Stagger social media icons
@@ -122,7 +122,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
               stagger: 0.1,
               ease: "back.out(1.7)",
               delay: 0.5,
-            }
+            },
           );
         }
       }
@@ -133,7 +133,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
           hoursRef.current,
           { y: 30, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.6 },
-          "-=0.2"
+          "-=0.2",
         );
       }
 
@@ -143,7 +143,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
           eventsRef.current,
           { y: 30, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.6 },
-          "-=0.2"
+          "-=0.2",
         );
 
         // Stagger event cards
@@ -160,7 +160,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
               stagger: 0.1,
               ease: "power2.out",
               delay: 0.8,
-            }
+            },
           );
         }
       }
@@ -185,13 +185,13 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
           gsap.fromTo(
             elements,
             { y: 50, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.8, stagger: 0.1 }
+            { y: 0, opacity: 1, duration: 0.8, stagger: 0.1 },
           );
         },
         start: "top 80%",
       });
     },
-    { scope: containerRef }
+    { scope: containerRef },
   );
 
   return (
@@ -294,7 +294,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
                         participant.user_info.visible_websites!.length - 1 &&
                         ", "}
                     </a>
-                  )
+                  ),
                 )}
               </div>
             )}
@@ -305,7 +305,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
             {participant.user_info.social_media.instagramLink && (
               <a
                 href={formatUrl(
-                  participant.user_info.social_media.instagramLink
+                  participant.user_info.social_media.instagramLink,
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -317,7 +317,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
             {participant.user_info.social_media.facebookLink && (
               <a
                 href={formatUrl(
-                  participant.user_info.social_media.facebookLink
+                  participant.user_info.social_media.facebookLink,
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -329,13 +329,13 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
             {participant.user_info.social_media.linkedinLink && (
               <a
                 href={formatUrl(
-                  participant.user_info.social_media.linkedinLink
+                  participant.user_info.social_media.linkedinLink,
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transform transition-transform duration-200 hover:scale-110"
               >
-                <FaLinkedinIn className="w-6 h-6 md:w-7 md:h-7 text-blue-700" />
+                <FaLinkedinIn className="w-6 h-6 md:w-7 md:h-7 text-white" />
               </a>
             )}
           </div>
@@ -362,7 +362,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
                           </span>
                         ))}
                       </div>
-                    ) : null
+                    ) : null,
                   )}
                 </div>
               ) : (
