@@ -55,14 +55,13 @@ export function EventForm({
   const { targetUserId } = useDashboardContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  
+
   // Fetch current event days (always from events_days table, not from snapshot)
   // Dashboard should always use current days for creating/editing events
-  const { data: eventDays = [], isLoading: isLoadingEventDays } = useSWR<EventDay[]>(
-    "/api/events/days/current",
-    fetcher
-  );
-  
+  const { data: eventDays = [], isLoading: isLoadingEventDays } = useSWR<
+    EventDay[]
+  >("/api/events/days/current", fetcher);
+
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -213,7 +212,7 @@ export function EventForm({
   }
 
   return (
-    <Card className="w-full max-w-[80%] mx-auto">
+    <Card className="mx-auto w-full max-w-[80%]">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Create New Event</CardTitle>
       </CardHeader>
@@ -312,7 +311,7 @@ export function EventForm({
                       Date:{" "}
                       {new Date(
                         eventDays.find((day) => day.dayId === field.value)
-                          ?.date || new Date()
+                          ?.date || new Date(),
                       ).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "long",
