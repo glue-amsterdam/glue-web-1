@@ -2,6 +2,20 @@ import { config } from "@/env";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
+type ParticipantDetailsEmbed =
+  | { slug?: string | null }
+  | Array<{ slug?: string | null }>
+  | null
+  | undefined;
+
+const slugFromEmbed = (participantDetails: ParticipantDetailsEmbed): string => {
+  if (!participantDetails) return "";
+  if (Array.isArray(participantDetails)) {
+    return participantDetails[0]?.slug ?? "";
+  }
+  return participantDetails.slug ?? "";
+};
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ eventId: string }> }
@@ -161,7 +175,7 @@ export async function GET(
       organizer: {
         user_id: event.organizer?.user_id || "",
         user_name: event.organizer?.user_name || "Unknown",
-        slug: event.organizer?.participant_details?.slug || "",
+        slug: slugFromEmbed(event.organizer?.participant_details),
       },
       location: {
         id: event.location?.id || "",
@@ -171,7 +185,7 @@ export async function GET(
         coOrganizers?.map((co) => ({
           user_id: co.user_id || "",
           user_name: co.user_name || "Unknown",
-          slug: co.participant_details?.[0]?.slug || "",
+          slug: slugFromEmbed(co.participant_details),
         })) || [],
       rsvp: event.rsvp ?? false,
       rsvpMessage: event.rsvp_message || "",
