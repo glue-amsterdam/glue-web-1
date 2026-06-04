@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
+import { revalidateHomeStickyCache } from "@/lib/home";
 import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
 
 export async function POST(req: Request) {
@@ -39,6 +40,7 @@ export async function POST(req: Request) {
         .insert(insertData);
       if (partError) throw partError;
     }
+    revalidateHomeStickyCache();
     await revalidateMapDataCacheIfLiveTour(adminClient);
     return NextResponse.json({ id: group.id });
   } catch (err) {

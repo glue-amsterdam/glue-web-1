@@ -1,6 +1,6 @@
 import { Analytics } from '@vercel/analytics/next'
 import "@/app/globals.css";
-import { metadata as metadataConfig } from "@/lib/metadata";
+import { LayoutMetadata } from "@/lib/metadata";
 
 import { fetchMain } from "@/lib/main/fetch-main";
 import { getTheme } from "@/lib/theme";
@@ -17,7 +17,7 @@ import InternalNavigationTracker from "@/components/internal-navigation-tracker"
 import NavBar from "@/components/navbar";
 import Footer from '@/components/home/bottom-navigation/bottom-navigation';
 
-export const metadata = metadataConfig;
+export const metadata = LayoutMetadata;
 
 export default async function RootLayout({
   children,
@@ -30,6 +30,7 @@ export default async function RootLayout({
 
   //NEW VERSION
   const theme = await getTheme()
+
   return (
     <html
       lang="en"
@@ -46,7 +47,7 @@ export default async function RootLayout({
         } as React.CSSProperties
       }
     >
-      <body className="font-lausanne bg-[var(--background-color)]">
+      <body className="font-lausanne bg-(--background-color)">
         <MainContextProvider initialData={initialData}>
           <AuthProvider>
             <VisitorProvider>

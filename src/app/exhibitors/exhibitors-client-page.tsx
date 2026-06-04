@@ -40,7 +40,11 @@ const ExhibitorsClientPage = ({ initialData, initialFilters }: Props) => {
 
       {!error && (
         <>
-          <ExhibitorsGrid exhibitors={items} loading={loading} mode="fullpage" />
+          <ExhibitorsGrid
+            exhibitors={items}
+            loading={loading && items.length === 0}
+            mode="fullpage"
+          />
 
           {!loading && items.length === 0 && (
             <p className="pt-[15px] lg:pt-[30px] base-text-size text-[var(--black-color)]">

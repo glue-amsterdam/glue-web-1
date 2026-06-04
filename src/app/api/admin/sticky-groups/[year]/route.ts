@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
+import { revalidateHomeStickyCache } from "@/lib/home";
 import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
 
 interface ParticipantDetail {
@@ -140,6 +141,7 @@ export async function DELETE(
       .delete()
       .eq("id", group.id);
     if (delError) throw delError;
+    revalidateHomeStickyCache();
     await revalidateMapDataCacheIfLiveTour(adminClient);
     return NextResponse.json({ success: true });
   } catch (err) {
@@ -208,6 +210,7 @@ export async function PUT(
       .eq("id", group.id)
       .single();
     if (fetchError) throw fetchError;
+    revalidateHomeStickyCache();
     await revalidateMapDataCacheIfLiveTour(adminClient);
     return NextResponse.json(updatedGroup);
   } catch (err) {

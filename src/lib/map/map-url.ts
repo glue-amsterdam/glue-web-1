@@ -120,3 +120,6 @@ export const buildMapPageUrl = (
   const queryString = searchParams.toString();
   return queryString ? `${pathname}?${queryString}` : pathname;
 };
+
+export const isMapPageActive = (): boolean =>
+  typeof window !== "undefined" && window.location.pathname === "/map";

@@ -36,7 +36,7 @@ const ExhibitorDetailInfo = ({ contactInfo }: ExhibitorDetailInfoProps) => {
     socialMedia?.linkedinLink;
 
   return (
-    <div className="flex flex-col gap-[30px] pt-[30px] break-words">
+    <div className="flex flex-col gap-[30px] pt-[30px] wrap-break-word">
       {mapInfo.length > 0 && (
         <section aria-labelledby="exhibitor-address-heading">
           <h3

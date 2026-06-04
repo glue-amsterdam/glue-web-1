@@ -1,6 +1,8 @@
+"use client";
 
 import Link from 'next/link';
 import BigButton from './big-button'
+import { usePathname } from 'next/navigation';
 
 type FooterLink = {
     title: string;
@@ -12,7 +14,7 @@ const navLinks: FooterLink[] = [
     { title: 'Participate', link: '/participate' },
     { title: 'Exhibitors', link: '/participants' },
     { title: 'Map', link: '/map' },
-    { title: 'Program', link: '/events' },
+    { title: 'Program', link: '/program' },
 ];
 const helpLinks: FooterLink[] = [
     { title: 'FAQ', link: '/faq' },
@@ -44,8 +46,10 @@ const desktopLinkColumns: FooterLink[][] = [
 
 
 function BottomFooter() {
+    const pathname = usePathname();
+    const isHome = pathname === '/';
     return (
-        <footer id='footer' className='main-padding'>
+        <footer id='footer' className={`main-padding ${isHome ? 'pb-(--nav-secondary-h-mobile)' : ''}`}>
             <section className="bg-(--black-color) p-[20px] lg:p-[60px] text-(--white-color)">
                 <div className='grid grid-cols-3 gap-x-[36px] gap-y-[15px] lg:hidden'>
                     {mobileColumns.map((item) => (

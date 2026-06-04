@@ -10,6 +10,7 @@ import {
   getTourStatus,
   isParticipantEligibleForExhibitorsList,
 } from "./exhibitor-visibility";
+import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
 import { getParticipantPlaceholderUrl } from "./get-participant-placeholder-url";
 
 type UserInfoRow = {
@@ -266,12 +267,29 @@ export const getExhibitorHubById = async (
   const hubType: ExhibitorType =
     eligibleMemberIds.size > 3 ? "hub" : "up-to-three-participants";
 
+  const { data: mapInfo, error: mapInfoError } = await supabase
+    .from("map_info")
+    .select("id, formatted_address")
+    .eq("user_id", hubRow.hub_host_id)
+    .maybeSingle();
+
+  if (mapInfoError) {
+    console.error("Error fetching hub host map info:", mapInfoError);
+  }
+
+  const mapInfoId = mapInfo?.id ?? null;
+  const formattedAddress = mapInfo?.formatted_address
+    ? toBaseFormattedAddress(mapInfo.formatted_address)
+    : null;
+
   return {
     type: hubType,
     hubId: hubRow.id,
     name: hubRow.name,
     hubDisplayNumber: hubRow.display_number,
     description: hubRow.description?.trim() || null,
+    mapInfoId,
+    formattedAddress,
     members,
   };
 };

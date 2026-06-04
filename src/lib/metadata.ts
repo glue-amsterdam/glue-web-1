@@ -1,7 +1,7 @@
 import type { Metadata } from "next"; import { config } from "@/config";
 
 // BASE IN LAYOUT
-export const metadata: Metadata = {
+export const LayoutMetadata: Metadata = {
   title: `GLUE ${config.cityName} | Connected by Design`,
   description: `Discover GLUE ${config.cityName}, where innovation meets creativity. Explore our events, design routes, and join a community connected by design.`,
   openGraph: {
@@ -82,6 +82,24 @@ export const exhibitorsMetadata: Metadata = {
   twitter: {
     title: `GLUE ${config.cityName} | Exhibitors`,
     description: `Browse all exhibitors of GLUE ${config.cityName} design route — designers, studios, showrooms, galleries and more.`,
+  },
+};
+
+// PROGRAM PAGE METADATA
+export const programMetadata: Metadata = {
+  title: `GLUE ${config.cityName} | Program`,
+  description: `Browse the program of GLUE ${config.cityName} design route — lectures, workshops, tours and more.`,
+  alternates: {
+    canonical: `${config.baseUrl}/program`,
+  },
+  openGraph: {
+    title: `GLUE ${config.cityName} | Program`,
+    description: `Browse the program of GLUE ${config.cityName} design route — lectures, workshops, tours and more.`,
+    url: `${config.baseUrl}/program`,
+  },
+  twitter: {
+    title: `GLUE ${config.cityName} | Program`,
+    description: `Browse the program of GLUE ${config.cityName} design route — lectures, workshops, tours and more.`,
   },
 };
 

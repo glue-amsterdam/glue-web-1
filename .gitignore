@@ -9,6 +9,7 @@
 
 # testing
 /coverage
+/scripts
 
 # next.js
 /.next/
@@ -16,6 +17,7 @@
 
 # production
 /build
+
 
 # misc
 .DS_Store

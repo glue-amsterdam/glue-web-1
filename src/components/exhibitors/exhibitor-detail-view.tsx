@@ -1,6 +1,10 @@
 "use client";
 
 import type { ExhibitorDisplayProps } from "@/components/exhibitors/exhibitor-display-props";
+import {
+  getExhibitorMapHref,
+  getExhibitorProgramHref,
+} from "@/lib/participants/exhibitor-detail-links";
 import ExhibitorDescription from "@/components/exhibitors/exhibitor-description";
 import ExhibitorDetailInfo from "@/components/exhibitors/exhibitor-detail-info";
 import ExhibitorImagesCarousel from "@/components/exhibitors/exhibitor-images-carousel";
@@ -16,6 +20,9 @@ const ExhibitorDetailView = ({
   description,
   contactInfo,
 }: ExhibitorDisplayProps) => {
+  const mapHref = getExhibitorMapHref(contactInfo?.mapInfo[0]?.id);
+  const programHref = getExhibitorProgramHref(name);
+
   return (
     <section id="exhibitor-detail-section" className="text-(--black-color) pt-[122px] lg:pt-[113px]">
       <HeadlineWCross title={name.toUpperCase()} />
@@ -27,12 +34,12 @@ const ExhibitorDetailView = ({
         />
 
         <div className="lg:grid grid-cols-2 lg:gap-[30px] lg:pt-[60px]">
-          {description && (
+          {description ? (
             <ExhibitorDescription
               entityName={name}
               descriptionHtml={description}
             />
-          )}
+          ) : (<div className="pt-[30px] lg:pt-0" aria-label="No description available"></div>)}
 
           <article
             id="exhibitor-detail-description-section"
@@ -52,14 +59,15 @@ const ExhibitorDetailView = ({
                 <div className="flex gap-[20px] pt-[30px] flex-wrap">
                   <BigButton
                     label="map"
-                    href="/map"
+                    href={mapHref}
                     mode="navbar"
                     as="link"
                   />
                   <BigButton
                     label="events"
-                    href="/program"
+                    href={programHref}
                     mode="navbar"
+                    target="_self"
                     as="link"
                   />
                 </div>

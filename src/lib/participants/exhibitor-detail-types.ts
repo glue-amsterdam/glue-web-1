@@ -60,6 +60,8 @@ export type ExhibitorHubDetail = {
   name: string;
   hubDisplayNumber: string | null;
   description: string | null;
+  mapInfoId: string | null;
+  formattedAddress: string | null;
   members: ExhibitorHubMember[];
 };
 

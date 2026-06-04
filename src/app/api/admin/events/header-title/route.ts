@@ -83,6 +83,7 @@ async function updateHeaderTitle(req: Request) {
 
       // Revalidate the events page to show the updated title immediately
       revalidatePath("/events");
+      revalidatePath("/program");
 
       return NextResponse.json({ header_title: insertData.header_title });
     }
@@ -104,8 +105,8 @@ async function updateHeaderTitle(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Revalidate the events page to show the updated title immediately
     revalidatePath("/events");
+    revalidatePath("/program");
 
     return NextResponse.json({ header_title: data.header_title });
   } catch (error) {

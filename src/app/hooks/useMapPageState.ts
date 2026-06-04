@@ -4,6 +4,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import {
   buildMapPageUrl,
+  isMapPageActive,
   searchParamsToMapFilters,
   type MapUrlSelection,
 } from "@/lib/map/map-url";
@@ -149,6 +150,7 @@ export const useMapPageState = (initialData: MapPageData) => {
 
   const navigateMap = useCallback(
     (params: MapNavigateParams) => {
+      if (!isMapPageActive()) return;
       if (pathname !== "/map") return;
 
       const currentFilters = searchParamsToMapFilters(searchParams);
@@ -221,6 +223,7 @@ export const useMapPageState = (initialData: MapPageData) => {
   ]);
 
   const closeExhibitorSelection = useCallback(() => {
+    if (!isMapPageActive()) return;
     if (pathname !== "/map") return;
     clearSelectionLocal();
     navigateMap({ selection: { clearSelection: true } });

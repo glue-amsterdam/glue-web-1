@@ -7,6 +7,10 @@ import HeadlineWCross from "@/components/headline-w-cross";
 import RoundedNumber from "@/components/rounded-number";
 import type { ExhibitorHubDetail } from "@/lib/participants/exhibitor-detail-types";
 import {
+  getExhibitorMapHref,
+  getExhibitorProgramHref,
+} from "@/lib/participants/exhibitor-detail-links";
+import {
   hubMembersToCarouselSlides,
   toExhibitorItemFromHubMember,
 } from "@/lib/participants/map-exhibitor-display-props";
@@ -17,7 +21,9 @@ type Props = {
 };
 
 const ExhibitorHubDetailView = ({ hub }: Props) => {
-  const displayLabel = " ";
+  const displayLabel = hub.hubDisplayNumber ?? " ";
+  const mapHref = getExhibitorMapHref(hub.mapInfoId);
+  const programHref = getExhibitorProgramHref(hub.name);
 
   return (
     <section
@@ -68,17 +74,18 @@ const ExhibitorHubDetailView = ({ hub }: Props) => {
           <div className="flex justify-center gap-[20px] pt-[30px] lg:pt-[60px]">
             <BigButton
               label="map"
-              href="/map"
+              href={mapHref}
               mode="navbar"
               as="link"
             />
             <BigButton
               label="events"
-              href="/program"
+              href={programHref}
               mode="navbar"
               as="link"
             />
-          </div></div>
+          </div>
+        </div>
       </div>
     </section>
   );

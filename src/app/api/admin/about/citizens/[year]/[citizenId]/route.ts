@@ -1,3 +1,4 @@
+import { revalidateHomeCitizensCache } from "@/lib/home";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { citizenSchema } from "@/schemas/citizenSchema";
@@ -112,6 +113,8 @@ export async function PUT(
       }
     }
 
+    revalidateHomeCitizensCache();
+
     return NextResponse.json({
       message: `Citizen ${citizenId} for year ${year} updated successfully`,
       citizen: updatedCitizen,
@@ -182,6 +185,8 @@ export async function DELETE(
         );
       }
     }
+
+    revalidateHomeCitizensCache();
 
     return NextResponse.json({
       message: `Citizen ${citizenId} for year ${year} deleted successfully`,

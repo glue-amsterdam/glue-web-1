@@ -1,3 +1,7 @@
+/**
+ * Legacy /events UI — superseded by /program for public browsing.
+ * See src/lib/program/MIGRATION.md for files safe to remove when /events is retired.
+ */
 import EventsClientPage from "./events-client-page";
 import { createClient } from "@/utils/supabase/server";
 

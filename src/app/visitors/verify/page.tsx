@@ -34,10 +34,10 @@ export default async function VisitorVerifyHelpPage({ searchParams }: PageProps)
         <p className="mt-3 text-sm text-amber-950/80">{message}</p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm">
           <Link
-            href="/events"
+            href="/program"
             className="font-medium text-primary underline-offset-4 hover:underline"
           >
-            Back to events
+            Back to program
           </Link>
           <span className="text-muted-foreground" aria-hidden>
             ·

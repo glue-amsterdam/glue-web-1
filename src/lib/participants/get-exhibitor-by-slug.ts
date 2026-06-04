@@ -13,6 +13,7 @@ import {
   isParticipantSticky,
 } from "./exhibitor-visibility";
 import { participantImagesToCarouselSlides } from "./exhibitor-carousel-slides";
+import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
 import { getParticipantPlaceholderUrl } from "./get-participant-placeholder-url";
 
 type UserInfoRow = {
@@ -43,16 +44,6 @@ const getUserName = (userInfo: UserInfoRow | UserInfoRow[]): string => {
 
 const getParticipantType = (specialProgram: boolean): ExhibitorType => {
   return specialProgram ? "special-program" : "up-to-three-participants";
-};
-
-/** Street-level address for display (segment before the first comma). */
-const toBaseFormattedAddress = (formattedAddress: string): string => {
-  const commaIndex = formattedAddress.indexOf(",");
-  const base =
-    commaIndex === -1
-      ? formattedAddress
-      : formattedAddress.slice(0, commaIndex);
-  return base.trim();
 };
 
 const normalizeSocialMedia = (

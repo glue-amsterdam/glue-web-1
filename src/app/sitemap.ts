@@ -8,6 +8,7 @@ const publicRoutes = [
   "/participants",
   "/map",
   "/events",
+  "/program",
   "/faq",
   "/press-media",
   "/archive",

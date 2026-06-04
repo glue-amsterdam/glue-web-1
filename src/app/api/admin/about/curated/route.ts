@@ -1,3 +1,4 @@
+import { revalidateHomeStickyCache } from "@/lib/home";
 import { curatedMembersSectionSchema } from "@/schemas/curatedSchema";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
@@ -55,6 +56,8 @@ export async function PUT(request: Request) {
       .eq("id", "about-curated");
 
     if (curatedError) throw curatedError;
+
+    revalidateHomeStickyCache();
 
     return NextResponse.json(curatedData);
   } catch (error) {

@@ -26,7 +26,7 @@ export default async function VisitorVerifiedPage({ searchParams }: PageProps) {
             : "Your email is verified. You can continue exploring GLUE as a visitor."}
         </p>
         <Link
-          href="/events"
+          href="/program"
           className="mt-6 inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline"
         >
           Go to events

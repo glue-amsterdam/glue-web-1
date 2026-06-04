@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import LogoWithLink from "./LogoWithLink";
 import BigButton from "./big-button";
 import ExhibitorsNavbar from "./navbar/exhibitors-navbar";
+import ProgramNavbar from "./navbar/program-navbar";
 import MainContainer from "./main-container";
 
 const navItems = {
@@ -112,6 +113,7 @@ const Links = ({ className }: { className?: string }) => {
 const NavBar = () => {
   const pathname = usePathname();
   const showExhibitorsNav = pathname === "/exhibitors";
+  const showProgramNav = pathname === "/program";
   return (
     <div className="fixed font-normal top-0 w-full z-50">
       <nav className="bg-(--white-color)">
@@ -133,6 +135,15 @@ const NavBar = () => {
           <MainContainer>
             <Suspense fallback={null}>
               <ExhibitorsNavbar />
+            </Suspense>
+          </MainContainer>
+        </div>
+      )}
+      {showProgramNav && (
+        <div>
+          <MainContainer>
+            <Suspense fallback={null}>
+              <ProgramNavbar />
             </Suspense>
           </MainContainer>
         </div>

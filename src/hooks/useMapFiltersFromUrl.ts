@@ -11,6 +11,7 @@ import {
 } from "@/lib/map/map-filter-actions";
 import {
   buildMapPageUrl,
+  isMapPageActive,
   searchParamsToMapFilters,
   type MapUrlSelection,
 } from "@/lib/map/map-url";
@@ -69,6 +70,7 @@ export const useMapFiltersFromUrl = (): UseMapFiltersFromUrlReturn => {
 
   const applyFilters = useCallback(
     (next: Partial<MapFilters>, selection?: MapUrlSelection) => {
+      if (!isMapPageActive()) return;
       if (pathname !== "/map") return;
 
       const merged = mergeMapFilters(filtersRef.current, next);

@@ -1,3 +1,4 @@
+import { revalidateHomeCitizensCache } from "@/lib/home";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -74,6 +75,8 @@ export async function PUT(request: Request) {
       .eq("id", "about-citizens-section")
       .select();
     if (error) throw error;
+
+    revalidateHomeCitizensCache();
 
     return NextResponse.json(data);
   } catch (error) {

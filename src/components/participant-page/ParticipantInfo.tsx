@@ -381,7 +381,7 @@ function ParticipantInfo({ participant, hubs }: ParticipantInfoProps) {
                 {participant.user_info.events.map((event) => (
                   <Link
                     key={event.id}
-                    href={`/events?eventId=${event.id}`}
+                    href={`/program/${event.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block h-24 w-full lg:w-48 relative aspect-video hover:scale-105 transition-all duration-300 ease-out"

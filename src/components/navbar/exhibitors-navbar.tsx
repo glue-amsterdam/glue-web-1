@@ -119,7 +119,7 @@ const ExhibitorsNavbar = () => {
                 openFilter={openFilter}
                 panelId={categoryPanelId}
                 ariaLabel="Category options"
-                className="py-[30px] lg:py-[25px] gap-[15px] lg:gap-[40px] min-h-[80px] lg:h-[80px]"
+                className="py-[30px] lg:py-[25px] gap-[15px] lg:gap-[40px] min-h-[80px] lg:h-[81px]"
             >
                 {EXHIBITOR_TYPE_OPTIONS.map((option) => {
                     const isActive = filters.type === option.value;
@@ -152,7 +152,7 @@ const ExhibitorsNavbar = () => {
                 openFilter={openFilter}
                 panelId={sortPanelId}
                 ariaLabel="Sort options"
-                className="py-[35px] lg:py-[25px] gap-[15px] min-h-[80px] lg:h-[80px]"
+                className="py-[35px] lg:py-[25px] gap-[15px] min-h-[80px] lg:h-[81px]"
             >
                 {SORT_OPTIONS.map((option) => {
                     const isActive = filters.sort === option.field;

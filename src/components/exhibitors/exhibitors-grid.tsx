@@ -29,17 +29,17 @@ function ExhibitorsGrid({ exhibitors, loading, mode }: Props) {
     }
     if (mode === 'section') {
         return (
-            <div className="grid grid-cols-1 md:grid-cols-3 pt-10 gap-y-[60px] md:gap-x-[30px] justify-self-center md:justify-self-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 pt-10 gap-y-[40px] md:gap-x-[30px] justify-self-center md:justify-self-auto">
                 {/* Mobile: 3 */}
                 <div className="contents lg:hidden">
                     {exhibitors.slice(0, MOBILE_COUNT).map((participant) => (
-                        <ExhibitorCard key={participant.slug} exhibitor={participant} />
+                        <ExhibitorCard key={getExhibitorItemKey(participant)} exhibitor={participant} />
                     ))}
                 </div>
                 {/* Desktop: 6 */}
                 <div className="hidden lg:contents">
                     {exhibitors.map((exhibitor) => (
-                        <ExhibitorCard key={exhibitor.slug} exhibitor={exhibitor} />
+                        <ExhibitorCard key={getExhibitorItemKey(exhibitor)} exhibitor={exhibitor} />
                     ))}
                 </div>
             </div>
