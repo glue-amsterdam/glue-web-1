@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Suspense, useRef, type ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -99,8 +99,8 @@ const Links = ({ className }: { className?: string }) => {
           className={cn(
             "transition-colors duration-100 text-[15px] leading-[15px] lg:text-[23px] lg:leading-[29px]",
             pathname === item.href
-              ? "text-[var(--primary-color)]"
-              : "text-[var(--black-color)]"
+              ? "text-(--primary-color)"
+              : "text-(--black-color)"
           )}
         >
           {item.label}
@@ -110,10 +110,22 @@ const Links = ({ className }: { className?: string }) => {
   );
 };
 
+const ParticipateLinks = () => {
+  return (
+    <div className="flex items-center gap-[30px]">
+      <Link href="/sign-up" className="text-[15px] leading-[15px] lg:text-[19px] lg:leading-[25px] text-(--black-color)">Sign Up</Link>
+      <Link href="/login" className="text-[15px] leading-[15px] lg:text-[19px] lg:leading-[25px] text-(--black-color)">Login</Link>
+    </div>)
+}
+
 const NavBar = () => {
   const pathname = usePathname();
   const showExhibitorsNav = pathname === "/exhibitors";
   const showProgramNav = pathname === "/program";
+  const showParticipateNav = pathname === "/participate";
+
+
+
   return (
     <div className="fixed font-normal top-0 w-full z-50">
       <nav className="bg-(--white-color)">
@@ -130,6 +142,12 @@ const NavBar = () => {
           </Block>
         </MainContainer>
       </nav>
+      {showParticipateNav && (
+        <MainContainer>
+          <Block className="flex justify-end h-(--nav-secondary-h-mobile) lg:h-(--nav-secondary-h)">
+            <ParticipateLinks />
+          </Block></MainContainer>
+      )}
       {showExhibitorsNav && (
         <div>
           <MainContainer>

@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @config "../../tailwind.config.ts";
 
+@font-face {
+  font-family: "lausanne";
+  src: url("/lausanne.woff2") format("woff2");
+}
+
 /* Home page < */
 
 @keyframes marquee {
@@ -18,27 +23,6 @@
 }
 
 
-/* Home page >*/
-
-.no-hover:hover {
-  background-color: transparent !important;
-}
-
-/* Carousel background fix */
-.carousel-item {
-  background-color: white !important;
-  overflow: hidden;
-}
-
-.carousel-item > div {
-  background-color: white !important;
-}
-
-/* Ensure carousel container has solid background */
-[data-embla-root] {
-  background-color: white !important;
-}
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -55,8 +39,14 @@
 }
 
 @layer components {
+  .main-boder-top {
+    @apply border-t border-(--black-color) lg:border-t-2;
+  }
+  .main-boder-bottom {
+    @apply border-b border-(--black-color) lg:border-b-2;
+  }
   .title-text {
-    @apply text-[30px] lg:text-[50px] lg:leading-[58px] leading-[38px] font-[400];
+    @apply text-[30px] lg:text-[50px] lg:leading-[58px] leading-[38px] font-normal;
   }
   .first-padding {
     @apply pt-[146px] md:pt-[124px];
@@ -67,33 +57,9 @@
   .base-text-size {
     @apply text-[15px] leading-[21px] lg:text-[19px] lg:leading-[25px];
   }
-  .about-w {
-    @apply max-w-[95vw] md:max-w-[90%] mx-auto w-full;
-  }
-  .about-title {
-    @apply text-xl md:text-2xl lg:text-3xl font-bold tracking-wide;
-  }
-  .about-description {
-    @apply text-sm md:text-base;
-  }
-  .navLabel {
-    @apply text-4xl flex-1 sm:text-[3rem] md:text-6xl lg:text-[4.7rem] xl:text-[4.9rem] [line-height:1.3] transition-all focus:outline-none pointer-events-auto duration-100;
-  }
-  .admin-mini-button {
-    @apply rounded-md text-xs px-2 py-1 sm:text-sm bg-[var(--color-box4)] hover:scale-105 transition-all;
-  }
-  .homeLogoLetter {
-    @apply size-24 md:size-28 lg:size-32 absolute mix-blend-lighten bg-black;
-  }
-  .memberLogoLetter {
-    @apply size-10 sm:size-12 md:size-20 xl:size-24;
-  }
+
 }
 
-@font-face {
-  font-family: "lausanne";
-  src: url("/lausanne.woff2") format("woff2");
-}
 
 @layer base {
   :root {
@@ -122,6 +88,7 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    --paragraph-max-width: 830px;
     --nav-primary-h: 80px;
     --nav-primary-h-mobile: 65px;
     --nav-secondary-h: 80px;

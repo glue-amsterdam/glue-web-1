@@ -47,7 +47,7 @@ const ExhibitorHubDetailView = ({ hub }: Props) => {
 
           <article
             id="exhibitor-hub-detail-info-section"
-            className="border-t border-(--black-color) pt-[30px] lg:border-t-2"
+            className="pt-[30px] lg:border-t-2"
           >
             <div className="flex items-start gap-[20px]">
               <RoundedNumber
