@@ -5,7 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { Instagram, Linkedin, Globe, Youtube } from "lucide-react";
+import { Globe } from "lucide-react";
+import {
+  FaInstagram,
+  FaLinkedinIn,
+  FaYoutube,
+} from "react-icons/fa6";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
 import { LinkItem, mainLinksSchema } from "@/schemas/mainSchema";
@@ -17,10 +22,10 @@ interface MainLinksFormProps {
 }
 
 const platformIcons: { [key: string]: React.ReactNode } = {
-  instagram: <Instagram className="h-5 w-5" />,
-  linkedin: <Linkedin className="h-5 w-5" />,
-  newsletter: <Globe className="h-5 w-5" />,
-  youtube: <Youtube className="h-5 w-5" />,
+  instagram: <FaInstagram className="h-5 w-5" aria-hidden />,
+  linkedin: <FaLinkedinIn className="h-5 w-5" aria-hidden />,
+  newsletter: <Globe className="h-5 w-5" aria-hidden />,
+  youtube: <FaYoutube className="h-5 w-5" aria-hidden />,
 };
 
 export default function MainLinksForm({ initialData }: MainLinksFormProps) {

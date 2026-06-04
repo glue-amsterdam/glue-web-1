@@ -3,9 +3,8 @@ import React, { useRef, Suspense } from "react";
 import { useColors } from "../context/MainContext";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { useSetPageDataset } from "@/hooks/useSetPageDataset";
+
 import { CarouselClientType } from "@/schemas/carouselSchema";
-import ReactLenis from "@studio-freight/react-lenis";
 import { aboutAnimations } from "@/lib/animations/about-animations";
 import MainSection from "@/components/about/main-section/MainSection";
 import ParticipantSection from "@/components/about/participant-section/ParticipantSection";
@@ -21,7 +20,7 @@ import { PressItemsSectionContent } from "@/schemas/pressSchema";
 import { GlueInternationalContent } from "@/schemas/internationalSchema";
 import { SponsorsSection } from "@/schemas/sponsorsSchema";
 import LastPageSection from "@/components/about/last-page/LastPageSection";
-import NavBar from "@/components/NavBar";
+
 
 export default function AboutClientPage({
   carouselData,
@@ -42,7 +41,7 @@ export default function AboutClientPage({
   glueInternational: GlueInternationalContent;
   sponsorsData: SponsorsSection;
 }) {
-  useSetPageDataset("downButton");
+
 
   const container = useRef<HTMLDivElement>(null);
   const mainColors = useColors();
@@ -121,13 +120,12 @@ export default function AboutClientPage({
   }
 
   return (
-    <ReactLenis root>
+    <>
       <main
         className="min-h-dvh h-full"
         style={{ backgroundColor: mainColors?.box4 }}
         ref={container}
       >
-        <NavBar ref={topNavBarRef} />
 
         <MainSection
           descriptionRef={descriptionRef}
@@ -158,6 +156,6 @@ export default function AboutClientPage({
           sponsorsData={sponsorsData}
         />
       </main>
-    </ReactLenis>
+    </>
   );
 }

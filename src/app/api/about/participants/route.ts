@@ -1,4 +1,4 @@
-import { config } from "@/env";
+import { config } from "@/config";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -135,11 +135,9 @@ export async function GET() {
         userName: userInfo?.user_name || "Unknown User",
         image: {
           image_url: imageMap.get(participant.user_id) || "/placeholder.jpg",
-          alt: `${
-            userInfo?.user_name || "Unknown User"
-          } profile image - participant from GLUE design routes in ${
-            config.cityName
-          }`,
+          alt: `${userInfo?.user_name || "Unknown User"
+            } profile image - participant from GLUE design routes in ${config.cityName
+            }`,
         },
       };
     });

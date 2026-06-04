@@ -30,7 +30,7 @@ import { EVENT_TYPES } from "@/constants";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
-import { config } from "@/env";
+import { config } from "@/config";
 import { CoOrganizerSearch } from "@/app/dashboard/components/co-organizers-search";
 import { LocationSelector } from "@/app/dashboard/[userId]/create-events/location-selector";
 import Image from "next/image";
@@ -343,7 +343,7 @@ export function EditEventForm({ event, onEventUpdated }: EditEventFormProps) {
         <FormField
           control={form.control}
           name="image_url"
-          render={({}) => (
+          render={({ }) => (
             <FormItem>
               <FormLabel>Event Image</FormLabel>
               <div className="w-full h-80 overflow-hidden bg-gray-100 rounded-md relative mb-2">

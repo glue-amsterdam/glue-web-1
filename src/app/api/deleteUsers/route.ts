@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { SupabaseClient } from "@supabase/supabase-js";
-import { config } from "@/env";
+import { config } from "@/config";
 
 export async function POST(request: Request) {
   const supabase = await createAdminClient();

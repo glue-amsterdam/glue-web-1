@@ -6,7 +6,7 @@ import type { PlansArrayType } from "@/schemas/plansSchema";
 import useSWR from "swr";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import NavBar from "@/components/NavBar";
+import NavBar from "@/components/navbar";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 

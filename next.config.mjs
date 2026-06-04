@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  allowedDevOrigins: ["favored-selenitic-vincenzo.ngrok-free.dev"],
   images: {
     remotePatterns: [
       {
@@ -10,9 +11,14 @@ const nextConfig = {
           : "localhost",
         pathname: "/**",
       },
+      /* {
+        protocol: "https",
+        hostname: "bumddsksnesgvbkgmjxa.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      } */
     ],
     minimumCacheTTL: 2678400,
-    formats: ["image/webp"],
+    formats: ["image/avif", "image/webp"],
   },
 };
 export default nextConfig;

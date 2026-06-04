@@ -1,4 +1,4 @@
-import { config } from "@/env";
+import { config } from "@/config";
 import { pressItemSchema } from "@/schemas/pressSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";

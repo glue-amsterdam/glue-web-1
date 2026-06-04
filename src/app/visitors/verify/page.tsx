@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { config } from "@/env";
+import { config } from "@/config";
 
 type PageProps = {
   searchParams: Promise<{ error?: string }>;

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
+import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
 
 export async function POST(req: Request) {
   const cookieStore = await cookies();
@@ -38,6 +39,7 @@ export async function POST(req: Request) {
         .insert(insertData);
       if (partError) throw partError;
     }
+    await revalidateMapDataCacheIfLiveTour(adminClient);
     return NextResponse.json({ id: group.id });
   } catch (err) {
     const error = err as Error;

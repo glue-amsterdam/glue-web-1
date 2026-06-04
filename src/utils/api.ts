@@ -3,6 +3,10 @@ import { User, UserWithPlanDetails } from "@/schemas/usersSchemas";
 import { IndividualEventResponse } from "@/schemas/eventSchemas";
 import { BASE_URL } from "@/constants";
 import { RouteValues } from "@/schemas/mapSchema";
+import type {
+  ExhibitorHubDetail,
+  ExhibitorParticipantDetail,
+} from "@/lib/participants/exhibitor-detail-types";
 import { ParticipantClientResponse } from "@/types/api-visible-user";
 
 /* EVENTS WITH SEARCH PARAMS - SERVER SIDE */
@@ -99,6 +103,36 @@ export const fetchParticipant = cache(
         throw new Error("404: Participant not found");
       }
       throw new Error(`Failed to fetch participant: ${res.status}`);
+    }
+
+    return res.json();
+  }
+);
+
+export const fetchExhibitor = cache(
+  async (slug: string): Promise<ExhibitorParticipantDetail> => {
+    const res = await fetch(`${BASE_URL}/exhibitors/${slug}`);
+
+    if (!res.ok) {
+      if (res.status === 404) {
+        throw new Error("404: Exhibitor not found");
+      }
+      throw new Error(`Failed to fetch exhibitor: ${res.status}`);
+    }
+
+    return res.json();
+  }
+);
+
+export const fetchExhibitorHub = cache(
+  async (hubId: string): Promise<ExhibitorHubDetail> => {
+    const res = await fetch(`${BASE_URL}/exhibitors/hub/${hubId}`);
+
+    if (!res.ok) {
+      if (res.status === 404) {
+        throw new Error("404: Exhibitor hub not found");
+      }
+      throw new Error(`Failed to fetch exhibitor hub: ${res.status}`);
     }
 
     return res.json();

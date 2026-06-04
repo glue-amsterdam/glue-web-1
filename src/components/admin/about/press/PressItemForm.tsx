@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/form";
 import { RichTextEditor } from "@/app/components/editor";
 import { Switch } from "@/components/ui/switch";
-import { config } from "@/env";
+import { config } from "@/config";
 import { z } from "zod";
 import type { PressItem } from "@/schemas/pressSchema";
 import { mutate } from "swr";
@@ -163,9 +163,8 @@ export function PressItemsForm({ initialItems }: PressItemsFormProps) {
       console.error(`${pressItem.title} submission error:`, error);
       toast({
         title: "Error",
-        description: `Failed to update press item ${
-          index + 1
-        }. Please try again.`,
+        description: `Failed to update press item ${index + 1
+          }. Please try again.`,
         variant: "destructive",
       });
     } finally {

@@ -11,7 +11,7 @@ import {
 import Image from "next/image";
 import { ParticipantClient } from "@/schemas/participantsSchema";
 import Autoplay from "embla-carousel-autoplay";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 
 export default function ParticipantsCarousel({
   participants,
@@ -68,11 +68,10 @@ export default function ParticipantsCarousel({
                         alt={`${participant.userName} profile image thumbnail`}
                         width={900}
                         height={900}
-                        className={`absolute inset-0 w-full h-full object-cover hover:grayscale-[0.3] ${
-                          idx === activeIndex
+                        className={`absolute inset-0 w-full h-full object-cover hover:grayscale-[0.3] ${idx === activeIndex
                             ? "grayscale-0"
                             : "grayscale-[0.5]"
-                        }`}
+                          }`}
                         priority={false}
                       />
                       <div className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">

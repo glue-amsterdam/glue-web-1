@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
+import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
 
 interface ParticipantDetail {
   user_id: string;
@@ -139,6 +140,7 @@ export async function DELETE(
       .delete()
       .eq("id", group.id);
     if (delError) throw delError;
+    await revalidateMapDataCacheIfLiveTour(adminClient);
     return NextResponse.json({ success: true });
   } catch (err) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -206,6 +208,7 @@ export async function PUT(
       .eq("id", group.id)
       .single();
     if (fetchError) throw fetchError;
+    await revalidateMapDataCacheIfLiveTour(adminClient);
     return NextResponse.json(updatedGroup);
   } catch (err) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

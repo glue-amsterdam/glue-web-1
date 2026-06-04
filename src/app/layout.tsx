@@ -1,105 +1,67 @@
-import type { Metadata } from "next";
-import "@/app/globals.css";
-
 import { Analytics } from '@vercel/analytics/next'
+import "@/app/globals.css";
+import { metadata as metadataConfig } from "@/lib/metadata";
+
+import { fetchMain } from "@/lib/main/fetch-main";
+import { getTheme } from "@/lib/theme";
+
 
 import { AuthProvider } from "@/app/context/AuthContext";
 import { VisitorProvider } from "@/app/context/VisitorContext";
-import { Toaster } from "@/components/ui/toaster";
-import { CookieBanner } from "@/components/cookies/cookies-banner";
-import { config } from "@/env";
 import { MainContextProvider } from "./context/MainContext";
-import { fetchMain } from "@/lib/main/fetch-main";
-import { ViewTransitions } from "next-view-transitions";
 
-export const metadata: Metadata = {
-  title: `GLUE ${config.cityName} | Connected by Design`,
-  description: `Discover GLUE ${config.cityName}, where innovation meets creativity. Explore our events, design routes, and join a community connected by design.`,
-  openGraph: {
-    title: `GLUE ${config.cityName} | Connected by Design`,
-    url: config.baseUrl,
-    description: `Join GLUE ${config.cityName} and experience a world of design-driven innovation. Connect with us today!`,
-    images: [
-      {
-        url: `${config.baseUrl}/${config.cityName}/og-image.jpg`,
-        width: 1200,
-        height: 630,
-        alt: `GLUE ${config.cityName} - Connected by Design`,
-      },
-    ],
-    type: "website",
-    siteName: `GLUE ${config.cityName}`,
-  },
-  twitter: {
-    title: `GLUE ${config.cityName} | Connected by Design`,
-    card: "summary_large_image",
-    description: `Discover GLUE ${config.cityName}, where innovation meets creativity. Explore our events, design routes, and join a community connected by design.`,
-    images: `${config.baseUrl}/${config.cityName}/tw-image.jpg`,
-    site: config.cityName,
-  },
-  icons: [
-    {
-      url: `${config.baseUrl}/${config.cityName}/favicon.ico`,
-      media: "(prefers-color-scheme: light)",
-    },
-    {
-      url: `${config.baseUrl}/${config.cityName}/favicon.ico`,
-      media: "(prefers-color-scheme: dark)",
-    },
-  ],
+import { Toaster } from "@/components/ui/toaster";
 
-  keywords: [
-    "GLUE",
-    config.cityName,
-    "design",
-    "design routes",
-    "design community",
-    "innovation",
-    "connected by design",
-    "creative events",
-    "urban design",
-  ],
-  robots: {
-    index: true,
-    follow: true,
-    nocache: false,
-    googleBot: {
-      index: true,
-      follow: true,
-      noimageindex: false,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-  metadataBase: new URL(config.baseUrl),
-  alternates: {
-    canonical: config.baseUrl,
-  },
-};
+import { CookieBanner } from "@/components/cookies/cookies-banner";
+import InternalNavigationTracker from "@/components/internal-navigation-tracker";
+import NavBar from "@/components/navbar";
+import Footer from '@/components/home/bottom-navigation/bottom-navigation';
+
+export const metadata = metadataConfig;
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  //OLDER VERSION
   const initialData = await fetchMain();
+
+  //NEW VERSION
+  const theme = await getTheme()
   return (
-    <ViewTransitions>
-      <html lang="en">
-        <body className="font-lausanne text-uiwhite bg-black">
-          <MainContextProvider initialData={initialData}>
-            <AuthProvider>
-              <VisitorProvider>
-                {children}
-                <Analytics />
-                <Toaster />
-                <CookieBanner />
-              </VisitorProvider>
-            </AuthProvider>
-          </MainContextProvider>
-        </body>
-      </html>
-    </ViewTransitions>
+    <html
+      lang="en"
+      style={
+        {
+          '--primary-color': theme.primaryColor,
+          '--background-color': theme.backgroundColor,
+          '--black-color': theme.blackColor,
+          '--gray-color': "#DADADA",
+          '--white-color': theme.whiteColor,
+          '--up-to-three-participants-color': theme.upToThreeParticipantsColor,
+          '--hub-color': theme.hubColor,
+          '--special-program-color': theme.specialProgramColor,
+        } as React.CSSProperties
+      }
+    >
+      <body className="font-lausanne bg-[var(--background-color)]">
+        <MainContextProvider initialData={initialData}>
+          <AuthProvider>
+            <VisitorProvider>
+              <InternalNavigationTracker />
+              <NavBar />
+              {children}
+              <Footer />
+              <Analytics />
+              <Toaster />
+              <CookieBanner />
+            </VisitorProvider>
+          </AuthProvider>
+        </MainContextProvider>
+      </body>
+    </html>
+
   );
 }

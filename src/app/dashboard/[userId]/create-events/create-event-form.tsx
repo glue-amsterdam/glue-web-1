@@ -37,7 +37,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, ImageIcon } from "lucide-react";
 import { CoOrganizerSearch } from "@/app/dashboard/components/co-organizers-search";
 import { Button } from "@/components/ui/button";
-import { config } from "@/env";
+import { config } from "@/config";
 import { LocationSelector } from "@/app/dashboard/[userId]/create-events/location-selector";
 import Image from "next/image";
 
@@ -327,7 +327,7 @@ export function EventForm({
             <FormField
               control={form.control}
               name="image_url"
-              render={({}) => (
+              render={({ }) => (
                 <FormItem>
                   <FormLabel>Event Image</FormLabel>
                   <div className="w-full h-80 overflow-hidden bg-gray object-cover rounded-md relative mb-2">

@@ -1,5 +1,5 @@
 import { BASE_URL } from "@/constants";
-import { config } from "@/env";
+import { config } from "@/config";
 import { CarouselClientType } from "@/schemas/carouselSchema";
 
 const CAROUSEL_FALLBACK_DATA: CarouselClientType = {

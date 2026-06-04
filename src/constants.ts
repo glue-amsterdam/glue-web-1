@@ -1,4 +1,4 @@
-import { config } from "@/env";
+import { config } from "@/config";
 import { ImageData } from "@/schemas/baseSchema";
 import {
   Event,

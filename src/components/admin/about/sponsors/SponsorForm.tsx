@@ -22,7 +22,7 @@ import { ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { uploadImage } from "@/utils/supabase/storage/client";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
-import { config } from "@/env";
+import { config } from "@/config";
 
 interface SponsorFormProps {
   initialData?: Sponsor;
@@ -104,9 +104,8 @@ export default function SponsorForm({
 
       toast({
         title: `Sponsor ${initialData ? "updated" : "added"}`,
-        description: `The sponsor has been successfully ${
-          initialData ? "updated" : "added"
-        }.`,
+        description: `The sponsor has been successfully ${initialData ? "updated" : "added"
+          }.`,
       });
 
       if (initialData && onSponsorUpdated) {
@@ -121,9 +120,8 @@ export default function SponsorForm({
       console.error("Form submission error:", error);
       toast({
         title: "Error",
-        description: `Failed to ${
-          initialData ? "update" : "add"
-        } sponsor. Please try again.`,
+        description: `Failed to ${initialData ? "update" : "add"
+          } sponsor. Please try again.`,
         variant: "destructive",
       });
     } finally {

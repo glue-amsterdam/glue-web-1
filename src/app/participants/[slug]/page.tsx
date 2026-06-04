@@ -2,7 +2,7 @@ import { fetchParticipant } from "@/utils/api";
 import ParticipantClientPage from "@/app/participants/[slug]/participants-client-page";
 
 import { ParticipantClientResponse } from "@/types/api-visible-user";
-import { config } from "@/env";
+import { config } from "@/config";
 import DeclinedParticipant from "@/components/participant-page/DeclinedParticipant";
 import PendingParticipant from "@/components/participant-page/PendingParticipant";
 import { Metadata } from "next";
@@ -23,9 +23,8 @@ export async function generateMetadata({
       ? participant.images[0].image_url
       : defaultImage;
 
-  const title = `GLUE ${config.cityName} - ${
-    participant.user_info.user_name ?? "Unknown"
-  }`;
+  const title = `GLUE ${config.cityName} - ${participant.user_info.user_name ?? "Unknown"
+    }`;
   const description =
     participant.short_description ??
     `Discover ${participant.user_info.user_name} at GLUE . View details, events, and contact information.`;
@@ -40,18 +39,18 @@ export async function generateMetadata({
     url: `${config.baseUrl}/participants/${slug}`,
     sameAs: participant.user_info.social_media
       ? [
-          participant.user_info.social_media.instagramLink,
-          participant.user_info.social_media.facebookLink,
-          participant.user_info.social_media.linkedinLink,
-        ].filter(Boolean)
+        participant.user_info.social_media.instagramLink,
+        participant.user_info.social_media.facebookLink,
+        participant.user_info.social_media.linkedinLink,
+      ].filter(Boolean)
       : [],
     telephone: participant.user_info.phone_numbers?.[0],
     email: participant.user_info.visible_emails?.[0],
     address: participant.user_info.map_info?.[0]
       ? {
-          "@type": "PostalAddress",
-          streetAddress: participant.user_info.map_info[0].formatted_address,
-        }
+        "@type": "PostalAddress",
+        streetAddress: participant.user_info.map_info[0].formatted_address,
+      }
       : undefined,
     worksFor: {
       "@type": "Organization",

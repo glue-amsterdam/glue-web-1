@@ -1,8 +1,13 @@
+import {
+  buildMapLocations,
+  createMapLocationSnapshot,
+} from "@/lib/map/build-map-locations";
+import { revalidateMapDataCache } from "@/lib/map/revalidate-map-cache";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { config } from "@/env";
+import { config } from "@/config";
 
 export async function GET() {
   try {
@@ -59,7 +64,7 @@ export async function PUT(request: Request) {
     // If closing tour (setting to "older"), perform atomic operations
     if (action === "close" || current_tour_status === "older") {
       // Start a transaction-like operation by performing all updates
-      
+
       // 1. Update all active participants: set was_active_last_year = true
       const { error: participantError } = await supabase
         .from("participant_details")
@@ -113,46 +118,14 @@ export async function PUT(request: Request) {
         date: day.date,
       }));
 
-      // 4. Save complete map snapshot before closing tour
-      // Call fetchMapInfo to get fully processed map data with all participants, hubs, images, etc.
-      const { fetchMapInfo } = await import("@/app/map/server-data-fetcher");
-      let mapInfoSnapshot: Array<{
-        id: string;
-        formatted_address: string;
-        latitude: number;
-        longitude: number;
-        participants: Array<{
-          user_id: string;
-          user_name: string;
-          is_host: boolean;
-          slug: string | null;
-          image_url: string | null;
-          display_number: string | null;
-        }>;
-        is_hub: boolean;
-        hub_name?: string;
-        hub_description?: string | null;
-        is_collective: boolean;
-        is_special_program: boolean;
-        display_number?: string | null;
-        hub_display_number?: string | null;
-      }> = [];
+      // 4. Save lean map snapshot (v2) before closing tour
+      let mapInfoSnapshot = createMapLocationSnapshot([]);
 
       try {
-        // Fetch the complete processed map data for the current tour
-        const mapInfo = await fetchMapInfo(supabase);
-        // Transform to match snapshot type (convert undefined to null for optional fields)
-        mapInfoSnapshot = mapInfo.map((location) => ({
-          ...location,
-          participants: location.participants.map((participant) => ({
-            ...participant,
-            slug: participant.slug ?? null,
-            image_url: participant.image_url ?? null,
-            display_number: participant.display_number ?? null,
-          })),
-        }));
+        const locations = await buildMapLocations(supabase, "new");
+        mapInfoSnapshot = createMapLocationSnapshot(locations);
       } catch (mapError) {
-        console.error("Error fetching map info for snapshot:", mapError);
+        console.error("Error building map snapshot:", mapError);
         return NextResponse.json(
           { error: "Failed to fetch map info for snapshot" },
           { status: 500 }
@@ -185,7 +158,8 @@ export async function PUT(request: Request) {
         .select("*", { count: "exact", head: true })
         .eq("was_active_last_year", true);
 
-      const mapLocationsCount = mapInfoSnapshot?.length || 0;
+      const mapLocationsCount = mapInfoSnapshot.locations.length;
+      revalidateMapDataCache();
       return NextResponse.json({
         ...data[0],
         participantCount: participantCount || 0,
@@ -218,18 +192,18 @@ export async function PUT(request: Request) {
               // Extract path from image URL
               // Format: https://...supabase.co/storage/v1/object/public/bucket/events/userId/filename
               const urlString = event.image_url as string;
-              
+
               // Check if it's a Supabase storage URL
               if (urlString.includes("/storage/v1/object/public/")) {
                 const bucketAndPathString = urlString.split("/storage/v1/object/public/")[1];
-                
+
                 if (bucketAndPathString) {
                   const firstSlashIndex = bucketAndPathString.indexOf("/");
-                  
+
                   if (firstSlashIndex !== -1) {
                     // Path after bucket name
                     const path = bucketAndPathString.slice(firstSlashIndex + 1);
-                    
+
                     const { error: storageError } = await supabase.storage
                       .from(config.bucketName)
                       .remove([path]);
@@ -289,6 +263,7 @@ export async function PUT(request: Request) {
       }
 
       const deletedCount = oldEvents?.length || 0;
+      revalidateMapDataCache();
       return NextResponse.json({
         ...data[0],
         deletedEventsCount: deletedCount,

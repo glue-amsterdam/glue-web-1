@@ -15,7 +15,7 @@ import { ImageIcon } from "lucide-react";
 import type { CitizensSection } from "@/schemas/citizenSchema";
 import { uploadImage } from "@/utils/supabase/storage/client";
 import { useToast } from "@/hooks/use-toast";
-import { config } from "@/env";
+import { config } from "@/config";
 import { generateAltText } from "@/lib/utils";
 
 interface CitizenFormProps {
@@ -175,8 +175,8 @@ export function AboutCitForm({
         {isUploading
           ? "Uploading..."
           : citizen.image_url
-          ? "Change Image"
-          : "Upload Image"}
+            ? "Change Image"
+            : "Upload Image"}
       </Button>
     </div>
   );

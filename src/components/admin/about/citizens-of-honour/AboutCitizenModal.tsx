@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { citizenSchema, type Citizen } from "@/schemas/citizenSchema";
 import { uploadImage, deleteImage } from "@/utils/supabase/storage/client";
 import { generateAltText } from "@/lib/utils";
-import { config } from "@/env";
+import { config } from "@/config";
 import {
   Dialog,
   DialogContent,
@@ -180,9 +180,8 @@ export function AboutCitizenModal({
 
       toast({
         title: `Citizen ${citizen ? "updated" : "created"}`,
-        description: `Citizen ${
-          citizen ? "updated" : "created"
-        } successfully for year ${selectedYear}`,
+        description: `Citizen ${citizen ? "updated" : "created"
+          } successfully for year ${selectedYear}`,
       });
 
       onCitizenSaved();
@@ -192,9 +191,8 @@ export function AboutCitizenModal({
       console.error("Citizen submission error:", error);
       toast({
         title: "Error",
-        description: `Failed to ${
-          citizen ? "update" : "create"
-        } citizen. Please try again.`,
+        description: `Failed to ${citizen ? "update" : "create"
+          } citizen. Please try again.`,
         variant: "destructive",
       });
     } finally {
@@ -354,8 +352,8 @@ export function AboutCitizenModal({
                 {isSubmitting
                   ? "Saving..."
                   : citizen
-                  ? "Update Citizen"
-                  : "Create Citizen"}
+                    ? "Update Citizen"
+                    : "Create Citizen"}
               </Button>
 
               {citizen && (

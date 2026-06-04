@@ -13,19 +13,15 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import mapboxSdk from "@mapbox/mapbox-sdk/services/geocoding";
+import { forwardGeocode } from "@/lib/mapbox/forward-geocode";
 import { MapInfo, mapInfoSchema } from "@/schemas/mapInfoSchemas";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
-import { config } from "@/env";
+import { config } from "@/config";
 import { strToNumber } from "@/constants";
-
-const mapboxClient = mapboxSdk({
-  accessToken: config.mapboxAccesToken,
-});
 
 interface MapInfoFormProps {
   initialData: MapInfo | { error: string } | undefined;
@@ -50,23 +46,16 @@ function FormFields() {
 
   const handleAddressChange = async (input: string) => {
     if (input.length > 2) {
-      const response = await mapboxClient
-        .forwardGeocode({
-          query: input,
-          limit: 5,
-          countries: [config.countryPreFix],
-          types: ["address"],
-          bbox: [westLimit, southLimit, eastLimit, northLimit], // Bounding box
-          proximity: [centerLng, centerLat], // Center
-        })
-        .send();
+      const features = await forwardGeocode({
+        query: input,
+        limit: 5,
+        countries: [config.countryPreFix],
+        types: ["address"],
+        bbox: [westLimit, southLimit, eastLimit, northLimit],
+        proximity: [centerLng, centerLat],
+      });
 
-      setSuggestions(
-        response.body.features.map((feature) => ({
-          place_name: feature.place_name,
-          center: feature.center as [number, number],
-        }))
-      );
+      setSuggestions(features);
     } else {
       setSuggestions([]);
     }

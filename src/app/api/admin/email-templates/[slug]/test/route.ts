@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { config } from "@/env";
+import { config } from "@/config";
 import { z } from "zod";
 import {
   getEmailTemplateWithFallback,

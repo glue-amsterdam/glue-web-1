@@ -33,8 +33,8 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { reactivationRequestSubmissionSchema } from "@/schemas/participantDetailsSchemas";
-import mapboxSdk from "@mapbox/mapbox-sdk/services/geocoding";
-import { config } from "@/env";
+import { forwardGeocode } from "@/lib/mapbox/forward-geocode";
+import { config } from "@/config";
 import { strToNumber } from "@/constants";
 import useSWR from "swr";
 import { PlanType } from "@/schemas/plansSchema";
@@ -49,10 +49,6 @@ interface ReactivationRequestModalProps {
   ) => Promise<void>;
   userId: string;
 }
-
-const mapboxClient = mapboxSdk({
-  accessToken: config.mapboxAccesToken,
-});
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -108,23 +104,16 @@ export function ReactivationRequestModal({
   const handleAddressChange = async (input: string) => {
     if (input.length > 2) {
       try {
-        const response = await mapboxClient
-          .forwardGeocode({
-            query: input,
-            limit: 5,
-            countries: [config.countryPreFix],
-            types: ["address"],
-            bbox: [westLimit, southLimit, eastLimit, northLimit],
-            proximity: [centerLng, centerLat],
-          })
-          .send();
+        const features = await forwardGeocode({
+          query: input,
+          limit: 5,
+          countries: [config.countryPreFix],
+          types: ["address"],
+          bbox: [westLimit, southLimit, eastLimit, northLimit],
+          proximity: [centerLng, centerLat],
+        });
 
-        setSuggestions(
-          response.body.features.map((feature) => ({
-            place_name: feature.place_name,
-            center: feature.center as [number, number],
-          }))
-        );
+        setSuggestions(features);
       } catch (error) {
         console.error("Geocoding error:", error);
         toast({

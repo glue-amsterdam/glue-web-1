@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
-import { config } from "@/env";
+import { config } from "@/config";
 
 const visitorCookieName = "visitor_token";
 

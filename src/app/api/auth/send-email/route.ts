@@ -1,4 +1,4 @@
-import { config } from "@/env";
+import { config } from "@/config";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { Webhook, WebhookVerificationError } from "standardwebhooks";

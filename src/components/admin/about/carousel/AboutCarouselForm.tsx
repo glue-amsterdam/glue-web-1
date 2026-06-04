@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
-import { config } from "@/env";
+import { config } from "@/config";
 import {
   FormControl,
   FormDescription,

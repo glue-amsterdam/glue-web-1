@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { config } from "@/env";
+import { config } from "@/config";
 import { sendDeclineReactivationEmail } from "@/components/emails/participant-details-emails";
 
 const resend = new Resend(process.env.RESEND_API_KEY);

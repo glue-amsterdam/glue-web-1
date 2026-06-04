@@ -14,8 +14,10 @@ import { useRef } from "react";
 
 export default function SponsorsCarouselSection({
   sponsorsData,
+  showHeader = true,
 }: {
   sponsorsData: SponsorsSection;
+  showHeader?: boolean;
 }) {
   const sanitizedTitle = useSanitizedHTML(
     sponsorsData.sponsorsHeaderSchema.title
@@ -43,18 +45,20 @@ export default function SponsorsCarouselSection({
       onMouseLeave={handleMouseLeave}
       className="w-full mx-auto mt-16 flex flex-col justify-center"
     >
-      <div>
-        <h2
-          style={{ color: sponsorsData.sponsorsHeaderSchema.text_color }}
-          className="font-bold tracking-widest text-center text-2xl md:text-4xl lg:text-7xl"
-          dangerouslySetInnerHTML={{ __html: sanitizedTitle }}
-        />
-        <p
-          style={{ color: sponsorsData.sponsorsHeaderSchema.text_color }}
-          className="text-sm md:text-md lg:text-lg text-center"
-          dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
-        />
-      </div>
+      {showHeader ? (
+        <div>
+          <h2
+            style={{ color: sponsorsData.sponsorsHeaderSchema.text_color }}
+            className="font-bold tracking-widest text-center text-2xl md:text-4xl lg:text-7xl"
+            dangerouslySetInnerHTML={{ __html: sanitizedTitle }}
+          />
+          <p
+            style={{ color: sponsorsData.sponsorsHeaderSchema.text_color }}
+            className="text-sm md:text-md lg:text-lg text-center"
+            dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+          />
+        </div>
+      ) : null}
       <Carousel
         opts={{
           align: "start",

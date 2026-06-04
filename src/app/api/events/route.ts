@@ -1,4 +1,4 @@
-import { config } from "@/env";
+import { config } from "@/config";
 import { EventType } from "@/schemas/eventSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
@@ -99,7 +99,7 @@ export async function GET(request: Request) {
     // If "new": fetch from events_days table
     // If "older": use snapshot from tour_status
     let eventDays: Array<{ dayId: string; label: string; date: string | null }> = [];
-    
+
     if (uniqueDayIds.length > 0) {
       if (currentTourStatus === "new") {
         // Fetch current event days from events_days table

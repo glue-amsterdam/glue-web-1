@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { sponsorSchema } from "@/schemas/sponsorsSchema";
 import { createClient } from "@/utils/supabase/server";
-import { config } from "@/env";
+import { config } from "@/config";
 
 export async function GET() {
   try {

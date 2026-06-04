@@ -1,272 +1,241 @@
 "use client";
 
-import type React from "react";
-import { useCallback, useState, useEffect, Suspense, useRef } from "react";
-import { useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { MenuIcon, X } from "lucide-react";
-import { type MapInfo, type Route, useMapData } from "@/app/hooks/useMapData";
+import dynamic from "next/dynamic";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
+import { useMapPageState } from "@/app/hooks/useMapPageState";
+import { useMapFiltersFromUrl } from "@/hooks/useMapFiltersFromUrl";
+import {
+  filterMapLocationsForList,
+  filterMapLocationsForMap,
+  filterMapLocationsForSearch,
+  filterMapRoutes,
+  sortMapLocationsForMarkers,
+} from "@/lib/map/map-filters";
+import type { MapPageData } from "@/lib/map/types";
+import type { RouteStopDisplay } from "@/lib/map/route-stop-display";
+import { config } from "@/config";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
-import { cn } from "@/lib/utils";
-import MapComponent, {
-  type MapComponentHandle,
-} from "@/app/map/map-component";
-import InfoPanel from "@/app/map/info-panel";
-import RouteFooter from "@/app/map/route-footer";
-import LoadingSpinner from "../components/LoadingSpinner";
-import { useAuth } from "@/app/context/AuthContext";
-import { useVisitor } from "@/app/context/VisitorContext";
+import { useMapStore } from "./stores/use-map-store";
+import type { MapViewHandle } from "./components/map-view";
+import RouteFooter from "./components/route-footer";
+import MapFilterDesktopSidebar from "@/components/navbar/map-filter-desktop-sidebar";
+import ExhibitorFooter from "./components/exhibitor-footer";
 
-interface MapMainProps {
-  initialData: {
-    mapInfo: MapInfo[];
-    routes: Route[];
-  };
-}
+const MapView = dynamic(() => import("./components/map-view"), {
+  ssr: false,
+  loading: () => <div className="h-full w-full" aria-hidden />,
+});
 
-function MapMain({ initialData }: MapMainProps) {
-  const searchParams = useSearchParams();
-  const { user, isLoading } = useAuth();
-  const { visitor, isVisitorLoading } = useVisitor();
-  const identity = user ?? visitor;
-  const canAccessRoutes = Boolean(identity);
-  const isLoadingIdentity = isLoading || isVisitorLoading;
+type MapMainProps = {
+  initialData: MapPageData;
+};
 
+const MapMain = ({ initialData }: MapMainProps) => {
   const {
-    mapInfo,
+    tourMode,
+    locations,
     routes,
     selectedLocation,
     selectedRoute,
+    detailPanelDismissed,
+    activeRouteStopId,
+    dismissRoutePanel,
+    closeExhibitorSelection,
+    reopenDetailPanel,
+    setActiveRouteStopId,
     setSelectedLocation,
     setSelectedRoute,
-  } = useMapData(
-    initialData,
-    // While identity is loading, do not strip `?route=` — stripping ran too early and blocked the login prompt.
-    isLoadingIdentity ? true : canAccessRoutes,
-  );
+  } = useMapPageState(initialData);
+
+  const { filters } = useMapFiltersFromUrl();
 
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
-  const mapComponentRef = useRef<MapComponentHandle>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [promptLoginForRouteId, setPromptLoginForRouteId] = useState<
-    string | null
-  >(null);
+  const mapRef = useRef<MapViewHandle>(null);
 
-  useEffect(() => {
-    if (isLoadingIdentity) return;
+  const filteredLocationsForList = useMemo(
+    () => filterMapLocationsForList(locations, filters),
+    [locations, filters]
+  );
 
-    if (identity) {
-      setPromptLoginForRouteId(null);
-      return;
+  const searchFilteredLocations = useMemo(
+    () => filterMapLocationsForSearch(locations, filters.q),
+    [locations, filters.q]
+  );
+
+  const filteredRoutesForList = useMemo(
+    () => filterMapRoutes(routes, filters.q),
+    [routes, filters.q]
+  );
+
+  const mapMarkerLocations = useMemo(() => {
+    if (selectedRoute) {
+      return sortMapLocationsForMarkers(locations);
     }
 
-    const routeFromUrl = searchParams.get("route");
-    if (routeFromUrl) {
-      setPromptLoginForRouteId((prev) => prev ?? routeFromUrl);
-    }
-  }, [isLoadingIdentity, identity, searchParams]);
+    let visible = filterMapLocationsForMap(locations, filters);
 
-  const handleRouteLoginPromptConsumed = useCallback(() => {
-    setPromptLoginForRouteId(null);
-  }, []);
+    if (selectedLocation) {
+      const isSelectedVisible = visible.some(
+        (location) => location.id === selectedLocation
+      );
+      if (!isSelectedVisible) {
+        const selected = locations.find(
+          (location) => location.id === selectedLocation
+        );
+        if (selected) {
+          visible = [...visible, selected];
+        }
+      }
+    }
+
+    return sortMapLocationsForMarkers(visible);
+  }, [locations, filters, selectedRoute, selectedLocation]);
+
+  const setPage = useMapStore((state) => state.setPage);
+  const clearPage = useMapStore((state) => state.clearPage);
+  const setOptimisticFilters = useMapStore((state) => state.setOptimisticFilters);
 
   useEffect(() => {
-    const setVH = () => {
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty("--vh", `${vh}px`);
+    setPage({
+      routes,
+      onRouteSelect: setSelectedRoute,
+      selectedRoute,
+      filteredLocationsForList,
+      searchFilteredLocations,
+      filteredRoutesForList,
+      selectedLocation,
+      onLocationSelect: setSelectedLocation,
+    });
+  }, [
+    routes,
+    setSelectedRoute,
+    selectedRoute,
+    filteredLocationsForList,
+    searchFilteredLocations,
+    filteredRoutesForList,
+    selectedLocation,
+    setSelectedLocation,
+    setPage,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      clearPage();
+      setOptimisticFilters(null);
     };
-
-    setVH();
-    window.addEventListener("resize", setVH);
-    return () => window.removeEventListener("resize", setVH);
-  }, []);
+  }, [clearPage, setOptimisticFilters]);
 
   useEffect(() => {
-    if (isLargeScreen) {
-      setSidebarOpen(false);
-    }
-  }, [isLargeScreen]);
-
-  const toggleSidebar = useCallback(() => {
-    setSidebarOpen((prev) => !prev);
-  }, []);
-
-  const handleOutsideClick = useCallback(() => {
-    if (!isLargeScreen && sidebarOpen) {
-      setSidebarOpen(false);
-    }
-  }, [isLargeScreen, sidebarOpen]);
-
-  const handleLocationSelect = useCallback(
-    (locationId: string) => {
-      setSelectedLocation(locationId);
-      if (!isLargeScreen) {
-        setSidebarOpen(false);
-      }
-    },
-    [setSelectedLocation, isLargeScreen]
-  );
-
-  const handleRouteSelect = useCallback(
-    (routeId: string) => {
-      setSelectedRoute(routeId);
-      if (!isLargeScreen) {
-        setSidebarOpen(false);
-      }
-    },
-    [setSelectedRoute, isLargeScreen]
-  );
-
-  // Get the selected route object for the footer
-  const selectedRouteObject = selectedRoute
-    ? routes.find((r) => r.id === selectedRoute) || null
-    : null;
-
-  const handleDownloadRoutePdf = useCallback(() => {
-    return (
-      mapComponentRef.current?.downloadSelectedRoutePdf() ??
-      Promise.resolve()
+    if (!selectedLocation || selectedRoute) return;
+    const isVisible = mapMarkerLocations.some(
+      (location) => location.id === selectedLocation
     );
+    if (!isVisible) {
+      setSelectedLocation("");
+    }
+  }, [mapMarkerLocations, selectedLocation, selectedRoute, setSelectedLocation]);
+
+  useEffect(() => {
+    if (!selectedRoute) return;
+    const isVisible = filteredRoutesForList.some(
+      (route) => route.id === selectedRoute
+    );
+    if (!isVisible) {
+      setSelectedRoute("");
+    }
+  }, [filteredRoutesForList, selectedRoute, setSelectedRoute]);
+
+  const selectedRouteObject =
+    routes.find((route) => route.id === selectedRoute) ?? null;
+
+  const selectedLocationData = useMemo(
+    () => locations.find((location) => location.id === selectedLocation) ?? null,
+    [locations, selectedLocation]
+  );
+
+  const showMobileRouteFooter =
+    !isLargeScreen && selectedRouteObject && !detailPanelDismissed;
+  const showMobileExhibitorFooter =
+    !isLargeScreen &&
+    !selectedRoute &&
+    selectedLocation &&
+    selectedLocationData;
+
+  const handleDownloadRoutePdf = useCallback(
+    () => mapRef.current?.downloadSelectedRoutePdf() ?? Promise.resolve(),
+    []
+  );
+
+  const handleActiveStopChange = useCallback((stop: RouteStopDisplay) => {
+    mapRef.current?.focusOnPoint(stop.longitude, stop.latitude);
   }, []);
+
+  const handleRouteStopSelect = useCallback(
+    (dotId: string) => {
+      if (!selectedRouteObject) return;
+
+      reopenDetailPanel();
+      setActiveRouteStopId(dotId);
+    },
+    [selectedRouteObject, reopenDetailPanel, setActiveRouteStopId]
+  );
 
   return (
-    <div className="flex flex-col h-dvh pt-[4rem]">
-      <h1 className="sr-only">City Map</h1>
-      {isLargeScreen ? (
-        <div className="flex flex-1 h-full relative">
-          {/* Floating InfoPanel */}
-          <aside
-            className="absolute top-4 left-4 w-80 h-[calc(100vh-6rem)] overflow-auto z-10"
-            aria-label="Participant and route list"
-          >
-            <InfoPanel
-              mapInfo={mapInfo}
-              routes={routes}
-              selectedLocation={selectedLocation}
-              selectedRoute={selectedRoute}
-              onLocationSelect={handleLocationSelect}
-              onRouteSelect={handleRouteSelect}
-              promptLoginForRouteId={promptLoginForRouteId}
-              onRouteLoginPromptConsumed={handleRouteLoginPromptConsumed}
-            />
-          </aside>
-          {/* Full screen map */}
-          <main className="w-full h-full relative" aria-label="Map">
-            <Suspense fallback={<LoadingSpinner />}>
-              <MapComponent
-                ref={mapComponentRef}
-                mapInfo={mapInfo}
-                routes={routes}
-                selectedLocation={selectedLocation}
-                selectedRoute={selectedRoute}
-                onLocationSelect={setSelectedLocation}
-                onRouteSelect={setSelectedRoute}
-              />
-            </Suspense>
-          </main>
-        </div>
-      ) : (
-        <div className="flex flex-col h-full relative">
-          {/* Overlay when sidebar is open */}
-          {sidebarOpen && (
-            <div
-              className="fixed inset-0 bg-black/20 z-[52]"
-              onClick={toggleSidebar}
-              aria-hidden="true"
-            />
-          )}
+    <>
+      <h1 className="sr-only">{`GLUE ${config.cityName} map`}</h1>
+      <div
+        data-map-surface
+        className="relative w-full h-[calc(100dvh-var(--total-nav-height))] pt-(--nav-secondary-h) overflow-hidden"
+        aria-label="Map"
+      >
+        <Suspense fallback={<LoadingSpinner />}>
+          <MapView
+            ref={mapRef}
+            locations={mapMarkerLocations}
+            routes={routes}
+            tourMode={tourMode}
+            selectedLocation={selectedLocation}
+            selectedRoute={selectedRoute}
+            activeRouteStopId={activeRouteStopId}
+            detailPanelDismissed={detailPanelDismissed}
+            onLocationSelect={setSelectedLocation}
+            onCloseExhibitorSelection={closeExhibitorSelection}
+            onDismissRoutePanel={dismissRoutePanel}
+            onRouteStopSelect={handleRouteStopSelect}
+          />
+        </Suspense>
+        {isLargeScreen && <MapFilterDesktopSidebar />}
+      </div>
 
-          {/* Custom sliding sidebar */}
-          <aside
-            className={cn(
-              "fixed top-0 left-0 h-full w-[85vw] max-w-[400px] bg-card z-[52] overflow-hidden transition-transform duration-300 ease-in-out transform",
-              sidebarOpen ? "translate-x-0" : "-translate-x-full"
-            )}
-            aria-label="Participant and route list"
-            aria-hidden={!sidebarOpen}
-          >
-            <div className="flex items-center justify-between p-4 border-b text-black">
-              <h2 className="font-semibold">Locations & Routes</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleSidebar}
-                aria-label="Close sidebar"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <div
-              className="overflow-y-auto"
-              style={{
-                height: "calc(var(--vh, 1vh) * 100 - 64px)",
-                WebkitOverflowScrolling: "touch",
-              }}
-            >
-              <InfoPanel
-                mapInfo={mapInfo}
-                routes={routes}
-                selectedLocation={selectedLocation}
-                selectedRoute={selectedRoute}
-                onLocationSelect={handleLocationSelect}
-                onRouteSelect={handleRouteSelect}
-                promptLoginForRouteId={promptLoginForRouteId}
-                onRouteLoginPromptConsumed={handleRouteLoginPromptConsumed}
-              />
-            </div>
-          </aside>
-
-          {/* Toggle button */}
-          <div
-            className={`fixed top-24 left-4 z-40 text-black ${
-              sidebarOpen ? "hidden" : ""
-            }`}
-          >
-            <Button
-              variant="outline"
-              size="icon"
-              className="bg-background shadow-md"
-              aria-label={sidebarOpen ? "Close menu" : "Open menu"}
-              onClick={toggleSidebar}
-            >
-              <MenuIcon className="h-4 w-4" aria-hidden="true" />
-            </Button>
-          </div>
-
-          {/* Map takes full width on mobile */}
-          <main
-            className={cn(
-              "flex-1 h-full w-full",
-              selectedRouteObject && "pb-24"
-            )}
-            aria-label="Map"
-            onClick={handleOutsideClick}
-          >
-            <Suspense fallback={<LoadingSpinner />}>
-              <MapComponent
-                ref={mapComponentRef}
-                mapInfo={mapInfo}
-                routes={routes}
-                selectedLocation={selectedLocation}
-                selectedRoute={selectedRoute}
-                onLocationSelect={setSelectedLocation}
-                onRouteSelect={setSelectedRoute}
-              />
-            </Suspense>
-          </main>
-
-          {/* Route Footer for mobile */}
-          {selectedRouteObject && (
-            <RouteFooter
-              route={selectedRouteObject}
-              mapInfo={mapInfo}
-              onDownloadRoutePdf={handleDownloadRoutePdf}
-              onClose={() => setSelectedRoute("")}
-            />
-          )}
-        </div>
+      {showMobileExhibitorFooter && selectedLocationData && (
+        <ExhibitorFooter
+          key={selectedLocationData.id}
+          location={selectedLocationData}
+          tourMode={tourMode}
+          onClose={closeExhibitorSelection}
+        />
       )}
-    </div>
+
+      {showMobileRouteFooter && selectedRouteObject && (
+        <RouteFooter
+          route={selectedRouteObject}
+          locations={locations}
+          tourMode={tourMode}
+          activeStopId={activeRouteStopId}
+          onActiveStopChange={handleActiveStopChange}
+          onDownloadRoutePdf={handleDownloadRoutePdf}
+          onClose={dismissRoutePanel}
+        />
+      )}
+    </>
   );
-}
+};
+
 export default MapMain;

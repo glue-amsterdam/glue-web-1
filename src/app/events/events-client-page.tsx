@@ -1,18 +1,16 @@
 "use client";
 
-import { useSetPageDataset } from "@/hooks/useSetPageDataset";
+
 import { useColors } from "../context/MainContext";
 import { useRef, useMemo } from "react";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import gsap from "gsap";
 import { useSearchParams } from "next/navigation";
-import NavBar from "@/components/NavBar";
 import EventHeader from "../components/events/event-header";
 import SearchAndFilter from "../components/events/search-and-filter-events";
 import EventModal from "../components/events/event-modal";
 import EventListContainer from "../components/events/event-list-container";
-import ReactLenis from "@studio-freight/react-lenis";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -21,7 +19,7 @@ export default function EventsClientPage({
 }: {
   headerTitle: string;
 }) {
-  useSetPageDataset("upButton");
+
   /* STATES - REFERENCES - HOOKS CALL*/
   const { box1, box2 } = useColors();
 
@@ -87,7 +85,7 @@ export default function EventsClientPage({
   );
 
   return (
-    <ReactLenis root>
+    <>
       <div
         ref={animationBlockRef}
         id="animation-block"
@@ -99,7 +97,7 @@ export default function EventsClientPage({
         className="min-h-dvh h-full overflow-x-hidden"
         style={{ backgroundColor: box2 }}
       >
-        <NavBar ref={topNavBarRef} />
+
         <div
           id="main-block-container"
           className="container mx-auto px-4 pt-[6rem] opacity-0"
@@ -114,6 +112,6 @@ export default function EventsClientPage({
           <EventModal />
         </div>
       </main>
-    </ReactLenis>
+    </>
   );
 }

@@ -1,4 +1,4 @@
-import { config } from "@/env";
+import { config } from "@/config";
 import { createClient } from "@supabase/supabase-js";
 
 /**

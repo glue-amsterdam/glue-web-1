@@ -18,7 +18,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { RichTextEditor } from "@/app/components/editor";
-import { config } from "@/env";
+import { config } from "@/config";
 import { type InfoItem } from "@/schemas/infoSchema";
 import { mutate } from "swr";
 import { Switch } from "@/components/ui/switch";
@@ -168,9 +168,8 @@ export function InfoItemForm({ initialItems }: InfoItemFormProps) {
       console.error(`${infoItem.title} submission error:`, error);
       toast({
         title: "Error",
-        description: `Failed to update info item ${
-          index + 1
-        }. Please try again.`,
+        description: `Failed to update info item ${index + 1
+          }. Please try again.`,
         variant: "destructive",
       });
     } finally {

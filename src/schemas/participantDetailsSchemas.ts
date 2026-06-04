@@ -9,7 +9,7 @@ export const reactivationNotesSchema = z.object({
   formatted_address: z.string().optional().nullable(),
   latitude: z.number().optional().nullable(),
   longitude: z.number().optional().nullable(),
-  no_address: z.boolean().optional().default(true),
+  no_address: z.boolean().optional(),
   notes: z.string().optional().nullable(),
   exhibition_space_preference: z.string().optional().nullable(),
   termsAccepted: z.boolean().refine((val) => val === true, {
@@ -41,9 +41,9 @@ export const participantDetailsSchema = z.object({
     .nullable(),
   slug: z.string().min(1, "Slug is required"),
   special_program: z.boolean(),
-  status: z.enum(["pending", "accepted", "declined"]).default("pending"),
-  is_active: z.boolean().default(true),
-  reactivation_requested: z.boolean().default(false),
+  status: z.enum(["pending", "accepted", "declined"]),
+  is_active: z.boolean(),
+  reactivation_requested: z.boolean(),
   reactivation_notes: reactivationNotesSchema.optional().nullable(),
   reactivation_status: z
     .enum(["pending", "approved", "declined"])

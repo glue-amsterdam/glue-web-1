@@ -1,0 +1,143 @@
+"use client";
+
+import { memo, useCallback, useMemo } from "react";
+import Image from "next/image";
+import { Popup } from "react-map-gl/mapbox-legacy";
+import type { ExhibitorPopupAnchor } from "@/lib/map/exhibitor-popup-layout";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
+import { getMapLocationProfileLink } from "@/lib/map/map-location-profile-link";
+import type { MapLocation, MapTourMode } from "@/lib/map/types";
+import { useMapLocationDetail } from "../hooks/use-map-location-detail";
+import RoundedNumber from "@/components/rounded-number";
+import CrossRotatedDesktop from "@/components/icons/cross-rotated-desktop";
+import { useCyclicIndex } from "@/hooks/useCyclicIndex";
+import { buildExhibitorFooterSlides } from "@/lib/map/exhibitor-footer-slides";
+import { buildGoogleMapsSearchUrl } from "@/lib/map/utils";
+import BigButton from "@/components/big-button";
+
+type ExhibitorPopUpProps = {
+  location: MapLocation;
+  tourMode: MapTourMode;
+  anchor: ExhibitorPopupAnchor;
+  offset: [number, number];
+  onClose: () => void;
+};
+
+const ExhibitorPopUp = ({
+  location,
+  tourMode,
+  anchor,
+  offset,
+  onClose,
+}: ExhibitorPopUpProps) => {
+  const canFetchDetail = tourMode === "live";
+  const { detail, isLoading, error } = useMapLocationDetail(
+    location.id,
+    canFetchDetail
+  );
+  const slides = useMemo(
+    () => buildExhibitorFooterSlides(location, detail),
+    [location, detail]
+  );
+
+  const {
+    currentIndex,
+    handleMouseEnter,
+    handleMouseLeave,
+  } = useCyclicIndex({
+    itemCount: slides.length,
+    delayMs: 3000,
+    enabled: slides.length > 1,
+  });
+
+  const currentSlide = slides[currentIndex] ?? slides[0];
+
+  const handleGoogleMapsRedirect = useCallback(() => {
+    window.open(buildGoogleMapsSearchUrl(location), "_blank");
+  }, [location]);
+
+  const isHub = location.type === "hub";
+
+  const popupConfig = {
+    longitude: location.longitude,
+    latitude: location.latitude,
+    onClose,
+    closeButton: false,
+    closeOnClick: false,
+    anchor,
+    offset,
+    className: "custom-map-popup",
+  };
+
+  const showLoading = canFetchDetail && isLoading && !detail;
+
+  return (
+    <Popup {...popupConfig}>
+      <div onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave} className="overflow-hidden border-t-2 border-(--black-color) px-[30px] pt-[15px] pb-[30px] text-(--black-color) bg-(--white-color) z-51 min-h-[452px] base-text-size w-[460px]">
+        <div className="flex gap-[25px] items-start w-full">
+          <RoundedNumber type={location.type} participant_n={location.displayNumber ?? " "} />
+          <div className="w-full">
+            <div className="w-full flex justify-between" aria-live="polite" aria-atomic="true">
+              <h3 className="truncate ">{location.name.toUpperCase()}</h3>
+              <button
+                type="button"
+                onClick={onClose}
+                className="cursor-pointer"
+                aria-label="Close exhibitor details"
+              >
+                <CrossRotatedDesktop />
+              </button>
+            </div>
+            <div className="pt-[15px] pl-[4px]">
+              {isHub ? (
+                <p>{currentSlide.name}</p>
+              ) : (
+                <p>{location.addressLine}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div
+          className={"flex w-full h-[250px] overflow-hidden mx-auto pt-[15px]"}
+        >
+          {showLoading ? (
+            <div className="h-full w-full flex items-center justify-center">
+              <LoadingSpinner />
+            </div>
+          ) : currentSlide.imageUrl ? (
+
+            <Image
+              src={currentSlide.imageUrl}
+              alt={`Image of ${currentSlide.name}`}
+              width={300}
+              height={190}
+              sizes="(max-width: 768px) 100vw, 33vw"
+              className="h-full w-full object-contain object-top"
+            />
+
+          ) : <></>}</div>
+        <div className="flex justify-center pt-[30px] gap-[15px]">
+          <BigButton
+            as="button"
+            mode="footer"
+            fontSize="small"
+            label="navigate"
+            onClick={handleGoogleMapsRedirect} />
+          {currentSlide.profileHref && (
+            <BigButton
+              target="_blank"
+              as="link"
+              mode="footer"
+              fontSize="small"
+              label="profile"
+              href={currentSlide.profileHref} />
+          )}
+        </div>
+      </div>
+    </Popup >
+  );
+};
+
+export default memo(ExhibitorPopUp);

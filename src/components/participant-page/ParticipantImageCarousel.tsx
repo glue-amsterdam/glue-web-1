@@ -7,7 +7,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { config } from "@/env";
+import { config } from "@/config";
 import type { ClientUserImage } from "@/types/api-visible-user";
 import Image from "next/image";
 import { useRef } from "react";
@@ -60,9 +60,8 @@ export default function ParticipantImageCarousel({
                 width={1920}
                 height={1080}
                 src={image.image_url || "/placeholder.jpg"}
-                alt={`GLUE ${
-                  config.cityName
-                } participant ${userName}, image number ${index + 1}`}
+                alt={`GLUE ${config.cityName
+                  } participant ${userName}, image number ${index + 1}`}
                 className="absolute inset-0 w-full h-full object-cover"
               />
             </div>

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ImageIcon } from "lucide-react";
 import { uploadImage, deleteImage } from "@/utils/supabase/storage/client";
 import { useToast } from "@/hooks/use-toast";
-import { config } from "@/env";
+import { config } from "@/config";
 import Image from "next/image";
 
 const imageSchema = z.object({
@@ -46,8 +46,7 @@ export function ProfileImageForm({
       .array(imageSchema)
       .max(
         maxImages,
-        `You can only upload up to ${maxImages} image${
-          maxImages > 1 ? "s" : ""
+        `You can only upload up to ${maxImages} image${maxImages > 1 ? "s" : ""
         }`
       ),
   });
@@ -232,9 +231,8 @@ export function ProfileImageForm({
   const maxImagesText =
     maxImages === 0
       ? "Your current plan does not allow image uploads."
-      : `You can upload up to ${maxImages} image${
-          maxImages > 1 ? "s" : ""
-        } with your current plan.`;
+      : `You can upload up to ${maxImages} image${maxImages > 1 ? "s" : ""
+      } with your current plan.`;
 
   return (
     <>
@@ -267,8 +265,8 @@ export function ProfileImageForm({
               {isUploading
                 ? "Uploading..."
                 : currentImages[index]?.image_url
-                ? "Change Image"
-                : "Upload Image"}
+                  ? "Change Image"
+                  : "Upload Image"}
             </Button>
             {currentImages[index]?.image_url && (
               <Button

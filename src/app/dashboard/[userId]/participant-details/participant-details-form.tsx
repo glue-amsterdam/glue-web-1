@@ -185,7 +185,7 @@ export function ParticipantDetailsForm({
       formatted_address: reactivationData.formatted_address || null,
       latitude: reactivationData.latitude || null,
       longitude: reactivationData.longitude || null,
-      no_address: reactivationData.no_address,
+      no_address: reactivationData.no_address ?? true,
     });
     form.setValue("reactivation_requested", true);
     form.setValue("reactivation_notes", reactivationData);
@@ -203,7 +203,7 @@ export function ParticipantDetailsForm({
           formatted_address: reactivationData.formatted_address || null,
           latitude: reactivationData.latitude || null,
           longitude: reactivationData.longitude || null,
-          no_address: reactivationData.no_address,
+          no_address: reactivationData.no_address ?? true,
         },
         form.getValues()
       )
@@ -389,8 +389,17 @@ export function ParticipantDetailsForm({
   };
 
   useEffect(() => {
-    form.reset(participantDetails);
-  }, [form, participantDetails]);
+    if (!targetUserId) return;
+    form.reset({
+      ...participantDetails,
+      user_id: targetUserId,
+    });
+  }, [form, participantDetails, targetUserId]);
+
+  useEffect(() => {
+    if (!targetUserId) return;
+    form.setValue("user_id", targetUserId, { shouldDirty: false });
+  }, [form, targetUserId]);
 
   const renderReactivationDetails = () => {
     if (!form.watch("reactivation_notes")) return null;
@@ -473,6 +482,7 @@ export function ParticipantDetailsForm({
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)}>
+            <input type="hidden" {...form.register("user_id")} />
             <div className="space-y-6">
               <BasicInfoFields />
               <SlugField />

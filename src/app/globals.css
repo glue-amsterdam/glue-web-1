@@ -1,15 +1,25 @@
-@import "@fontsource-variable/overpass";
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Home page < */
 
-/* View transitions */
-::view-transition-group(root) {
-  animation-duration: 0.1s;
-  animation-timing-function: ease-out;
-  contain: paint;
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
 }
+
+.animate-marquee {
+  animation: marquee 7s linear infinite;
+}
+
+
+/* Home page >*/
+
 .no-hover:hover {
   background-color: transparent !important;
 }
@@ -29,206 +39,6 @@
   background-color: white !important;
 }
 
-/*  home => upButton */
-:root[data-from="home"][data-to="upButton"]::view-transition-old(root) {
-  animation: slide-home-to-about-out 0.6s ease forwards;
-}
-:root[data-from="home"][data-to="upButton"]::view-transition-new(root) {
-  animation: slide-home-to-about-in 0.6s ease forwards;
-}
-:root[data-from="upButton"][data-to="home"]::view-transition-old(root) {
-  animation: slide-about-to-home-out 0.6s ease forwards;
-}
-:root[data-from="upButton"][data-to="home"]::view-transition-new(root) {
-  animation: slide-about-to-home-in 0.6s ease forwards;
-}
-
-@keyframes slide-home-to-about-out {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(100vh);
-  }
-}
-
-@keyframes slide-home-to-about-in {
-  from {
-    transform: translateY(-100vh);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes slide-about-to-home-out {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-100vh);
-  }
-}
-
-@keyframes slide-about-to-home-in {
-  from {
-    transform: translateY(100vh);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-/* Cuando vas de home => events */
-:root[data-from="home"][data-to="rightButton"]::view-transition-old(root) {
-  animation: slide-home-to-events-out 0.6s ease forwards;
-}
-:root[data-from="home"][data-to="rightButton"]::view-transition-new(root) {
-  animation: slide-home-to-events-in 0.6s ease forwards;
-}
-:root[data-from="rightButton"][data-to="home"]::view-transition-old(root) {
-  animation: slide-events-to-home-out 0.6s ease forwards;
-}
-:root[data-from="rightButton"][data-to="home"]::view-transition-new(root) {
-  animation: slide-events-to-home-in 0.6s ease forwards;
-}
-
-@keyframes slide-home-to-events-out {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-100vw);
-  }
-}
-
-@keyframes slide-home-to-events-in {
-  from {
-    transform: translateX(100vw);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes slide-events-to-home-out {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(100vw);
-  }
-}
-
-@keyframes slide-events-to-home-in {
-  from {
-    transform: translateX(-100vw);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-/* Cuando vas de home => map */
-:root[data-from="home"][data-to="downButton"]::view-transition-old(root) {
-  animation: slide-home-to-map-out 0.6s ease forwards;
-}
-:root[data-from="home"][data-to="downButton"]::view-transition-new(root) {
-  animation: slide-home-to-map-in 0.6s ease forwards;
-}
-:root[data-from="downButton"][data-to="home"]::view-transition-old(root) {
-  animation: slide-map-to-home-out 0.6s ease forwards;
-}
-:root[data-from="downButton"][data-to="home"]::view-transition-new(root) {
-  animation: slide-map-to-home-in 0.6s ease forwards;
-}
-
-@keyframes slide-home-to-map-out {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-100vh);
-  }
-}
-
-@keyframes slide-home-to-map-in {
-  from {
-    transform: translateY(100vh);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes slide-map-to-home-out {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(100vh);
-  }
-}
-
-@keyframes slide-map-to-home-in {
-  from {
-    transform: translateY(-100vh);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-/* Cuando vas de home => dashboard */
-:root[data-from="home"][data-to="leftButton"]::view-transition-old(root) {
-  animation: slide-home-to-dashboard-out 0.6s ease forwards;
-}
-:root[data-from="home"][data-to="leftButton"]::view-transition-new(root) {
-  animation: slide-home-to-dashboard-in 0.6s ease forwards;
-}
-:root[data-from="leftButton"][data-to="home"]::view-transition-old(root) {
-  animation: slide-dashboard-to-home-out 0.6s ease forwards;
-}
-:root[data-from="leftButton"][data-to="home"]::view-transition-new(root) {
-  animation: slide-dashboard-to-home-in 0.6s ease forwards;
-}
-
-@keyframes slide-home-to-dashboard-out {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(100vw);
-  }
-}
-
-@keyframes slide-home-to-dashboard-in {
-  from {
-    transform: translateX(-100vw);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes slide-dashboard-to-home-out {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-100vw);
-  }
-}
-
-@keyframes slide-dashboard-to-home-in {
-  from {
-    transform: translateX(100vw);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -245,6 +55,18 @@
 }
 
 @layer components {
+  .title-text {
+    @apply text-[30px] lg:text-[50px] lg:leading-[58px] leading-[38px] font-[400];
+  }
+  .first-padding {
+    @apply pt-[146px] md:pt-[124px];
+  }
+  .main-padding {
+    @apply pt-[100px] lg:pt-[200px];
+  }
+  .base-text-size {
+    @apply text-[15px] leading-[21px] lg:text-[19px] lg:leading-[25px];
+  }
   .about-w {
     @apply max-w-[95vw] md:max-w-[90%] mx-auto w-full;
   }
@@ -300,7 +122,22 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    --nav-primary-h: 80px;
+    --nav-primary-h-mobile: 65px;
+    --nav-secondary-h: 80px;
+    --nav-secondary-h-mobile: 40px;
+    --nav-total-h: calc(var(--nav-primary-h) + var(--nav-secondary-h));
+    --nav-total-h-mobile: calc(var(--nav-primary-h-mobile) + var(--nav-secondary-h-mobile));
+    --site-footer-h: 65px;
+    --total-nav-height: calc(var(--nav-primary-h) + var(--site-footer-h));
   }
+
+  @media (min-width: 1024px) {
+    :root {
+      --nav-primary-h: 80px;
+    }
+  }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -327,38 +164,7 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-}
-
-/* STYLES FOR HOME BUTTONS (HOME PAGE) */
-.upperbutton {
-  clip-path: polygon(100% 0, 100% 10%, 50% 50%, 0 10%, 0 0);
-  width: 100%;
-  height: 100%;
-  position: absolute;
-}
-.leftbutton {
-  clip-path: polygon(0 10%, 0 90%, 50% 50%);
-  width: 100%;
-  height: 100%;
-  position: absolute;
-}
-.downbutton {
-  clip-path: polygon(50% 50%, 100% 90%, 100% 100%, 0 100%, 0 90%);
-  width: 100%;
-  height: 100%;
-  position: absolute;
-}
-.rightbutton {
-  clip-path: polygon(100% 10%, 100% 90%, 50% 50%);
-  width: 100%;
-  height: 100%;
-  position: absolute;
-}
-.triangle {
-  clip-path: polygon(100% 10%, 100% 90%, 50% 50%);
-  width: 100%;
-  height: 100%;
-  position: absolute;
+ 
 }
 
 /* STYLES FOR SANITIZED HTML (BEAUTY TEXT EDITOR) */
@@ -457,9 +263,11 @@
   border-bottom-color: white !important;
 }
 
-/* Add smooth transition for popup */
-.mapboxgl-popup {
-  transition: transform 0.2s ease-out;
+/* No transitions on Mapbox popups — transform animation causes blur on open/move */
+.mapboxgl-popup,
+.mapboxgl-popup-content {
+  transition: none !important;
+  animation: none !important;
   z-index: 10 !important;
 }
 
@@ -474,7 +282,6 @@
 .custom-map-popup .mapboxgl-popup-content {
   padding: 0 !important;
   background: transparent !important;
-  border-radius: 8px !important;
   overflow: visible !important;
   box-shadow: none !important;
 }
@@ -482,17 +289,6 @@
 /* Hide default close button */
 .custom-map-popup .mapboxgl-popup-close-button {
   display: none !important;
-}
-
-/* Popup wrapper */
-.popup-wrapper {
-  width: 360px;
-  max-width: 90vw;
-  position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-  background-color: white;
 }
 
 /* Close button */
@@ -510,7 +306,6 @@
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.2s;
 }
 
 .popup-close-btn:hover {
@@ -571,107 +366,6 @@
   }
 }
 
-/* Route popup specific styles */
-.route-popup-content {
-  width: 100%;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.route-stops {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 250px;
-  overflow-y: auto;
-  padding-right: 8px;
-  margin-bottom: 12px;
-}
-
-.route-stop {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.route-stop:last-child {
-  border-bottom: none;
-}
-
-.route-stop-number {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  background-color: var(--color-primary, #007cbf);
-  color: white;
-  border-radius: 50%;
-  font-weight: bold;
-  font-size: 12px;
-  flex-shrink: 0;
-}
-
-.route-stop-details {
-  flex: 1;
-}
-
-.route-stop-name {
-  font-weight: 500;
-  font-size: 14px;
-  margin-bottom: 2px;
-}
-
-.route-stop-address {
-  font-size: 12px;
-  color: #666;
-}
-
-/* Scrollbar styling for the route stops list */
-.route-stops::-webkit-scrollbar {
-  width: 6px;
-}
-
-.route-stops::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.route-stops::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 10px;
-}
-
-.route-stops::-webkit-scrollbar-thumb:hover {
-  background: #999;
-}
-
-/* Button styling */
-.route-popup-content .button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 8px 16px;
-  background-color: var(--color-primary, #007cbf);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.route-popup-content .button:hover {
-  background-color: var(--color-primary-dark, #006ba6);
-}
-
-.route-popup-content .button svg {
-  margin-right: 8px;
-}
-
 /* Custom hover effect for curated section */
 .hover\:scale-image:hover ~ div img {
   transform: scale(1.05);
@@ -685,56 +379,4 @@
   }
 }
 
-/* Simple marker pop-up animation */
-@keyframes marker-pop {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
 
-.marker-pop {
-  animation: marker-pop 0.3s ease-out;
-}
-
-/* Marker entrance animation */
-.marker-entrance {
-  animation: marker-entrance 0.5s ease-out forwards;
-}
-
-@keyframes marker-entrance {
-  0% {
-    opacity: 0;
-    transform: scale(0);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Simple marker pop-up animation */
-@keyframes marker-pop {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.marker-pop {
-  animation: marker-pop 0.3s ease-out;
-}

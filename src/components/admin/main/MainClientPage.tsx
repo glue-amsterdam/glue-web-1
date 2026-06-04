@@ -11,7 +11,7 @@ import MainLinksForm from "./MainLinksForm";
 import MainPressKitForm from "./MainPressKitForm";
 import AdminHeader from "../AdminHeader";
 import AdminBackHeader from "../AdminBackHeader";
-import { config } from "@/env";
+import { config } from "@/config";
 import { ApiPressKitLinks } from "@/types/api-main-raw";
 
 export default function MainClientPage() {
@@ -29,52 +29,52 @@ export default function MainClientPage() {
   const [dataKey, setDataKey] = useState(0); // Add a key to force re-render when data changes
 
   const fetchData = async () => {
-      try {
-        const [
-          eventDaysRes,
-          homeTextRes,
-          mainColorsRes,
-          mainMenuRes,
-          mainLinksRes,
-          pressKitLinksRes,
-        ] = await Promise.all([
-          fetch(`${config.baseApiUrl}/admin/main/days`),
-          fetch(`${config.baseApiUrl}/admin/main/home_text`),
-          fetch(`${config.baseApiUrl}/admin/main/colors`),
-          fetch(`${config.baseApiUrl}/admin/main/menu`),
-          fetch(`${config.baseApiUrl}/admin/main/links`),
-          fetch(`${config.baseApiUrl}/admin/main/press_kit_links`),
-        ]);
+    try {
+      const [
+        eventDaysRes,
+        homeTextRes,
+        mainColorsRes,
+        mainMenuRes,
+        mainLinksRes,
+        pressKitLinksRes,
+      ] = await Promise.all([
+        fetch(`${config.baseApiUrl}/admin/main/days`),
+        fetch(`${config.baseApiUrl}/admin/main/home_text`),
+        fetch(`${config.baseApiUrl}/admin/main/colors`),
+        fetch(`${config.baseApiUrl}/admin/main/menu`),
+        fetch(`${config.baseApiUrl}/admin/main/links`),
+        fetch(`${config.baseApiUrl}/admin/main/press_kit_links`),
+      ]);
 
-        const [
-          eventDaysData,
-          homeTextData,
-          mainColorsData,
-          mainMenuData,
-          mainLinksData,
-          pressKitLinksData,
-        ] = await Promise.all([
-          eventDaysRes.json(),
-          homeTextRes.json(),
-          mainColorsRes.json(),
-          mainMenuRes.json(),
-          mainLinksRes.json(),
-          pressKitLinksRes.json(),
-        ]);
+      const [
+        eventDaysData,
+        homeTextData,
+        mainColorsData,
+        mainMenuData,
+        mainLinksData,
+        pressKitLinksData,
+      ] = await Promise.all([
+        eventDaysRes.json(),
+        homeTextRes.json(),
+        mainColorsRes.json(),
+        mainMenuRes.json(),
+        mainLinksRes.json(),
+        pressKitLinksRes.json(),
+      ]);
 
-        setEventDays(eventDaysData.eventDays || []);
-        setHomeText(homeTextData);
-        setMainColors(mainColorsData);
-        setMainMenu(mainMenuData);
-        setMainLinks(mainLinksData);
-        setPressKitLinks(pressKitLinksData);
-        setDataKey((prev) => prev + 1); // Increment key to force re-render
-      } catch (error) {
-        console.error("Error fetching admin data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      setEventDays(eventDaysData.eventDays || []);
+      setHomeText(homeTextData);
+      setMainColors(mainColorsData);
+      setMainMenu(mainMenuData);
+      setMainLinks(mainLinksData);
+      setPressKitLinks(pressKitLinksData);
+      setDataKey((prev) => prev + 1); // Increment key to force re-render
+    } catch (error) {
+      console.error("Error fetching admin data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -113,8 +113,8 @@ export default function MainClientPage() {
         <AdminHeader />
         <AdminBackHeader backLink="/admin" sectionTitle="Main" />
         {eventDays && (
-          <MainDaysForm 
-            key={`days-${dataKey}`} 
+          <MainDaysForm
+            key={`days-${dataKey}`}
             initialData={{ eventDays }}
             onDataUpdated={handleEventDaysUpdate}
           />

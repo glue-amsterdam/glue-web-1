@@ -1,4 +1,4 @@
-import { config } from "@/env";
+import { config } from "@/config";
 import { Suspense } from "react";
 
 import LoadingSpinner from "@/app/components/LoadingSpinner";
