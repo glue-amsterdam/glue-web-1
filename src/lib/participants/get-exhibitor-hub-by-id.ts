@@ -11,12 +11,8 @@ import {
   isParticipantEligibleForExhibitorsList,
 } from "./exhibitor-visibility";
 import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
+import { getParticipantDisplayName } from "./get-participant-display-name";
 import { getParticipantPlaceholderUrl } from "./get-participant-placeholder-url";
-
-type UserInfoRow = {
-  user_id: string;
-  user_name: string;
-};
 
 type ParticipantRow = {
   user_id: string;
@@ -30,7 +26,7 @@ type MemberParticipantRow = {
   slug: string;
   special_program: boolean;
   display_number: string | null;
-  user_info: UserInfoRow | UserInfoRow[];
+  display_name: string | null;
 };
 
 type HubParticipantRow = {
@@ -54,11 +50,6 @@ type ImageRow = {
 const ensureArray = <T>(value: T | T[] | null | undefined): T[] => {
   if (!value) return [];
   return Array.isArray(value) ? value : [value];
-};
-
-const getUserName = (userInfo: UserInfoRow | UserInfoRow[]): string => {
-  const info = Array.isArray(userInfo) ? userInfo[0] : userInfo;
-  return info?.user_name ?? "Unknown User";
 };
 
 const getParticipantType = (specialProgram: boolean): ExhibitorType => {
@@ -204,10 +195,7 @@ export const getExhibitorHubById = async (
         slug,
         special_program,
         display_number,
-        user_info!inner (
-          user_id,
-          user_name
-        )
+        display_name
       `
     )
     .in("user_id", orderedMemberIds)
@@ -253,7 +241,7 @@ export const getExhibitorHubById = async (
     members.push({
       userId,
       slug: details.slug,
-      name: getUserName(details.user_info),
+      name: getParticipantDisplayName(details),
       imageUrl: imageMap.get(userId) ?? placeholderUrl,
       displayNumber: details.display_number,
       type: getParticipantType(details.special_program),

@@ -1,8 +1,11 @@
 import type React from "react";
 import { ControllerRenderProps, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Input } from "@/components/ui/input";
+import {
+  participantExtraDataSchema,
+  type ParticipantExtraDataFormData,
+} from "@/schemas/participantExtraDataSchema";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -15,32 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-export const participantExtraDataSchema = z.object({
-  short_description: z
-    .string()
-    .min(1, "Short description is required")
-    .max(500, "Short description must be 500 characters or less"),
-  phone_numbers: z
-    .array(z.string())
-    .max(3, "Only 3 items max")
-    .nullable()
-    .optional(),
-  social_media: z.record(z.string(), z.any()).nullable().optional(),
-  visible_emails: z.array(z.string()).max(3, "Only 3 items max").nullable(),
-  glue_communication_email: z
-    .string()
-    .min(1, "Email for practical GLUE communication is required")
-    .email("Please enter a valid email address"),
-  visible_websites: z
-    .array(z.string())
-    .max(3, "Only 3 items max")
-    .nullable()
-    .optional(),
-});
-
-export type ParticipantExtraDataFormData = z.infer<
-  typeof participantExtraDataSchema
->;
+export { participantExtraDataSchema, type ParticipantExtraDataFormData };
 
 interface ParticipantExtraDataFormProps {
   onSubmit: (data: ParticipantExtraDataFormData) => void;

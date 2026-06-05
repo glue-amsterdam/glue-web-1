@@ -18,7 +18,6 @@ import { mutate } from "swr";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { ConfirmationDialog } from "@/app/dashboard/[userId]/participant-details/confirmation-dialog";
 import { ReactivationDialog } from "@/app/dashboard/[userId]/participant-details/reactivation-dialog";
-import { ReactivationRequestModal } from "@/app/dashboard/[userId]/participant-details/reactivation-request-modal";
 
 import { MapPin, FileText } from "lucide-react";
 import { BasicInfoFields } from "@/app/dashboard/[userId]/participant-details/basic-info-fields";
@@ -45,8 +44,6 @@ export function ParticipantDetailsForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isReactivationDialogOpen, setIsReactivationDialogOpen] =
-    useState(false);
-  const [isReactivationRequestModalOpen, setIsReactivationRequestModalOpen] =
     useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -509,7 +506,7 @@ export function ParticipantDetailsForm({
                   });
                 }}
                 onOpenReactivationModal={() =>
-                  setIsReactivationRequestModalOpen(true)
+                  router.push("/participate/apply?intent=reactivation")
                 }
                 renderReactivationDetails={renderReactivationDetails}
               />
@@ -549,12 +546,6 @@ export function ParticipantDetailsForm({
         onClose={() => setIsReactivationDialogOpen(false)}
         onConfirm={handleConfirmReactivation}
         onCancel={handleCancelReactivation}
-      />
-      <ReactivationRequestModal
-        isOpen={isReactivationRequestModalOpen}
-        onClose={() => setIsReactivationRequestModalOpen(false)}
-        onSubmit={handleReactivationRequest}
-        userId={targetUserId || ""}
       />
     </Card>
   );

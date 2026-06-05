@@ -15,7 +15,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { UserInfo, userInfoSchema } from "@/schemas/userInfoSchemas";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -363,30 +362,7 @@ export function UserInfoForm({
               <>
                 <Separator className="my-4" />
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Moderator Settings</h3>
-                  <FormField
-                    control={form.control}
-                    name="is_mod"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">
-                            Moderator Status
-                          </FormLabel>
-                          <FormDescription>
-                            This user will have moderator privileges if enabled.
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value || false}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
+                  <h3 className="text-lg font-semibold">Plan settings</h3>
                   <FormField
                     control={form.control}
                     name="plan_id"
@@ -652,7 +628,6 @@ export function UserInfoForm({
                   "social_media.linkedinLink",
                   "social_media.instagramLink",
                   "user_name",
-                  "is_mod",
                 ]}
                 isSubmitting={isSubmitting}
                 className="w-full"

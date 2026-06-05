@@ -14,15 +14,8 @@ import {
 } from "./exhibitor-visibility";
 import { participantImagesToCarouselSlides } from "./exhibitor-carousel-slides";
 import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
+import { getParticipantDisplayName } from "./get-participant-display-name";
 import { getParticipantPlaceholderUrl } from "./get-participant-placeholder-url";
-
-type UserInfoRow = {
-  user_name: string | null;
-  phone_numbers: string[] | null;
-  social_media: ExhibitorSocialMedia | Record<string, string> | null;
-  visible_emails: string[] | null;
-  visible_websites: string[] | null;
-};
 
 type ParticipantRow = {
   user_id: string;
@@ -34,12 +27,11 @@ type ParticipantRow = {
   status: string;
   is_active: boolean;
   was_active_last_year: boolean;
-  user_info: UserInfoRow | UserInfoRow[];
-};
-
-const getUserName = (userInfo: UserInfoRow | UserInfoRow[]): string => {
-  const info = Array.isArray(userInfo) ? userInfo[0] : userInfo;
-  return info?.user_name ?? "Unknown User";
+  display_name: string | null;
+  phone_numbers: string[] | null;
+  social_media: ExhibitorSocialMedia | Record<string, string> | null;
+  visible_emails: string[] | null;
+  visible_websites: string[] | null;
 };
 
 const getParticipantType = (specialProgram: boolean): ExhibitorType => {
@@ -47,7 +39,7 @@ const getParticipantType = (specialProgram: boolean): ExhibitorType => {
 };
 
 const normalizeSocialMedia = (
-  socialMedia: UserInfoRow["social_media"]
+  socialMedia: ParticipantRow["social_media"]
 ): ExhibitorSocialMedia | null => {
   if (!socialMedia || typeof socialMedia !== "object") {
     return null;
@@ -68,7 +60,7 @@ const normalizeSocialMedia = (
 const buildContactInfo = async (
   supabase: SupabaseClient,
   userId: string,
-  userInfo: UserInfoRow
+  participant: ParticipantRow
 ): Promise<ExhibitorContactInfo> => {
   const [mapInfoResult, visitingHoursResult, eventsResult] = await Promise.all([
     supabase
@@ -104,10 +96,10 @@ const buildContactInfo = async (
 
   return {
     mapInfo,
-    phoneNumbers: userInfo.phone_numbers,
-    visibleEmails: userInfo.visible_emails,
-    visibleWebsites: userInfo.visible_websites,
-    socialMedia: normalizeSocialMedia(userInfo.social_media),
+    phoneNumbers: participant.phone_numbers,
+    visibleEmails: participant.visible_emails,
+    visibleWebsites: participant.visible_websites,
+    socialMedia: normalizeSocialMedia(participant.social_media),
     visitingHours: hasVisitingHours ? visitingHours : null,
     events: eventsResult.data ?? [],
   };
@@ -130,13 +122,11 @@ export const getExhibitorBySlug = async (
         status,
         is_active,
         was_active_last_year,
-        user_info!inner (
-          user_name,
-          phone_numbers,
-          social_media,
-          visible_emails,
-          visible_websites
-        )
+        display_name,
+        phone_numbers,
+        social_media,
+        visible_emails,
+        visible_websites
       `
     )
     .eq("slug", slug)
@@ -164,7 +154,7 @@ export const getExhibitorBySlug = async (
   }
 
   const placeholderUrl = getParticipantPlaceholderUrl(supabase);
-  const participantName = getUserName(row.user_info);
+  const participantName = getParticipantDisplayName(row);
   const { data: imageData } = await supabase
     .from("participant_image")
     .select("id, image_url")
@@ -179,14 +169,7 @@ export const getExhibitorBySlug = async (
   );
   const imageUrl = carouselSlides[0]?.imageUrl ?? placeholderUrl;
   const description = row.description?.trim() || null;
-  const userInfo = Array.isArray(row.user_info)
-    ? row.user_info[0]
-    : row.user_info;
-  const contactInfo = await buildContactInfo(
-    supabase,
-    row.user_id,
-    userInfo as UserInfoRow
-  );
+  const contactInfo = await buildContactInfo(supabase, row.user_id, row);
 
   return {
     type: getParticipantType(row.special_program),

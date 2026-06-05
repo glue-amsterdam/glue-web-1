@@ -100,7 +100,7 @@ function HeaderUserFullView({ selectedUser }: Props) {
 
         <Link
           target="_blank"
-          href={`/dashboard/${selectedUser.user_id}/user-data`}
+          href={`/dashboard/${selectedUser.user_id}/participant-details`}
           className="shrink-0"
         >
           <Button variant="outline" size="sm">

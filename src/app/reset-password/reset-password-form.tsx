@@ -15,12 +15,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { getResetPasswordErrorMessage } from "@/lib/auth/reset-password-error-message";
 import { createClient } from "@/utils/supabase/client";
 
 const resetPasswordSchema = z
   .object({
     email: z.string().email({ message: "Invalid email address" }),
-    token: z.string().length(6, { message: "Token must be 6 digits" }),
+    token: z.string(),
     password: z
       .string()
       .min(8, { message: "Password must be at least 8 characters" }),
@@ -35,7 +36,9 @@ type FormData = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecoveryVerified, setIsRecoveryVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -51,24 +54,61 @@ export default function ResetPasswordForm() {
   });
 
   useEffect(() => {
-    const token = searchParams.get("token");
-    if (token) {
-      form.setValue("token", token);
-    }
-  }, [searchParams, form]);
+    let cancelled = false;
+
+    const init = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (cancelled) return;
+
+      if (session?.user?.email) {
+        setIsRecoveryVerified(true);
+        form.setValue("email", session.user.email);
+        return;
+      }
+
+      const token = searchParams.get("token");
+      if (token) {
+        form.setValue("token", token);
+      }
+    };
+
+    void init();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, form, supabase.auth]);
 
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     setError(null);
+    setSuccessMessage(null);
+
+    let recoveryVerified = isRecoveryVerified;
 
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        email: data.email,
-        token: data.token,
-        type: "recovery",
-      });
+      if (!recoveryVerified) {
+        if (data.token.trim().length !== 6) {
+          form.setError("token", {
+            message: "Token must be 6 digits",
+          });
+          return;
+        }
 
-      if (error) throw error;
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          email: data.email,
+          token: data.token.trim(),
+          type: "recovery",
+        });
+
+        if (verifyError) throw verifyError;
+
+        recoveryVerified = true;
+        setIsRecoveryVerified(true);
+      }
 
       const { error: updateError } = await supabase.auth.updateUser({
         password: data.password,
@@ -76,12 +116,14 @@ export default function ResetPasswordForm() {
 
       if (updateError) throw updateError;
 
-      alert("Password updated successfully");
+      setSuccessMessage("Password updated successfully. Redirecting…");
       router.push("/");
-    } catch (error) {
-      console.error("Error resetting password:", error);
+    } catch (submitError) {
+      console.error("Error resetting password:", submitError);
       setError(
-        "Failed to reset password. Please check your email and token, then try again.",
+        getResetPasswordErrorMessage(submitError, {
+          isRecoveryVerified: recoveryVerified,
+        }),
       );
     } finally {
       setIsLoading(false);
@@ -90,11 +132,25 @@ export default function ResetPasswordForm() {
 
   return (
     <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-xl">
-      {error && (
-        <div className="text-red-500 text-sm bg-red-100 p-2 rounded">
+      {successMessage ? (
+        <div
+          role="status"
+          className="text-green-700 text-sm bg-green-100 p-2 rounded"
+        >
+          {successMessage}
+        </div>
+      ) : error ? (
+        <div role="alert" className="text-red-500 text-sm bg-red-100 p-2 rounded">
           {error}
         </div>
-      )}
+      ) : null}
+
+      {isRecoveryVerified && !successMessage ? (
+        <p className="text-sm text-gray-600">
+          Reset link verified. Enter a new password below.
+        </p>
+      ) : null}
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -107,6 +163,7 @@ export default function ResetPasswordForm() {
                   <Input
                     type="email"
                     placeholder="Enter your email"
+                    readOnly={isRecoveryVerified}
                     {...field}
                   />
                 </FormControl>
@@ -168,4 +225,4 @@ export default function ResetPasswordForm() {
       </Form>
     </div>
   );
-}
+};

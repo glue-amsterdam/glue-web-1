@@ -1,12 +1,13 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
-import { Dispatch, SetStateAction, useState } from "react";
-import { useAuth } from "@/app/context/AuthContext";
+import { Suspense, useState, type Dispatch, type SetStateAction } from "react";
+import { usePathname, useRouter } from "next/navigation";import { useAuth } from "@/app/context/AuthContext";
 import { useVisitor } from "@/app/context/VisitorContext";
 import { User } from "@supabase/supabase-js";
 import LoginForm from "@/app/components/login-form/login-form";
+import { SignUpNavLink } from "@/components/sign-up/sign-up-nav-link";
 import { Link } from "next-view-transitions";
+import { fetchDashboardHomeHref } from "@/lib/users/fetch-dashboard-home";
 import { LogIn, PencilLine } from "lucide-react";
 
 export default function UserMenuItems({
@@ -47,12 +48,15 @@ export default function UserMenuItems({
     setIsLoginModalOpen(true);
   };
 
-  const handleLoginSuccess = (loggedInUser: User) => {
+  const handleLoginSuccess = async (loggedInUser: User) => {
     setIsLoginModalOpen(false);
     setMemberLoginFirst(false);
     setIsOpen(false);
     if (pathname === "/") {
-      router.push(`/dashboard/${loggedInUser.id}/user-data`);
+      const href =
+        (await fetchDashboardHomeHref()) ??
+        `/dashboard/${loggedInUser.id}/visitor-data`;
+      router.push(href);
     } else {
       router.refresh();
     }
@@ -124,14 +128,26 @@ export default function UserMenuItems({
         Log In
       </button>
 
-      <Link
-        href="/signup?step=1"
-        className="px-2 py-1 hover:bg-accent flex items-center gap-2 md:text-xs text-black"
-        onClick={() => setIsOpen(false)}
+      <Suspense
+        fallback={
+          <Link
+            href="/sign-up"
+            className="px-2 py-1 hover:bg-accent flex items-center gap-2 md:text-xs text-black"
+            onClick={() => setIsOpen(false)}
+          >
+            <PencilLine size={20} />
+            Sign Up
+          </Link>
+        }
       >
-        <PencilLine size={20} />
-        Sign Up
-      </Link>
+        <SignUpNavLink
+          className="px-2 py-1 hover:bg-accent flex items-center gap-2 md:text-xs text-black"
+          onClick={() => setIsOpen(false)}
+        >
+          <PencilLine size={20} />
+          Sign Up
+        </SignUpNavLink>
+      </Suspense>
       <LoginForm
         isOpen={isLoginModalOpen}
         memberLoginFirst={memberLoginFirst}

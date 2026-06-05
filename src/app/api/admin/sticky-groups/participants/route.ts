@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
+import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 
 export async function GET() {
   const cookieStore = await cookies();
@@ -14,35 +15,20 @@ export async function GET() {
   }
   try {
     const adminClient = await createClient();
-    const { data, error } = await adminClient.from("participant_details")
-      .select(`
-        user_id,
-        slug,
-        user_info (
-          user_name
-        )
-      `);
+    const { data, error } = await adminClient
+      .from("participant_details")
+      .select("user_id, slug, display_name");
+
     if (error) throw error;
-    // Map to { user_id, slug, name }
+
     const participants = (data || []).map(
-      (p: {
-        user_id: string;
-        slug: string;
-        user_info: { user_name: string } | { user_name: string }[] | null;
-      }) => {
-        let name = "";
-        if (Array.isArray(p.user_info)) {
-          name = p.user_info[0]?.user_name || "";
-        } else if (p.user_info) {
-          name = p.user_info.user_name;
-        }
-        return {
-          user_id: p.user_id,
-          slug: p.slug,
-          name,
-        };
-      }
+      (p: { user_id: string; slug: string; display_name: string | null }) => ({
+        user_id: p.user_id,
+        slug: p.slug,
+        name: getParticipantDisplayName(p),
+      })
     );
+
     return NextResponse.json(participants);
   } catch (err) {
     const error = err as Error;

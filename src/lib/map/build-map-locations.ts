@@ -9,13 +9,9 @@ import {
   getEligibleHubMemberIds,
   getOrderedEligibleMemberIds,
 } from "./hub-members";
+import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 import type { MapLocation, MapLocationDetailMember } from "./types";
-import { ensureArray, getAddressLine, getUserName } from "./utils";
-
-type UserInfoRow = {
-  user_id: string;
-  user_name: string;
-};
+import { ensureArray, getAddressLine } from "./utils";
 
 type ParticipantRow = {
   user_id: string;
@@ -25,7 +21,7 @@ type ParticipantRow = {
   is_active: boolean;
   was_active_last_year: boolean;
   status: string;
-  user_info: UserInfoRow | UserInfoRow[];
+  display_name: string | null;
 };
 
 type MapInfoRow = {
@@ -63,7 +59,7 @@ const buildHubMembers = (
 
     const slug = participant.slug?.trim();
     members.push({
-      name: getUserName(participant.user_info),
+      name: getParticipantDisplayName(participant),
       ...(slug ? { slug } : {}),
     });
   }
@@ -87,10 +83,7 @@ export const buildMapLocations = async (
         is_active,
         was_active_last_year,
         status,
-        user_info!inner (
-          user_id,
-          user_name
-        )
+        display_name
       `
       )
       .eq("status", "accepted"),
@@ -197,7 +190,7 @@ export const buildMapLocations = async (
       latitude: mapInfo.latitude,
       longitude: mapInfo.longitude,
       type: classifyLocationType(1, participant.special_program),
-      name: getUserName(participant.user_info),
+      name: getParticipantDisplayName(participant),
       displayNumber: participant.display_number,
       addressLine: getAddressLine(mapInfo.formatted_address),
       slug: participant.slug ?? undefined,

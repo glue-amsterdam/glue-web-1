@@ -2,8 +2,9 @@ import BigButton from '@/components/big-button';
 import BottomBlock from '@/components/bottom-block';
 import MainContainer from '@/components/main-container'
 import Separator from '@/components/separator';
+import { getParticipatePlans } from '@/lib/participate/get-participate-plans';
+import type { ParticipatePlanCard } from '@/lib/participate/types';
 
-type Props = {}
 const page_text = {
     intro: {
         title: "Become part of the GLUE design route 2026",
@@ -70,64 +71,6 @@ const page_text = {
                     { label: "Publicity; for example item in newsletter, insta post" },
                 ]
             },
-            {
-                is_selectable: true,
-                id: "small-plan",
-                plan_label: "Small",
-                plan_price: "€ 600",
-                features: [
-                    { label: "For individual designers" },
-                    { label: "Start-up discount (33%) possible for those within 5 years of graduation (€395) in this case GLUE matches the designer and the location (XSmall)." },
-                    { label: "Can be paid in 2 installments" }, {
-                        label: "GLUE provides location if needed"
-                    }
-                ]
-
-            },
-            {
-                is_selectable: true,
-                id: "medium-plan",
-                plan_label: "Medium",
-                plan_price: "€ 950",
-                features: [
-                    { label: "For design studios (2–10 fte)" },
-                    { label: "Can be paid in installments" },
-                    { label: "Opportunity to become a HUB and receive 10% of the participant fees of their HUB members" },
-                    { label: "Showrooms presenting one brand only, please select the LARGE package" }
-                ]
-            },
-            {
-                is_selectable: true,
-                id: "large-plan",
-                plan_label: "Large",
-                plan_price: "€ 1450",
-                features: [
-                    { label: "For brands with international showrooms that do not want or cannot become a HUB" }
-                ]
-            },
-            {
-                is_selectable: true,
-                id: "xlarge-plan",
-                plan_label: "XLarge",
-                plan_price: "€ 1950",
-                features: [
-                    { label: "For (design) studios, brands, labels, galleries, shops with office(s) or showroom(s) outsite the Netherlands (10+ fte)" }, {
-                        label: "Opportunity to become a HUB and geta 20% commission of the participant fees of their paying HUB participants"
-                    }
-                ]
-            },
-            {
-                is_selectable: true,
-                id: "xxlarge-plan",
-                plan_label: "XXLarge",
-                plan_price: "€ 4000",
-                features: [
-                    { label: "For designers, design labels, collective showrooms, galleries, shops, studios" },
-                    { label: "EXTRA: VIP event (dedicated Cocktail / lunch/ diner Co hosted by GLUE, start bike tour)" },
-                    { label: "interview on our socials" },
-                    { label: "GLUE flag" }
-                ]
-            }
         ]
     }
 }
@@ -150,7 +93,7 @@ const IntroCard = () => {
 
 }
 
-const BaseCard = ({ plan }: { plan: any }) => {
+const BaseCard = ({ plan }: { plan: ParticipatePlanCard }) => {
 
     return (
         <article className="main-boder-top lg:h-[480px]">
@@ -158,7 +101,7 @@ const BaseCard = ({ plan }: { plan: any }) => {
             <p className='text-[19px] leading-[26px]'>{plan?.plan_price.toUpperCase()}</p>
             <ul className='list-none pt-[40px] flex-col flex gap-[20px] max-w-[90%] lg:max-w-full lg:h-[310px] overflow-y-auto'>
                 {
-                    plan?.features.map((feature: { label: string }) => (
+                    plan?.features.map((feature) => (
                         <li className='base-text-size' key={feature.label}>- {feature.label}</li>
                     ))
                 }
@@ -167,7 +110,7 @@ const BaseCard = ({ plan }: { plan: any }) => {
                 <BigButton
                     as="link"
                     label="select plan"
-                    href={`/signup?plan=${plan.id}`}
+                    href={`/participate/apply?planId=${plan.id}`}
                     mode="big"
                 />
             </div>
@@ -176,18 +119,18 @@ const BaseCard = ({ plan }: { plan: any }) => {
 
 }
 
-const ApplicationClosed = () => {
+const ApplicationClosed = ({ message }: { message: string }) => {
     return (
-        <div>
-            <h1>Application Closed</h1>
+        <div className="base-text-size col-span-full">
+            <p>{message || "Applications are currently closed."}</p>
         </div>
     )
 }
 
 
-function Page({ }: Props) {
-    const applicationClosed = false;
-    const plansWithoutBasePlan = page_text.plans_block.plan_list.filter((plan) => plan.id !== "base-card");
+async function Page() {
+    const { applicationClosed, closedMessage, selectablePlans } =
+        await getParticipatePlans();
 
     return (
         <main id="participate-page">
@@ -240,12 +183,12 @@ function Page({ }: Props) {
                             applicationClosed ?
                                 (<>
                                     <IntroCard />
-                                    <ApplicationClosed />
+                                    <ApplicationClosed message={closedMessage} />
                                 </>)
                                 : (
                                     <>
                                         <IntroCard />
-                                        {plansWithoutBasePlan.map((plan) => (
+                                        {selectablePlans.map((plan) => (
                                             <BaseCard key={plan.id} plan={plan} />
                                         ))}
                                     </>

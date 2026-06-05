@@ -1,5 +1,9 @@
 import { config } from "@/config";
 import { EventType } from "@/schemas/eventSchemas";
+import {
+  collectOrganizerUserIds,
+  loadOrganizerProfiles,
+} from "@/lib/participants/load-organizer-profiles";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -40,13 +44,6 @@ export async function GET(request: Request) {
 
   let query = supabase.from("events").select(`
     *,
-    organizer:user_info!organizer_id (
-      user_id,
-      user_name,
-      participant_details (
-        slug
-      )
-    ),
     location:map_info!location_id (
       id,
       formatted_address
@@ -146,25 +143,17 @@ export async function GET(request: Request) {
       return event.dayId && event.dayId !== "day-off" && eventDaysMap.has(event.dayId);
     });
 
-    // Fetch co-organizers for valid events only
-    const coOrganizerPromises = validEvents.map((event) =>
-      supabase
-        .from("user_info")
-        .select(
-          `
-          user_id, 
-          user_name,
-          participant_details (
-            slug
-          )
-        `
-        )
-        .in("user_id", event.co_organizers || [])
+    const organizerProfiles = await loadOrganizerProfiles(
+      supabase,
+      collectOrganizerUserIds(validEvents)
     );
 
-    const coOrganizerResults = await Promise.all(coOrganizerPromises);
+    let enhancedEvents = validEvents.map((event) => {
+      const organizerProfile = event.organizer_id
+        ? organizerProfiles.get(event.organizer_id)
+        : undefined;
 
-    let enhancedEvents = validEvents.map((event, index) => ({
+      return {
       eventId: event.id,
       name: event.title,
       description: event.description || "",
@@ -181,25 +170,28 @@ export async function GET(request: Request) {
         alt: `${event.title} - event from GLUE design routes in ${config.cityName}`,
       },
       organizer: {
-        user_id: event.organizer?.user_id || "",
-        user_name: event.organizer?.user_name || "Unknown",
-        slug: slugFromEmbed(event.organizer?.participant_details),
+        user_id: organizerProfile?.user_id || "",
+        user_name: organizerProfile?.user_name || "Unknown",
+        slug: slugFromEmbed(organizerProfile?.participant_details),
       },
       location: {
         id: event.location?.id || "",
         formatted_address: event.location?.formatted_address || "",
       },
-      coOrganizers:
-        coOrganizerResults[index].data?.map((co) => ({
-          user_id: co.user_id || "",
-          user_name: co.user_name || "Unknown",
-          slug: slugFromEmbed(co.participant_details),
-        })) || [],
+      coOrganizers: (event.co_organizers ?? [])
+        .map((userId: string) => organizerProfiles.get(userId))
+        .filter(Boolean)
+        .map((co) => ({
+          user_id: co!.user_id,
+          user_name: co!.user_name,
+          slug: slugFromEmbed(co!.participant_details),
+        })),
       rsvp: event.rsvp ?? false,
       rsvpMessage: event.rsvp_message || "",
       rsvpLink: event.rsvp_link || "",
       createdAt: event.created_at || "",
-    }));
+    };
+    });
 
     // If there's a search term, also filter by co-organizers
     if (search) {

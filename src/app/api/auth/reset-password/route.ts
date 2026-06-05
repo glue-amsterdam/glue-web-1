@@ -1,18 +1,21 @@
-import { config } from "@/config";
-import { createClient } from "@/utils/supabase/server";
+import { sendPasswordResetEmail } from "@/lib/auth/send-password-reset-email";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const { email } = await request.json();
-  const supabase = await createClient();
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${config.baseUrl}/reset-password`,
-  });
+  if (typeof email !== "string" || !email.trim()) {
+    return NextResponse.json({ error: "Email is required" }, { status: 400 });
+  }
 
-  if (error) {
-    console.error("[reset-password] Supabase error:", error.message, error);
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  const result = await sendPasswordResetEmail(email.trim());
+
+  if (!result.ok) {
+    console.error("[reset-password] Failed to send email:", result);
+    return NextResponse.json(
+      { error: "Failed to send password reset email. Please try again." },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({ message: "Password reset email sent" });

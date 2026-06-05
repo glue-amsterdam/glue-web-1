@@ -71,10 +71,11 @@ export async function PUT(
       );
     }
 
-    // Update the user info in the database
+    const { is_mod: _isMod, ...userInfoPayload } = validatedData;
+
     const { data, error } = await supabase
       .from("user_info")
-      .update(validatedData)
+      .update(userInfoPayload)
       .eq("user_id", userId)
       .select()
       .single();

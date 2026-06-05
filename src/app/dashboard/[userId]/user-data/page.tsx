@@ -1,45 +1,42 @@
-"use client";
+import { getDashboardHomePath } from "@/lib/users/get-dashboard-home-path";
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 
-import { useDashboardContext } from "@/app/context/DashboardContext";
-import { z } from "zod";
-import useSWR from "swr";
-import { UserInfoForm } from "@/app/dashboard/[userId]/user-data/user-info-form";
-import { userInfoSchema } from "@/schemas/userInfoSchemas";
-import { PlanType } from "@/schemas/plansSchema";
-import LoadingSpinner from "@/app/components/LoadingSpinner";
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
-export default function UserDataPage() {
-  const { isMod, targetUserId } = useDashboardContext();
+export default async function UserDataLegacyRedirectPage({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}) {
+  const { userId } = await params;
+  const supabase = await createClient();
   const {
-    data: userInfo,
-    error: userError,
-    isLoading: userLoading,
-  } = useSWR<z.infer<typeof userInfoSchema>>(
-    `/api/users/participants/${targetUserId}/info`,
-    fetcher
-  );
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const {
-    data: plansData,
-    error: plansError,
-    isLoading: plansLoading,
-  } = useSWR(`/api/plans${isMod ? "?all=true" : ""}`, fetcher);
+  if (!user) {
+    redirect("/");
+  }
 
-  if (userLoading || plansLoading) return <LoadingSpinner />;
-  if (userError) return <div>Failed to load User Info data</div>;
-  if (plansError) return <div>Failed to load Plans data</div>;
-  if (!userInfo || !plansData) return <div>No data available</div>;
+  if (user.id !== userId) {
+    redirect(getDashboardHomePath(user.id, { isParticipant: true }));
+  }
 
-  const plans: PlanType[] = plansData.plans;
+  const [participantRes, userInfoRes] = await Promise.all([
+    supabase
+      .from("participant_details")
+      .select("user_id")
+      .eq("user_id", userId)
+      .maybeSingle(),
+    supabase
+      .from("user_info")
+      .select("plan_type")
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ]);
 
-  return (
-    <UserInfoForm
-      userInfo={userInfo}
-      isMod={isMod || false}
-      targetUserId={targetUserId as string}
-      plans={plans}
-    />
-  );
+  const isParticipant =
+    Boolean(participantRes.data) ||
+    userInfoRes.data?.plan_type === "participant";
+
+  redirect(getDashboardHomePath(userId, { isParticipant }));
 }

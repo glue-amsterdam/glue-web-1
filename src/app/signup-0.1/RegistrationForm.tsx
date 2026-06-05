@@ -2,9 +2,9 @@
 
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import PlanPicker from "@/app/components/signup/plan-picker";
-import FreeUserRegistration from "@/app/signup/FreeUserRegistration";
-import MemberUserRegistration from "@/app/signup/MemberUserRegistration";
-import ParticipantRegistration from "@/app/signup/ParticipantRegistration";
+import FreeUserRegistration from "@/app/signup-0.1/FreeUserRegistration";
+import MemberUserRegistration from "@/app/signup-0.1/MemberUserRegistration";
+import ParticipantRegistration from "@/app/signup-0.1/ParticipantRegistration";
 import { useToast } from "@/hooks/use-toast";
 import type { PlansArrayType } from "@/schemas/plansSchema";
 import { useRouter } from "next/navigation";

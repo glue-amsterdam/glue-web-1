@@ -16,7 +16,7 @@ import { Menu } from "lucide-react";
 import {
   ADMIN_DASHBOARD_SECTIONS,
   USER_DASHBOARD_SECTIONS,
-  VISITOR_DASHBOARD_SECTIONS,
+  VISITOR_ONLY_DASHBOARD_HREFS,
 } from "@/constants";
 import { useColors } from "@/app/context/MainContext";
 
@@ -32,7 +32,8 @@ const ACTIVE_ONLY_SECTIONS = [
 
 type DashboardMenuProps = {
   isMod?: boolean;
-  isVisitor?: boolean;
+  isParticipant?: boolean;
+  isPendingLimitedAccess?: boolean;
   userName?: string;
   targetUserId?: string;
   targetParticipantName?: string | null;
@@ -70,7 +71,8 @@ const ModifyingProfileSection = ({
 
 export default function DashboardMenu({
   isMod,
-  isVisitor = false,
+  isParticipant = false,
+  isPendingLimitedAccess = false,
   userName,
   targetUserId,
   targetParticipantName,
@@ -79,15 +81,22 @@ export default function DashboardMenu({
 }: DashboardMenuProps) {
   const { box1, box2 } = useColors();
   const filteredDashboardSections = useMemo(() => {
-    if (isVisitor) return VISITOR_DASHBOARD_SECTIONS;
     if (isMod) return USER_DASHBOARD_SECTIONS;
+
+    if (!isParticipant || isPendingLimitedAccess) {
+      return USER_DASHBOARD_SECTIONS.filter((section) =>
+        VISITOR_ONLY_DASHBOARD_HREFS.includes(
+          section.href as (typeof VISITOR_ONLY_DASHBOARD_HREFS)[number]
+        )
+      );
+    }
 
     return is_active
       ? USER_DASHBOARD_SECTIONS
       : USER_DASHBOARD_SECTIONS.filter(
           (section) => !ACTIVE_ONLY_SECTIONS.includes(section.href)
         );
-  }, [isVisitor, is_active, isMod]);
+  }, [isParticipant, isPendingLimitedAccess, is_active, isMod]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user } = useAuth();
   const { visitor } = useVisitor();

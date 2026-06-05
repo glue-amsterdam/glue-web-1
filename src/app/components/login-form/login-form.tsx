@@ -136,7 +136,7 @@ export default function LoginForm({
         return;
       }
 
-      const user = await login(data.email, data.password);
+      const { user } = await login(data.email, data.password);
       await visitorLogout();
       onClose();
       onLoginSuccess(user);

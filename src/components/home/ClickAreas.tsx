@@ -8,6 +8,7 @@ import {
   homeExitAnimation,
   HomeExitAnimationRefs,
 } from "@/lib/animations/home/home-about-exit-animation";
+import { fetchDashboardHomeHref } from "@/lib/users/fetch-dashboard-home";
 import HomeAreaButton from "./HomeAreaButton";
 
 interface ClickAreasProps {
@@ -50,9 +51,8 @@ function ClickAreas({ refs, setIsLoginModalOpen }: ClickAreasProps) {
     router.prefetch("/map");
     router.prefetch("/about");
     if (user?.id) {
-      router.prefetch(`/dashboard/${user.id}/user-data`);
-    } else if (visitor?.id) {
-      router.prefetch(`/dashboard/${visitor.id}/qr-code`);
+      router.prefetch(`/dashboard/${user.id}/visitor-data`);
+      router.prefetch(`/dashboard/${user.id}/participant-details`);
     }
 
     const handleWheel = (e: WheelEvent) => {
@@ -120,7 +120,7 @@ function ClickAreas({ refs, setIsLoginModalOpen }: ClickAreasProps) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [handleAboutNavigation, router, user?.id, visitor?.id]);
+  }, [handleAboutNavigation, router, user?.id]);
 
   return (
     <nav aria-label="Main navigation">
@@ -176,20 +176,19 @@ function ClickAreas({ refs, setIsLoginModalOpen }: ClickAreasProps) {
                         setIsLoginModalOpen(true);
                         return;
                       }
-                      const href = user
-                        ? `/dashboard/${user.id}/user-data`
-                        : visitor
-                          ? `/dashboard/${visitor.id}/qr-code`
-                          : "#";
-                      if (href !== "#") {
+                      if (!user?.id) return;
+
+                      void (async () => {
+                        const href =
+                          (await fetchDashboardHomeHref()) ??
+                          `/dashboard/${user.id}/visitor-data`;
                         document.documentElement.dataset.to = "leftButton";
-                        homeExitAnimation({
+                        await homeExitAnimation({
                           refs,
                           buttonType: "leftButton",
-                        }).then(() => {
-                          router.push(href);
                         });
-                      }
+                        router.push(href);
+                      })();
                     } else if (area.className === "upperbutton") {
                       document.documentElement.dataset.to = "upButton";
                       homeExitAnimation({ refs, buttonType: "upButton" }).then(

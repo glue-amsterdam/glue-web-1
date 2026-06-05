@@ -5,11 +5,11 @@ import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { invoiceDataTypeSchema } from "@/schemas/invoiceSchemas";
 import { loginSchemaWithEmail } from "@/schemas/loginSchema";
-import { InvoiceForm, InvoiceFormData } from "@/app/signup/InvoiceFormData";
+import { InvoiceForm, InvoiceFormData } from "@/app/signup-0.1/InvoiceFormData";
 import {
   EmailPasswordForm,
   EmailPasswordFormData,
-} from "@/app/signup/EmailPasswordForm";
+} from "@/app/signup-0.1/EmailPasswordForm";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const paidUserSchema = z

@@ -4,14 +4,10 @@ import type {
   ExhibitorsGroupedResponse,
   ExhibitorType,
 } from "./exhibitor-types";
+import { getParticipantDisplayName } from "./get-participant-display-name";
 import { getParticipantPlaceholderUrl } from "./get-participant-placeholder-url";
 
 type TourStatus = "new" | "older";
-
-type UserInfoRow = {
-  user_id: string;
-  user_name: string;
-};
 
 type ParticipantRow = {
   user_id: string;
@@ -21,7 +17,7 @@ type ParticipantRow = {
   is_active: boolean;
   was_active_last_year: boolean;
   status: string;
-  user_info: UserInfoRow | UserInfoRow[];
+  display_name: string | null;
 };
 
 type HubParticipantRow = {
@@ -44,11 +40,6 @@ type ImageRow = {
 const ensureArray = <T>(value: T | T[] | null | undefined): T[] => {
   if (!value) return [];
   return Array.isArray(value) ? value : [value];
-};
-
-const getUserName = (userInfo: UserInfoRow | UserInfoRow[]): string => {
-  const info = Array.isArray(userInfo) ? userInfo[0] : userInfo;
-  return info?.user_name ?? "Unknown User";
 };
 
 const buildImageMap = (images: ImageRow[]): Map<string, string> => {
@@ -114,7 +105,7 @@ const buildParticipantItem = (
 
   return {
     type,
-    name: getUserName(participant.user_info),
+    name: getParticipantDisplayName(participant),
     imageUrl: getImageUrl(imageMap, participant.user_id, placeholderUrl),
     displayNumber: participant.display_number,
     hubDisplayNumber: null,
@@ -171,10 +162,7 @@ export const getExhibitors = async (
         is_active,
         was_active_last_year,
         status,
-        user_info!inner (
-          user_id,
-          user_name
-        )
+        display_name
       `
       )
       .eq("status", "accepted"),

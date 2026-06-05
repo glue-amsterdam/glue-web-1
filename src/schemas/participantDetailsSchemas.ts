@@ -54,4 +54,17 @@ export const participantDetailsSchema = z.object({
     .max(10, "Display number must be less than 10 characters")
     .optional()
     .nullable(),
+  plan_id: z.string().uuid().optional().nullable(),
+  plan_type: z.string().optional().nullable(),
+  display_name: z.string().optional().nullable(),
+  phone_numbers: z.array(z.string()).optional().nullable(),
+  social_media: z.record(z.string(), z.any()).optional().nullable(),
+  visible_emails: z.array(z.string()).optional().nullable(),
+  visible_websites: z.array(z.string()).optional().nullable(),
+  glue_communication_email: z.string().email().optional().nullable(),
+  upgrade_requested: z.boolean().optional(),
+  upgrade_requested_plan_id: z.string().uuid().optional().nullable(),
+  upgrade_requested_plan_type: z.string().optional().nullable(),
+  upgrade_request_notes: z.string().optional().nullable(),
+  upgrade_requested_at: z.string().optional().nullable(),
 });

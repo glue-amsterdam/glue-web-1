@@ -10,13 +10,22 @@ import React, {
   useCallback,
 } from "react";
 import { createBrowserClient } from "@supabase/ssr";
+import type { NavbarIdentity } from "@/lib/users/get-navbar-identity";
+
+export type LoginResult = {
+  user: User;
+  dashboardHref: string | null;
+  isParticipant: boolean;
+  isVisitorOnly: boolean;
+};
 
 type AuthContextType = {
   user: User | null;
   isLoading: boolean;
+  navbarIdentity: NavbarIdentity | null;
   isLoginModalOpen: boolean;
   loginError: string | null;
-  login: (email: string, password: string) => Promise<User>;
+  login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => Promise<void>;
   openLoginModal: () => void;
   closeLoginModal: () => void;
@@ -29,6 +38,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [navbarIdentity, setNavbarIdentity] = useState<NavbarIdentity | null>(
+    null
+  );
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
@@ -49,13 +61,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         data: { subscription },
       } = supabase.auth.onAuthStateChange((event, session) => {
         setUser(session?.user ?? null);
+        if (event === "SIGNED_OUT") {
+          setNavbarIdentity(null);
+          router.refresh();
+        }
       });
 
       return () => subscription.unsubscribe();
     };
 
     initializeAuth();
-  }, [supabase.auth]);
+  }, [supabase.auth, router]);
 
   useEffect(() => {
     if (!user && !isLoading) {
@@ -71,20 +87,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const clearLoginError = useCallback(() => setLoginError(null), []);
 
   const logout = useCallback(async () => {
+    setUser(null);
+    setNavbarIdentity(null);
+
     try {
-      const response = await fetch("/api/auth/logout", { method: "POST" });
+      const [response] = await Promise.all([
+        fetch("/api/auth/logout", { method: "POST" }),
+        supabase.auth.signOut(),
+      ]);
+
       if (!response.ok) {
         throw new Error("Logout failed");
       }
-      setUser(null);
+
+      router.refresh();
       router.push("/");
     } catch (error) {
       console.error("Logout error:", error);
     }
-  }, [router]);
+  }, [router, supabase.auth]);
 
   const login = useCallback(
-    async (email: string, password: string): Promise<User> => {
+    async (email: string, password: string): Promise<LoginResult> => {
       try {
         setLoginError(null);
         const response = await fetch("/api/auth/login", {
@@ -100,13 +124,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (data.user) {
+          const identity: NavbarIdentity = {
+            isParticipant: data.isParticipant === true,
+            isVisitorOnly: data.isVisitorOnly === true,
+            dashboardHref:
+              typeof data.dashboardHref === "string" ? data.dashboardHref : null,
+          };
+
+          setNavbarIdentity(identity);
           setUser(data.user);
           closeLoginModal();
-          console.log(data.user);
-          return data.user;
-        } else {
-          throw new Error("No user returned from server");
+          router.refresh();
+          return {
+            user: data.user,
+            dashboardHref: identity.dashboardHref,
+            isParticipant: identity.isParticipant,
+            isVisitorOnly: identity.isVisitorOnly,
+          };
         }
+
+        throw new Error("No user returned from server");
       } catch (error) {
         const errorMessage =
           error instanceof Error
@@ -117,7 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     },
 
-    [closeLoginModal]
+    [closeLoginModal, router]
   );
 
   return (
@@ -125,6 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         isLoading,
+        navbarIdentity,
         isLoginModalOpen,
         loginError,
         login,

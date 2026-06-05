@@ -1,13 +1,9 @@
-import { config } from "@/config";
-import { NextResponse } from "next/server";
-import { Resend } from "resend";
-import { Webhook, WebhookVerificationError } from "standardwebhooks";
 import {
-  getEmailTemplateWithFallback,
-  processEmailTemplate,
-} from "@/utils/email-templates";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+  buildPasswordResetLink,
+  deliverPasswordResetEmail,
+} from "@/lib/auth/send-password-reset-email";
+import { NextResponse } from "next/server";
+import { Webhook, WebhookVerificationError } from "standardwebhooks";
 
 type SendEmailHookPayload = {
   user: {
@@ -60,22 +56,21 @@ export async function POST(request: Request) {
     if (email_action_type === "recovery") {
       const resetLink =
         redirect_to && token
-          ? `${redirect_to}?token=${encodeURIComponent(token)}`
+          ? buildPasswordResetLink(redirect_to, token)
           : redirect_to || "";
 
-      const template = await getEmailTemplateWithFallback("password-reset");
-      const htmlContent = processEmailTemplate(template.html_content, {
+      const result = await deliverPasswordResetEmail({
         email: user.email,
-        user_name: user.user_metadata?.user_name ?? user.email,
-        reset_link: resetLink,
+        userName: user.user_metadata?.user_name ?? user.email,
+        resetLink,
       });
 
-      await resend.emails.send({
-        from: `GLUE <${config.baseEmail}>`,
-        to: user.email,
-        subject: template.subject,
-        html: htmlContent,
-      });
+      if (!result.ok) {
+        return NextResponse.json(
+          { error: "Failed to send password reset email" },
+          { status: 500 },
+        );
+      }
     }
     // Other email_action_type values (signup, invite, etc.) can be handled here
 

@@ -17,7 +17,8 @@ const publicRoutes = [
   "/privacy-policy",
   "/imprint",
   "/newsletter",
-  "/signup",
+  "/login",
+  "/sign-up",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

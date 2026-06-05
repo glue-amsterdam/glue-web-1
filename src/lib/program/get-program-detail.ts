@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildMapLocations } from "@/lib/map/build-map-locations";
 import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
+import { loadOrganizerProfiles } from "@/lib/participants/load-organizer-profiles";
 import type { TourStatus } from "@/lib/participants/exhibitor-visibility";
 import type { EventType } from "@/schemas/eventSchemas";
 import type { ProgramDetail } from "./program-types";
@@ -17,12 +18,6 @@ import {
   slugFromEmbed,
 } from "./program-utils";
 
-type OrganizerEmbed = {
-  user_id: string;
-  user_name: string;
-  participant_details: unknown;
-};
-
 type LocationEmbed = {
   id: string;
   formatted_address: string | null;
@@ -34,14 +29,6 @@ const normalizeLocation = (
   if (!location) return null;
   if (Array.isArray(location)) return location[0] ?? null;
   return location;
-};
-
-const normalizeOrganizer = (
-  organizer: OrganizerEmbed | OrganizerEmbed[] | null | undefined
-): OrganizerEmbed | null => {
-  if (!organizer) return null;
-  if (Array.isArray(organizer)) return organizer[0] ?? null;
-  return organizer;
 };
 
 export const getProgramDetail = async (
@@ -64,18 +51,10 @@ export const getProgramDetail = async (
         end_time,
         co_organizers,
         location_id,
+        organizer_id,
         rsvp,
         rsvp_link,
         event_day_out,
-        organizer:user_info!organizer_id (
-          user_id,
-          user_name,
-          participant_details (
-            slug,
-            special_program,
-            display_number
-          )
-        ),
         location:map_info!location_id (
           id,
           formatted_address
@@ -111,27 +90,18 @@ export const getProgramDetail = async (
     throw new ProgramNotFoundError();
   }
 
-  const { data: coOrganizers, error: coOrganizerError } = await supabase
-    .from("user_info")
-    .select(
-      `
-        user_id,
-        user_name,
-        participant_details (
-          slug
-        )
-      `
-    )
-    .in("user_id", event.co_organizers || []);
-
-  if (coOrganizerError) {
-    console.error("Error fetching co-organizers:", coOrganizerError);
-    throw new Error(coOrganizerError.message);
-  }
-
-  const organizer = normalizeOrganizer(
-    event.organizer as OrganizerEmbed | OrganizerEmbed[] | null
+  const organizerUserIds = [
+    ...(event.organizer_id ? [event.organizer_id] : []),
+    ...(event.co_organizers ?? []),
+  ];
+  const organizerProfiles = await loadOrganizerProfiles(
+    supabase,
+    organizerUserIds
   );
+
+  const organizer = event.organizer_id
+    ? organizerProfiles.get(event.organizer_id)
+    : undefined;
 
   const tourStatus: TourStatus =
     currentTourStatus === "older" ? "older" : "new";
@@ -175,12 +145,14 @@ export const getProgramDetail = async (
       type: badge.type,
       displayNumber: badge.displayNumber,
     },
-    coOrganizers:
-      coOrganizers?.map((co) => ({
-        userId: co.user_id || "",
-        userName: co.user_name || "Unknown",
-        slug: slugFromEmbed(co.participant_details),
-      })) ?? [],
+    coOrganizers: (event.co_organizers ?? [])
+      .map((userId: string) => organizerProfiles.get(userId))
+      .filter(Boolean)
+      .map((co) => ({
+        userId: co!.user_id,
+        userName: co!.user_name,
+        slug: slugFromEmbed(co!.participant_details),
+      })),
     rsvp: event.rsvp ?? false,
   };
 

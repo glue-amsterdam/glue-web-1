@@ -7,14 +7,14 @@ import { useFormContext } from "react-hook-form";
 interface SaveChangesButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   isSubmitting?: boolean;
-  watchFields: string[];
+  watchFields?: string[];
   label?: string;
   isDirty?: boolean;
 }
 
 export function SaveChangesButton({
   isSubmitting,
-  watchFields,
+  watchFields = [],
   label,
   isDirty: isDirtyProp,
   ...props

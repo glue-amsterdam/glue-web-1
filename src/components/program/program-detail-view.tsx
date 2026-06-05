@@ -65,7 +65,7 @@ const ProgramDetailView = ({ event }: Props) => {
                 ) : null}
 
                 {event.rsvp && event.rsvpLink && (
-                  <div className="pt-[15px]">
+                  <div className="pt-[15px] lg:pt-[30px]">
                     <BigButton
                       as="link"
                       href={event.rsvpLink}

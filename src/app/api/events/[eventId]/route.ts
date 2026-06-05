@@ -1,4 +1,5 @@
 import { config } from "@/config";
+import { loadOrganizerProfiles } from "@/lib/participants/load-organizer-profiles";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -31,7 +32,6 @@ export async function GET(
   try {
     const supabase = await createClient();
 
-    // Fetch tour status to determine filtering logic
     const { data: tourStatus, error: tourStatusError } = await supabase
       .from("tour_status")
       .select("current_tour_status")
@@ -39,7 +39,6 @@ export async function GET(
 
     if (tourStatusError) {
       console.error("Error fetching tour status:", tourStatusError);
-      // Default to "new" if tour status fetch fails
     }
 
     const currentTourStatus = tourStatus?.current_tour_status || "new";
@@ -49,13 +48,6 @@ export async function GET(
       .select(
         `
           *,
-          organizer:user_info!organizer_id (
-            user_id,
-            user_name,
-            participant_details (
-              slug
-            )
-          ),
           location:map_info!location_id (
             id,
             formatted_address
@@ -65,9 +57,6 @@ export async function GET(
       .eq("id", eventId)
       .eq("event_day_out", false);
 
-    // Filter by tour status
-    // If "new": show only current tour events (is_last_year_event = false)
-    // If "older": show only previous tour events (is_last_year_event = true)
     if (currentTourStatus === "new") {
       eventQuery = eventQuery.eq("is_last_year_event", false);
     } else if (currentTourStatus === "older") {
@@ -85,18 +74,13 @@ export async function GET(
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    // Additional check: ensure event is not marked as day-off
     if (event.event_day_out || event.dayId === "day-off") {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    // Fetch event day separately based on tour status
-    // If "new": fetch from events_days table
-    // If "older": use snapshot from tour_status
     let eventDay = null;
     if (event.dayId) {
       if (currentTourStatus === "new") {
-        // Fetch from events_days table
         const { data: dayData, error: dayError } = await supabase
           .from("events_days")
           .select("dayId, label, date")
@@ -107,7 +91,6 @@ export async function GET(
           eventDay = { label: dayData.label, date: dayData.date };
         }
       } else if (currentTourStatus === "older") {
-        // Fetch from snapshot in tour_status
         const { data: tourStatusData, error: tourStatusError } = await supabase
           .from("tour_status")
           .select("previous_tour_event_days")
@@ -125,7 +108,6 @@ export async function GET(
       }
     }
 
-    // If event doesn't have a valid day, return 404
     if (!event.dayId || !eventDay) {
       return NextResponse.json(
         { error: "Event not found or event day is not valid" },
@@ -133,29 +115,18 @@ export async function GET(
       );
     }
 
-    // Fetch co-organizers
-    const { data: coOrganizers, error: coOrganizerError } = await supabase
-      .from("user_info")
-      .select(
-        `
-          user_id, 
-          user_name,
-          participant_details (
-            slug
-          )
-        `
-      )
-      .in("user_id", event.co_organizers || []);
+    const organizerUserIds = [
+      ...(event.organizer_id ? [event.organizer_id] : []),
+      ...(event.co_organizers ?? []),
+    ];
+    const organizerProfiles = await loadOrganizerProfiles(
+      supabase,
+      organizerUserIds
+    );
+    const organizerProfile = event.organizer_id
+      ? organizerProfiles.get(event.organizer_id)
+      : undefined;
 
-    if (coOrganizerError) {
-      console.error("Error fetching co-organizers:", coOrganizerError);
-      return NextResponse.json(
-        { error: coOrganizerError.message },
-        { status: 500 }
-      );
-    }
-
-    // Structure the event data
     const enhancedEvent = {
       eventId: event.id,
       name: event.title,
@@ -173,20 +144,22 @@ export async function GET(
         alt: `${event.title} - event from GLUE design routes in ${config.cityName}`,
       },
       organizer: {
-        user_id: event.organizer?.user_id || "",
-        user_name: event.organizer?.user_name || "Unknown",
-        slug: slugFromEmbed(event.organizer?.participant_details),
+        user_id: organizerProfile?.user_id || "",
+        user_name: organizerProfile?.user_name || "Unknown",
+        slug: slugFromEmbed(organizerProfile?.participant_details),
       },
       location: {
         id: event.location?.id || "",
         formatted_address: event.location?.formatted_address || "",
       },
-      coOrganizers:
-        coOrganizers?.map((co) => ({
-          user_id: co.user_id || "",
-          user_name: co.user_name || "Unknown",
-          slug: slugFromEmbed(co.participant_details),
-        })) || [],
+      coOrganizers: (event.co_organizers ?? [])
+        .map((userId: string) => organizerProfiles.get(userId))
+        .filter(Boolean)
+        .map((co) => ({
+          user_id: co!.user_id,
+          user_name: co!.user_name,
+          slug: slugFromEmbed(co!.participant_details),
+        })),
       rsvp: event.rsvp ?? false,
       rsvpMessage: event.rsvp_message || "",
       rsvpLink: event.rsvp_link || "",

@@ -31,10 +31,7 @@ export async function GET(request: Request) {
         status,
         is_active,
         was_active_last_year,
-        user_info!participant_details_user_id_fkey (
-          user_id,
-          user_name
-        )
+        display_name
       `
       )
       .eq("status", "accepted");

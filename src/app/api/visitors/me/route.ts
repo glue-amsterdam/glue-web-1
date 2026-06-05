@@ -1,25 +1,24 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/adminClient";
+import { getVisitorDisplayName } from "@/lib/visitor/display-name";
+import { createClient } from "@/utils/supabase/server";
 
-const visitorCookieName = "visitor_token";
-
-/**
- * Returns the current verified visitor (if any) using the HttpOnly visitor_token cookie.
- */
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(visitorCookieName)?.value;
-    if (!token?.trim()) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
       return NextResponse.json({ visitor: null });
     }
 
-    const supabase = await createAdminClient();
     const { data, error } = await supabase
       .from("visitor_data")
-      .select("id, full_name, email, email_verified")
-      .eq("visitor_token", token)
+      .select(
+        "id, email, first_name, last_name, display_name, full_name, auth_user_id"
+      )
+      .eq("auth_user_id", user.id)
       .maybeSingle();
 
     if (error) {
@@ -27,15 +26,18 @@ export async function GET() {
       return NextResponse.json({ visitor: null });
     }
 
-    if (!data || data.email_verified !== true) {
+    if (!data) {
       return NextResponse.json({ visitor: null });
     }
 
     return NextResponse.json({
       visitor: {
         id: data.id,
-        full_name: data.full_name,
+        authUserId: user.id,
         email: data.email,
+        full_name: getVisitorDisplayName(data),
+        firstName: data.first_name,
+        lastName: data.last_name,
       },
     });
   } catch (err) {

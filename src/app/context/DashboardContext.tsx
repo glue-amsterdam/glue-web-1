@@ -9,6 +9,8 @@ type DashboardContextType = {
   loggedInUserId?: string;
   loggedPlanType?: string;
   loggedPlanId?: string;
+  isPendingLimitedAccess?: boolean;
+  displayName?: string;
 };
 
 const DashboardContext = createContext<DashboardContextType | undefined>(
@@ -27,7 +29,15 @@ export const useDashboardContext = () => {
 
 export const DashboardProvider: React.FC<
   DashboardContextType & { children: React.ReactNode }
-> = ({ children, isMod, targetUserId, loggedInUserId, loggedPlanType }) => {
+> = ({
+  children,
+  isMod,
+  targetUserId,
+  loggedInUserId,
+  loggedPlanType,
+  isPendingLimitedAccess,
+  displayName,
+}) => {
   const { box3 } = useColors();
   return (
     <DashboardContext.Provider
@@ -36,6 +46,8 @@ export const DashboardProvider: React.FC<
         targetUserId,
         loggedInUserId,
         loggedPlanType,
+        isPendingLimitedAccess,
+        displayName,
       }}
     >
       <div

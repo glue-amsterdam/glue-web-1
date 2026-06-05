@@ -1,5 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildMapLocations } from "@/lib/map/build-map-locations";
+import {
+  collectOrganizerUserIds,
+  loadOrganizerProfiles,
+  type OrganizerProfile,
+} from "@/lib/participants/load-organizer-profiles";
 import type { TourStatus } from "@/lib/participants/exhibitor-visibility";
 import type { EventType } from "@/schemas/eventSchemas";
 import type { ProgramListItem } from "./program-types";
@@ -15,12 +20,6 @@ import {
   slugFromEmbed,
 } from "./program-utils";
 
-type OrganizerEmbed = {
-  user_id: string;
-  user_name: string;
-  participant_details: unknown;
-};
-
 type RawEventRow = {
   id: string;
   title: string;
@@ -31,21 +30,22 @@ type RawEventRow = {
   end_time: string | null;
   location_id: string | null;
   co_organizers: string[] | null;
-  organizer: OrganizerEmbed | OrganizerEmbed[] | null;
+  organizer_id: string | null;
 };
 
-const normalizeOrganizer = (
-  organizer: RawEventRow["organizer"]
-): OrganizerEmbed | null => {
-  if (!organizer) return null;
-  if (Array.isArray(organizer)) return organizer[0] ?? null;
-  return organizer;
-};
-
-type CoOrganizerRow = {
+const toOrganizerEmbed = (
+  profile: OrganizerProfile | undefined
+): {
   user_id: string;
   user_name: string;
-  participant_details: unknown;
+  participant_details: OrganizerProfile["participant_details"];
+} | null => {
+  if (!profile) return null;
+  return {
+    user_id: profile.user_id,
+    user_name: profile.user_name,
+    participant_details: profile.participant_details,
+  };
 };
 
 export type LoadProgramEventsOptions = {
@@ -69,15 +69,7 @@ export const loadProgramListItems = async (
     end_time,
     location_id,
     co_organizers,
-    organizer:user_info!organizer_id (
-      user_id,
-      user_name,
-      participant_details (
-        slug,
-        special_program,
-        display_number
-      )
-    )
+    organizer_id
   `);
 
   if (options.type) {
@@ -104,6 +96,10 @@ export const loadProgramListItems = async (
   }
 
   const rows = (events ?? []) as unknown as RawEventRow[];
+  const organizerProfiles = await loadOrganizerProfiles(
+    supabase,
+    collectOrganizerUserIds(rows)
+  );
 
   const uniqueDayIds = [
     ...new Set(
@@ -129,41 +125,14 @@ export const loadProgramListItems = async (
   const locations = await buildMapLocations(supabase, tourStatus);
   const badgeByLocationId = buildLocationBadgeIndex(locations);
 
-  const allCoIds = [
-    ...new Set(
-      validEvents.flatMap((event) => event.co_organizers ?? []).filter(Boolean)
-    ),
-  ];
-
-  let coOrganizerMap = new Map<string, CoOrganizerRow>();
-
-  if (allCoIds.length > 0) {
-    const { data: coOrganizers, error: coError } = await supabase
-      .from("user_info")
-      .select(
-        `
-          user_id,
-          user_name,
-          participant_details (
-            slug
-          )
-        `
-      )
-      .in("user_id", allCoIds);
-
-    if (coError) {
-      console.error("Error fetching co-organizers:", coError);
-    } else {
-      coOrganizerMap = new Map(
-        (coOrganizers ?? []).map((co) => [co.user_id, co as CoOrganizerRow])
-      );
-    }
-  }
-
   return validEvents.map((event) => {
     const dayMeta = eventDaysMap.get(event.dayId!)!;
     const coIds = event.co_organizers ?? [];
-    const organizer = normalizeOrganizer(event.organizer);
+    const organizer = toOrganizerEmbed(
+      event.organizer_id
+        ? organizerProfiles.get(event.organizer_id)
+        : undefined
+    );
     const participantDetails = organizer?.participant_details as Parameters<
       typeof organizerBadgeFieldsFromEmbed
     >[0];
@@ -201,8 +170,8 @@ export const loadProgramListItems = async (
         displayNumber: badge.displayNumber,
       },
       coOrganizers: coIds
-        .map((id) => coOrganizerMap.get(id))
-        .filter((co): co is CoOrganizerRow => Boolean(co))
+        .map((id) => organizerProfiles.get(id))
+        .filter((co): co is OrganizerProfile => Boolean(co))
         .map((co) => ({
           userId: co.user_id,
           userName: co.user_name,

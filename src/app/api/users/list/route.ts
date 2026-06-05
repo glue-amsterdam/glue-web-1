@@ -1,3 +1,4 @@
+import { createAdminClient } from "@/utils/supabase/adminClient";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -66,7 +67,6 @@ export async function GET() {
           "visible_emails",
           "glue_communication_email",
           "plan_type",
-          "is_mod",
           "created_at",
           "upgrade_requested",
           "upgrade_requested_plan_id",
@@ -93,9 +93,35 @@ export async function GET() {
       ? (users_info.filter(isUserInfo) as unknown[] as UserInfo[])
       : [];
 
+    const userIds = typedUsersInfo.map((u) => u.user_id);
+    const modByUserId = new Map<string, boolean>();
+
+    if (userIds.length > 0) {
+      const admin = await createAdminClient();
+      const { data: permissionsRows, error: permissionsError } = await admin
+        .from("user_permissions")
+        .select("user_id, is_mod")
+        .in("user_id", userIds);
+
+      if (permissionsError) {
+        throw new Error(
+          `Failed to fetch user permissions: ${permissionsError.message}`
+        );
+      }
+
+      for (const row of permissionsRows ?? []) {
+        modByUserId.set(row.user_id, row.is_mod === true);
+      }
+    }
+
+    const usersWithModFlag: UserInfo[] = typedUsersInfo.map((user) => ({
+      ...user,
+      is_mod: modByUserId.get(user.user_id) ?? false,
+    }));
+
     // Get participant details for participants only
     const participantIds =
-      typedUsersInfo
+      usersWithModFlag
         .filter((user) => user.plan_type === "participant")
         .map((user) => user.user_id) || [];
 
@@ -149,7 +175,7 @@ export async function GET() {
     }
 
     // Combine user info with participant details
-    const enrichedUsers = typedUsersInfo.map((user) => {
+    const enrichedUsers = usersWithModFlag.map((user) => {
       if (user.plan_type === "participant") {
         const participantInfo = participantDetails.find(
           (p) => p.user_id === user.user_id

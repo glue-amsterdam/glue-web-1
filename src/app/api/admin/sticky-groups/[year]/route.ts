@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { revalidateHomeStickyCache } from "@/lib/home";
+import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
 
 interface ParticipantDetail {
   user_id: string;
   slug: string;
-  user_info: { user_name: string } | { user_name: string }[] | null;
+  display_name: string | null;
 }
 
 interface ParticipantImage {
@@ -54,7 +55,7 @@ export async function GET(
     if (userIds.length > 0) {
       const { data: details, error: detailsError } = await adminClient
         .from("participant_details")
-        .select(`user_id, slug, user_info(user_name)`)
+        .select("user_id, slug, display_name")
         .in("user_id", userIds);
       if (detailsError) throw detailsError;
       // Fetch images for all participants
@@ -64,12 +65,7 @@ export async function GET(
         .in("user_id", userIds);
       if (imagesError) throw imagesError;
       participantDetails = (details as ParticipantDetail[]).map((d) => {
-        let name = "";
-        if (Array.isArray(d.user_info)) {
-          name = d.user_info[0]?.user_name || "";
-        } else if (d.user_info && typeof d.user_info === "object") {
-          name = d.user_info.user_name || "";
-        }
+        const name = getParticipantDisplayName(d);
         const image = (images as ParticipantImage[]).find(
           (img) => img.user_id === d.user_id
         );

@@ -1,4 +1,5 @@
 import { config } from "@/config";
+import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -55,10 +56,7 @@ export async function GET() {
         user_id,
         status,
         short_description,
-        user_info!participant_details_user_id_fkey (
-          user_id,
-          user_name
-        )
+        display_name
       `
       )
       .eq("status", "accepted");
@@ -94,13 +92,7 @@ export async function GET() {
       user_id: string;
       status: string;
       short_description: string | null;
-      user_info: {
-        user_id: string;
-        user_name: string;
-      } | {
-        user_id: string;
-        user_name: string;
-      }[];
+      display_name: string | null;
     };
 
     // Fetch participant images separately (no foreign key relationship exists)
@@ -125,19 +117,15 @@ export async function GET() {
 
     // Transform data for frontend
     const transformedParticipants = participants.map((participant: ParticipantData) => {
-      const userInfo = Array.isArray(participant.user_info)
-        ? participant.user_info[0]
-        : participant.user_info;
+      const userName = getParticipantDisplayName(participant);
 
       return {
         slug: participant.slug || "",
         short_description: participant.short_description || "",
-        userName: userInfo?.user_name || "Unknown User",
+        userName,
         image: {
           image_url: imageMap.get(participant.user_id) || "/placeholder.jpg",
-          alt: `${userInfo?.user_name || "Unknown User"
-            } profile image - participant from GLUE design routes in ${config.cityName
-            }`,
+          alt: `${userName} profile image - participant from GLUE design routes in ${config.cityName}`,
         },
       };
     });

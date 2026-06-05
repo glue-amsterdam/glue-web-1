@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { HomeStickyGroupData, HomeStickyParticipant } from "./types";
+import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 
 export const EMPTY_STICKY_GROUP: HomeStickyGroupData = {
   title: "",
@@ -13,19 +14,7 @@ export const EMPTY_STICKY_GROUP: HomeStickyGroupData = {
 type ParticipantDetailRow = {
   user_id: string;
   slug: string;
-  user_info: { user_name: string } | { user_name: string }[] | null;
-};
-
-const getParticipantName = (
-  userInfo: ParticipantDetailRow["user_info"]
-): string => {
-  if (Array.isArray(userInfo)) {
-    return userInfo[0]?.user_name ?? "";
-  }
-  if (userInfo && typeof userInfo === "object") {
-    return userInfo.user_name ?? "";
-  }
-  return "";
+  display_name: string | null;
 };
 
 export const fetchLatestStickyGroup = async (
@@ -102,7 +91,7 @@ export const fetchLatestStickyGroup = async (
 
   const { data: details, error: detailsError } = await supabase
     .from("participant_details")
-    .select("user_id, slug, user_info(user_name)")
+    .select("user_id, slug, display_name")
     .in("user_id", userIds);
 
   if (detailsError || !details?.length) {
@@ -135,7 +124,7 @@ export const fetchLatestStickyGroup = async (
   const participants: HomeStickyParticipant[] = (
     details as ParticipantDetailRow[]
   ).map((detail) => {
-    const name = getParticipantName(detail.user_info);
+    const name = getParticipantDisplayName(detail);
     const imageRow = images?.find((img) => img.user_id === detail.user_id);
 
     return {

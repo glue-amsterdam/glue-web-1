@@ -161,7 +161,7 @@ export default function QrCodePreview({ token }: QrCodePreviewProps) {
         aria-label="Download check-in QR as PDF"
         onClick={() => void handleDownloadPdf()}
       >
-        {isPdfSaving ? "Preparing PDF…" : "Download PDF"}
+        {isPdfSaving ? "preparing…" : "download"}
       </Button>
       {pdfError ? (
         <p className="text-center text-sm text-red-300">{pdfError}</p>

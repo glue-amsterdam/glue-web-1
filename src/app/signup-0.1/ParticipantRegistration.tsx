@@ -10,13 +10,13 @@ import {
   EmailPasswordFormData,
 } from "./EmailPasswordForm";
 import { invoiceDataTypeSchema } from "@/schemas/invoiceSchemas";
-import { MapInfoForm } from "@/app/signup/MapInfoForm";
-import { InvoiceForm, InvoiceFormData } from "@/app/signup/InvoiceFormData";
+import { MapInfoForm } from "@/app/signup-0.1/MapInfoForm";
+import { InvoiceForm, InvoiceFormData } from "@/app/signup-0.1/InvoiceFormData";
 import {
   ParticipantExtraDataForm,
   ParticipantExtraDataFormData,
   participantExtraDataSchema,
-} from "@/app/signup/ParticipantExtraData";
+} from "@/app/signup-0.1/ParticipantExtraData";
 import { MapInfo, mapInfoSchema } from "@/schemas/mapInfoSchemas";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

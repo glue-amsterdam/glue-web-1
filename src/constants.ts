@@ -17,7 +17,6 @@ import {
   UserCircle,
   Calendar,
   CalendarArrowUp,
-  UserRoundPen,
   Route,
   PencilOff,
   ChevronsLeftRightEllipsis,
@@ -34,11 +33,19 @@ import {
   QrCode,
 } from "lucide-react";
 
+/** Legacy route; redirects to participant-details or visitor-data. */
+export const DEPRECATED_DASHBOARD_HREFS = ["user-data"] as const;
+
 export const USER_DASHBOARD_SECTIONS = [
   {
-    href: `user-data`,
-    label: "User Data",
-    icon: UserRoundPen,
+    href: `visitor-data`,
+    label: "Check-in Profile",
+    icon: UserCircle,
+  },
+  {
+    href: `qr-code`,
+    label: "QR Code",
+    icon: QrCode,
   },
   {
     href: `participant-details`,
@@ -77,13 +84,8 @@ export const USER_DASHBOARD_SECTIONS = [
   },
 ];
 
-export const VISITOR_DASHBOARD_SECTIONS = [
-  {
-    href: `qr-code`,
-    label: "QR Code",
-    icon: QrCode,
-  },
-];
+/** Shown for authenticated users who are not participants (visitor-only). */
+export const VISITOR_ONLY_DASHBOARD_HREFS = ["visitor-data", "qr-code"] as const;
 
 export const ADMIN_DASHBOARD_SECTIONS = [
   {

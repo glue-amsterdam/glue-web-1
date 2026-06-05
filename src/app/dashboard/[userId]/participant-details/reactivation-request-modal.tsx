@@ -38,7 +38,7 @@ import { config } from "@/config";
 import { strToNumber } from "@/constants";
 import useSWR from "swr";
 import { PlanType } from "@/schemas/plansSchema";
-import TermsContent from "@/app/signup/components/TermsContent";
+import TermsContent from "@/app/signup-0.1/components/TermsContent";
 
 // Props for the modal
 interface ReactivationRequestModalProps {
