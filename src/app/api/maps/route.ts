@@ -1,3 +1,4 @@
+import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -38,7 +39,7 @@ export async function GET() {
     // 2. Fetch participant_details for these user_ids and filter based on tour status
     let participantQuery = supabase
       .from("participant_details")
-      .select("user_id, status, is_active")
+      .select("user_id, status, is_active, display_name")
       .in("user_id", userIds)
       .eq("status", "accepted");
 
@@ -62,24 +63,12 @@ export async function GET() {
       );
     }
 
-    // Create a set of accepted user_ids for faster lookup
-    const acceptedUserIds = new Set(participantDetails.map((p) => p.user_id));
+    const participantByUserId = new Map(
+      participantDetails.map((participant) => [participant.user_id, participant])
+    );
+    const acceptedUserIds = new Set(participantByUserId.keys());
 
-    // 3. Fetch user_info for accepted participants
-    const { data: userData, error: userError } = await supabase
-      .from("user_info")
-      .select("user_id, user_name")
-      .in("user_id", Array.from(acceptedUserIds));
-
-    if (userError) {
-      console.error("Error fetching user information:", userError);
-      return NextResponse.json(
-        { error: "Failed to fetch user information" },
-        { status: 500 }
-      );
-    }
-
-    // 4. Fetch hubs data
+    // 3. Fetch hubs data
     const { data: hubsData, error: hubsError } = await supabase
       .from("hubs")
       .select("hub_host_id, name");
@@ -96,20 +85,18 @@ export async function GET() {
     const combinedData = mapData
       .filter((mapInfo) => acceptedUserIds.has(mapInfo.user_id))
       .map((mapInfo) => {
-        const userInfo = userData.find(
-          (user) => user.user_id === mapInfo.user_id
-        );
+        const participant = participantByUserId.get(mapInfo.user_id);
         const hubInfo = hubsData.find(
           (hub) => hub.hub_host_id === mapInfo.user_id
         );
 
         return {
           ...mapInfo,
-          user_info: userInfo
-            ? {
-                user_name: hubInfo ? hubInfo.name : userInfo.user_name,
-              }
-            : null,
+          display_name: hubInfo
+            ? hubInfo.name
+            : participant
+              ? getParticipantDisplayName(participant)
+              : "Unknown User",
         };
       });
 

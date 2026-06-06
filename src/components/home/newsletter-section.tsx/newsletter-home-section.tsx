@@ -1,5 +1,5 @@
 import React from 'react'
-import TextSectionBlock from '../text-section-block'
+import TextSectionBlock from '../../text-section-block'
 
 type Props = {}
 

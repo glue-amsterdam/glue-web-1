@@ -1,4 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
+import { resolveRouteZoneName } from "@/lib/routes/resolve-route-zone-name";
 import type { MapRoute } from "./types";
 import { ensureArray, getAddressLine } from "./utils";
 
@@ -6,7 +8,8 @@ type RouteRow = {
   id: string;
   name: string;
   description: string | null;
-  zone: string;
+  route_zone_id: string | null;
+  route_zones: { name: string } | { name: string }[] | null;
 };
 
 type RouteDotRow = {
@@ -36,7 +39,9 @@ export const fetchMapRoutes = async (
   supabase: SupabaseClient
 ): Promise<MapRoute[]> => {
   const [routesResult, routeDotsResult] = await Promise.all([
-    supabase.from("routes").select("id, name, description, zone"),
+    supabase
+      .from("routes")
+      .select("id, name, description, route_zone_id, route_zones(name)"),
     supabase
       .from("route_dots")
       .select(
@@ -71,28 +76,29 @@ export const fetchMapRoutes = async (
     routeDots.filter((dot) => !dot.hub_id).map((dot) => dot.user_id)
   );
 
-  const routeDotUserInfo =
+  const routeDotParticipants =
     routeDotUserIds.size > 0
       ? await supabase
-          .from("user_info")
-          .select("user_id, user_name")
+          .from("participant_details")
+          .select("user_id, display_name")
           .in("user_id", Array.from(routeDotUserIds))
       : { data: [], error: null };
 
-  if (routeDotUserInfo.error) throw routeDotUserInfo.error;
+  if (routeDotParticipants.error) throw routeDotParticipants.error;
 
-  const userNameById = new Map<string, string>();
-  routeDotUserInfo.data?.forEach((user) => {
-    if (user.user_name) {
-      userNameById.set(user.user_id, user.user_name);
-    }
+  const displayNameById = new Map<string, string>();
+  routeDotParticipants.data?.forEach((participant) => {
+    displayNameById.set(
+      participant.user_id,
+      getParticipantDisplayName(participant)
+    );
   });
 
   return routes.map((route) => ({
     id: route.id,
     name: route.name,
     description: route.description,
-    zone: route.zone,
+    zone: resolveRouteZoneName(route.route_zones) ?? "",
     dots: routeDots
       .filter((dot) => dot.route_id === route.id)
       .map((dot) => {
@@ -101,9 +107,7 @@ export const fetchMapRoutes = async (
           ? ensureArray(dot.hubs)[0]?.name
           : undefined;
         const name =
-          hubName ??
-          userNameById.get(dot.user_id) ??
-          "Unknown";
+          hubName ?? displayNameById.get(dot.user_id) ?? "Unknown";
 
         return {
           id: dot.id,

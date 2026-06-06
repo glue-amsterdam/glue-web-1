@@ -90,10 +90,9 @@ const normalizeLegacyLocation = (location: LegacyMapInfo): MapLocation => {
     memberCount > 1;
 
   const type = legacyType(location, memberCount);
-  const members =
-    type === "hub" && isMultiMemberHub
-      ? buildLegacyHubMembers(participants)
-      : undefined;
+  const members = isMultiMemberHub
+    ? buildLegacyHubMembers(participants)
+    : undefined;
 
   return {
     id: location.id,

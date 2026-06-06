@@ -24,6 +24,8 @@ export const PlanSchema = z.object({
     .min(1, "At least one plan item is required"),
   is_participant_enabled: z.boolean(),
   order_by: z.number().int().positive(),
+  plan_max_images: z.number().int().min(0, "Must be 0 or greater"),
+  max_events: z.number().int().min(0, "Must be 0 or greater"),
 });
 
 // Schema for an array of plans

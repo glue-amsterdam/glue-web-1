@@ -6,24 +6,34 @@
   src: url("/lausanne.woff2") format("woff2");
 }
 
-/* Home page < */
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
+@layer components {
+  .mini-padding {
+    @apply pt-[15px] lg:pt-[30px];
   }
-
-  to {
-    transform: translateX(-50%);
+  .main-boder-top {
+    @apply border-t border-(--black-color) lg:border-t-2;
   }
-}
-
-.animate-marquee {
-  animation: marquee 7s linear infinite;
-}
-
-
-@layer utilities {
+  .main-boder-bottom {
+    @apply border-b border-(--black-color) lg:border-b-2;
+  }
+  .title-text {
+    @apply text-[30px] lg:text-[50px] lg:leading-[58px] leading-[38px] font-normal;
+  }
+  .cta-padding{
+    @apply pt-[160px] lg:pt-[195px];
+  }
+  .first-padding {
+    @apply pt-[146px] md:pt-[124px];
+  }
+  .main-padding {
+    @apply pt-[100px] lg:pt-[200px];
+  }
+  .base-text-size {
+    @apply text-[15px] leading-[21px] lg:text-[19px] lg:leading-[25px];
+  }
+  .mini-text-size {
+    @apply text-[10px] leading-[10px] lg:text-[15px] lg:leading-[15px];
+  }
   .text-balance {
     text-wrap: balance;
   }
@@ -36,30 +46,8 @@
   .dashboard-form-item {
     @apply bg-uiblack p-2;
   }
+ 
 }
-
-@layer components {
-  .main-boder-top {
-    @apply border-t border-(--black-color) lg:border-t-2;
-  }
-  .main-boder-bottom {
-    @apply border-b border-(--black-color) lg:border-b-2;
-  }
-  .title-text {
-    @apply text-[30px] lg:text-[50px] lg:leading-[58px] leading-[38px] font-normal;
-  }
-  .first-padding {
-    @apply pt-[146px] md:pt-[124px];
-  }
-  .main-padding {
-    @apply pt-[100px] lg:pt-[200px];
-  }
-  .base-text-size {
-    @apply text-[15px] leading-[21px] lg:text-[19px] lg:leading-[25px];
-  }
-
-}
-
 
 @layer base {
   :root {
@@ -98,114 +86,30 @@
     --site-footer-h: 65px;
     --total-nav-height: calc(var(--nav-primary-h) + var(--site-footer-h));
   }
-
-  @media (min-width: 1024px) {
-    :root {
-      --nav-primary-h: 80px;
-    }
-  }
-
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
  
 }
 
-/* STYLES FOR SANITIZED HTML (BEAUTY TEXT EDITOR) */
-.prose {
-  max-width: none;
+/* Home page < */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
 }
-/* Force black color only for elements without inline color styles */
-.prose.text-black {
-  color: black;
+
+.animate-marquee {
+  animation: marquee 7s linear infinite;
 }
-.prose.text-black *:not([style*="color"]) {
-  color: black !important;
-}
-/* All descendants of elements with inline color should inherit that color */
-/* This ensures strong, em, etc. inside colored spans keep the color */
-.prose.text-black [style*="color"] * {
-  color: inherit !important;
-}
-/* Formatting elements */
-.prose strong,
-.prose b {
-  font-weight: 600;
-}
-.prose em,
-.prose i {
-  font-style: italic;
-}
-.prose h1,
-.prose h2,
-.prose h3,
-.prose h4,
-.prose h5,
-.prose h6 {
-  font-weight: 600;
-  line-height: 1.25;
-}
+/* Home page > */
+
 
 /* MAPBOX STYLES */
 .mapboxgl-popup-content {
-  font-family: "Open Sans", sans-serif;
-  padding: 15px;
+  font-family: "Lausanne", sans-serif;
   width: fit-content;
-}
-
-.mapboxgl-popup-content h3 {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.mapboxgl-popup-content p {
-  font-size: 14px;
-  margin-bottom: 10px;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.5s ease-out forwards;
-}
-.radial-gradient-background {
-  background: #000000;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 1) 0%,
-    rgba(255, 255, 255, 0) 50%,
-    rgba(0, 0, 0, 1) 100%
-  );
 }
 
 .sidebar-overlay {
@@ -224,11 +128,6 @@
   display: none !important;
 }
 
-/* Ensure popup tip is properly styled */
-.mapboxgl-popup-tip {
-  border-top-color: white !important;
-  border-bottom-color: white !important;
-}
 
 /* No transitions on Mapbox popups — transform animation causes blur on open/move */
 .mapboxgl-popup,
@@ -258,92 +157,8 @@
   display: none !important;
 }
 
-/* Close button */
-.popup-close-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 50;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.popup-close-btn:hover {
-  background: #f0f0f0;
-}
-
-/* Loading state */
-.popup-loading {
-  height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: white;
-}
-
-/* Error state */
-.popup-error {
-  height: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  background-color: white;
-}
-
-/* Content container */
-.popup-content {
-  width: 100%;
-  overflow: hidden;
-}
-
-/* Fix for carousel navigation buttons */
-.popup-content .embla__button {
-  width: 36px !important;
-  height: 36px !important;
-  background-color: white !important;
-  border-radius: 50% !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
-  z-index: 40 !important;
-}
-
-/* Ensure popup tip is white */
-.mapboxgl-popup-tip {
-  display: none !important;
-}
-
-/* Mobile adjustments */
-@media (max-width: 640px) {
-  .popup-wrapper {
-    width: 320px;
-  }
-
-  /* Adjust carousel navigation buttons on mobile */
-  .popup-content .embla__button {
-    width: 30px !important;
-    height: 30px !important;
-  }
-}
-
-/* Custom hover effect for curated section */
-.hover\:scale-image:hover ~ div img {
-  transform: scale(1.05);
-}
-
-/* Fix for overlay scroll on desktop */
-@media (min-width: 768px) {
-  #navbar-portal-container {
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-  }
+#dashboard-layout input {
+  @apply border-b border-(--black-color) h-[40px] rounded-none shadow-none border-t-0 border-l-0 border-r-0 lg:border-b-2 focus:outline-none! focus:ring-0!;
 }
 
 

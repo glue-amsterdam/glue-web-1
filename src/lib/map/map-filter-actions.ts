@@ -1,11 +1,11 @@
 import type { MapFilters } from "@/lib/map/map-filters";
 import type { MapUrlSelection } from "@/lib/map/map-url";
 
-export const shouldClearMapSelectionForExhibitorsView = (
+export const shouldClearMapSelectionForBrowseView = (
   merged: MapFilters,
   selection?: MapUrlSelection
 ): boolean =>
-  merged.view === "exhibitors" &&
+  merged.view !== "none" &&
   !selection?.place &&
   !selection?.route;
 

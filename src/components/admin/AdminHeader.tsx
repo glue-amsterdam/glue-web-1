@@ -2,7 +2,7 @@
 import { Button } from "../ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import { StepBack } from "lucide-react";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 
 export default function AdminHeader() {
   const router = useRouter();
@@ -26,9 +26,8 @@ export default function AdminHeader() {
   return (
     <div className="container mx-auto">
       <div
-        className={`flex ${
-          isAdminMainPage ? "justify-end" : "justify-between"
-        } items-start pb-8`}
+        className={`flex ${isAdminMainPage ? "justify-end" : "justify-between"
+          } items-start pb-8`}
       >
         {!isAdminMainPage && (
           <Link

@@ -6,15 +6,14 @@ import { fetchMain } from "@/lib/main/fetch-main";
 import { getTheme } from "@/lib/theme";
 
 
-import { AuthProvider } from "@/app/context/AuthContext";
-import { VisitorProvider } from "@/app/context/VisitorContext";
+import { AppProviders } from "@/app/components/app-providers";
 import { MainContextProvider } from "./context/MainContext";
+import { getNavbarInitialIdentity } from "@/lib/users/get-navbar-initial-identity";
 
 import { Toaster } from "@/components/ui/toaster";
 
 import { CookieBanner } from "@/components/cookies/cookies-banner";
 import InternalNavigationTracker from "@/components/internal-navigation-tracker";
-import NavBar from "@/components/navbar";
 import Footer from '@/components/home/bottom-navigation/bottom-navigation';
 
 export const metadata = LayoutMetadata;
@@ -29,7 +28,8 @@ export default async function RootLayout({
   const initialData = await fetchMain();
 
   //NEW VERSION
-  const theme = await getTheme()
+  const theme = await getTheme();
+  const navbarInitialIdentity = await getNavbarInitialIdentity();
 
   return (
     <html
@@ -49,17 +49,14 @@ export default async function RootLayout({
     >
       <body className="font-lausanne bg-(--background-color)">
         <MainContextProvider initialData={initialData}>
-          <AuthProvider>
-            <VisitorProvider>
-              <InternalNavigationTracker />
-              <NavBar />
-              {children}
-              <Footer />
-              <Analytics />
-              <Toaster />
-              <CookieBanner />
-            </VisitorProvider>
-          </AuthProvider>
+          <AppProviders navbarInitialIdentity={navbarInitialIdentity}>
+            <InternalNavigationTracker />
+            {children}
+            <Footer />
+            <Analytics />
+            <Toaster />
+            <CookieBanner />
+          </AppProviders>
         </MainContextProvider>
       </body>
     </html>

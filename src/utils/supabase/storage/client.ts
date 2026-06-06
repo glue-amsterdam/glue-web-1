@@ -12,6 +12,8 @@ type UploadProps = {
   bucket: string;
   folder?: string;
   maxSizeMB?: number;
+  maxWidthOrHeight?: number;
+  onProgress?: (progress: number) => void;
 };
 
 export const uploadImage = async ({
@@ -19,6 +21,8 @@ export const uploadImage = async ({
   bucket,
   folder,
   maxSizeMB = 2,
+  maxWidthOrHeight = 1920,
+  onProgress,
 }: UploadProps) => {
   console.log("uploadImage called with:", { bucket, folder, maxSizeMB });
 
@@ -37,13 +41,20 @@ export const uploadImage = async ({
 
   try {
     file = await imageCompression(file, {
-      maxSizeMB: maxSizeMB,
+      maxSizeMB,
+      maxWidthOrHeight,
+      useWebWorker: true,
+      onProgress: (progress) => {
+        onProgress?.(Math.round(progress * 0.85));
+      },
     });
     console.log("Image compressed successfully");
   } catch (error) {
     console.error("Image compression failed:", error);
     return { imageUrl: "", error: "Image compression failed" };
   }
+
+  onProgress?.(88);
 
   const storage = getStorage();
 
@@ -64,6 +75,8 @@ export const uploadImage = async ({
     console.error("No path returned from upload");
     return { imageUrl: "", error: "No path returned from upload" };
   }
+
+  onProgress?.(95);
 
   const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${data.path}`;
   console.log("Generated image URL:", imageUrl);

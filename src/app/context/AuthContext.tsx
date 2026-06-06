@@ -73,15 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth();
   }, [supabase.auth, router]);
 
-  useEffect(() => {
-    if (!user && !isLoading) {
-      const currentPath = window.location.pathname;
-      if (currentPath.startsWith("/dashboard")) {
-        router.push(`/`);
-      }
-    }
-  }, [user, isLoading, router]);
-
   const openLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
   const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
   const clearLoginError = useCallback(() => setLoginError(null), []);

@@ -1,12 +1,19 @@
 import { getDashboardHomePath } from "@/lib/users/get-dashboard-home-path";
 import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+
+const showLegacyRedirect = true;
+
+
 
 export default async function UserDataLegacyRedirectPage({
   params,
 }: {
   params: Promise<{ userId: string }>;
 }) {
+  if (showLegacyRedirect) {
+    return notFound();
+  }
   const { userId } = await params;
   const supabase = await createClient();
   const {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useDashboardContext } from "@/app/context/DashboardContext";
+import { useAuth } from "@/app/context/AuthContext";
 import {
   FormDescription,
   FormItem,
@@ -13,10 +13,15 @@ import { useCallback, useEffect, useState } from "react";
 
 type PlatformModToggleProps = {
   targetUserId: string;
+  isMod: boolean;
 };
 
-export const PlatformModToggle = ({ targetUserId }: PlatformModToggleProps) => {
-  const { isMod, loggedInUserId } = useDashboardContext();
+export const PlatformModToggle = ({
+  targetUserId,
+  isMod,
+}: PlatformModToggleProps) => {
+  const { user } = useAuth();
+  const loggedInUserId = user?.id;
   const { toast } = useToast();
   const [isPlatformMod, setIsPlatformMod] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

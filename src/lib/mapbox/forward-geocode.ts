@@ -5,6 +5,13 @@ export type GeocodeSuggestion = {
   center: [number, number];
 };
 
+export const shortenPlaceName = (placeName: string): string => {
+  const commaIndex = placeName.indexOf(",");
+  return commaIndex === -1
+    ? placeName.trim()
+    : placeName.slice(0, commaIndex).trim();
+};
+
 export type ForwardGeocodeOptions = {
   query: string;
   limit?: number;
@@ -59,7 +66,7 @@ export const forwardGeocode = async (
   };
 
   return (data.features ?? []).map((feature) => ({
-    place_name: feature.place_name,
+    place_name: shortenPlaceName(feature.place_name),
     center: feature.center,
   }));
 };

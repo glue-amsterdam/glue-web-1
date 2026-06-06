@@ -1,3 +1,4 @@
+import { guardParticipantProfileWrite } from "@/lib/participants/guard-participant-profile-write";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -17,6 +18,9 @@ export async function PUT(
   if (!userId) {
     return NextResponse.json({ error: "User ID is required" }, { status: 400 });
   }
+
+  const denied = await guardParticipantProfileWrite(userId);
+  if (denied) return denied;
 
   try {
     const supabase = await createClient();

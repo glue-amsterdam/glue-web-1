@@ -199,6 +199,8 @@ export default function PlansList({ initialPlans }: PlansListProps) {
             <TableHead>Order</TableHead>
             <TableHead>Label</TableHead>
             <TableHead>Type</TableHead>
+            <TableHead>Max images</TableHead>
+            <TableHead>Max events</TableHead>
             <TableHead>Allowed</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -231,6 +233,8 @@ export default function PlansList({ initialPlans }: PlansListProps) {
                   {plan.plan_type}
                 </Badge>
               </TableCell>
+              <TableCell>{plan.plan_max_images}</TableCell>
+              <TableCell>{plan.max_events ?? 0}</TableCell>
               <TableCell>
                 <div className="flex items-center space-x-2">
                   <Switch

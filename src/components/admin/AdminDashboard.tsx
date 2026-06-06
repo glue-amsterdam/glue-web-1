@@ -1,4 +1,5 @@
-import { Link } from "next-view-transitions";
+import Link from "next/link";
+
 
 const adminSections = [
   { name: "Tour Management", href: "/admin/tour-management" },

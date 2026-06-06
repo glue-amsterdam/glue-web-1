@@ -8,20 +8,22 @@ import {
   useFormContext,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { forwardGeocode } from "@/lib/mapbox/forward-geocode";
-import { MapInfo, mapInfoSchema } from "@/schemas/mapInfoSchemas";
+import {
+  MapInfo,
+  MapInfoInput,
+  mapInfoSchema,
+} from "@/schemas/mapInfoSchemas";
 import { createSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
-import { config } from "@/config";
-import { strToNumber } from "@/constants";
+import { ParticipantSection } from "@/app/dashboard/[userId]/participant-details/participant-section";
+import Separator from "@/components/separator";
+import { AddressAutocompleteField } from "@/components/map/address-autocomplete-field";
 
 interface MapInfoFormProps {
   initialData: MapInfo | { error: string } | undefined;
@@ -29,47 +31,8 @@ interface MapInfoFormProps {
 }
 
 function FormFields() {
-  const { control, watch, setValue } = useFormContext<MapInfo>();
-  const [suggestions, setSuggestions] = useState<
-    Array<{ place_name: string; center: [number, number] }>
-  >([]);
-
-  const westLimit = strToNumber(config.cityBoundWest);
-  const southLimit = strToNumber(config.cityBoundSouth);
-  const eastLimit = strToNumber(config.cityBoundEast);
-  const northLimit = strToNumber(config.cityBoundNorth);
-
-  const centerLng = strToNumber(config.cityCenterLng);
-  const centerLat = strToNumber(config.cityCenterLat);
-
+  const { control, watch, setValue } = useFormContext<MapInfoInput>();
   const noAddress = watch("no_address");
-
-  const handleAddressChange = async (input: string) => {
-    if (input.length > 2) {
-      const features = await forwardGeocode({
-        query: input,
-        limit: 5,
-        countries: [config.countryPreFix],
-        types: ["address"],
-        bbox: [westLimit, southLimit, eastLimit, northLimit],
-        proximity: [centerLng, centerLat],
-      });
-
-      setSuggestions(features);
-    } else {
-      setSuggestions([]);
-    }
-  };
-
-  const handleSuggestionSelect = (suggestion: {
-    place_name: string;
-    center: [number, number];
-  }) => {
-    setValue("formatted_address", suggestion.place_name);
-    setValue("latitude", suggestion.center[1]);
-    setValue("longitude", suggestion.center[0]);
-    setSuggestions([]);
-  };
 
   useEffect(() => {
     if (noAddress) {
@@ -85,7 +48,7 @@ function FormFields() {
         name="no_address"
         control={control}
         render={({ field }) => (
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 mini-padding">
             <Checkbox
               id="no_address"
               checked={field.value || false}
@@ -99,45 +62,14 @@ function FormFields() {
       />
 
       {!noAddress && (
-        <div>
-          <Label htmlFor="address">{`Location to present during GLUE`}</Label>
-          <Controller
-            name="formatted_address"
-            control={control}
-            render={({ field }) => (
-              <div>
-                <Input
-                  id="address"
-                  onChange={(e) => {
-                    field.onChange(e);
-                    handleAddressChange(e.target.value);
-                  }}
-                  onBlur={field.onBlur}
-                  value={field.value || ""}
-                  name={field.name}
-                  ref={field.ref}
-                  placeholder={`Start typing an address in ${config.cityName}`}
-                />
-              </div>
-            )}
-          />
-          {suggestions.length > 0 && (
-            <ul className="mt-2 bg-white border border-gray-300 rounded-md shadow-sm">
-              {suggestions.map((suggestion, index) => (
-                <li
-                  key={index}
-                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => handleSuggestionSelect(suggestion)}
-                >
-                  {suggestion.place_name}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <AddressAutocompleteField
+          control={control}
+          setValue={setValue}
+          className="mini-padding"
+        />
       )}
 
-      <div>
+      <div className="mini-padding">
         <Label htmlFor="exhibition_space_preference">
           What sort of exhibition space would you like to have?
         </Label>
@@ -165,7 +97,7 @@ export function MapInfoForm({ initialData, targetUserId }: MapInfoFormProps) {
   const { toast } = useToast();
   const router = useRouter();
 
-  const form = useForm<MapInfo>({
+  const form = useForm<MapInfoInput, unknown, MapInfo>({
     resolver: zodResolver(mapInfoSchema),
     defaultValues: {
       user_id: targetUserId,
@@ -182,10 +114,10 @@ export function MapInfoForm({ initialData, targetUserId }: MapInfoFormProps) {
   });
 
   useEffect(() => {
-    form.reset(initialData as MapInfo);
-  }, [initialData, form]);
-
-  form.setValue("user_id", targetUserId);
+    if (!isError && initialData) {
+      form.reset({ ...(initialData as MapInfo), user_id: targetUserId });
+    }
+  }, [form, initialData, isError, targetUserId]);
 
   const onSubmit = createSubmitHandler<MapInfo>(
     `/api/users/participants/${targetUserId}/map-info`,
@@ -210,7 +142,7 @@ export function MapInfoForm({ initialData, targetUserId }: MapInfoFormProps) {
 
   const handleSubmit = async (values: MapInfo) => {
     setIsSubmitting(true);
-    await onSubmit({ ...values, user_id: targetUserId! });
+    await onSubmit({ ...values, user_id: targetUserId });
     setIsSubmitting(false);
   };
 
@@ -219,22 +151,21 @@ export function MapInfoForm({ initialData, targetUserId }: MapInfoFormProps) {
   } = form;
 
   return (
-    <FormProvider {...form}>
-      <Card className="w-full max-w-[80%] mx-auto">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Map Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
+    <div className="px-[30px] mini-padding">
+      <h1 className="title-text">Map Information</h1>
+      <Separator />
+      <FormProvider {...form}>
+        <form
+          onSubmit={form.handleSubmit(handleSubmit)}
+          className="space-y-6"
+        >
+          <ParticipantSection title="Location & exhibition space">
             <input type="hidden" {...form.register("user_id")} />
             <FormFields />
             {errors.user_id && (
               <p className="text-red-500">{errors.user_id.message}</p>
             )}
-            <div className="flex justify-between pt-6">
+            <div className="flex justify-center mini-padding">
               <SaveChangesButton
                 watchFields={[
                   "formatted_address",
@@ -245,15 +176,15 @@ export function MapInfoForm({ initialData, targetUserId }: MapInfoFormProps) {
                 ]}
                 isSubmitting={isSubmitting}
                 label={
-                  initialData
+                  !isError && initialData
                     ? "Update map information"
                     : "Save map information"
                 }
               />
             </div>
-          </form>
-        </CardContent>
-      </Card>
-    </FormProvider>
+          </ParticipantSection>
+        </form>
+      </FormProvider>
+    </div>
   );
 }

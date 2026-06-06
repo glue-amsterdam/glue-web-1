@@ -49,7 +49,7 @@ function BottomFooter() {
     const pathname = usePathname();
     const isHome = pathname === '/';
     return (
-        <footer id='footer' className={`main-padding ${isHome ? 'pb-(--nav-secondary-h-mobile)' : ''}`}>
+        <footer id='footer' className={`main-padding ${isHome ? 'lg:pb-(--nav-secondary-h-mobile)' : ''}`}>
             <section className="bg-(--black-color) p-[20px] lg:p-[60px] text-(--white-color)">
                 <div className='grid grid-cols-3 gap-x-[36px] gap-y-[15px] lg:hidden'>
                     {mobileColumns.map((item) => (

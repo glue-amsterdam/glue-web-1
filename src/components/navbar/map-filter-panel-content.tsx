@@ -62,8 +62,8 @@ export const MapFilterPanelContent = ({
           locations={mapPageStore.filteredLocationsForList}
           selectedLocation={mapPageStore.selectedLocation}
           onLocationSelect={onExhibitorListSelect}
+          categoryType={filters.type}
           variant={variant}
-          showHubMembers={filters.type === "hub"}
         />
         {showRoutesInSearch && (
           <div className="flex flex-col gap-[15px] border-t border-(--black-color) pt-[20px]">

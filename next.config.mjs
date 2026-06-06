@@ -2,6 +2,40 @@
 const nextConfig = {
   reactStrictMode: true,
   allowedDevOrigins: ["favored-selenitic-vincenzo.ngrok-free.dev"],
+  async redirects() {
+    return [
+      {
+        source: "/dashboard/:userId/create-events",
+        destination: "/dashboard/:userId/events/new",
+        permanent: true,
+      },
+      {
+        source: "/dashboard/:userId/your-events",
+        destination: "/dashboard/:userId/events",
+        permanent: true,
+      },
+      {
+        source: "/dashboard/:userId/hub-create",
+        destination: "/dashboard/:userId/hubs/new",
+        permanent: true,
+      },
+      {
+        source: "/dashboard/:userId/hub-edit",
+        destination: "/dashboard/:userId/hubs",
+        permanent: true,
+      },
+      {
+        source: "/dashboard/:userId/create-route",
+        destination: "/dashboard/:userId/routes/new",
+        permanent: true,
+      },
+      {
+        source: "/dashboard/:userId/edit-routes",
+        destination: "/dashboard/:userId/routes",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

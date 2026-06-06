@@ -238,14 +238,17 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 export const RichTextEditor = ({
   value,
   onChange,
+  readOnly = false,
 }: {
   value: string;
   onChange: (content: string) => void;
+  readOnly?: boolean;
 }) => {
   const [isMounted, setIsMounted] = useState(false);
 
   const editor = useEditor({
     immediatelyRender: false,
+    editable: !readOnly,
     extensions: [
       StarterKit,
       Link.configure({
@@ -279,6 +282,12 @@ export const RichTextEditor = ({
     }
   }, [editor, value]);
 
+  useEffect(() => {
+    if (editor) {
+      editor.setEditable(!readOnly);
+    }
+  }, [editor, readOnly]);
+
   if (!isMounted) {
     return null;
   }
@@ -297,7 +306,7 @@ export const RichTextEditor = ({
           }
         `
       }} />
-      {editor && <MenuBar editor={editor} />}
+      {editor && !readOnly && <MenuBar editor={editor} />}
       <EditorContent editor={editor} />
     </div>
   );

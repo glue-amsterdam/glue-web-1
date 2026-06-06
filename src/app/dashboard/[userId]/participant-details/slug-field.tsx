@@ -14,14 +14,14 @@ import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
-export function SlugField() {
+export function SlugField({ readOnly = false }: { readOnly?: boolean }) {
   const { control, setError, clearErrors } =
     useFormContext<ParticipantDetails>();
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [isSlugUnique, setIsSlugUnique] = useState<boolean | null>(null);
 
   const checkSlugUniqueness = useDebouncedCallback(async (slug: string) => {
-    if (!slug) {
+    if (readOnly || !slug) {
       setIsSlugUnique(null);
       return;
     }
@@ -54,13 +54,14 @@ export function SlugField() {
       control={control}
       name="slug"
       render={({ field }) => (
-        <FormItem>
-          <FormLabel>Slug</FormLabel>
+        <FormItem className="mini-padding">
+          <FormLabel>Slug (URL), example: <span className="text-xs text-gray-500">https://example.com/exhibitors/your-slug</span></FormLabel>
           <div className="relative">
             <FormControl>
               <Input
                 {...field}
-                className="bg-white text-black pr-10"
+                disabled={readOnly}
+                className="bg-(--white-color) text-(--black-color) pr-10 disabled:opacity-60"
                 onChange={(e) => {
                   // Remove whitespace and convert to lowercase
                   const cleanValue = e.target.value

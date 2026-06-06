@@ -1,4 +1,6 @@
+import { TERMS_CACHE_TAG } from "@/lib/terms/get-cached-terms";
 import { createClient } from "@/utils/supabase/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -62,21 +64,29 @@ export async function PUT(request: Request) {
         .single();
 
       if (error) throw error;
-      return NextResponse.json(data);
-    } else {
-      // Insert new record
-      const { data, error } = await supabase
-        .from("terms_and_conditions")
-        .insert({
-          content: validatedData.content,
-          updated_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
+      revalidateTag(TERMS_CACHE_TAG, "max");
+      revalidatePath("/terms-and-conditions");
+      revalidatePath("/sign-up");
+      revalidatePath("/participate/apply");
       return NextResponse.json(data);
     }
+
+    // Insert new record
+    const { data, error } = await supabase
+      .from("terms_and_conditions")
+      .insert({
+        content: validatedData.content,
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    revalidateTag(TERMS_CACHE_TAG, "max");
+    revalidatePath("/terms-and-conditions");
+    revalidatePath("/sign-up");
+    revalidatePath("/participate/apply");
+    return NextResponse.json(data);
   } catch (error) {
     console.error("Error in PUT /api/admin/terms:", error);
     if (error instanceof z.ZodError) {

@@ -93,7 +93,9 @@ const IntroCard = () => {
 
 }
 
-const BaseCard = ({ plan }: { plan: ParticipatePlanCard }) => {
+const BaseCard = ({ plan, intent }: { plan: ParticipatePlanCard; intent?: string }) => {
+    const intentQuery =
+        intent === "reactivation" ? "&intent=reactivation" : "";
 
     return (
         <article className="main-boder-top lg:h-[480px]">
@@ -110,7 +112,7 @@ const BaseCard = ({ plan }: { plan: ParticipatePlanCard }) => {
                 <BigButton
                     as="link"
                     label="select plan"
-                    href={`/participate/apply?planId=${plan.id}`}
+                    href={`/participate/apply?planId=${plan.id}${intentQuery}`}
                     mode="big"
                 />
             </div>
@@ -128,13 +130,18 @@ const ApplicationClosed = ({ message }: { message: string }) => {
 }
 
 
-async function Page() {
+async function Page({
+    searchParams,
+}: {
+    searchParams: Promise<{ intent?: string }>;
+}) {
+    const { intent } = await searchParams;
     const { applicationClosed, closedMessage, selectablePlans } =
         await getParticipatePlans();
 
     return (
         <main id="participate-page">
-            <MainContainer className='pt-[160px] lg:pt-[195px]'>
+            <MainContainer className='cta-padding'>
                 <section id='participate-intro-section'>
                     <h1 className='title-text'>{page_text.intro.title}</h1>
                     <p className='pt-[40px] base-text-size lg:max-w-(--paragraph-max-width)'>{page_text.intro.description}</p>
@@ -189,7 +196,7 @@ async function Page() {
                                     <>
                                         <IntroCard />
                                         {selectablePlans.map((plan) => (
-                                            <BaseCard key={plan.id} plan={plan} />
+                                            <BaseCard key={plan.id} plan={plan} intent={intent} />
                                         ))}
                                     </>
                                 )}

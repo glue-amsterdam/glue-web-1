@@ -5,6 +5,7 @@ import Image from "next/image";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useCyclicIndex } from "@/hooks/useCyclicIndex";
 import { buildExhibitorFooterSlides } from "@/lib/map/exhibitor-footer-slides";
+import { isMapHubEntity } from "@/lib/map/map-location-display";
 import { buildGoogleMapsSearchUrl } from "@/lib/map/utils";
 import type { MapLocation, MapTourMode } from "@/lib/map/types";
 import { useMapLocationDetail } from "../hooks/use-map-location-detail";
@@ -48,9 +49,9 @@ const ExhibitorFooter = ({
 
     const currentSlide = slides[currentIndex] ?? slides[0];
 
-    const isHub = location.type === "hub";
+    const isHubEntity = isMapHubEntity(location);
 
-    const displayName = isHub ? location.name : currentSlide.name;
+    const displayName = isHubEntity ? location.name : currentSlide.name;
 
     const handleGoogleMapsRedirect = useCallback(() => {
         window.open(buildGoogleMapsSearchUrl(location), "_blank");
@@ -86,7 +87,7 @@ const ExhibitorFooter = ({
                                 </button>
                             </div>
                             <div className="pt-[15px] pl-[4px]">
-                                {isHub ? (
+                                {isHubEntity ? (
                                     <p>{currentSlide.name}</p>
                                 ) : (
                                     <p>{location.addressLine}</p>

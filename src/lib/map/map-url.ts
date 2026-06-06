@@ -5,7 +5,12 @@ import {
   type MapViewMode,
 } from "@/lib/map/map-filters";
 
-const VALID_VIEWS: MapViewMode[] = ["none", "exhibitors", "routes"];
+const VALID_VIEWS: MapViewMode[] = [
+  "none",
+  "exhibitors",
+  "routes",
+  "category",
+];
 
 const VALID_TYPES: ExhibitorsFilterType[] = [
   "all",

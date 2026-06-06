@@ -1,5 +1,9 @@
+import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
+import { requirePlatformMod } from "@/lib/permissions/require-platform-mod";
+import { resolveRouteZoneName } from "@/lib/routes/resolve-route-zone-name";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 export async function GET(
   req: Request,
@@ -22,7 +26,8 @@ export async function GET(
         id,
         name,
         description,
-        zone,
+        route_zone_id,
+        route_zones(name),
         route_dots (
           id,
           route_step,
@@ -63,23 +68,36 @@ export async function GET(
       );
     }
 
-    // Fetch user_info data
-    const { data: userInfoData, error: userInfoError } = await supabase
-      .from("user_info")
-      .select("user_id, user_name");
+    const routeDotUserIds = [
+      ...new Set(
+        routeData.route_dots
+          .filter((dot) => !dot.hub_id)
+          .map((dot) => dot.user_id)
+      ),
+    ];
 
-    if (userInfoError) {
-      console.error("Error fetching user info:", userInfoError);
+    const { data: participantData, error: participantError } =
+      routeDotUserIds.length > 0
+        ? await supabase
+            .from("participant_details")
+            .select("user_id, display_name")
+            .in("user_id", routeDotUserIds)
+        : { data: [], error: null };
+
+    if (participantError) {
+      console.error("Error fetching participant details:", participantError);
       return NextResponse.json(
-        { error: "Failed to fetch user info" },
+        { error: "Failed to fetch participant details" },
         { status: 500 }
       );
     }
 
-    // Create maps for quick lookup
     const hubMap = new Map(hubsData.map((hub) => [hub.id, hub.name]));
-    const userMap = new Map(
-      userInfoData.map((user) => [user.user_id, user.user_name])
+    const displayNameById = new Map(
+      (participantData ?? []).map((participant) => [
+        participant.user_id,
+        getParticipantDisplayName(participant),
+      ])
     );
 
     // Process route_dots to add route_dot_name
@@ -87,16 +105,19 @@ export async function GET(
       ...dot,
       route_dot_name: dot.hub_id
         ? hubMap.get(dot.hub_id) || "Unknown Hub"
-        : userMap.get(dot.user_id) || "Unknown User",
+        : displayNameById.get(dot.user_id) || "Unknown User",
     }));
 
     // Create the final processed data
     const processedData = {
       ...routeData,
+      zone: resolveRouteZoneName(routeData.route_zones),
       route_dots: processedRouteDots,
     };
 
-    return NextResponse.json(processedData);
+    const { route_zones: _routeZones, ...responseData } = processedData;
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error("Error in GET route:", error);
     return NextResponse.json(
@@ -117,11 +138,35 @@ export async function PUT(
       return NextResponse.json({ error: "Invalid route ID" }, { status: 400 });
     }
 
+    const modCheck = await requirePlatformMod();
+    if (!modCheck.ok) {
+      return modCheck.response;
+    }
+
     const supabase = await createClient();
     const body = await req.json();
-    const { name, description, zone, route_dots } = body;
+    const { name, description, route_zone_id, route_dots } = body;
 
-    console.log("Received data:", { route_dots, zone, name, description });
+    if (!route_zone_id || typeof route_zone_id !== "string") {
+      return NextResponse.json({ error: "Invalid route zone" }, { status: 400 });
+    }
+
+    const zoneParse = z.string().uuid().safeParse(route_zone_id);
+    if (!zoneParse.success) {
+      return NextResponse.json({ error: "Invalid route zone" }, { status: 400 });
+    }
+
+    const { data: zoneRow, error: zoneError } = await supabase
+      .from("route_zones")
+      .select("id")
+      .eq("id", route_zone_id)
+      .maybeSingle();
+
+    if (zoneError || !zoneRow) {
+      return NextResponse.json({ error: "Invalid route zone" }, { status: 400 });
+    }
+
+    console.log("Received data:", { route_dots, route_zone_id, name, description });
 
     // Check if route_dots is undefined or not an array
     if (!route_dots || !Array.isArray(route_dots)) {
@@ -131,20 +176,13 @@ export async function PUT(
       );
     }
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Update the route
     const { data: routeData, error: routeError } = await supabase
       .from("routes")
       .update({
         name,
         description,
-        zone,
+        route_zone_id,
       })
       .eq("id", id)
       .select()
@@ -242,14 +280,12 @@ export async function DELETE(
       return NextResponse.json({ error: "Invalid route ID" }, { status: 400 });
     }
 
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const modCheck = await requirePlatformMod();
+    if (!modCheck.ok) {
+      return modCheck.response;
     }
+
+    const supabase = await createClient();
 
     // Delete the route
     const { error: deleteError } = await supabase

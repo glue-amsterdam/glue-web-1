@@ -41,12 +41,12 @@ import type { RouteStopDisplay } from "@/lib/map/route-stop-display";
 import {
   buildLocationsGeoJSON,
   buildRouteStopsGeoJSON,
-  DEFAULT_MAP_THEME_COLORS,
   getMapThemeColorsFromDocument,
   type MapThemeColors,
 } from "@/lib/map/locations-geojson";
 import RoutePopup from "./route-popup";
 import {
+  MapMarkerImagesRegistrar,
   MapPointLayers,
   EXHIBITOR_STACK_TYPES,
   MAP_LOCATIONS_LAYER_PREFIX,
@@ -157,8 +157,9 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
   }
 
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [themeColors, setThemeColors] = useState<MapThemeColors>(
-    DEFAULT_MAP_THEME_COLORS
+  const [markerImagesReady, setMarkerImagesReady] = useState(false);
+  const [themeColors, setThemeColors] = useState<MapThemeColors>(() =>
+    getMapThemeColorsFromDocument()
   );
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
@@ -167,10 +168,6 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     useState<ExhibitorPopupLayoutState | null>(null);
   const [routePopupLayout, setRoutePopupLayout] =
     useState<ExhibitorPopupLayoutState | null>(null);
-
-  useEffect(() => {
-    setThemeColors(getMapThemeColorsFromDocument());
-  }, []);
 
   const locationsGeoJSON = useMemo(
     () => buildLocationsGeoJSON(locations, themeColors),
@@ -576,6 +573,11 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
       {/* Zoom controls disabled for now, but can be added back in if needed */}
       {/* <NavigationControl /> */}
 
+      <MapMarkerImagesRegistrar
+        colors={themeColors}
+        onReadyChange={setMarkerImagesReady}
+      />
+
       {!selectedRoute && (
         <MapPointLayers
           sourceId={MAP_LOCATIONS_SOURCE_ID}
@@ -583,6 +585,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
           stackTypes={EXHIBITOR_STACK_TYPES}
           data={locationsGeoJSON}
           colors={themeColors}
+          markerImagesReady={markerImagesReady}
           showPointerCursor
         />
       )}
@@ -606,6 +609,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
             stackTypes={ROUTE_STOP_STACK_TYPES}
             data={routeStopsGeoJSON}
             colors={themeColors}
+            markerImagesReady={markerImagesReady}
             showPointerCursor
           />
         </>

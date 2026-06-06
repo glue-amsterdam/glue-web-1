@@ -1,138 +1,256 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { ImageIcon } from "lucide-react";
+import { Plus } from "lucide-react";
 import { uploadImage, deleteImage } from "@/utils/supabase/storage/client";
 import { useToast } from "@/hooks/use-toast";
 import { config } from "@/config";
 import Image from "next/image";
 
-const imageSchema = z.object({
-  id: z.string().optional(),
-  image_url: z.string().url(),
-});
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
+
+type ProfileImage = {
+  id: string;
+  image_url: string;
+};
+
+type UploadStage = "compressing" | "uploading" | "saving";
+
+type UploadState = {
+  stage: UploadStage;
+  progress: number;
+};
+
+const getStageLabel = (stage: UploadStage): string => {
+  switch (stage) {
+    case "compressing":
+      return "Compressing image…";
+    case "uploading":
+      return "Uploading…";
+    case "saving":
+      return "Saving…";
+  }
+};
+
+const ImageUploadOverlay = ({
+  stage,
+  progress,
+}: {
+  stage: UploadStage;
+  progress: number;
+}) => {
+  const label = getStageLabel(stage);
+
+  return (
+    <div
+      className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/60 px-4"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <p className="text-sm font-medium text-white">{label}</p>
+      <div className="w-full max-w-xs">
+        <div
+          role="progressbar"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={label}
+          className="h-2 w-full overflow-hidden rounded-full bg-white/30"
+        >
+          <div
+            className="h-full rounded-full bg-white transition-all duration-300 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <p className="mt-1 text-center text-xs text-white/80">{progress}%</p>
+      </div>
+    </div>
+  );
+};
+
+const ProfileImageCard = ({
+  image,
+  index,
+  readOnly,
+  isDeleting,
+  onDelete,
+}: {
+  image: ProfileImage;
+  index: number;
+  readOnly: boolean;
+  isDeleting: boolean;
+  onDelete: (index: number) => void;
+}) => (
+  <div className="border-2 p-4">
+    <div className="relative mb-2 h-60 w-full overflow-hidden">
+      <Image
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        fill
+        src={image.image_url}
+        alt={`Profile image ${index + 1}`}
+        className="object-cover"
+      />
+      {isDeleting && (
+        <div
+          className="absolute inset-0 z-10 flex items-center justify-center bg-black/60"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <p className="text-sm font-medium text-white">Deleting…</p>
+        </div>
+      )}
+    </div>
+    {!readOnly && (
+      <Button
+        type="button"
+        variant="destructive"
+        onClick={() => onDelete(index)}
+        className="w-full"
+        disabled={isDeleting}
+      >
+        {isDeleting ? "Deleting…" : "Delete Image"}
+      </Button>
+    )}
+  </div>
+);
+
+const AddImageCard = ({
+  uploadState,
+  disabled,
+  onClick,
+}: {
+  uploadState: UploadState | null;
+  disabled: boolean;
+  onClick: () => void;
+}) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (disabled || uploadState) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
+  return (
+    <div
+      role="button"
+      tabIndex={disabled || uploadState ? -1 : 0}
+      aria-label="Add profile image"
+      aria-disabled={disabled || Boolean(uploadState)}
+      onClick={() => {
+        if (disabled || uploadState) return;
+        onClick();
+      }}
+      onKeyDown={handleKeyDown}
+      className="relative flex h-full min-h-74 cursor-pointer flex-col border-2 p-4 transition-colors hover:border-foreground/40 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
+    >
+      <div className="relative flex h-60 w-full flex-col items-center justify-center gap-2 rounded-md bg-muted/20">
+        <Plus className="h-10 w-10 text-muted-foreground" aria-hidden="true" />
+        <span className="text-sm font-medium text-muted-foreground">
+          Add image
+        </span>
+        {uploadState && (
+          <ImageUploadOverlay
+            stage={uploadState.stage}
+            progress={uploadState.progress}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
 
 interface ProfileImageFormProps {
   targetUserId: string;
   initialImages: { id: string; image_url: string }[];
-  planId: string;
+  planMaxImages: number;
+  readOnly?: boolean;
 }
 
 export function ProfileImageForm({
   targetUserId,
   initialImages,
-  planId,
+  planMaxImages,
+  readOnly = false,
 }: ProfileImageFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [uploadState, setUploadState] = useState<UploadState | null>(null);
+  const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
   const { toast } = useToast();
-  const [currentImages, setCurrentImages] = useState(initialImages);
 
-  const getMaxImages = (planId: string) => {
-    if (planId === "planId-0" || planId === "planId-1") return 0;
-    if (planId === "planId-2") return 1;
-    if (planId === "planId-3") return 2;
-    return 3;
+  const uploadLimit = planMaxImages;
+  const maxImages = readOnly
+    ? Math.max(uploadLimit, initialImages.length)
+    : uploadLimit;
+
+  const [images, setImages] = useState<ProfileImage[]>(initialImages);
+
+  useEffect(() => {
+    if (readOnly) return;
+
+    if (initialImages.length > maxImages) {
+      setImages(initialImages.slice(0, maxImages));
+    }
+  }, [initialImages, maxImages, readOnly]);
+
+  const handleUploadProgress = (progress: number) => {
+    if (progress <= 85) {
+      setUploadState({ stage: "compressing", progress: Math.max(5, progress) });
+      return;
+    }
+
+    setUploadState({ stage: "uploading", progress });
   };
 
-  const maxImages = getMaxImages(planId);
-
-  const formSchema = z.object({
-    images: z
-      .array(imageSchema)
-      .max(
-        maxImages,
-        `You can only upload up to ${maxImages} image${maxImages > 1 ? "s" : ""
-        }`
-      ),
-  });
-
-  type FormData = z.infer<typeof formSchema>;
-
-  const { control, setValue, watch } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      images: initialImages,
-    },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "images",
-  });
-
-  const watchImages = watch("images");
-
-  useEffect(() => {
-    setCurrentImages(
-      watchImages.map((image) => ({
-        id: image.id || "",
-        image_url: image.image_url,
-      }))
-    );
-  }, [watchImages]);
-
-  useEffect(() => {
-    if (initialImages.length > maxImages) {
-      const trimmedImages = initialImages.slice(0, maxImages);
-      setCurrentImages(trimmedImages);
-      setValue("images", trimmedImages);
-    }
-  }, [initialImages, maxImages, setValue]);
-
   const handleImageUpload = async (
-    file: File,
-    index: number
+    file: File
   ): Promise<{ id: string; image_url: string }> => {
-    setIsUploading(true);
-    try {
-      const existingImage = currentImages[index];
+    if (readOnly) {
+      throw new Error("Profile editing is disabled");
+    }
 
-      // Delete the old image if it exists
-      if (existingImage?.image_url) {
-        await deleteImage(existingImage.image_url);
-      }
+    try {
+      setUploadState({ stage: "compressing", progress: 5 });
 
       const { imageUrl, error } = await uploadImage({
         file,
         bucket: config.bucketName,
         folder: `profile-images/${targetUserId}`,
+        onProgress: handleUploadProgress,
       });
 
       if (error) {
         throw new Error(error);
       }
 
-      // Update or create the database record
-      const method = existingImage?.id ? "PUT" : "POST";
-      const url = existingImage?.id
-        ? `/api/users/participants/${targetUserId}/profile-image/${existingImage.id}`
-        : `/api/users/participants/${targetUserId}/profile-image`;
+      setUploadState({ stage: "saving", progress: 96 });
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ image_url: imageUrl }),
-      });
+      const response = await fetch(
+        `/api/users/participants/${targetUserId}/profile-image`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ image_url: imageUrl }),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to update profile image in database");
+        throw new Error("Failed to save profile image");
       }
 
       const { id } = await response.json();
+
+      setUploadState({ stage: "saving", progress: 100 });
 
       toast({
         title: "Image uploaded",
         description: "The image has been successfully uploaded and saved.",
       });
 
-      return { id: id || existingImage?.id || "", image_url: imageUrl };
+      return { id: id || "", image_url: imageUrl };
     } catch (error) {
       console.error("Error uploading image:", error);
       toast({
@@ -142,66 +260,67 @@ export function ProfileImageForm({
       });
       throw error;
     } finally {
-      setIsUploading(false);
+      setUploadState(null);
     }
   };
 
-  const handleImageChange = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    index: number
-  ) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      try {
-        const { id, image_url } = await handleImageUpload(file, index);
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
 
-        // Update the form state
-        setValue(`images.${index}`, {
-          id,
-          image_url,
-        });
+    const file = e.target.files[0];
 
-        // Update the currentImages state to trigger a re-render
-        setCurrentImages((prevImages) => {
-          const newImages = [...prevImages];
-          newImages[index] = { id, image_url };
-          return newImages;
-        });
-      } catch (error) {
-        console.error("Error handling image change:", error);
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      toast({
+        title: "File too large",
+        description:
+          "Large images are compressed automatically, but must be under 20 MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const uploaded = await handleImageUpload(file);
+      setImages((prev) => [...prev, uploaded]);
+    } catch (error) {
+      console.error("Error handling image upload:", error);
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
     }
   };
 
   const handleImageDelete = async (index: number) => {
-    const imageToDelete = currentImages[index];
+    if (readOnly) return;
+
+    const imageToDelete = images[index];
     if (!imageToDelete) return;
 
+    setDeletingIndex(index);
+
     try {
-      // Delete from storage
       await deleteImage(imageToDelete.image_url);
 
-      // Delete from database
       const response = await fetch(
         `/api/users/participants/${targetUserId}/profile-image/${imageToDelete.id}`,
-        {
-          method: "DELETE",
-        }
+        { method: "DELETE" }
       );
 
       if (!response.ok) {
         throw new Error("Failed to delete profile image from database");
       }
 
-      // Remove the image from the form state
-      remove(index);
-
-      // Update the currentImages state to trigger a re-render
-      setCurrentImages((prevImages) => {
-        const newImages = [...prevImages];
-        newImages.splice(index, 1);
-        return newImages;
-      });
+      setImages((prev) => prev.filter((_, i) => i !== index));
 
       toast({
         title: "Image deleted",
@@ -214,87 +333,48 @@ export function ProfileImageForm({
         description: "Failed to delete image. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setDeletingIndex(null);
     }
   };
 
-  const triggerFileInput = (index: number) => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-      fileInputRef.current.onchange = (e) =>
-        handleImageChange(
-          e as unknown as React.ChangeEvent<HTMLInputElement>,
-          index
-        );
-    }
+  const handleAddImageClick = () => {
+    if (readOnly || uploadState || images.length >= uploadLimit) return;
+    fileInputRef.current?.click();
   };
 
-  const maxImagesText =
-    maxImages === 0
+  const canAddImage =
+    !readOnly && uploadLimit > 0 && images.length < uploadLimit;
+
+  const helpText = readOnly
+    ? initialImages.length > 0
+      ? "Your profile is inactive. You can view your images but cannot edit them."
+      : "Your profile is inactive. Image uploads are disabled until your account is reactivated."
+    : uploadLimit === 0
       ? "Your current plan does not allow image uploads."
-      : `You can upload up to ${maxImages} image${maxImages > 1 ? "s" : ""
-      } with your current plan.`;
+      : `You can upload up to ${uploadLimit} image${uploadLimit > 1 ? "s" : ""}. To replace one, delete it and add a new image.`;
 
   return (
     <>
-      <p className="mb-4 text-sm ">{maxImagesText}</p>
-      <div className="space-y-4">
-        {fields.map((field, index) => (
-          <div key={field.id} className="border p-4 rounded-md">
-            <div className="w-full h-60 relative mb-2 overflow-hidden">
-              {currentImages[index]?.image_url ? (
-                <Image
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  fill
-                  src={currentImages[index].image_url || "/placeholder.jpg"}
-                  alt={`Profile image ${index + 1}`}
-                  className="rounded-md object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-md">
-                  <ImageIcon className="w-12 h-12 text-gray-400" />
-                </div>
-              )}
-            </div>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => triggerFileInput(index)}
-              className="w-full mb-2"
-              disabled={isUploading}
-            >
-              {isUploading
-                ? "Uploading..."
-                : currentImages[index]?.image_url
-                  ? "Change Image"
-                  : "Upload Image"}
-            </Button>
-            {currentImages[index]?.image_url && (
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => handleImageDelete(index)}
-                className="w-full"
-              >
-                Delete Image
-              </Button>
-            )}
-          </div>
+      <p className="mb-4 text-sm">{helpText}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-[15px] max-w-[250px] lg:max-w-[600px] mx-auto">
+        {images.map((image, index) => (
+          <ProfileImageCard
+            key={image.id}
+            image={image}
+            index={index}
+            readOnly={readOnly}
+            isDeleting={deletingIndex === index}
+            onDelete={handleImageDelete}
+          />
         ))}
 
-        {fields.length < maxImages && maxImages > 0 && (
-          <Button
-            type="button"
-            onClick={() => {
-              append({ image_url: "" });
-              setCurrentImages((prevImages) => [
-                ...prevImages,
-                { id: "", image_url: "" },
-              ]);
-            }}
-            className="w-full"
-          >
-            Add Another Image
-          </Button>
+        {canAddImage && (
+          <AddImageCard
+            uploadState={uploadState}
+            disabled={deletingIndex !== null}
+            onClick={handleAddImageClick}
+          />
         )}
 
         <input
@@ -303,6 +383,7 @@ export function ProfileImageForm({
           ref={fileInputRef}
           className="hidden"
           aria-label="Upload profile image"
+          onChange={handleImageSelect}
         />
       </div>
     </>

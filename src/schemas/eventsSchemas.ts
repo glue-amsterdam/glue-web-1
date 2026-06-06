@@ -49,4 +49,5 @@ export const eventSchema = z
     }
   });
 
-export type EventType = z.infer<typeof eventSchema>;
+export type EventFormInput = z.input<typeof eventSchema>;
+export type EventType = z.output<typeof eventSchema>;

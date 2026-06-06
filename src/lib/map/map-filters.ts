@@ -1,6 +1,7 @@
 import type { ExhibitorsFilterType } from "@/lib/participants/exhibitors-filters";
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
 import type { MapLocation, MapRoute } from "@/lib/map/types";
+import { getMapLocationMarkerStackTier } from "./map-location-display";
 
 /** Lower = behind; higher = on top (Mapbox circle/symbol sort-key). */
 export const MARKER_STACK_ORDER: Record<ExhibitorType, number> = {
@@ -11,16 +12,15 @@ export const MARKER_STACK_ORDER: Record<ExhibitorType, number> = {
 
 const MARKER_STACK_ORDER_ROUTE = 0;
 
-export const getMarkerSortKey = (
-  type: ExhibitorType | "route",
-  index: number
-): number => {
-  const stack =
-    type === "route" ? MARKER_STACK_ORDER_ROUTE : MARKER_STACK_ORDER[type];
-  return stack * 1000 + index;
+export const getMarkerSortKey = (location: MapLocation, index: number): number => {
+  const tier = getMapLocationMarkerStackTier(location);
+  return tier * 1000 + index;
 };
 
-export type MapViewMode = "none" | "exhibitors" | "routes";
+export const getRouteMarkerSortKey = (index: number): number =>
+  MARKER_STACK_ORDER_ROUTE * 1000 + index;
+
+export type MapViewMode = "none" | "exhibitors" | "routes" | "category";
 
 export type MapFilters = {
   view: MapViewMode;
@@ -33,6 +33,43 @@ export const DEFAULT_MAP_FILTERS: MapFilters = {
   type: "all",
   q: "",
 };
+
+const hasDisplayNumber = (location: MapLocation): boolean =>
+  Boolean(location.displayNumber?.trim());
+
+const compareDisplayNumbers = (a: string, b: string): number => {
+  const aNum = Number(a);
+  const bNum = Number(b);
+  if (Number.isFinite(aNum) && Number.isFinite(bNum)) {
+    return aNum - bNum;
+  }
+  return a.localeCompare(b, undefined, { sensitivity: "base", numeric: true });
+};
+
+const compareMapLocationNames = (a: MapLocation, b: MapLocation): number =>
+  a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+
+/** Exhibitors list: by displayNumber ascending; without number, alphabetical at end. */
+export const sortMapLocationsForDisplayList = (
+  locations: MapLocation[]
+): MapLocation[] =>
+  [...locations].sort((left, right) => {
+    const leftHasNumber = hasDisplayNumber(left);
+    const rightHasNumber = hasDisplayNumber(right);
+
+    if (leftHasNumber && rightHasNumber) {
+      return compareDisplayNumbers(
+        left.displayNumber!.trim(),
+        right.displayNumber!.trim()
+      );
+    }
+
+    if (!leftHasNumber && !rightHasNumber) {
+      return compareMapLocationNames(left, right);
+    }
+
+    return leftHasNumber ? -1 : 1;
+  });
 
 const locationMatchesSearchQuery = (
   location: MapLocation,
@@ -55,9 +92,11 @@ export const filterMapLocationsForSearch = (
   const query = q.trim().toLowerCase();
   if (!query) return locations;
 
-  return locations.filter((location) =>
+  const result = locations.filter((location) =>
     locationMatchesSearchQuery(location, query)
   );
+
+  return sortMapLocationsForDisplayList(result);
 };
 
 export const filterMapLocations = (
@@ -90,7 +129,9 @@ export const filterMapLocationsForList = (
     return filterMapLocationsForSearch(locations, query);
   }
 
-  return filterMapLocations(locations, { type: filters.type, q: "" });
+  return sortMapLocationsForDisplayList(
+    filterMapLocations(locations, { type: filters.type, q: "" })
+  );
 };
 
 /** Map markers ignore category (`type`); only search (`q`) narrows visible dots. */
@@ -107,16 +148,17 @@ export const filterMapRoutes = (routes: MapRoute[], q: string): MapRoute[] => {
   return routes.filter(
     (route) =>
       route.name.toLowerCase().includes(query) ||
-      route.zone.toLowerCase().includes(query) ||
+      (route.zone?.toLowerCase().includes(query) ?? false) ||
       (route.description?.toLowerCase().includes(query) ?? false) ||
       route.dots.some((dot) => dot.name.toLowerCase().includes(query))
   );
 };
 
-/** Ascending stack order: hubs first in source, special-program last (drawn on top). */
+/** Ascending stack tier: solo exhibitors first in source, full hubs last (drawn on top in hub layer). */
 export const sortMapLocationsForMarkers = (
   locations: MapLocation[]
 ): MapLocation[] =>
   [...locations].sort(
-    (a, b) => MARKER_STACK_ORDER[a.type] - MARKER_STACK_ORDER[b.type]
+    (a, b) =>
+      getMapLocationMarkerStackTier(a) - getMapLocationMarkerStackTier(b)
   );

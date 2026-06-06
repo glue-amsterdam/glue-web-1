@@ -47,7 +47,7 @@ const ExhibitorsClientPage = ({ initialData, initialFilters }: Props) => {
           />
 
           {!loading && items.length === 0 && (
-            <p className="pt-[15px] lg:pt-[30px] base-text-size text-[var(--black-color)]">
+            <p className="pt-[15px] lg:pt-[30px] base-text-size text-(--black-color)">
               No exhibitors found.
             </p>
           )}

@@ -42,7 +42,11 @@ export default function PlanEditDialog({
 
   const methods = useForm<PlanType>({
     resolver: zodResolver(PlanSchema),
-    defaultValues: plan,
+    defaultValues: {
+      ...plan,
+      plan_max_images: plan.plan_max_images ?? 3,
+      max_events: plan.max_events ?? 6,
+    },
   });
 
   const {
@@ -157,6 +161,32 @@ export default function PlanEditDialog({
               )}
             </div>
             <div>
+              <Label htmlFor="plan_max_images">Max profile images</Label>
+              <Input
+                id="plan_max_images"
+                type="number"
+                min={0}
+                {...register("plan_max_images", { valueAsNumber: true })}
+              />
+              {errors.plan_max_images && (
+                <p className="text-red-500">
+                  {errors.plan_max_images.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="max_events">Max events</Label>
+              <Input
+                id="max_events"
+                type="number"
+                min={0}
+                {...register("max_events", { valueAsNumber: true })}
+              />
+              {errors.max_events && (
+                <p className="text-red-500">{errors.max_events.message}</p>
+              )}
+            </div>
+            <div>
               <Label>Plan Items</Label>
               {fields.map((field, index) => (
                 <div
@@ -202,6 +232,8 @@ export default function PlanEditDialog({
                 "plan_description",
                 "plan_items",
                 "plan_type",
+                "plan_max_images",
+                "max_events",
               ]}
               className="w-full"
               disabled={!isDirty}

@@ -230,6 +230,7 @@ export const NavBarClient = ({ initialIdentity }: NavbarClientProps) => {
   const showExhibitorsNav = pathname === "/exhibitors";
   const showProgramNav = pathname === "/program";
   const showParticipateNav = pathname === "/participate" && !isAuthenticated;
+  const showVisitNav = pathname === "/visit" && !isAuthenticated;
 
   return (
     <div className="fixed font-normal top-0 w-full z-50">
@@ -252,6 +253,13 @@ export const NavBarClient = ({ initialIdentity }: NavbarClientProps) => {
         </MainContainer>
       </nav>
       {showParticipateNav && (
+        <MainContainer>
+          <Block className="flex justify-end h-(--nav-secondary-h-mobile) lg:h-(--nav-secondary-h)">
+            <ParticipateLinks isAuthenticated={isAuthenticated} />
+          </Block>
+        </MainContainer>
+      )}
+      {showVisitNav && (
         <MainContainer>
           <Block className="flex justify-end h-(--nav-secondary-h-mobile) lg:h-(--nav-secondary-h)">
             <ParticipateLinks isAuthenticated={isAuthenticated} />

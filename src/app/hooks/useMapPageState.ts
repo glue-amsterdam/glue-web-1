@@ -8,7 +8,7 @@ import {
   searchParamsToMapFilters,
   type MapUrlSelection,
 } from "@/lib/map/map-url";
-import { mergeMapFilters, shouldClearMapSelectionForExhibitorsView } from "@/lib/map/map-filter-actions";
+import { mergeMapFilters, shouldClearMapSelectionForBrowseView } from "@/lib/map/map-filter-actions";
 import { MAP_CITY_BOUNDS } from "@/lib/map/map-bounds";
 import type { MapFilters } from "@/lib/map/map-filters";
 import type { MapLocation, MapPageData, MapRoute } from "@/lib/map/types";
@@ -163,7 +163,7 @@ export const useMapPageState = (initialData: MapPageData) => {
       let selection: MapUrlSelection | undefined = params.selection;
       if (
         !isLargeScreen &&
-        shouldClearMapSelectionForExhibitorsView(mergedFilters, selection)
+        shouldClearMapSelectionForBrowseView(mergedFilters, selection)
       ) {
         selection = { ...selection, clearSelection: true };
       }
@@ -175,7 +175,12 @@ export const useMapPageState = (initialData: MapPageData) => {
       isUpdatingUrl.current = true;
       try {
         const mobile = !isLargeScreen;
-        if (mobile && (selection?.place || selection?.route)) {
+        if (
+          mobile &&
+          (selection?.place || selection?.route) &&
+          !params.filters &&
+          !params.filterPatch
+        ) {
           setOptimisticFilters(null);
         }
 
@@ -289,7 +294,7 @@ export const useMapPageState = (initialData: MapPageData) => {
       selectRouteLocal(routeId);
 
       navigateMap({
-        filterPatch: isLargeScreen ? { q: "" } : undefined,
+        filterPatch: isLargeScreen ? { q: "" } : { view: "none" },
         selection: { route: routeId },
       });
     },

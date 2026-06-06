@@ -157,10 +157,7 @@ export const buildMapLocations = async (
       hostParticipant.special_program
     );
 
-    const members =
-      type === "hub"
-        ? buildHubMembers(hub, memberIds, participantByUserId)
-        : undefined;
+    const members = buildHubMembers(hub, memberIds, participantByUserId);
 
     locationByMapInfoId.set(hostMapInfo.id, {
       id: hostMapInfo.id,

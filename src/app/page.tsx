@@ -12,6 +12,7 @@ import HomeTextSection from "@/components/home/home-text-section/text-section";
 import StickyParticipantsSection from "@/components/home/sticky-participants-section/sticky-participants-section";
 import NewsletterHomeSection from "@/components/home/newsletter-section.tsx/newsletter-home-section";
 import BottomBlock from "@/components/bottom-block";
+import Separator from "@/components/separator";
 
 
 
@@ -103,15 +104,15 @@ export default async function Page() {
         />
 
         <ExhibitorsHome />
-
+        <Separator />
         <BecomeAnExhibitor />
 
         <CreativeCitizensOfHonour data={citizensData} />
-
+        <Separator />
         <HomeTextSection />
 
         <StickyParticipantsSection data={stickyGroupData} />
-
+        <Separator />
         <NewsletterHomeSection />
 
         <BottomBlock />

@@ -1,4 +1,3 @@
-import NavBar from "@/components/navbar";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -12,7 +11,6 @@ function AdminLayout({
 }>) {
   return (
     <div className="bg-[var(--color-box2)] h-full min-h-screen">
-      <NavBar />
       {children}
     </div>
   );

@@ -24,7 +24,10 @@ import {
   MapFilterPanelContent,
 } from "./map-filter-panel-content";
 import MapSearchResults from "@/app/map/components/map-search-results";
-import { filterMapRoutes } from "@/lib/map/map-filters";
+import {
+  filterMapRoutes,
+  type MapViewMode,
+} from "@/lib/map/map-filters";
 import type { MapRoute } from "@/lib/map/types";
 import {
   type MapFilterId,
@@ -34,6 +37,13 @@ import {
 } from "@/app/map/stores/use-map-store";
 
 const SEARCH_DEBOUNCE_MS = 400;
+
+const PANEL_BY_VIEW: Record<MapViewMode, MapFilterId | null> = {
+  none: null,
+  exhibitors: "exhibitors",
+  routes: "routes",
+  category: "category",
+};
 
 type MapNavbarProps = {
   initialRoutes: MapRoute[];
@@ -114,22 +124,45 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     [handleDebouncedSearchChange, isLargeScreen, previewFilters, filters, setOpenFilter]
   );
 
-  const clearMapSelectionForBrowse = useCallback(() => {
-    if (isLargeScreen) return;
-    navigation?.clearSelectionLocal();
-    navigation?.navigateMap({ selection: { clearSelection: true } });
-  }, [navigation, isLargeScreen]);
+  const applyMobileBrowseView = useCallback(
+    (view: MapViewMode) => {
+      navigation?.clearSelectionLocal();
+      if (navigation) {
+        navigation.navigateMap({
+          filterPatch: { view },
+          selection: { clearSelection: true },
+        });
+        return;
+      }
+      applyFilters({ view }, { clearSelection: true });
+    },
+    [navigation, applyFilters]
+  );
+
+  const openFilterView = useCallback(
+    (view: MapViewMode, filterId: MapFilterId) => {
+      panelDismissedByUserRef.current = false;
+      if (isLargeScreen) {
+        applyFilters({ view });
+      } else {
+        applyMobileBrowseView(view);
+      }
+      setOpenFilter(filterId);
+    },
+    [isLargeScreen, applyFilters, applyMobileBrowseView, setOpenFilter]
+  );
+
+  const closeFilterView = useCallback(() => {
+    applyFilters({ view: "none" });
+    closeFilter();
+  }, [applyFilters, closeFilter]);
 
   const handleExhibitorsToggle = (_filter: MapFilterId) => {
     if (openFilter === "exhibitors") {
-      applyFilters({ view: "none" });
-      closeFilter();
+      closeFilterView();
       return;
     }
-    panelDismissedByUserRef.current = false;
-    clearMapSelectionForBrowse();
-    applyFilters({ view: "exhibitors" });
-    setOpenFilter("exhibitors");
+    openFilterView("exhibitors", "exhibitors");
   };
 
   const handleExhibitorsKeyDown = (
@@ -179,7 +212,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
       if (!isLargeScreen) closeFilter();
       navigation.selectRouteLocal(routeId);
       navigation.navigateMap({
-        filterPatch: isLargeScreen ? { q: "" } : undefined,
+        filterPatch: isLargeScreen ? { q: "" } : { view: "none" },
         selection: { route: routeId },
       });
     },
@@ -193,7 +226,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
       if (!isLargeScreen) closeFilter();
       navigation.selectRouteLocal(routeId);
       navigation.navigateMap({
-        filterPatch: isLargeScreen ? { q: "" } : undefined,
+        filterPatch: isLargeScreen ? { q: "" } : { view: "none" },
         selection: { route: routeId },
       });
     },
@@ -202,11 +235,10 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
 
   const handleRoutesToggle = (_filter: MapFilterId) => {
     if (openFilter === "routes") {
-      closeFilter();
+      closeFilterView();
       return;
     }
-    clearMapSelectionForBrowse();
-    setOpenFilter("routes");
+    openFilterView("routes", "routes");
   };
 
   const handleRoutesKeyDown = (
@@ -220,11 +252,10 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
 
   const handleCategoryToggle = (_filter: MapFilterId) => {
     if (openFilter === "category") {
-      closeFilter();
+      closeFilterView();
       return;
     }
-    clearMapSelectionForBrowse();
-    setOpenFilter("category");
+    openFilterView("category", "category");
   };
 
   const handleCategoryKeyDown = (
@@ -256,8 +287,8 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
 
   const handleDismissOpenFilter = useCallback(() => {
     panelDismissedByUserRef.current = true;
-    closeFilter();
-  }, [closeFilter]);
+    closeFilterView();
+  }, [closeFilterView]);
 
   const openPanelId =
     openFilter === "category"
@@ -294,16 +325,13 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     return () => resetMapStore();
   }, [resetMapStore]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (filters.view !== "exhibitors") {
       panelDismissedByUserRef.current = false;
-      return;
     }
     if (panelDismissedByUserRef.current) return;
 
-    setOpenFilter((current) =>
-      current === "category" || current === "routes" ? current : "exhibitors"
-    );
+    setOpenFilter(PANEL_BY_VIEW[filters.view]);
   }, [filters.view, setOpenFilter]);
 
   useEffect(() => {

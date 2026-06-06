@@ -1,4 +1,5 @@
 import { config } from "@/config";
+import { guardParticipantProfileWrite } from "@/lib/participants/guard-participant-profile-write";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -12,6 +13,10 @@ export async function PUT(
   { params }: { params: Promise<{ userId: string; imageId: string }> }
 ) {
   const { userId, imageId } = await params;
+
+  const denied = await guardParticipantProfileWrite(userId);
+  if (denied) return denied;
+
   const supabase = await createClient();
 
   try {
@@ -46,6 +51,10 @@ export async function DELETE(
   { params }: { params: Promise<{ userId: string; imageId: string }> }
 ) {
   const { userId, imageId } = await params;
+
+  const denied = await guardParticipantProfileWrite(userId);
+  if (denied) return denied;
+
   const supabase = await createClient();
 
   try {

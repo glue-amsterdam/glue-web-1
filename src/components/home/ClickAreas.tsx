@@ -1,6 +1,5 @@
 "use client";
 import { useAuth } from "@/app/context/AuthContext";
-import { useVisitor } from "@/app/context/VisitorContext";
 import { useMenu } from "@/app/context/MainContext";
 import { useTransitionRouter } from "next-view-transitions";
 import React, { useEffect, useRef } from "react";
@@ -19,7 +18,6 @@ interface ClickAreasProps {
 function ClickAreas({ refs, setIsLoginModalOpen }: ClickAreasProps) {
   const mainMenu = useMenu();
   const { user, isLoading } = useAuth();
-  const { visitor, isVisitorLoading } = useVisitor();
   const router = useTransitionRouter();
   const orderedSections = ["dashboard", "events", "map", "about"];
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -170,9 +168,9 @@ function ClickAreas({ refs, setIsLoginModalOpen }: ClickAreasProps) {
                   className="absolute inset-0 w-full h-full z-10"
                   onClick={(e) => {
                     if (area.className === "leftbutton") {
-                      if (requiresIdentity && !user && !visitor) {
+                      if (requiresIdentity && !user) {
                         e.preventDefault();
-                        if (isLoading || isVisitorLoading) return;
+                        if (isLoading) return;
                         setIsLoginModalOpen(true);
                         return;
                       }

@@ -5,6 +5,7 @@ import QRCode from "qrcode";
 import { jsPDF } from "jspdf";
 import { Button } from "@/components/ui/button";
 import { CHECKIN_QR_PDF_COPY } from "./checkin-qr-pdf-copy";
+import BigButton from "@/components/big-button";
 
 type QrCodePreviewProps = {
   token: string;
@@ -143,7 +144,7 @@ export default function QrCodePreview({ token }: QrCodePreviewProps) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 rounded-lg border border-white/20 p-4">
+    <div className="flex flex-col items-center gap-4 border p-4">
       {svgDataUrl ? (
         <img
           src={svgDataUrl}
@@ -154,15 +155,12 @@ export default function QrCodePreview({ token }: QrCodePreviewProps) {
         <p className="text-sm text-white/70">Generating QR preview...</p>
       )}
 
-      <Button
-        type="button"
-        variant="secondary"
-        disabled={!svgDataUrl || isPdfSaving}
-        aria-label="Download check-in QR as PDF"
+      <BigButton
+        mode="big"
+        as="button"
+        label={isPdfSaving ? "preparing…" : "download"}
         onClick={() => void handleDownloadPdf()}
-      >
-        {isPdfSaving ? "preparing…" : "download"}
-      </Button>
+      />
       {pdfError ? (
         <p className="text-center text-sm text-red-300">{pdfError}</p>
       ) : null}

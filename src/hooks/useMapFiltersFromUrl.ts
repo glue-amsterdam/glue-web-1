@@ -7,7 +7,7 @@ import { useMediaQuery } from "@/hooks/userMediaQuery";
 import type { MapFilters } from "@/lib/map/map-filters";
 import {
   mergeMapFilters,
-  shouldClearMapSelectionForExhibitorsView,
+  shouldClearMapSelectionForBrowseView,
 } from "@/lib/map/map-filter-actions";
 import {
   buildMapPageUrl,
@@ -85,7 +85,7 @@ export const useMapFiltersFromUrl = (): UseMapFiltersFromUrlReturn => {
       let resolvedSelection = selection;
       if (
         !isLargeScreen &&
-        shouldClearMapSelectionForExhibitorsView(merged, selection)
+        shouldClearMapSelectionForBrowseView(merged, selection)
       ) {
         resolvedSelection = { ...selection, clearSelection: true };
       }

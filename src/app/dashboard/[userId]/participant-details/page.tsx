@@ -1,32 +1,24 @@
-"use client";
+import { ParticipantDetailsClient } from "@/app/dashboard/[userId]/participant-details/participant-details-client";
+import { getDashboardAuth } from "@/lib/dashboard/get-dashboard-auth";
+import { getParticipantProfileData } from "@/lib/dashboard/get-participant-profile-data";
 
-import { useDashboardContext } from "@/app/context/DashboardContext";
-import { ParticipantDetailsForm } from "@/app/dashboard/[userId]/participant-details/participant-details-form";
-import { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
-import useSWR from "swr";
-import LoadingSpinner from "@/app/components/LoadingSpinner";
+export default async function ParticipantDetailsPage({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}) {
+  const { userId } = await params;
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-export default function ParticipantDetailsPage() {
-  const { isMod, targetUserId } = useDashboardContext();
-  const {
-    data: participantDetails,
-    error,
-    isLoading,
-  } = useSWR<ParticipantDetails>(
-    `/api/users/participants/${targetUserId}/details`,
-    fetcher
-  );
+  const [{ isMod }, profileData] = await Promise.all([
+    getDashboardAuth(userId),
+    getParticipantProfileData(userId),
+  ]);
 
-  if (isLoading) return <LoadingSpinner />;
-  if (error) return <div>Failed to load participant details data</div>;
-  if (!participantDetails)
-    return <div>No participant details data available</div>;
   return (
-    <ParticipantDetailsForm
-      participantDetails={participantDetails}
-      isMod={isMod || false}
-      targetUserId={targetUserId}
+    <ParticipantDetailsClient
+      targetUserId={userId}
+      isMod={isMod}
+      profileData={profileData}
     />
   );
 }

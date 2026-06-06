@@ -1,15 +1,11 @@
-import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { forwardGeocode } from "@/lib/mapbox/forward-geocode";
 import { MapInfo, mapInfoSchema } from "@/schemas/mapInfoSchemas";
-import { config } from "@/config";
-import { strToNumber } from "@/constants";
+import { AddressAutocompleteField } from "@/components/map/address-autocomplete-field";
 
 interface MapInfoFormProps {
   onSubmit: (data: MapInfo) => void;
@@ -17,10 +13,6 @@ interface MapInfoFormProps {
 }
 
 export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
-  const [suggestions, setSuggestions] = useState<
-    Array<{ place_name: string; center: [number, number] }>
-  >([]);
-
   const {
     control,
     handleSubmit,
@@ -35,42 +27,7 @@ export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
     },
   });
 
-  const westLimit = strToNumber(config.cityBoundWest);
-  const southLimit = strToNumber(config.cityBoundSouth);
-  const eastLimit = strToNumber(config.cityBoundEast);
-  const northLimit = strToNumber(config.cityBoundNorth);
-
-  const centerLng = strToNumber(config.cityCenterLng);
-  const centerLat = strToNumber(config.cityCenterLat);
-
   const hasAddress = !watch("no_address");
-
-  const handleAddressChange = async (input: string) => {
-    if (input.length > 2) {
-      const features = await forwardGeocode({
-        query: input,
-        limit: 5,
-        countries: [config.countryPreFix],
-        types: ["address"],
-        bbox: [westLimit, southLimit, eastLimit, northLimit],
-        proximity: [centerLng, centerLat],
-      });
-
-      setSuggestions(features);
-    } else {
-      setSuggestions([]);
-    }
-  };
-
-  const handleSuggestionSelect = (suggestion: {
-    place_name: string;
-    center: [number, number];
-  }) => {
-    setValue("formatted_address", suggestion.place_name);
-    setValue("latitude", suggestion.center[1]);
-    setValue("longitude", suggestion.center[0]);
-    setSuggestions([]);
-  };
 
   const handleNoAddressChange = (checked: boolean) => {
     setValue("no_address", checked);
@@ -103,43 +60,11 @@ export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
         )}
       />
       {hasAddress && (
-        <div>
-          <Label htmlFor="address">{`Location to present during GLUE`}</Label>
-          <Controller
-            name="formatted_address"
-            control={control}
-            render={({ field }) => (
-              <Input
-                id="address"
-                {...field}
-                onChange={(e) => {
-                  field.onChange(e);
-                  handleAddressChange(e.target.value);
-                }}
-                value={field.value ?? ""}
-                placeholder={`Start typing an address in ${config.cityName}`}
-              />
-            )}
-          />
-          {errors.formatted_address && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.formatted_address.message}
-            </p>
-          )}
-          {suggestions.length > 0 && (
-            <ul className="mt-2 bg-white border border-gray-300 rounded-md shadow-sm">
-              {suggestions.map((suggestion, index) => (
-                <li
-                  key={index}
-                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => handleSuggestionSelect(suggestion)}
-                >
-                  {suggestion.place_name}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <AddressAutocompleteField
+          control={control}
+          setValue={setValue}
+          error={errors.formatted_address?.message}
+        />
       )}
       <div>
         <Label htmlFor="exhibition_space_preference">

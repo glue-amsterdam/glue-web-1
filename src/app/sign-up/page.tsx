@@ -1,25 +1,32 @@
-"use client";
-
 import { Suspense } from "react";
-import HeadlineWCross from "@/components/headline-w-cross";
+import { AuthPageHeadline } from "@/components/auth/auth-page-headline";
 import MainContainer from "@/components/main-container";
 import { SignUpVisitorForm } from "@/components/sign-up/sign-up-visitor-form";
+import { getCachedTerms } from "@/lib/terms/get-cached-terms";
+
+export const revalidate = 3600;
 
 const pageTexts = {
   title: "Sign Up",
   description:
-    "Create a visitor account with your email and password to access the GLUE platform.",
+    "You must register to access this information. Registering does not commit you to anything, nor does it subscribe you to our newsletter. GLUE is free, so there is no charge. ",
 };
 
-export default function SignUpPage() {
+export default async function SignUpPage() {
+  const termsContent = await getCachedTerms();
+
   return (
     <main id="sign-up-page" className="first-padding pb-[65px] md:pb-[105px]">
       <MainContainer>
         <section id="sign-up-section">
-          <HeadlineWCross title={pageTexts.title} />
-          <p className="sr-only">{pageTexts.description}</p>
           <Suspense fallback={null}>
-            <SignUpVisitorForm />
+            <AuthPageHeadline title={pageTexts.title} />
+          </Suspense>
+          <p className="pt-[40px] lg:pt-[60px] base-text-size max-w-(--paragraph-max-width)">
+            {pageTexts.description}
+          </p>
+          <Suspense fallback={null}>
+            <SignUpVisitorForm termsContent={termsContent} />
           </Suspense>
         </section>
       </MainContainer>

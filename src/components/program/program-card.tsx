@@ -14,7 +14,7 @@ const ProgramCard = ({ event }: Props) => {
   const href = getProgramLink(event.eventId);
 
   const content = (
-    <article className="max-w-[400px] base-text-size border-t lg:border-t-2 border-(--black-color) pt-[15px] overflow-hidden">
+    <article className="max-w-[400px] base-text-size border-t lg:border-t-2 border-(--black-color) pt-[15px] overflow-hidden mx-auto">
       <div className="flex items-start">
         <div className="flex items-start gap-[20px]">
           <RoundedNumber

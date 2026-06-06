@@ -6,6 +6,7 @@ import {
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
 import {
   getMarkerSortKey,
+  getRouteMarkerSortKey,
   sortMapLocationsForMarkers,
 } from "@/lib/map/map-filters";
 import type { MapLocation, MapRoute } from "@/lib/map/types";
@@ -151,7 +152,7 @@ export const buildLocationsGeoJSON = (
         location.name,
         location.memberCount,
         location.displayNumber ?? "",
-        getMarkerSortKey(location.type, index),
+        getMarkerSortKey(location, index),
         colors
       )
     ),
@@ -181,7 +182,7 @@ export const buildRouteStopsGeoJSON = (
           dot.name,
           location.memberCount,
           String(routeStep),
-          getMarkerSortKey(location.type, routeStep),
+          getMarkerSortKey(location, routeStep),
           colors
         );
       }
@@ -195,7 +196,7 @@ export const buildRouteStopsGeoJSON = (
         dot.name,
         1,
         String(routeStep),
-        getMarkerSortKey("route", routeStep),
+        getRouteMarkerSortKey(routeStep),
         colors
       );
     });

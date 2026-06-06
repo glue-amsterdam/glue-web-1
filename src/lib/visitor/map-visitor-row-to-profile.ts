@@ -55,5 +55,9 @@ export const mapVisitorRowToProfileResponse = (
     email,
     birthDate: row.birth_date ? String(row.birth_date).slice(0, 10) : "",
     areaId: row.area_id ?? "",
+    displayName:
+      row.display_name?.trim() ||
+      [firstName, lastName].filter(Boolean).join(" ").trim() ||
+      undefined,
   };
 };

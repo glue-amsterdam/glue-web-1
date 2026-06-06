@@ -44,6 +44,8 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
       plan_items: [],
       is_participant_enabled: true,
       plan_type: "participant",
+      plan_max_images: 3,
+      max_events: 6,
     },
   });
 
@@ -157,6 +159,32 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
               )}
             </div>
             <div>
+              <Label htmlFor="plan_max_images">Max profile images</Label>
+              <Input
+                id="plan_max_images"
+                type="number"
+                min={0}
+                {...register("plan_max_images", { valueAsNumber: true })}
+              />
+              {errors.plan_max_images && (
+                <p className="text-red-500">
+                  {errors.plan_max_images.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="max_events">Max events</Label>
+              <Input
+                id="max_events"
+                type="number"
+                min={0}
+                {...register("max_events", { valueAsNumber: true })}
+              />
+              {errors.max_events && (
+                <p className="text-red-500">{errors.max_events.message}</p>
+              )}
+            </div>
+            <div>
               <Label>Plan Items</Label>
               {fields.map((field, index) => (
                 <div
@@ -202,6 +230,8 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
                 "plan_description",
                 "plan_items",
                 "plan_type",
+                "plan_max_images",
+                "max_events",
               ]}
               className="w-full"
             />

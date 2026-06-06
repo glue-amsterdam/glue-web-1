@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { getCookieConsent } from "@/app/actions/cookieConsent";
+import { submitNewsletter } from "@/app/actions/newsletter";
 import {
   VisitorAccountStep,
   type VisitorAccountValues,
@@ -14,7 +15,11 @@ import {
   resolvePostAuthRedirect,
 } from "@/lib/auth/post-auth-redirect";
 
-export const SignUpVisitorForm = () => {
+type SignUpVisitorFormProps = {
+  termsContent: string;
+};
+
+export const SignUpVisitorForm = ({ termsContent }: SignUpVisitorFormProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
@@ -22,12 +27,14 @@ export const SignUpVisitorForm = () => {
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const handleSubmit = async (data: VisitorAccountValues) => {
-    if (isSubmitting) return;
+    if (isSubmitting || isRedirecting) return;
 
     setSubmitError(null);
     setIsSubmitting(true);
+    let redirecting = false;
 
     try {
       const response = await fetch("/api/visitors/register", {
@@ -65,11 +72,27 @@ export const SignUpVisitorForm = () => {
         return;
       }
 
+      if (data.newsletterSubscribe) {
+        try {
+          await submitNewsletter({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+          });
+        } catch {
+          // best-effort; registration already succeeded
+        }
+      }
+
+      redirecting = true;
+      setIsRedirecting(true);
       router.replace(resolvePostAuthRedirect(returnTo));
     } catch {
       setSubmitError("Something went wrong. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      if (!redirecting) {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -78,23 +101,18 @@ export const SignUpVisitorForm = () => {
   };
 
   return (
-    <div className="pt-[80px]">
-      {submitError ? (
-        <p
-          role="alert"
-          className="max-w-[508px] mx-auto pb-[15px] base-text-size text-[var(--primary-color)]"
-        >
-          {submitError}
-        </p>
-      ) : null}
-
+    <>
       <VisitorAccountStep
+        submitError={submitError ?? undefined}
         onSubmit={(data) => void handleSubmit(data)}
         onBack={handleBack}
-        submitLabel={isSubmitting ? "creating account…" : "create account"}
+        submitLabel={isSubmitting ? "creating…" : "create account"}
         backLabel="back"
-        submitDisabled={isSubmitting}
+        submitDisabled={isSubmitting || isRedirecting}
+        isSubmitting={isSubmitting || isRedirecting}
+        loadingMessage="Creating your account…"
+        termsContent={termsContent}
       />
-    </div>
+    </>
   );
 };

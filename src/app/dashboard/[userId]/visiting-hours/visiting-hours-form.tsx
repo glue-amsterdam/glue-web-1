@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   visitingHoursDaysSchema,
   VisitingHoursDays,
@@ -19,17 +18,26 @@ import { createSubmitHandler } from "@/utils/form-helpers";
 import { mutate } from "swr";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { Label } from "@/components/ui/label";
+import PlusIconDesktop from "@/components/icons/plus-icon-desktop";
+import CrossRotatedDesktop from "@/components/icons/cross-rotated-desktop";
 
 interface VisitingHoursFormProps {
   targetUserId: string | undefined;
   initialData?: VisitingHoursDays[] | { error: string } | undefined;
+  embedded?: boolean;
+  readOnly?: boolean;
 }
 
 export function VisitingHoursForm({
   targetUserId,
   initialData,
+  embedded = false,
+  readOnly = false,
 }: VisitingHoursFormProps) {
-  const isError = initialData && "error" in initialData;
+  const isError =
+    (initialData && "error" in initialData) ||
+    !initialData ||
+    (Array.isArray(initialData) && initialData.length === 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -41,15 +49,15 @@ export function VisitingHoursForm({
       visitingHours:
         isError || !initialData
           ? eventDays?.map((day) => ({
-              user_id: targetUserId || "",
-              day_id: day.dayId,
-              hours: [],
-            })) || []
+            user_id: targetUserId || "",
+            day_id: day.dayId,
+            hours: [],
+          })) || []
           : (initialData as VisitingHoursDays[]).map((day) => ({
-              ...day,
-              user_id: targetUserId || day.user_id,
-              day_id: day.day_id,
-            })),
+            ...day,
+            user_id: targetUserId || day.user_id,
+            day_id: day.day_id,
+          })),
     },
   });
 
@@ -87,6 +95,8 @@ export function VisitingHoursForm({
   const handleSubmit = async (values: {
     visitingHours: VisitingHoursDays[];
   }) => {
+    if (readOnly) return;
+
     setIsSubmitting(true);
     await onSubmit(values);
     setIsSubmitting(false);
@@ -98,93 +108,36 @@ export function VisitingHoursForm({
     }
   }, [form, initialData, isError]);
 
-  return (
-    <Card className="w-full max-w-[80%] mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold">Visiting Hours</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
-          >
-            {eventDays?.length > 0 ? (
-              eventDays.map((day, index) => (
-                <div key={day.dayId} className="space-y-4">
-                  <Label className="font-bold font-overpass">{day.label}</Label>
-                  <FormField
-                    control={form.control}
-                    name={`visitingHours.${index}.hours`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <input
-                          type="hidden"
-                          {...form.register(`visitingHours.${index}.user_id`)}
-                          value={targetUserId || ""}
-                        />
-                        <input
-                          type="hidden"
-                          {...form.register(`visitingHours.${index}.day_id`)}
-                          value={day.dayId}
-                        />
-                        {Array.isArray(field.value) &&
-                        field.value.length > 0 ? (
-                          field.value.map((timeRange, rangeIndex) => (
-                            <div
-                              key={rangeIndex}
-                              className="grid grid-cols-1 md:grid-cols-3 items-center mt-2 gap-2"
-                            >
-                              <FormControl>
-                                <Input
-                                  className="w-[70%]"
-                                  type="time"
-                                  value={timeRange?.open || ""}
-                                  onChange={(e) => {
-                                    const newValue = [...field.value];
-                                    newValue[rangeIndex] = {
-                                      ...newValue[rangeIndex],
-                                      open: e.target.value,
-                                    };
-                                    field.onChange(newValue);
-                                  }}
-                                />
-                              </FormControl>
-                              <FormControl>
-                                <Input
-                                  className="w-[70%]"
-                                  type="time"
-                                  value={timeRange?.close || ""}
-                                  onChange={(e) => {
-                                    const newValue = [...field.value];
-                                    newValue[rangeIndex] = {
-                                      ...newValue[rangeIndex],
-                                      close: e.target.value,
-                                    };
-                                    field.onChange(newValue);
-                                  }}
-                                />
-                              </FormControl>
-                              <Button
-                                type="button"
-                                className="bg-red-500 hover:bg-red-600 text-white size-8 md:size-10 m-2 order-first md:order-last"
-                                onClick={() => {
-                                  const newValue = [...field.value];
-                                  newValue.splice(rangeIndex, 1);
-                                  field.onChange(newValue);
-                                }}
-                              >
-                                <XIcon className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))
-                        ) : (
-                          <p>No visiting hours set for this day.</p>
-                        )}
+  const formContent = (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="text-(--black-color) py-[15px] lg:py-[30px]">
+        {eventDays?.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[15px] lg:gap-[30px] items-start">
+            {eventDays.map((day, index) => (
+              <div key={day.dayId} className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name={`visitingHours.${index}.hours`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <input
+                        type="hidden"
+                        {...form.register(`visitingHours.${index}.user_id`)}
+                        value={targetUserId || ""}
+                      />
+                      <input
+                        type="hidden"
+                        {...form.register(`visitingHours.${index}.day_id`)}
+                        value={day.dayId}
+                      />
+                      <div className="flex items-center gap-2">
+                        <Label className="text-(--black-color) base-text-size">
+                          {day.label}
+                        </Label>
                         <Button
                           type="button"
-                          variant="outline"
-                          size="sm"
+                          disabled={readOnly}
+                          aria-label={`Add time range for ${day.label}`}
                           onClick={() =>
                             field.onChange([
                               ...(Array.isArray(field.value)
@@ -193,29 +146,96 @@ export function VisitingHoursForm({
                               { open: "09:00", close: "17:00" },
                             ])
                           }
-                          className="mt-2"
+                          className="p-0 bg-transparent shadow-none hover:bg-transparent cursor-pointer"
                         >
-                          <PlusIcon className="h-4 w-4 mr-2" />
-                          Add Time Range
+                          <PlusIconDesktop />
                         </Button>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              ))
-            ) : (
-              <p>No event days available. Please set up event days first.</p>
-            )}
-            <SaveChangesButton
-              watchFields={["visitingHours"]}
-              isSubmitting={isSubmitting}
-              className="w-full"
-            >
-              Save Visiting Hours
-            </SaveChangesButton>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+                      </div>
+                      {Array.isArray(field.value) &&
+                        field.value.map((timeRange, rangeIndex) => (
+                          <div
+                            key={rangeIndex}
+                            className="flex items-center gap-2 flex-wrap"
+                          >
+                            <FormControl>
+                              <Input
+                                className="max-w-[100px] base-text-size p-0"
+                                type="time"
+                                value={timeRange?.open || ""}
+                                disabled={readOnly}
+                                aria-label={`Open time for ${day.label}`}
+                                onChange={(e) => {
+                                  const newValue = [...field.value];
+                                  newValue[rangeIndex] = {
+                                    ...newValue[rangeIndex],
+                                    open: e.target.value,
+                                  };
+                                  field.onChange(newValue);
+                                }}
+                              />
+                            </FormControl>
+                            <FormControl>
+                              <Input
+                                className="max-w-[100px] base-text-size p-0"
+                                type="time"
+                                value={timeRange?.close || ""}
+                                disabled={readOnly}
+                                aria-label={`Close time for ${day.label}`}
+                                onChange={(e) => {
+                                  const newValue = [...field.value];
+                                  newValue[rangeIndex] = {
+                                    ...newValue[rangeIndex],
+                                    close: e.target.value,
+                                  };
+                                  field.onChange(newValue);
+                                }}
+                              />
+                            </FormControl>
+                            <Button
+                              type="button"
+                              size="icon"
+                              disabled={readOnly}
+                              aria-label={`Remove time range for ${day.label}`}
+                              onClick={() => {
+                                const newValue = [...field.value];
+                                newValue.splice(rangeIndex, 1);
+                                field.onChange(newValue);
+                              }}
+                              className="p-0 bg-transparent shadow-none hover:bg-transparent cursor-pointer"
+                            >
+                              <CrossRotatedDesktop />
+                            </Button>
+                          </div>
+                        ))}
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>No event days available. Please set up event days first.</p>
+        )}
+        <div className="flex justify-center mini-padding">
+          <SaveChangesButton
+            label="Save Visiting Hours"
+            watchFields={["visitingHours"]}
+            isSubmitting={isSubmitting}
+            {...(readOnly ? { disabled: true } : {})}
+          />
+        </div>
+      </form>
+    </Form>
+  );
+
+  if (embedded) {
+    return formContent;
+  }
+
+  return (
+    <div className="w-full max-w-[80%] mx-auto space-y-4">
+      <h1 className="title-text">Visiting Hours</h1>
+      {formContent}
+    </div>
   );
 }

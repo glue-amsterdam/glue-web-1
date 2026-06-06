@@ -1,17 +1,17 @@
 import React from "react";
 
-interface PendingApprovalProps {
+type PendingApprovalProps = {
   userName: string;
-}
+};
 
-const PendingApproval: React.FC<PendingApprovalProps> = ({ userName }) => {
+const PendingApproval = ({ userName }: PendingApprovalProps) => {
   return (
-    <div className="flex flex-col items-center justify-center h-full">
-      <h1 className="text-2xl font-bold mb-4">Pending Approval</h1>
-      <p className="text-lg text-center mb-2">
+    <div className="flex h-full flex-col items-center justify-center">
+      <h1 className="mb-4 text-2xl font-bold">Pending Approval</h1>
+      <p className="mb-2 text-center text-lg">
         Hello {userName}, your account is currently pending approval.
       </p>
-      <p className="text-md text-center">
+      <p className="text-center text-md">
         A moderator will review your application and grant you access to the
         dashboard soon.
       </p>

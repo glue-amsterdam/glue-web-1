@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Button } from "@/components/ui/button";
+import React, { useEffect, useState } from "react";
+import { getBigButtonClassName } from "@/components/big-button";
 import { useFormContext } from "react-hook-form";
 
 interface SaveChangesButtonProps
@@ -17,8 +17,17 @@ export function SaveChangesButton({
   watchFields = [],
   label,
   isDirty: isDirtyProp,
+  className,
+  children,
+  disabled: disabledProp,
   ...props
 }: SaveChangesButtonProps) {
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
   const {
     formState: { dirtyFields, isDirty: formIsDirty },
   } = useFormContext();
@@ -40,15 +49,24 @@ export function SaveChangesButton({
     return !!currentDirtyField;
   });
 
-  const isDirty = isDirtyFromWatchFields || isDirtyProp || formIsDirty;
+  const isDirty =
+    isDirtyProp ||
+    (watchFields.length > 0 ? isDirtyFromWatchFields : formIsDirty);
+
+  const isDisabled = !hasMounted
+    ? true
+    : Boolean(
+        isSubmitting || disabledProp || (!isDirty && !isDirtyProp)
+      );
 
   return (
-    <Button
+    <button
       type="submit"
-      disabled={isSubmitting || (!isDirty && !isDirtyProp)}
+      disabled={isDisabled}
+      className={getBigButtonClassName({ mode: "big", className })}
       {...props}
     >
-      {label ? label : isSubmitting ? "Saving..." : "Save Changes"}
-    </Button>
+      {children ?? label ?? (isSubmitting ? "Saving..." : "Save Changes")}
+    </button>
   );
 }

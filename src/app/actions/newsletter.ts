@@ -30,11 +30,11 @@ export async function submitNewsletter(
         const parsed = newsletterSchema.safeParse(data);
 
         if (!parsed.success) {
-            const firstError = parsed.error.errors[0]?.message ?? "Validation failed";
+            const firstError = parsed.error.issues[0]?.message ?? "Validation failed";
             return { status: 400, success: false, error: firstError };
         }
 
-        console.log(parsed.data);
+        console.log("newsletter submitted with data:", parsed.data);
 
         await delay(SIMULATED_RESPONSE_DELAY_MS);
 

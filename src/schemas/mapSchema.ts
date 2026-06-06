@@ -7,20 +7,15 @@ export const mapInfoSchemaApiCall = z.object({
   latitude: z.number().nullable(),
   longitude: z.number().nullable(),
   no_address: z.boolean().nullable().default(false),
-  user_info: z.object({
-    user_name: z.string(),
-    visible_emails: z.array(z.string().email()).nullable().optional(),
-  }),
+  display_name: z.string(),
 });
 
 export type MapInfoAPICall = z.infer<typeof mapInfoSchemaApiCall>;
 
-export const ZoneEnum = z.enum(["NORTH", "SOUTH", "EAST", "WEST"]);
-
 export const routeSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
-  zone: ZoneEnum,
+  route_zone_id: z.string().uuid("Zone is required"),
   dots: z.array(
     z.object({
       ...mapInfoSchemaApiCall.shape,

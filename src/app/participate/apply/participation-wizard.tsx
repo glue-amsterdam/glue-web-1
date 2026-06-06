@@ -17,17 +17,20 @@ import {
 import MainContainer from "@/components/main-container";
 import { useToast } from "@/hooks/use-toast";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
+import { submitNewsletter } from "@/app/actions/newsletter";
 
 type ParticipationWizardProps = {
   plan: PlanType;
   intent: "new" | "upgrade" | "reactivation";
   isAuthenticated: boolean;
+  termsContent: string;
 };
 
 export const ParticipationWizard = ({
   plan,
   intent,
   isAuthenticated,
+  termsContent,
 }: ParticipationWizardProps) => {
   const router = useRouter();
   const { toast } = useToast();
@@ -139,6 +142,18 @@ export const ParticipationWizard = ({
         return;
       }
 
+      if (account?.newsletterSubscribe) {
+        try {
+          await submitNewsletter({
+            firstName: account.firstName,
+            lastName: account.lastName,
+            email: account.email,
+          });
+        } catch {
+          // best-effort; application already succeeded
+        }
+      }
+
       toast({
         title: "Application submitted",
         description: "A moderator will review your application.",
@@ -216,10 +231,16 @@ export const ParticipationWizard = ({
         <MapInfoForm onSubmit={handleMapSubmit} onBack={handleBack} />
       )}
       {step === 4 && showAccountStep && (
-        <VisitorAccountStep onSubmit={handleAccountSubmit} onBack={handleBack} />
+        <VisitorAccountStep
+          onSubmit={handleAccountSubmit}
+          onBack={handleBack}
+          isSubmitting={loading}
+          loadingMessage="Submitting your application…"
+          termsContent={termsContent}
+        />
       )}
 
-      {loading ? (
+      {loading && step !== 4 ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <LoadingSpinner />
         </div>

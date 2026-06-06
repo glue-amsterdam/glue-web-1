@@ -179,7 +179,7 @@ const RoutePopup = ({
               aria-live="polite"
               aria-atomic="true"
             >
-              <h3 className="truncate">{currentStop.userName.toUpperCase()}</h3>
+              <h3 className="truncate">{route.name}</h3>
               <button
                 type="button"
                 onClick={onClose}

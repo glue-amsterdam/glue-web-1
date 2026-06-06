@@ -3,9 +3,7 @@
 import { useTransitionRouter } from "next-view-transitions";
 import React, { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import LoginForm, {
-  type LoginFormCloseReason,
-} from "@/app/components/login-form/login-form";
+import LoginForm from "@/app/components/login-form/login-form";
 import { useMenu } from "@/app/context/MainContext";
 import CenteredLoader from "@/app/components/centered-loader";
 import { User } from "@supabase/supabase-js";
@@ -42,16 +40,7 @@ export default function HomeWrapper({ refs }: { refs: HomeExitAnimationRefs }) {
     }
   };
 
-  const handleCloseLoginModal = (reason?: LoginFormCloseReason) => {
-    if (reason === "visitor-restored") {
-      if (reopenTimeoutRef.current) {
-        clearTimeout(reopenTimeoutRef.current);
-        reopenTimeoutRef.current = null;
-      }
-      setIsLoginModalOpen(false);
-      return;
-    }
-
+  const handleCloseLoginModal = () => {
     setIsLoginModalOpen(false);
   };
 

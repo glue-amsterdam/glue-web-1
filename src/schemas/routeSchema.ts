@@ -16,6 +16,7 @@ export interface IndividualRoute {
   id: string;
   name: string;
   description: string;
-  zone: string;
+  route_zone_id: string | null;
+  zone: string | null;
   route_dots: RouteDot[];
 }

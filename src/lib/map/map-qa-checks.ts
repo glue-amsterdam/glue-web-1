@@ -1,5 +1,9 @@
 import { classifyLocationType } from "./classify-location-type";
 import { filterMapLocationsForMap } from "./map-filters";
+import {
+  getMapLocationMarkerStackTier,
+  isMapHubEntity,
+} from "./map-location-display";
 import { getMapLocationProfileLink } from "./map-location-profile-link";
 import {
   enrichLegacyLocationsWithHubIds,
@@ -145,6 +149,10 @@ export const runMapLogicQaChecks = (): MapQaCheckResult[] => {
       legacyLocations?.[0]?.type === "up-to-three-participants"
     ),
     assert(
+      "legacy snapshot includes members for small hub",
+      (legacyLocations?.[0]?.members?.length ?? 0) === 2
+    ),
+    assert(
       "legacy snapshot hub marker at 4+ members",
       normalizeSnapshotLocations([
         {
@@ -161,6 +169,87 @@ export const runMapLogicQaChecks = (): MapQaCheckResult[] => {
   );
 
   results.push(
+    assert(
+      "marker stack tier: full hub above small hub above solo",
+      (() => {
+        const fullHub: MapLocation = {
+          id: "h1",
+          latitude: 0,
+          longitude: 0,
+          type: "hub",
+          name: "Full Hub",
+          displayNumber: "1",
+          addressLine: "",
+          hubId: "hub-1",
+          memberCount: 5,
+        };
+        const smallHub: MapLocation = {
+          id: "h2",
+          latitude: 0,
+          longitude: 0,
+          type: "up-to-three-participants",
+          name: "Small Hub",
+          displayNumber: "2",
+          addressLine: "",
+          hubId: "hub-2",
+          memberCount: 2,
+        };
+        const solo: MapLocation = {
+          id: "s1",
+          latitude: 0,
+          longitude: 0,
+          type: "up-to-three-participants",
+          name: "Solo",
+          displayNumber: "3",
+          addressLine: "",
+          memberCount: 1,
+        };
+
+        return (
+          getMapLocationMarkerStackTier(fullHub) >
+            getMapLocationMarkerStackTier(smallHub) &&
+          getMapLocationMarkerStackTier(smallHub) >
+            getMapLocationMarkerStackTier(solo)
+        );
+      })()
+    ),
+    assert(
+      "isMapHubEntity for hubId locations",
+      isMapHubEntity({ hubId: "hub-1" }) &&
+        !isMapHubEntity({ hubId: undefined })
+    ),
+    assert(
+      "v2 snapshot small hub includes members",
+      (() => {
+        const smallHubSnapshot = {
+          version: 2 as const,
+          capturedAt: "2025-01-01T00:00:00.000Z",
+          locations: [
+            {
+              id: "loc-small",
+              latitude: 52.3,
+              longitude: 4.9,
+              type: "up-to-three-participants" as const,
+              name: "Small Hub",
+              displayNumber: "20",
+              addressLine: "Amsterdam",
+              hubId: "hub-small",
+              memberCount: 2,
+              members: [
+                { name: "Host Name", slug: "host" },
+                { name: "Member", slug: "member" },
+              ],
+            },
+          ],
+        };
+        const locations = normalizeSnapshotLocations(smallHubSnapshot);
+        return (
+          locations?.[0]?.type === "up-to-three-participants" &&
+          isMapHubEntity(locations[0]) &&
+          (locations[0].members?.length ?? 0) === 2
+        );
+      })()
+    ),
     assert(
       "profile link prefers hub for multi-member",
       getMapLocationProfileLink({

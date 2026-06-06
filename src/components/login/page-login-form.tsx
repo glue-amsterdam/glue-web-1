@@ -4,7 +4,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { useAuth } from "@/app/context/AuthContext";
-import { useVisitor } from "@/app/context/VisitorContext";
 import { getCookieConsent } from "@/app/actions/cookieConsent";
 import { CookieSettingsModal } from "@/components/cookies/cookies-modal";
 import BigButton from "@/components/big-button";
@@ -13,9 +12,8 @@ import { fetchDashboardHomeHref } from "@/lib/users/fetch-dashboard-home";
 import { redirectToDashboardHome } from "@/lib/users/redirect-to-dashboard-home";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import {
-  buildSignUpBackHref,
-  isFromSignUp,
   parseReturnToParam,
+  resolvePostAuthRedirect,
 } from "@/lib/auth/post-auth-redirect";
 
 const loginSchema = z.object({
@@ -30,18 +28,16 @@ const resetPasswordSchema = z.object({
 type LoginFieldName = keyof z.infer<typeof loginSchema>;
 type ResetFieldName = keyof z.infer<typeof resetPasswordSchema>;
 
-const formWrapperClassName = "w-full lg:max-w-[508px] lg:mx-auto";
+const formWrapperClassName = "pt-[160px] lg:pt-[100px] w-full lg:max-w-[508px] lg:mx-auto";
 
 const PageLoginForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasRedirectedRef = useRef(false);
   const returnTo = parseReturnToParam(searchParams);
-  const showSignUpBack = isFromSignUp(searchParams);
 
   const { user, isLoading: isAuthLoading, login, loginError, clearLoginError } =
     useAuth();
-  const { visitor, visitorLogout } = useVisitor();
 
   const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -72,6 +68,12 @@ const PageLoginForm = () => {
 
     setIsRedirecting(true);
     const redirectExistingSession = async () => {
+      if (returnTo) {
+        hasRedirectedRef.current = true;
+        router.replace(resolvePostAuthRedirect(returnTo));
+        return;
+      }
+
       const href = await fetchDashboardHomeHref();
       redirectToDashboardHome({
         router,
@@ -81,13 +83,7 @@ const PageLoginForm = () => {
       });
     };
     void redirectExistingSession();
-  }, [user, isAuthLoading, router]);
-
-  useEffect(() => {
-    if (visitor?.email && !memberEmail) {
-      setMemberEmail(visitor.email);
-    }
-  }, [visitor, memberEmail]);
+  }, [user, isAuthLoading, router, returnTo]);
 
   const handleMemberLoginSubmit = async (
     event: React.FormEvent<HTMLFormElement>,
@@ -129,8 +125,14 @@ const PageLoginForm = () => {
         parsed.data.email,
         parsed.data.password,
       );
-      await visitorLogout();
       setIsRedirecting(true);
+
+      if (returnTo) {
+        hasRedirectedRef.current = true;
+        router.replace(resolvePostAuthRedirect(returnTo));
+        return;
+      }
+
       redirectToDashboardHome({
         router,
         userId: loggedInUser.id,
@@ -281,28 +283,15 @@ const PageLoginForm = () => {
     );
   }
 
-  const handleBackToSignUp = () => {
-    router.push(buildSignUpBackHref(returnTo));
-  };
+
 
   return (
     <>
       <div className={formWrapperClassName}>
-        {showSignUpBack ? (
-          <button
-            type="button"
-            onClick={handleBackToSignUp}
-            className="base-text-size cursor-pointer"
-            aria-label="Back to sign up form"
-          >
-            Back
-          </button>
-        ) : null}
-
         <form
           id="login-form"
           onSubmit={handleMemberLoginSubmit}
-          className={`flex flex-col gap-[15px] md:gap-[30px]${showSignUpBack ? " pt-[40px]" : ""}`}
+          className="flex flex-col gap-[15px] md:gap-[30px] w-full"
           noValidate
         >
           <p className="sr-only">Log in to your account</p>
@@ -315,13 +304,13 @@ const PageLoginForm = () => {
 
           {cookieError ? (
             <div role="alert" className="flex flex-col gap-[10px]">
-              <p className="base-text-size]">
+              <p className="base-text-size">
                 {cookieError}
               </p>
               <button
                 type="button"
                 onClick={() => setIsCookieSettingsOpen(true)}
-                className="base-text-size text-left] hover:underline"
+                className="base-text-size text-left hover:underline"
                 aria-label="Open cookie settings"
               >
                 Change cookie settings
@@ -349,23 +338,24 @@ const PageLoginForm = () => {
             autoComplete="current-password"
           />
 
-          <div className="flex justify-end pt-[15px] pb-[5px]">
+          <div className="flex justify-between pt-[15px] flex-wrap">
+            <button
+              type="button"
+              onClick={() => setIsResetPasswordOpen(true)}
+              className="base-text-size hover:underline text-right cursor-pointer"
+              aria-label="Forgot your password"
+            >
+              Forgot your password?
+            </button>
             <BigButton
               as="submit"
-              label={isLoading ? "logging in…" : "log in"}
+              label={isLoading ? "logging..." : "log in"}
               mode="navbar"
               disabled={isLoading}
             />
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsResetPasswordOpen(true)}
-            className="base-text-size] hover:underline text-right"
-            aria-label="Forgot your password"
-          >
-            Forgot your password?
-          </button>
+
         </form>
       </div>
 

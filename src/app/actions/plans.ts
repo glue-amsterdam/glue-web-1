@@ -53,6 +53,8 @@ export async function updatePlan(plan: PlanType): Promise<PlanType> {
       plan_items: plan.plan_items,
       is_participant_enabled: plan.is_participant_enabled,
       plan_type: plan.plan_type,
+      plan_max_images: plan.plan_max_images,
+      max_events: plan.max_events,
     })
     .eq("plan_id", plan.plan_id)
     .select()

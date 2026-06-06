@@ -144,13 +144,11 @@ const MapMain = ({ initialData }: MapMainProps) => {
 
   useEffect(() => {
     if (!selectedRoute) return;
-    const isVisible = filteredRoutesForList.some(
-      (route) => route.id === selectedRoute
-    );
-    if (!isVisible) {
+    const exists = routes.some((route) => route.id === selectedRoute);
+    if (!exists) {
       setSelectedRoute("");
     }
-  }, [filteredRoutesForList, selectedRoute, setSelectedRoute]);
+  }, [routes, selectedRoute, setSelectedRoute]);
 
   const selectedRouteObject =
     routes.find((route) => route.id === selectedRoute) ?? null;

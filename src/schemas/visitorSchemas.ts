@@ -5,6 +5,10 @@ export const visitorRegisterSchema = z.object({
   lastName: z.string().trim().min(1, "Last name is required").max(200),
   email: z.string().trim().email("Invalid email address").max(320),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  termsAccepted: z.boolean().refine((val) => val === true, {
+    message: "You must accept the General terms and conditions",
+  }),
+  newsletterSubscribe: z.boolean(),
 });
 
 export type VisitorRegisterInput = z.infer<typeof visitorRegisterSchema>;

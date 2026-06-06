@@ -30,7 +30,7 @@ export const ParticipateFormField = ({
           aria-hidden="true"
           id={`${name}-error`}
           role="alert"
-          className="text-[12px] text-[var(--primary-color)]"
+          className="text-[12px] text-(--primary-color)"
         >
           {error}
         </span>
@@ -46,7 +46,7 @@ export const ParticipateFormField = ({
       autoComplete={autoComplete}
       aria-invalid={Boolean(error)}
       aria-describedby={error ? `${name}-error` : undefined}
-      className="w-full pt-[5px] md:pt-[15px] bg-[var(--white-color)] border border-[var(--black-color)] h-[42px] pl-1"
+      className="w-full pt-[5px] md:pt-[15px] base-text-size bg-(--white-color) border border-(--black-color) h-[42px] pl-1 max-w-(507px)"
     />
   </div>
 );

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Popup } from "react-map-gl/mapbox-legacy";
 import type { ExhibitorPopupAnchor } from "@/lib/map/exhibitor-popup-layout";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
-import { getMapLocationProfileLink } from "@/lib/map/map-location-profile-link";
+import { isMapHubEntity } from "@/lib/map/map-location-display";
 import type { MapLocation, MapTourMode } from "@/lib/map/types";
 import { useMapLocationDetail } from "../hooks/use-map-location-detail";
 import RoundedNumber from "@/components/rounded-number";
@@ -56,7 +56,7 @@ const ExhibitorPopUp = ({
     window.open(buildGoogleMapsSearchUrl(location), "_blank");
   }, [location]);
 
-  const isHub = location.type === "hub";
+  const isHubEntity = isMapHubEntity(location);
 
   const popupConfig = {
     longitude: location.longitude,
@@ -90,7 +90,7 @@ const ExhibitorPopUp = ({
               </button>
             </div>
             <div className="pt-[15px] pl-[4px]">
-              {isHub ? (
+              {isHubEntity ? (
                 <p>{currentSlide.name}</p>
               ) : (
                 <p>{location.addressLine}</p>

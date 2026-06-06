@@ -1,4 +1,4 @@
-import { FieldValues } from "react-hook-form";
+import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
 
 export function createSubmitHandler<T extends FieldValues>(
   endpoint: string,
@@ -34,3 +34,13 @@ export function createSubmitHandler<T extends FieldValues>(
     }
   };
 }
+
+export const resetWatchedFieldsDirtyState = <T extends FieldValues>(
+  form: UseFormReturn<T>,
+  fields: readonly string[]
+) => {
+  for (const field of fields) {
+    const fieldPath = field as Path<T>;
+    form.resetField(fieldPath, { defaultValue: form.getValues(fieldPath) });
+  }
+};

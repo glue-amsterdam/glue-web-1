@@ -1,47 +1,52 @@
 "use client";
 
-import { useMemo } from "react";
 import RoundedNumber from "@/components/rounded-number";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { isMapHubEntity } from "@/lib/map/map-location-display";
 import type { MapLocation } from "@/lib/map/types";
+import type { ExhibitorsFilterType } from "@/lib/participants/exhibitors-filters";
 import { cn } from "@/lib/utils";
 
 type ExhibitorListProps = {
   locations: MapLocation[];
   selectedLocation: string | null;
   onLocationSelect: (locationId: string) => void;
+  categoryType: ExhibitorsFilterType;
   variant?: "sidebar" | "panel";
   className?: string;
-  /** When false, hub rows show only the hub name (no member list). */
-  showHubMembers?: boolean;
 };
+
+const shouldShowHubMembers = (
+  location: MapLocation,
+  categoryType: ExhibitorsFilterType
+): boolean =>
+  categoryType !== "all" &&
+  categoryType === location.type &&
+  isMapHubEntity(location);
 
 const ExhibitorList = ({
   locations,
   selectedLocation,
   onLocationSelect,
+  categoryType,
   variant = "sidebar",
   className,
-  showHubMembers = false,
 }: ExhibitorListProps) => {
-  const sortedLocations = useMemo(
-    () =>
-      [...locations].sort((a, b) => {
-        const numA = a.displayNumber ?? "";
-        const numB = b.displayNumber ?? "";
-        return numA.localeCompare(numB, undefined, { numeric: true });
-      }),
-    [locations]
+  const listButtonClassName = cn(
+    "lg:px-0 w-full text-left flex items-start gap-[15px] cursor-pointer",
+    variant === "panel" && "py-[10px]"
   );
 
   const listContent = (
-    <ul className="py-[30px] lg:flex lg:flex-col lg:gap-[30px]">
-      {sortedLocations.map((location) => {
+    <ul className="py-[30px] lg:flex lg:flex-col lg:gap-[30px] base-text-size">
+      {locations.map((location) => {
         const isSelected = selectedLocation === location.id;
         const displayNumber = location.displayNumber ?? " ";
 
-        if (location.type === "hub") {
-          const hubMembers = showHubMembers ? (location.members ?? []) : [];
+        if (isMapHubEntity(location)) {
+          const hubMembers = shouldShowHubMembers(location, categoryType)
+            ? (location.members ?? [])
+            : [];
 
           return (
             <li key={location.id} className="flex flex-col gap-[8px]">
@@ -49,7 +54,7 @@ const ExhibitorList = ({
                 type="button"
                 onClick={() => onLocationSelect(location.id)}
                 aria-pressed={isSelected}
-                className="lg:px-0 w-full text-left flex items-start gap-[15px] cursor-pointer base-text-size"
+                className={listButtonClassName}
               >
                 <RoundedNumber
                   type={location.type}
@@ -57,7 +62,7 @@ const ExhibitorList = ({
                 />
                 <div>
                   <p className="truncate lg:max-w-[237px]">{location.name}</p>
-                  {showHubMembers && hubMembers.length > 0 && (
+                  {hubMembers.length > 0 && (
                     <ul
                       className="text-(--black-color) list-none"
                       aria-label="Hub members"
@@ -83,10 +88,7 @@ const ExhibitorList = ({
               type="button"
               onClick={() => onLocationSelect(location.id)}
               aria-pressed={isSelected}
-              className={cn(
-                "lg:px-0 w-full text-left flex items-start gap-[15px] cursor-pointer",
-                variant === "panel" && "py-[10px]"
-              )}
+              className={listButtonClassName}
             >
               <RoundedNumber
                 type={location.type}
@@ -97,8 +99,8 @@ const ExhibitorList = ({
           </li>
         );
       })}
-      {sortedLocations.length === 0 && (
-        <li className="base-text-size text-(--gray-color) py-[10px]">
+      {locations.length === 0 && (
+        <li className="text-(--gray-color) py-[10px]">
           No exhibitors found.
         </li>
       )}

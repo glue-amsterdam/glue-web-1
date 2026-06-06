@@ -10,21 +10,31 @@ import { useRouter } from 'next/navigation'
 type Props = {
   mode?: 'small' | 'large'
   fallbackHref?: string
+  preferFallback?: boolean
 }
 
-const CrossButton = ({ mode = 'small', fallbackHref = '/' }: Props) => {
+const CrossButton = ({
+  mode = 'small',
+  fallbackHref = '/',
+  preferFallback = false,
+}: Props) => {
   const router = useRouter()
   const size = mode === 'large' ? '24' : '12'
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
 
-    if (canGoBackInternally()) {
+    if (!preferFallback && canGoBackInternally()) {
       window.history.back()
       return
     }
 
     skipNextInternalNavIncrement()
+    if (preferFallback) {
+      router.replace(fallbackHref)
+      return
+    }
+
     router.push(fallbackHref)
   }
 
