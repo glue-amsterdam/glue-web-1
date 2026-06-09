@@ -2,7 +2,6 @@ import { CarouselSection } from "@/schemas/carouselSchema";
 import { CitizensSection } from "@/schemas/citizenSchema";
 import { CuratedMemberSectionHeader } from "@/schemas/curatedSchema";
 import { InfoSection } from "@/schemas/infoSchema";
-import { GlueInternationalContent } from "@/schemas/internationalSchema";
 import { ParticipantsSectionHeader } from "@/schemas/participantsAdminSchema";
 import { PressItemsSectionContent } from "@/schemas/pressSchema";
 import { SponsorsSection } from "@/schemas/sponsorsSchema";
@@ -24,7 +23,6 @@ export type DatabaseAboutContent = {
   infoItemsSection: InfoSection;
   pressItemsSection: PressItemsSectionContent;
   sponsorsSection: SponsorsSection;
-  glueInternationalSection: GlueInternationalContent;
   createdAt: Date;
   updatedAt: Date;
 };

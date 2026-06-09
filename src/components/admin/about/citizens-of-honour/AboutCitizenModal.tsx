@@ -18,8 +18,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RichTextEditor } from "@/app/components/editor";
-import { ImageIcon, Upload, X } from "lucide-react";
-import Image from "next/image";
+import { Upload, X } from "lucide-react";
+import { AdminImagePreview } from "@/components/admin/admin-image-preview";
+import {
+  createUploadProgressHandler,
+  type UploadState,
+} from "@/components/image-upload-overlay";
 import {
   Form,
   FormControl,
@@ -54,11 +58,13 @@ export function AboutCitizenModal({
   onCitizenSaved,
 }: AboutCitizenModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadState, setUploadState] = useState<UploadState | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const router = useRouter();
+  const handleUploadProgress = createUploadProgressHandler(setUploadState);
 
   const form = useForm<Omit<Citizen, "id">>({
     resolver: zodResolver(citizenSchema.omit({ id: true })),
@@ -123,16 +129,17 @@ export function AboutCitizenModal({
 
       // Upload new image if selected
       if (selectedFile) {
-        console.log("Uploading image during submit...");
+        setUploadState({ stage: "compressing", progress: 5 });
+
         const { imageUrl, error } = await uploadImage({
           file: selectedFile,
           bucket: config.bucketName,
           folder: `about/citizens/${selectedYear}`,
           maxSizeMB: 2,
+          onProgress: handleUploadProgress,
         });
 
         if (error) {
-          console.error("Upload error:", error);
           toast({
             title: "Upload failed",
             description: error,
@@ -142,11 +149,10 @@ export function AboutCitizenModal({
         }
 
         finalImageUrl = imageUrl;
-        console.log("Image uploaded successfully:", imageUrl);
       }
 
-      // If updating an existing citizen and the image has changed, delete the old image
       if (citizen && citizen.image_url && citizen.image_url !== finalImageUrl) {
+        setUploadState({ stage: "deleting", progress: 10 });
         try {
           await deleteImage(citizen.image_url);
         } catch (error) {
@@ -160,6 +166,8 @@ export function AboutCitizenModal({
         : `/api/admin/about/citizens/${selectedYear}`;
 
       const method = citizen ? "PUT" : "POST";
+
+      setUploadState({ stage: "saving", progress: 96 });
 
       const response = await fetch(url, {
         method,
@@ -196,6 +204,7 @@ export function AboutCitizenModal({
         variant: "destructive",
       });
     } finally {
+      setUploadState(null);
       setIsSubmitting(false);
     }
   };
@@ -237,6 +246,9 @@ export function AboutCitizenModal({
       setIsSubmitting(false);
     }
   };
+
+  const previewSrc = imagePreview || imageUrl;
+  const isBusy = isSubmitting || uploadState !== null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -298,27 +310,20 @@ export function AboutCitizenModal({
                   <FormLabel>Image</FormLabel>
                   <FormControl>
                     <div className="space-y-4">
-                      <div className="w-full h-48 relative border-2 border-dashed border-gray-300 rounded-lg overflow-hidden">
-                        {imagePreview || imageUrl ? (
-                          <Image
-                            src={(imagePreview || imageUrl) as string}
-                            alt={generateAltText(
-                              selectedYear,
-                              form.watch("name") || "Citizen"
-                            )}
-                            fill
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
-                            <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
-                            <p className="text-gray-500 text-sm">
-                              No image selected
-                            </p>
-                          </div>
+                      <AdminImagePreview
+                        src={previewSrc}
+                        alt={generateAltText(
+                          selectedYear,
+                          form.watch("name") || "Citizen"
                         )}
-                      </div>
+                        uploadState={uploadState}
+                        aspectClassName="h-48 w-full"
+                      />
+                      {selectedFile && !uploadState && (
+                        <p className="text-sm text-muted-foreground">
+                          New file selected — save to apply
+                        </p>
+                      )}
 
                       <input
                         type="file"
@@ -326,6 +331,7 @@ export function AboutCitizenModal({
                         onChange={handleImageChange}
                         ref={fileInputRef}
                         className="hidden"
+                        disabled={isBusy}
                         aria-label="Upload citizen image"
                       />
 
@@ -334,11 +340,10 @@ export function AboutCitizenModal({
                         variant="outline"
                         onClick={triggerFileInput}
                         className="w-full"
+                        disabled={isBusy}
                       >
                         <Upload className="w-4 h-4 mr-2" />
-                        {imagePreview || imageUrl
-                          ? "Change Image"
-                          : "Select Image"}
+                        {previewSrc ? "Change Image" : "Select Image"}
                       </Button>
                     </div>
                   </FormControl>
@@ -348,7 +353,7 @@ export function AboutCitizenModal({
             />
 
             <div className="flex gap-4 pt-4">
-              <Button type="submit" disabled={isSubmitting} className="flex-1">
+              <Button type="submit" disabled={isBusy} className="flex-1">
                 {isSubmitting
                   ? "Saving..."
                   : citizen
@@ -361,7 +366,7 @@ export function AboutCitizenModal({
                   type="button"
                   variant="destructive"
                   onClick={handleDelete}
-                  disabled={isSubmitting}
+                  disabled={isBusy}
                 >
                   Delete Citizen
                 </Button>

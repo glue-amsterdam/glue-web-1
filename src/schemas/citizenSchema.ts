@@ -12,16 +12,18 @@ export const citizenSchema = z.object({
   oldImageUrl: z.string().optional().nullable(),
 });
 
-export const citizensSectionSchema = z.object({
+export const citizensSectionHeaderSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
   is_visible: z.boolean(),
+});
+
+export const citizensSectionSchema = citizensSectionHeaderSchema.extend({
   citizensByYear: z.record(z.array(citizenSchema)),
-  text_color: z.string().default("#ffffff"),
-  background_color: z.string().default("#000000"),
 });
 
 export type Citizen = z.infer<typeof citizenSchema>;
+export type CitizensSectionHeader = z.infer<typeof citizensSectionHeaderSchema>;
 export type CitizensSection = z.infer<typeof citizensSectionSchema>;
 
 export const clientCitizenSchema = z.object({
@@ -32,13 +34,8 @@ export const clientCitizenSchema = z.object({
   year: z.string(),
 });
 
-export const clientCitizensSectionSchema = z.object({
-  title: z.string(),
-  description: z.string(),
-  is_visible: z.boolean(),
+export const clientCitizensSectionSchema = citizensSectionHeaderSchema.extend({
   citizensByYear: z.record(z.array(clientCitizenSchema)),
-  text_color: z.string(),
-  background_color: z.string(),
 });
 
 export type ClientCitizen = z.infer<typeof clientCitizenSchema>;

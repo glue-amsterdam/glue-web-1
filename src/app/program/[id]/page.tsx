@@ -6,6 +6,11 @@ import ProgramDetailView from "@/components/program/program-detail-view";
 import { config } from "@/config";
 import { fetchProgramDetail } from "@/lib/program/fetch-program-detail";
 import { ProgramNotFoundError } from "@/lib/program/program-types";
+import {
+  buildEntityMetadata,
+  buildFallbackEntityMetadata,
+} from "@/lib/seo/build-entity-metadata";
+import { buildProgramEventJsonLd } from "@/lib/seo/build-json-ld";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -23,34 +28,30 @@ export const generateMetadata = async ({
       event.description ||
       `${event.name} at GLUE ${config.cityName} program.`;
 
-    return {
+    return buildEntityMetadata({
       title,
       description,
-      alternates: {
-        canonical: `${config.baseUrl}/program/${id}`,
-      },
-      openGraph: {
-        title,
-        description,
-        url: `${config.baseUrl}/program/${id}`,
-        siteName: `GLUE ${config.cityName}`,
-        images: event.eventImg
-          ? [{ url: event.eventImg, alt: event.name }]
-          : undefined,
-        type: "website",
-      },
-      twitter: {
-        card: "summary_large_image",
-        title,
-        description,
-        images: event.eventImg ? [event.eventImg] : undefined,
-      },
-    };
+      canonicalPath: `/program/${id}`,
+      imageUrl: event.eventImg,
+      imageAlt: event.name,
+      keywords: [
+        "GLUE",
+        config.cityName,
+        event.name,
+        "program",
+        "event",
+        event.type,
+      ],
+      authors: [event.organizer.userName],
+      creator: event.organizer.userName,
+      structuredData: buildProgramEventJsonLd(event),
+    });
   } catch {
-    return {
+    return buildFallbackEntityMetadata({
       title: `GLUE ${config.cityName} | Program`,
       description: `Program event at GLUE ${config.cityName}.`,
-    };
+      canonicalPath: `/program/${id}`,
+    });
   }
 };
 
@@ -63,6 +64,17 @@ export default async function ProgramEventPage({ params }: PageProps) {
     return (
       <main id="program-detail-page">
         <MainContainer>
+          <nav className="sr-only" aria-label="Breadcrumb">
+            <ol>
+              <li>
+                <a href={config.baseUrl}>Home</a>
+              </li>
+              <li>
+                <a href={`${config.baseUrl}/program`}>Program</a>
+              </li>
+              <li>{event.name}</li>
+            </ol>
+          </nav>
           <ProgramDetailView event={event} />
           <BottomBlock />
         </MainContainer>

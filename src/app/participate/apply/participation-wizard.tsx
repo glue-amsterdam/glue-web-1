@@ -14,6 +14,8 @@ import {
   VisitorAccountStep,
   type VisitorAccountValues,
 } from "@/components/participate/visitor-account-step";
+import { ParticipationPrefilledHint } from "@/components/participate/participation-prefilled-hint";
+import type { ParticipationFormContext } from "@/lib/participate/get-participation-form-context";
 import MainContainer from "@/components/main-container";
 import { useToast } from "@/hooks/use-toast";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
@@ -21,39 +23,57 @@ import { submitNewsletter } from "@/app/actions/newsletter";
 
 type ParticipationWizardProps = {
   plan: PlanType;
-  intent: "new" | "upgrade" | "reactivation";
-  isAuthenticated: boolean;
+  formContext: ParticipationFormContext;
+  participateBackHref: string;
   termsContent: string;
 };
 
+/**
+ * Reactivation is initiated by the participant here; moderators approve
+ * and change plans from the dashboard only (no targetId impersonation).
+ */
 export const ParticipationWizard = ({
   plan,
-  intent,
-  isAuthenticated,
+  formContext,
+  participateBackHref,
   termsContent,
 }: ParticipationWizardProps) => {
   const router = useRouter();
   const { toast } = useToast();
+  const { intent, isAuthenticated, sectionStatus } = formContext;
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [invoiceData, setInvoiceData] = useState<InvoiceFormData | null>(null);
-  const [extraData, setExtraData] =
-    useState<ParticipantExtraDataFormData | null>(null);
-  const [mapInfo, setMapInfo] = useState<MapInfo | null>(null);
+  const [invoiceData, setInvoiceData] = useState<InvoiceFormData | null>(
+    formContext.initialValues.invoice
+  );
+  const [extraData, setExtraData] = useState<ParticipantExtraDataFormData | null>(
+    formContext.initialValues.extra
+  );
+  const [mapInfo, setMapInfo] = useState<MapInfo | null>(
+    formContext.initialValues.map
+  );
+  const [accountData, setAccountData] = useState<VisitorAccountValues | null>(
+    null
+  );
 
   const isReactivation = intent === "reactivation";
-  const showAccountStep = !isAuthenticated && !isReactivation;
-  const totalSteps = isReactivation ? 1 : showAccountStep ? 4 : 3;
+  const showAccountStep = !isAuthenticated && intent === "new";
+  const totalSteps = showAccountStep ? 4 : 3;
 
   const handleBack = () => {
     if (step === 1) {
-      router.push("/participate#plans-selection-section");
+      router.push(participateBackHref);
       return;
     }
     setStep(step - 1);
   };
 
-  const submitReactivation = async (data: MapInfo) => {
+  const submitReactivation = async (
+    invoice: InvoiceFormData,
+    extra: ParticipantExtraDataFormData,
+    map: MapInfo
+  ) => {
     setLoading(true);
     try {
       const response = await fetch("/api/participation/apply", {
@@ -66,13 +86,15 @@ export const ParticipationWizard = ({
             plan_id: plan.plan_id,
             plan_type: plan.plan_type,
             plan_label: plan.plan_label,
-            formatted_address: data.formatted_address,
-            latitude: data.latitude,
-            longitude: data.longitude,
-            no_address: data.no_address,
-            notes: "",
-            exhibition_space_preference: data.exhibition_space_preference,
             termsAccepted: true,
+            ...invoice,
+            ...extra,
+            formatted_address: map.formatted_address,
+            latitude: map.latitude,
+            longitude: map.longitude,
+            no_address: map.no_address,
+            exhibition_space_preference: map.exhibition_space_preference,
+            notes: "",
           },
         }),
       });
@@ -171,67 +193,85 @@ export const ParticipationWizard = ({
   };
 
   const handleMapSubmit = (data: MapInfo) => {
+    setMapInfo(data);
+
     if (isReactivation) {
-      void submitReactivation(data);
+      if (!invoiceData || !extraData) return;
+      void submitReactivation(invoiceData, extraData, data);
       return;
     }
-    setMapInfo(data);
+
     if (showAccountStep) {
       setStep(4);
       return;
     }
+
     void submitApplication();
   };
 
   const handleAccountSubmit = (data: VisitorAccountValues) => {
+    setAccountData(data);
     void submitApplication(data);
   };
 
-  if (isReactivation) {
-    return (
-      <MainContainer className="pt-[160px] lg:pt-[195px] pb-[80px]">
-        <p className="base-text-size pb-[20px]">
-          Reactivation · Plan: <strong>{plan.plan_label}</strong>
-        </p>
-        <MapInfoForm onSubmit={handleMapSubmit} onBack={handleBack} />
-        {loading ? (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <LoadingSpinner />
-          </div>
-        ) : null}
-      </MainContainer>
-    );
-  }
+  const stepLabel = isReactivation ? "Reactivation" : "Application";
 
   return (
     <MainContainer className="pt-[160px] lg:pt-[195px] pb-[80px]">
       <p className="base-text-size pb-[20px]">
-        Plan: <strong>{plan.plan_label}</strong> · Step {step} of {totalSteps}
+        {stepLabel} · Plan: <strong>{plan.plan_label}</strong> · Step {step} of{" "}
+        {totalSteps}
       </p>
 
       {step === 1 && (
-        <InvoiceForm
-          onSubmit={(data) => {
-            setInvoiceData(data);
-            setStep(2);
-          }}
-          onBack={handleBack}
-        />
+        <>
+          <ParticipationPrefilledHint show={sectionStatus.invoice === "complete"} />
+          <InvoiceForm
+            defaultValues={invoiceData ?? undefined}
+            onSubmit={(data) => {
+              setInvoiceData(data);
+              setStep(2);
+            }}
+            onBack={handleBack}
+          />
+        </>
       )}
+
       {step === 2 && (
-        <ParticipantExtraDataForm
-          onSubmit={(data) => {
-            setExtraData(data);
-            setStep(3);
-          }}
-          onBack={handleBack}
-        />
+        <>
+          <ParticipationPrefilledHint show={sectionStatus.extra === "complete"} />
+          <ParticipantExtraDataForm
+            defaultValues={extraData ?? undefined}
+            onSubmit={(data) => {
+              setExtraData(data);
+              setStep(3);
+            }}
+            onBack={handleBack}
+          />
+        </>
       )}
+
       {step === 3 && (
-        <MapInfoForm onSubmit={handleMapSubmit} onBack={handleBack} />
+        <>
+          <ParticipationPrefilledHint show={sectionStatus.map === "complete"} />
+          <MapInfoForm
+            defaultValues={mapInfo ?? undefined}
+            onSubmit={handleMapSubmit}
+            onBack={handleBack}
+            submitLabel={
+              isReactivation
+                ? "Submit reactivation request"
+                : showAccountStep
+                  ? "Next Step"
+                  : "Submit application"
+            }
+          />
+        </>
       )}
+
       {step === 4 && showAccountStep && (
         <VisitorAccountStep
+          initialValues={accountData ?? undefined}
           onSubmit={handleAccountSubmit}
           onBack={handleBack}
           isSubmitting={loading}

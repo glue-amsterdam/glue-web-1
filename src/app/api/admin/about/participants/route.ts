@@ -1,5 +1,7 @@
+import { HOME_EXHIBITORS_HEADER_CACHE_TAG } from "@/lib/participants/fetch-home-exhibitors-header";
 import { participantsSectionSchema } from "@/schemas/participantsAdminSchema";
 import { createClient } from "@/utils/supabase/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -9,7 +11,7 @@ export async function GET() {
 
     const { data: participantsData } = await supabase
       .from("about_participants")
-      .select("title,description,is_visible,text_color,background_color")
+      .select("title,description,is_visible")
       .single();
 
     if (!participantsData) {
@@ -49,12 +51,15 @@ export async function PUT(request: Request) {
         title: validatedData.title,
         description: validatedData.description,
         is_visible: validatedData.is_visible,
-        text_color: validatedData.text_color,
-        background_color: validatedData.background_color,
       })
       .eq("id", "about-participants");
 
     if (participantsError) throw participantsError;
+
+    revalidateTag(HOME_EXHIBITORS_HEADER_CACHE_TAG, "max");
+    revalidateTag("participants", "max");
+    revalidatePath("/");
+    revalidatePath("/about");
 
     return NextResponse.json(participantsData);
   } catch (error) {

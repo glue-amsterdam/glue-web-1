@@ -5,8 +5,6 @@ export const curatedMembersSectionSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   is_visible: z.boolean(),
-  text_color: z.string(),
-  background_color: z.string(),
 });
 
 export type CuratedMemberSectionHeader = z.infer<
@@ -30,8 +28,6 @@ export const curatedHeaderSchema = z.object({
   title: z.string(),
   description: z.string(),
   is_visible: z.boolean(),
-  text_color: z.string(),
-  background_color: z.string(),
 });
 
 export const curatedResponseSchema = z.object({

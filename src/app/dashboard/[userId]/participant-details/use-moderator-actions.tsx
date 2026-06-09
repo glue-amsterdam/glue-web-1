@@ -341,6 +341,33 @@ export const useModeratorActions = ({
             </span>
           </div>
         )}
+        {reactivationNotes?.invoice_company_name && (
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-gray-500" />
+            <span className="text-sm">
+              <strong>Invoice company:</strong>{" "}
+              {reactivationNotes.invoice_company_name}
+            </span>
+          </div>
+        )}
+        {reactivationNotes?.short_description && (
+          <div className="flex items-start gap-2">
+            <FileText className="h-4 w-4 text-gray-500 mt-1" />
+            <span className="text-sm">
+              <strong>Short description:</strong>{" "}
+              {reactivationNotes.short_description}
+            </span>
+          </div>
+        )}
+        {reactivationNotes?.glue_communication_email && (
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-gray-500" />
+            <span className="text-sm">
+              <strong>GLUE email:</strong>{" "}
+              {reactivationNotes.glue_communication_email}
+            </span>
+          </div>
+        )}
         {reactivationNotes?.no_address && (
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-gray-500" />

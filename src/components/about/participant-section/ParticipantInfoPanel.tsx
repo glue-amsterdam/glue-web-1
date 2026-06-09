@@ -11,11 +11,9 @@ gsap.registerPlugin(ScrollTrigger);
 export default function ParticipantInfoPanel({
   participant,
   participantSelectedImage,
-  textColor,
 }: {
   participant: ParticipantClient;
   participantSelectedImage: React.RefObject<HTMLImageElement>;
-  textColor: string;
 }) {
   const sanitizedDescription = useSanitizedHTML(participant.short_description);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -110,10 +108,7 @@ export default function ParticipantInfoPanel({
       id="participant-info-panel"
       className="flex-1 justify-end z-30 hidden md:flex"
     >
-      <div
-        className="p-2 w-[150px] md:h-[180px] overflow-y-auto overflow-x-hidden shadow-md"
-        style={{ backgroundColor: textColor }}
-      >
+      <div className="p-2 w-[150px] md:h-[180px] overflow-y-auto overflow-x-hidden shadow-md bg-white/10">
         <h3
           id="participant-name"
           aria-label={`${participant.userName} profile`}

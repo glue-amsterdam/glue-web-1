@@ -7,66 +7,17 @@ import { uploadImage, deleteImage } from "@/utils/supabase/storage/client";
 import { useToast } from "@/hooks/use-toast";
 import { config } from "@/config";
 import Image from "next/image";
+import {
+  ImageUploadOverlay,
+  createUploadProgressHandler,
+  type UploadState,
+} from "@/components/image-upload-overlay";
 
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
 
 type ProfileImage = {
   id: string;
   image_url: string;
-};
-
-type UploadStage = "compressing" | "uploading" | "saving";
-
-type UploadState = {
-  stage: UploadStage;
-  progress: number;
-};
-
-const getStageLabel = (stage: UploadStage): string => {
-  switch (stage) {
-    case "compressing":
-      return "Compressing image…";
-    case "uploading":
-      return "Uploading…";
-    case "saving":
-      return "Saving…";
-  }
-};
-
-const ImageUploadOverlay = ({
-  stage,
-  progress,
-}: {
-  stage: UploadStage;
-  progress: number;
-}) => {
-  const label = getStageLabel(stage);
-
-  return (
-    <div
-      className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/60 px-4"
-      aria-live="polite"
-      aria-busy="true"
-    >
-      <p className="text-sm font-medium text-white">{label}</p>
-      <div className="w-full max-w-xs">
-        <div
-          role="progressbar"
-          aria-valuenow={progress}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label={label}
-          className="h-2 w-full overflow-hidden rounded-full bg-white/30"
-        >
-          <div
-            className="h-full rounded-full bg-white transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <p className="mt-1 text-center text-xs text-white/80">{progress}%</p>
-      </div>
-    </div>
-  );
 };
 
 const ProfileImageCard = ({
@@ -194,14 +145,7 @@ export function ProfileImageForm({
     }
   }, [initialImages, maxImages, readOnly]);
 
-  const handleUploadProgress = (progress: number) => {
-    if (progress <= 85) {
-      setUploadState({ stage: "compressing", progress: Math.max(5, progress) });
-      return;
-    }
-
-    setUploadState({ stage: "uploading", progress });
-  };
+  const handleUploadProgress = createUploadProgressHandler(setUploadState);
 
   const handleImageUpload = async (
     file: File

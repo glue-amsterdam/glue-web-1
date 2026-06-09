@@ -9,46 +9,53 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, Plus, X } from "lucide-react";
 import { EditYearModal } from "./EditYearModal";
-
-// --- Types ---
-type Participant = {
-  user_id: string;
-  name: string;
-  slug: string;
-};
-
-type GroupParticipant = {
-  user_id: string;
-  name: string;
-  slug: string;
-  is_curated: boolean;
-};
+import type { StickyParticipantOption } from "./StickyParticipantPicker";
+import type { StickyMember } from "@/types/sticky-member";
+import {
+  createUploadProgressHandler,
+  type UploadState,
+} from "@/components/image-upload-overlay";
+import {
+  getStickyMemberKey,
+  normalizeStickyDisplayNameKey,
+  stickyMemberFromApi,
+  stickyMembersToPayload,
+} from "@/types/sticky-member";
 
 type YearGroup = {
   year: number;
   group_photo_url?: string;
-  participants: GroupParticipant[];
+  members: StickyMember[];
+};
+
+const parseApiError = async (res: Response) => {
+  const body = (await res.json().catch(() => ({}))) as { error?: string };
+  return body.error ?? `Failed to save group (${res.status})`;
 };
 
 export const StickyGroupsManager = () => {
   const { toast } = useToast();
 
-  // State
   const [years, setYears] = useState<number[]>([]);
   const [isLoadingYears, setIsLoadingYears] = useState(false);
   const [isLoadingGroup, setIsLoadingGroup] = useState(false);
   const [isSavingGroup, setIsSavingGroup] = useState(false);
+  const [photoUploadState, setPhotoUploadState] = useState<UploadState | null>(
+    null
+  );
+  const handleUploadProgress = createUploadProgressHandler(setPhotoUploadState);
 
-  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingYear, setEditingYear] = useState<number | null>(null);
   const [newYearInput, setNewYearInput] = useState("");
   const [showNewYearInput, setShowNewYearInput] = useState(false);
 
-  // Current group data
   const [currentGroup, setCurrentGroup] = useState<YearGroup | null>(null);
+  const [groupExistsInDb, setGroupExistsInDb] = useState(false);
   const [groupPhotoFile, setGroupPhotoFile] = useState<File | null>(null);
-  const [allParticipants, setAllParticipants] = useState<Participant[]>([]);
+  const [allParticipants, setAllParticipants] = useState<
+    StickyParticipantOption[]
+  >([]);
 
   const loadYears = useCallback(async () => {
     setIsLoadingYears(true);
@@ -69,7 +76,6 @@ export const StickyGroupsManager = () => {
     }
   }, [toast]);
 
-  // Load years on component mount
   useEffect(() => {
     loadYears();
   }, [loadYears]);
@@ -77,16 +83,26 @@ export const StickyGroupsManager = () => {
   const loadAllParticipants = async () => {
     try {
       const res = await fetch("/api/admin/sticky-groups/participants");
-      if (res.ok) {
-        const participantsData = await res.json();
-        setAllParticipants(participantsData);
+      if (!res.ok) {
+        const message = await parseApiError(res);
+        toast({
+          title: "Error",
+          description: message,
+          variant: "destructive",
+        });
+        setAllParticipants([]);
+        return;
       }
+
+      const participantsData = await res.json();
+      setAllParticipants(participantsData);
     } catch {
       toast({
         title: "Error",
         description: "Failed to load participants.",
         variant: "destructive",
       });
+      setAllParticipants([]);
     }
   };
 
@@ -94,28 +110,30 @@ export const StickyGroupsManager = () => {
     setIsLoadingGroup(true);
     setEditingYear(year);
     setCurrentGroup(null);
+    setGroupExistsInDb(false);
     setGroupPhotoFile(null);
     setIsModalOpen(true);
 
     try {
-      // Load all participants first
       await loadAllParticipants();
 
-      // Try to load existing group data
       const res = await fetch(`/api/admin/sticky-groups/${year}`);
       if (res.ok) {
         const groupData = await res.json();
+        setGroupExistsInDb(true);
         setCurrentGroup({
           year: groupData.year,
           group_photo_url: groupData.group_photo_url,
-          participants: groupData.participants || [],
+          members: (groupData.members ?? groupData.participants ?? []).map(
+            stickyMemberFromApi
+          ),
         });
       } else {
-        // Create new group structure
+        setGroupExistsInDb(false);
         setCurrentGroup({
           year,
           group_photo_url: "",
-          participants: [],
+          members: [],
         });
       }
     } catch {
@@ -133,6 +151,7 @@ export const StickyGroupsManager = () => {
     setIsModalOpen(false);
     setEditingYear(null);
     setCurrentGroup(null);
+    setGroupExistsInDb(false);
     setGroupPhotoFile(null);
     setShowNewYearInput(false);
     setNewYearInput("");
@@ -160,40 +179,109 @@ export const StickyGroupsManager = () => {
     }
   };
 
-  const handleParticipantToggle = (userId: string) => {
-    if (!currentGroup) return;
+  const handleAddParticipant = (participant: StickyParticipantOption) => {
+    setCurrentGroup((prev) => {
+      if (!prev) return prev;
+
+      if (
+        prev.members.some(
+          (member) =>
+            member.kind === "user" && member.user_id === participant.user_id
+        )
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        members: [
+          ...prev.members,
+          {
+            kind: "user",
+            user_id: participant.user_id,
+            name: participant.name,
+            slug: participant.slug,
+            is_curated: true,
+          },
+        ],
+      };
+    });
+  };
+
+  const handleAddResolvedUser = (member: {
+    user_id: string;
+    name: string;
+    slug: string;
+  }) => {
+    setCurrentGroup((prev) => {
+      if (!prev) return prev;
+
+      if (
+        prev.members.some(
+          (entry) => entry.kind === "user" && entry.user_id === member.user_id
+        )
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        members: [
+          ...prev.members,
+          {
+            kind: "user",
+            user_id: member.user_id,
+            name: member.name,
+            slug: member.slug,
+            is_curated: true,
+          },
+        ],
+      };
+    });
+  };
+
+  const handleAddDisplayName = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+
+    const key = normalizeStickyDisplayNameKey(trimmed);
 
     setCurrentGroup((prev) => {
       if (!prev) return prev;
 
-      const existingParticipant = prev.participants.find(
-        (p) => p.user_id === userId
-      );
-      if (existingParticipant) {
-        // Remove participant
-        return {
-          ...prev,
-          participants: prev.participants.filter((p) => p.user_id !== userId),
-        };
-      } else {
-        // Add participant
-        const participant = allParticipants.find((p) => p.user_id === userId);
-        if (participant) {
-          return {
-            ...prev,
-            participants: [
-              ...prev.participants,
-              {
-                user_id: userId,
-                name: participant.name,
-                slug: participant.slug,
-                is_curated: true,
-              },
-            ],
-          };
-        }
+      if (
+        prev.members.some(
+          (member) => member.kind === "display_name" && member.key === key
+        )
+      ) {
+        return prev;
       }
-      return prev;
+
+      return {
+        ...prev,
+        members: [
+          ...prev.members,
+          {
+            kind: "display_name",
+            key,
+            name: trimmed,
+            is_curated: true,
+          },
+        ],
+      };
+    });
+  };
+
+  const handleRemoveMember = (memberKey: string) => {
+    setCurrentGroup((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        members: prev.members.filter(
+          (member) => getStickyMemberKey(member) !== memberKey
+        ),
+      };
     });
   };
 
@@ -205,10 +293,7 @@ export const StickyGroupsManager = () => {
       let photoUrl = currentGroup.group_photo_url;
 
       if (groupPhotoFile) {
-        toast({
-          title: "Updating group photo",
-          description: `Deleting previous images for year ${currentGroup.year}...`,
-        });
+        setPhotoUploadState({ stage: "deleting", progress: 10 });
 
         const { error: delError } = await deleteAllImagesInFolder(
           "assets",
@@ -222,69 +307,83 @@ export const StickyGroupsManager = () => {
               delError.message || "Could not delete previous images.",
             variant: "destructive",
           });
-        } else {
-          toast({
-            title: "Previous images deleted",
-            description: `Uploading new group photo for year ${currentGroup.year}...`,
-          });
         }
 
-        const { imageUrl, error } = await uploadImage({
+        setPhotoUploadState({ stage: "compressing", progress: 20 });
+
+        const { imageUrl, error } = await uploadStickyGroupImage({
           maxSizeMB: 1.3,
           file: groupPhotoFile,
           bucket: "assets",
           folder: `sticky-group/${String(currentGroup.year)}`,
+          onProgress: handleUploadProgress,
         });
 
         if (error) throw new Error(error);
         photoUrl = imageUrl;
-
-        toast({
-          title: "Group photo updated",
-          description: `New photo uploaded for year ${currentGroup.year}.`,
-        });
       }
 
-      const payload = {
-        year: currentGroup.year,
-        group_photo_url: photoUrl,
-        participants: currentGroup.participants.map((p) => ({
-          user_id: p.user_id,
-          is_curated: p.is_curated,
-        })),
-      };
+      setPhotoUploadState({ stage: "saving", progress: 96 });
 
-      const groupExists = years.includes(currentGroup.year);
-      let res;
+      const membersPayload = stickyMembersToPayload(currentGroup.members);
+      const localMemberCount = membersPayload.length;
 
-      if (groupExists) {
-        // Update existing group
+      let res: Response;
+
+      if (groupExistsInDb) {
         res = await fetch(`/api/admin/sticky-groups/${currentGroup.year}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             group_photo_url: photoUrl,
-            participants: payload.participants,
+            members: membersPayload,
           }),
         });
       } else {
-        // Create new group
         res = await fetch("/api/admin/sticky-groups", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            year: currentGroup.year,
+            group_photo_url: photoUrl,
+            members: membersPayload,
+          }),
         });
       }
 
-      if (!res.ok) throw new Error("Failed to save group");
+      if (!res.ok) {
+        throw new Error(await parseApiError(res));
+      }
 
-      toast({
-        title: "Success",
-        description: "Sticky group saved!",
-      });
+      const saved = (await res.json()) as {
+        memberCount?: number;
+        participantCount?: number;
+      };
+      const savedMemberCount =
+        saved.memberCount ?? saved.participantCount ?? localMemberCount;
+
+      setGroupExistsInDb(true);
+
+      if (localMemberCount > 0 && savedMemberCount === 0) {
+        toast({
+          title: "Warning",
+          description:
+            "Group saved but no members were persisted. Check the server logs.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description:
+            savedMemberCount > 0
+              ? `Sticky group saved with ${savedMemberCount} member${savedMemberCount === 1 ? "" : "s"}.`
+              : "Sticky group saved!",
+        });
+      }
 
       await mutate("/api/admin/sticky-groups/years");
       await loadYears();
+      await loadAllParticipants();
       handleCloseModal();
     } catch (error) {
       toast({
@@ -293,6 +392,7 @@ export const StickyGroupsManager = () => {
         variant: "destructive",
       });
     } finally {
+      setPhotoUploadState(null);
       setIsSavingGroup(false);
     }
   };
@@ -360,8 +460,7 @@ export const StickyGroupsManager = () => {
 
   return (
     <>
-      {/* --- Sticky Groups Management Section --- */}
-      <div className="mt-10 border-t pt-8">
+      <div>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold">Sticky Groups (by Year)</h2>
           {!showNewYearInput && (
@@ -376,7 +475,6 @@ export const StickyGroupsManager = () => {
           )}
         </div>
 
-        {/* Add New Year Input */}
         {showNewYearInput && (
           <Card className="mb-4">
             <CardHeader>
@@ -419,7 +517,6 @@ export const StickyGroupsManager = () => {
           </Card>
         )}
 
-        {/* Years List */}
         <div className="space-y-2">
           {isLoadingYears ? (
             <p className="text-gray-500">Loading years...</p>
@@ -462,7 +559,6 @@ export const StickyGroupsManager = () => {
         </div>
       </div>
 
-      {/* Edit Year Modal */}
       <EditYearModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
@@ -470,10 +566,14 @@ export const StickyGroupsManager = () => {
         currentGroup={currentGroup}
         isLoadingGroup={isLoadingGroup}
         isSavingGroup={isSavingGroup}
+        photoUploadState={photoUploadState}
         allParticipants={allParticipants}
-        groupExists={years.includes(editingYear!)}
+        groupExists={groupExistsInDb}
         onPhotoUpload={handlePhotoUpload}
-        onParticipantToggle={handleParticipantToggle}
+        onAddParticipant={handleAddParticipant}
+        onAddResolvedUser={handleAddResolvedUser}
+        onAddDisplayName={handleAddDisplayName}
+        onRemoveMember={handleRemoveMember}
         onSaveGroup={handleSaveGroup}
         onDeleteGroup={handleDeleteGroup}
       />
@@ -481,7 +581,6 @@ export const StickyGroupsManager = () => {
   );
 };
 
-// Utility functions
 const deleteAllImagesInFolder = async (bucket: string, folder: string) => {
   const { createClient } = await import("@/utils/supabase/client");
   const storage = createClient().storage;
@@ -499,19 +598,21 @@ const deleteAllImagesInFolder = async (bucket: string, folder: string) => {
   return { error: null };
 };
 
-const uploadImage = async ({
+const uploadStickyGroupImage = async ({
   maxSizeMB,
   file,
   bucket,
   folder,
+  onProgress,
 }: {
   maxSizeMB: number;
   file: File;
   bucket: string;
   folder: string;
+  onProgress?: (progress: number) => void;
 }) => {
   const { uploadImage: uploadImageUtil } = await import(
     "@/utils/supabase/storage/client"
   );
-  return uploadImageUtil({ maxSizeMB, file, bucket, folder });
+  return uploadImageUtil({ maxSizeMB, file, bucket, folder, onProgress });
 };

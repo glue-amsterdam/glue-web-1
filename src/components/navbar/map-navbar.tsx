@@ -9,7 +9,9 @@ import {
   type ChangeEvent,
   type KeyboardEvent,
 } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { ExhibitorsFilterType } from "@/lib/participants/exhibitors-filters";
+import { useAuth } from "@/app/context/AuthContext";
 import { useDebouncedUrlSearch } from "@/hooks/useDebouncedUrlSearch";
 import { useMapFiltersFromUrl } from "@/hooks/useMapFiltersFromUrl";
 import { useFilterPanel } from "@/hooks/useFilterPanel";
@@ -28,6 +30,8 @@ import {
   filterMapRoutes,
   type MapViewMode,
 } from "@/lib/map/map-filters";
+import { mergeMapFilters } from "@/lib/map/map-filter-actions";
+import { buildMapPageUrl } from "@/lib/map/map-url";
 import type { MapRoute } from "@/lib/map/types";
 import {
   type MapFilterId,
@@ -52,6 +56,9 @@ type MapNavbarProps = {
 const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
   const mapPageStore = useMapPage();
   const navigation = useMapNavigation();
+  const { user, isLoading } = useAuth();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const setFilterPanel = useMapStore((state) => state.setFilterPanel);
   const clearFilterPanel = useMapStore((state) => state.clearFilterPanel);
   const resetMapStore = useMapStore((state) => state.reset);
@@ -233,11 +240,28 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     [navigation, closeFilter, isLargeScreen]
   );
 
+  const navigateToRoutesViewForUnauthenticated = useCallback(() => {
+    const url = buildMapPageUrl(
+      pathname,
+      mergeMapFilters(filters, { view: "routes" }),
+      searchParams
+    );
+    window.location.assign(url);
+  }, [pathname, filters, searchParams]);
+
   const handleRoutesToggle = (_filter: MapFilterId) => {
     if (openFilter === "routes") {
       closeFilterView();
       return;
     }
+
+    if (isLoading) return;
+
+    if (!user) {
+      navigateToRoutesViewForUnauthenticated();
+      return;
+    }
+
     openFilterView("routes", "routes");
   };
 
@@ -369,7 +393,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     <section
       ref={mapNavbarRef}
       aria-label="Map filters"
-      className="w-full h-(--nav-secondary-h) flex items-center relative overflow-visible border-b lg:border-b-2 border-(--black-color) bg-(--white-color) py-[12px]"
+      className="w-full h-(--nav-secondary-h) flex items-center relative overflow-visible border-b lg:border-b-2 border-(--black-color) bg-(--background-color) py-[12px]"
     >
       <BaseSecondNavbar
         searchValue={searchValue}

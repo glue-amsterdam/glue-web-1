@@ -15,12 +15,14 @@ interface AboutCitizenWrapperProps {
   selectedYear: string;
   isNewYear: boolean;
   onYearDeleted?: () => void;
+  compact?: boolean;
 }
 
 export function AboutCitizenWrapper({
   selectedYear,
   isNewYear,
   onYearDeleted,
+  compact = false,
 }: AboutCitizenWrapperProps) {
   const [citizens, setCitizens] = useState<Citizen[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -117,9 +119,19 @@ export function AboutCitizenWrapper({
   }
 
   return (
-    <div className="mt-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Citizens for {selectedYear}</h2>
+    <div className={compact ? "space-y-6" : "mt-8 space-y-6"}>
+      <div
+        className={
+          compact
+            ? "flex items-center justify-end"
+            : "flex items-center justify-between"
+        }
+      >
+        {!compact ? (
+          <h2 className="text-2xl font-bold">Citizens for {selectedYear}</h2>
+        ) : (
+          <span className="sr-only">Citizens for {selectedYear}</span>
+        )}
         <div className="flex gap-2">
           <Button
             onClick={handleAddCitizen}

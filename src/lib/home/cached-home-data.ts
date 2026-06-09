@@ -2,15 +2,16 @@ import { unstable_cache } from "next/cache";
 import { createPublicSupabaseClient } from "@/utils/supabase/public";
 import { fetchLatestStickyGroup } from "./fetch-sticky-group";
 import { fetchLatestYearCitizens } from "./fetch-citizens";
+import { fetchHomeHero } from "./fetch-home-hero";
 import {
   HOME_CITIZENS_CACHE_TAG,
+  HOME_HERO_REVALIDATE_SECONDS,
   HOME_STICKY_CACHE_TAG,
   HOME_VIDEO_CACHE_TAG,
-  HomeVideoData,
   type HomeCitizensData,
+  type HomeHeroData,
   type HomeStickyGroupData,
 } from "./types";
-import { fetchHomeVideo } from "./fet-home-video";
 
 export const getCachedHomeStickyGroup = unstable_cache(
   async (): Promise<HomeStickyGroupData> => {
@@ -30,11 +31,17 @@ export const getCachedHomeCitizens = unstable_cache(
   { tags: [HOME_CITIZENS_CACHE_TAG], revalidate: 3600 }
 );
 
-export const getCachedHomeVideo = unstable_cache(
-  async (): Promise<HomeVideoData> => {
+export const getCachedHomeHero = unstable_cache(
+  async (): Promise<HomeHeroData> => {
     const supabase = createPublicSupabaseClient();
-    return fetchHomeVideo(supabase);
+    return fetchHomeHero(supabase);
   },
   [HOME_VIDEO_CACHE_TAG],
-  { tags: [HOME_VIDEO_CACHE_TAG], revalidate: 3600 }
+  {
+    tags: [HOME_VIDEO_CACHE_TAG],
+    revalidate: HOME_HERO_REVALIDATE_SECONDS,
+  }
 );
+
+/** @deprecated Use getCachedHomeHero */
+export const getCachedHomeVideo = getCachedHomeHero;

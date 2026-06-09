@@ -13,18 +13,20 @@ type Props = {
     currentIndex: number
     handleSelect: (index: number) => void
     citizens: ClientCitizen[]
+    archiveYear?: number
 }
 
 type ContentProps = {
     currentCitizen: ClientCitizen
+    archiveYear?: number
 }
 
-const Content = ({ currentCitizen }: ContentProps) => {
+const Content = ({ currentCitizen, archiveYear }: ContentProps) => {
     const citizenDescriptionHtml = useSanitizedHTML(currentCitizen.description);
 
     return (
         <>
-            <CreativeCitizensImage citizen={currentCitizen} />
+            <CreativeCitizensImage citizen={currentCitizen} archiveYear={archiveYear} />
             <CreativeCitizensTitle title={currentCitizen.name} />
             <CreativeCitizensDescription
                 citizenId={currentCitizen.id}
@@ -35,12 +37,15 @@ const Content = ({ currentCitizen }: ContentProps) => {
 }
 
 
-const CreativeCitizensContentMobile = ({ description, currentCitizen, hasMultiple, currentIndex, handleSelect, citizens }: Props) => {
-
+const CreativeCitizensContentMobile = ({ description, currentCitizen, hasMultiple, currentIndex, handleSelect, citizens, archiveYear }: Props) => {
+    const sectionDescriptionHtml = useSanitizedHTML(description ?? "");
 
     return (
-        <>  {description && (
-            <p className="text-[19px] leading-[26px]">{description}</p>
+        <>  {sectionDescriptionHtml && (
+            <div
+                className="text-[19px] leading-[26px]"
+                dangerouslySetInnerHTML={{ __html: sectionDescriptionHtml }}
+            />
         )}
 
             <AnimatePresence mode="wait">
@@ -55,7 +60,7 @@ const CreativeCitizensContentMobile = ({ description, currentCitizen, hasMultipl
                         aria-live="polite"
                         aria-atomic="true"
                     >
-                        <Content currentCitizen={currentCitizen} />
+                        <Content currentCitizen={currentCitizen} archiveYear={archiveYear} />
                     </motion.div>
                 )}
             </AnimatePresence>

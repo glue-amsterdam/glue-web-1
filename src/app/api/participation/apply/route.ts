@@ -19,6 +19,8 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+const PARTICIPANT_PLAN_TYPE = "participant" as const;
+
 const ensureParticipantPlan = async (
   supabase: Awaited<ReturnType<typeof createClient>>,
   planId: string
@@ -70,6 +72,53 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const admin = await createAdminClient();
+    const { data: participantDetails } = await admin
+      .from("participant_details")
+      .select("user_id, is_active, status, reactivation_status")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!participantDetails) {
+      return NextResponse.json(
+        {
+          error:
+            "No participant profile found. Submit a new application instead.",
+        },
+        { status: 409 }
+      );
+    }
+
+    if (participantDetails.is_active) {
+      return NextResponse.json(
+        {
+          error:
+            "You are already an active participant. Manage your profile from the dashboard.",
+        },
+        { status: 409 }
+      );
+    }
+
+    if (participantDetails.status === "pending") {
+      return NextResponse.json(
+        {
+          error:
+            "Your participant application is still under review. Reactivation is not available yet.",
+        },
+        { status: 409 }
+      );
+    }
+
+    if (participantDetails.reactivation_status === "pending") {
+      return NextResponse.json(
+        {
+          error:
+            "Your reactivation request is already pending review by administrators.",
+        },
+        { status: 409 }
+      );
+    }
+
     const plan = await ensureParticipantPlan(supabase, parsed.data.plan_id);
     if (!plan) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
@@ -77,11 +126,10 @@ export async function POST(request: Request) {
 
     const reactivationData = {
       ...parsed.data.reactivation,
-      plan_type: plan.plan_type,
+      plan_type: PARTICIPANT_PLAN_TYPE,
       plan_label: plan.plan_label,
     };
 
-    const admin = await createAdminClient();
     const { error: updateError } = await admin
       .from("participant_details")
       .update({
@@ -89,7 +137,7 @@ export async function POST(request: Request) {
         reactivation_notes: reactivationData,
         reactivation_status: "pending",
         plan_id: parsed.data.plan_id,
-        plan_type: plan.plan_type,
+        plan_type: PARTICIPANT_PLAN_TYPE,
       })
       .eq("user_id", user.id);
 
@@ -207,7 +255,7 @@ export async function POST(request: Request) {
   }
 
   const plan = await ensureParticipantPlan(supabase, data.plan_id);
-  if (!plan || plan.plan_type !== data.plan_type) {
+  if (!plan) {
     return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
   }
 
@@ -223,17 +271,62 @@ export async function POST(request: Request) {
 
   const { data: existingParticipant } = await admin
     .from("participant_details")
-    .select("user_id, status")
+    .select("user_id, status, is_active, reactivation_status")
     .eq("user_id", user.id)
     .maybeSingle();
+
+  if (existingParticipant && data.intent === "upgrade") {
+    if (!existingParticipant.is_active) {
+      return NextResponse.json(
+        {
+          error:
+            "Inactive participants must use the reactivation flow instead of upgrade.",
+        },
+        { status: 409 }
+      );
+    }
+
+    if (existingParticipant.status === "pending") {
+      return NextResponse.json(
+        {
+          error:
+            "Your participant application is still under review. Upgrade is not available yet.",
+        },
+        { status: 409 }
+      );
+    }
+  }
 
   if (
     existingParticipant &&
     data.intent === "new" &&
     existingParticipant.status !== "declined"
   ) {
+    if (existingParticipant.status === "pending") {
+      return NextResponse.json(
+        {
+          error:
+            "Your participant application is already under review. Please wait for moderator approval.",
+        },
+        { status: 409 }
+      );
+    }
+
+    if (!existingParticipant.is_active) {
+      return NextResponse.json(
+        {
+          error:
+            "You already have a participant profile. Use the reactivation flow if you need to re-subscribe.",
+        },
+        { status: 409 }
+      );
+    }
+
     return NextResponse.json(
-      { error: "You already have a participant application." },
+      {
+        error:
+          "You are already an active participant. Manage your profile from the dashboard.",
+      },
       { status: 409 }
     );
   }
@@ -254,7 +347,7 @@ export async function POST(request: Request) {
     special_program: false,
     reactivation_requested: false,
     plan_id: data.plan_id,
-    plan_type: plan.plan_type,
+    plan_type: PARTICIPANT_PLAN_TYPE,
     display_name: displayName,
     phone_numbers: data.phone_numbers ?? [],
     social_media: data.social_media ?? {},
@@ -263,7 +356,8 @@ export async function POST(request: Request) {
     glue_communication_email: data.glue_communication_email,
     upgrade_requested: data.intent === "upgrade",
     upgrade_requested_plan_id: data.intent === "upgrade" ? data.plan_id : null,
-    upgrade_requested_plan_type: data.intent === "upgrade" ? plan.plan_type : null,
+    upgrade_requested_plan_type:
+      data.intent === "upgrade" ? PARTICIPANT_PLAN_TYPE : null,
     upgrade_requested_at:
       data.intent === "upgrade" ? new Date().toISOString() : null,
   };
@@ -335,7 +429,7 @@ export async function POST(request: Request) {
     user_name: displayName,
     email: userEmail,
     plan_id: data.plan_id,
-    plan_type: plan.plan_type,
+    plan_type: PARTICIPANT_PLAN_TYPE,
     short_description: data.short_description,
     invoice_company_name: data.invoice_company_name,
     invoice_address: data.invoice_address,

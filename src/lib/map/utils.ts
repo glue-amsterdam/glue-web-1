@@ -5,8 +5,12 @@ export const ensureArray = <T>(value: T | T[] | null | undefined): T[] => {
   return Array.isArray(value) ? value : [value];
 };
 
-export const getAddressLine = (formattedAddress: string): string =>
-  formattedAddress.split(",")[0]?.trim() ?? formattedAddress;
+export const getAddressLine = (
+  formattedAddress: string | null | undefined
+): string => {
+  if (!formattedAddress) return "";
+  return formattedAddress.split(",")[0]?.trim() ?? formattedAddress;
+};
 
 export const getUserName = (
   userInfo: { user_name: string } | { user_name: string }[]

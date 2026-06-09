@@ -5,10 +5,9 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    // Fetch sticky groups header data
     const { data: headerData, error: headerError } = await supabase
       .from("about_curated")
-      .select("title, description, is_visible, text_color, background_color")
+      .select("title, description, is_visible")
       .single();
 
     if (headerError) {
@@ -16,14 +15,11 @@ export async function GET() {
       throw headerError;
     }
 
-    // If not visible, return early with only header data
     if (!headerData.is_visible) {
       return NextResponse.json({
         title: "",
         description: "",
         is_visible: false,
-        text_color: "#ffffff",
-        background_color: "#000000",
       });
     }
 
@@ -31,8 +27,6 @@ export async function GET() {
       title: headerData.title,
       description: headerData.description,
       is_visible: headerData.is_visible,
-      text_color: headerData.text_color,
-      background_color: headerData.background_color,
     });
   } catch (error) {
     console.error("Error in GET /api/about/sticky-groups:", error);

@@ -1,9 +1,14 @@
 "use client";
 
 import type React from "react";
+import Link from "next/link";
 import type { AdminUserDetail, AdminUserListItem } from "@/types/admin-user";
 import UserDetailAccordion from "@/app/dashboard/[userId]/users-admin/user-detail-accordion";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
+import { getDashboardHomePath } from "@/lib/users/get-dashboard-home-path";
+
+const rowActionClassName =
+  "text-xs border border-gray-300 rounded px-2 py-1";
 
 export type UserRowProps = {
   user: AdminUserListItem;
@@ -78,6 +83,50 @@ const UserRowExpandPanel = ({
   );
 };
 
+const UserRowActions = ({
+  user,
+  isExpanded,
+  onToggleExpand,
+}: {
+  user: AdminUserListItem;
+  isExpanded: boolean;
+  onToggleExpand: (userId: string) => void;
+}) => {
+  const editHref = getDashboardHomePath(user.userId, {
+    isParticipant: user.entityType === "participant",
+  });
+
+  const handleExpandClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleExpand(user.userId);
+  };
+
+  return (
+    <div className="flex shrink-0 items-center gap-2">
+      <Link
+        href={editHref}
+        className={rowActionClassName}
+        aria-label={`Edit ${user.displayName}`}
+      >
+        Edit
+      </Link>
+      <button
+        type="button"
+        onClick={handleExpandClick}
+        aria-expanded={isExpanded}
+        aria-label={
+          isExpanded
+            ? `Collapse details for ${user.displayName}`
+            : `Expand details for ${user.displayName}`
+        }
+        className={rowActionClassName}
+      >
+        {isExpanded ? "Hide" : "Details"}
+      </button>
+    </div>
+  );
+};
+
 export const UserRowMobile = ({
   user,
   isExpanded,
@@ -88,9 +137,6 @@ export const UserRowMobile = ({
   onToggleExpand,
   onToggleSelect,
 }: UserRowProps) => {
-  const handleExpandClick = () => {
-    onToggleExpand(user.userId);
-  };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
@@ -115,19 +161,11 @@ export const UserRowMobile = ({
             )}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleExpandClick}
-          aria-expanded={isExpanded}
-          aria-label={
-            isExpanded
-              ? `Collapse details for ${user.displayName}`
-              : `Expand details for ${user.displayName}`
-          }
-          className="shrink-0 text-xs border border-gray-300 rounded px-2 py-1"
-        >
-          {isExpanded ? "Hide" : "Details"}
-        </button>
+        <UserRowActions
+          user={user}
+          isExpanded={isExpanded}
+          onToggleExpand={onToggleExpand}
+        />
       </div>
 
       {isExpanded && (
@@ -151,11 +189,6 @@ export const UserRowDesktop = ({
   onToggleExpand,
   onToggleSelect,
 }: UserRowProps) => {
-  const handleExpandClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onToggleExpand(user.userId);
-  };
-
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     onToggleSelect(user.userId, e.target.checked);
@@ -180,19 +213,11 @@ export const UserRowDesktop = ({
         <td className="px-3 py-2 text-gray-600">{user.email ?? "—"}</td>
         <td className="px-3 py-2">
           <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={handleExpandClick}
-              aria-expanded={isExpanded}
-              aria-label={
-                isExpanded
-                  ? `Collapse details for ${user.displayName}`
-                  : `Expand details for ${user.displayName}`
-              }
-              className="text-xs border border-gray-300 rounded px-2 py-1"
-            >
-              {isExpanded ? "Hide" : "Details"}
-            </button>
+            <UserRowActions
+              user={user}
+              isExpanded={isExpanded}
+              onToggleExpand={onToggleExpand}
+            />
           </div>
         </td>
       </tr>

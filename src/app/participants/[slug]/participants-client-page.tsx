@@ -3,7 +3,6 @@
 import { ParticipantClientResponse } from "@/types/api-visible-user";
 import HomeLogo from "@/components/home/HomeLogo";
 import { useRef } from "react";
-import { useColors } from "@/app/context/MainContext";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -34,7 +33,6 @@ export default function ParticipantClientPage({
   participant,
   hubs,
 }: ParticipantClientPageProps) {
-  const { box1 } = useColors();
   const lettersContainerRef = useRef<HTMLDivElement>(null);
   const g_letterRef = useRef<SVGSVGElement>(null);
   const l_letterRef = useRef<SVGSVGElement>(null);
@@ -148,7 +146,7 @@ export default function ParticipantClientPage({
   return (
     <main
       ref={mainContainerRef}
-      style={{ backgroundColor: box1 }}
+      style={{ backgroundColor: "var(--color-box1)" }}
       className={`grid grid-cols-1 lg:grid-cols-2 pt-[5rem] h-screen overflow-hidden`}
     >
       <section

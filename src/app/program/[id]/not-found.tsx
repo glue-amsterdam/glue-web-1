@@ -1,5 +1,16 @@
+import type { Metadata } from "next";
 import BigButton from "@/components/big-button";
 import MainContainer from "@/components/main-container";
+import { config } from "@/config";
+
+export const metadata: Metadata = {
+  title: `GLUE ${config.cityName} | Event not found`,
+  description: `This program event may no longer be available at GLUE ${config.cityName}.`,
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 const ProgramEventNotFound = () => {
   return (

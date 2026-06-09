@@ -159,10 +159,9 @@ export default function CofHonourSection({
   return (
     <section
       ref={sectionRef}
-      style={{ backgroundColor: citizensData.background_color }}
       id="citizens"
       aria-labelledby="citizens-title"
-      className="h-full min-h-dvh w-full flex flex-col pt-[6rem] pb-[4rem]"
+      className="h-full min-h-dvh w-full flex flex-col pt-[6rem] pb-[4rem] bg-black"
     >
       <div
         aria-hidden="true"
@@ -172,21 +171,18 @@ export default function CofHonourSection({
         <h2
           id="citizens-title"
           aria-label="Citizens of Honour"
-          style={{ color: citizensData.text_color }}
-          className="about-title text-3xl md:text-5xl lg:text-6xl xl:text-7xl px-4"
+          className="about-title text-3xl md:text-5xl lg:text-6xl xl:text-7xl px-4 text-white"
           dangerouslySetInnerHTML={{ __html: sanitizedTitle }}
         />
         <p
           id="citizens-description"
           aria-label="Citizens of Honour Description"
-          style={{ color: citizensData.text_color }}
-          className="about-description text-xs md:text-sm lg:text-base px-6"
+          className="about-description text-xs md:text-sm lg:text-base px-6 text-white"
           dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
         />
       </div>
       <div className="flex flex-col flex-grow h-full min-h-0">
         <CofHonourImages
-          textColor={citizensData.text_color}
           ref={imageRef}
           citizens={citizens}
           years={years}

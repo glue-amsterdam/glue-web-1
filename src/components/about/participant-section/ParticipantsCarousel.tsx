@@ -18,13 +18,11 @@ export default function ParticipantsCarousel({
   activeIndex,
   setActiveIndex,
   carouselRef,
-  textColor,
 }: {
   participants: ParticipantClient[];
   activeIndex: number;
   setActiveIndex: (index: number) => void;
   carouselRef: React.RefObject<HTMLDivElement>;
-  textColor: string;
 }) {
   return (
     <div
@@ -45,8 +43,7 @@ export default function ParticipantsCarousel({
           ]}
         >
           <CarouselPrevious
-            style={{ backgroundColor: textColor }}
-            className="absolute left-0 z-10 text-white rounded-none hover:scale-[0.95] hover:text-white"
+            className="absolute left-0 z-10 bg-white text-black rounded-none hover:scale-[0.95] hover:bg-white hover:text-black"
           />
           <CarouselContent className="mx-12">
             {participants.map((participant, idx) => (
@@ -86,18 +83,14 @@ export default function ParticipantsCarousel({
             ))}
           </CarouselContent>
           <CarouselNext
-            style={{ backgroundColor: textColor }}
-            className="absolute right-0 z-10 text-white rounded-none hover:scale-[0.95] hover:text-white"
+            className="absolute right-0 z-10 bg-white text-black rounded-none hover:scale-[0.95] hover:bg-white hover:text-black"
           />
         </Carousel>
       </div>
-      <p
-        style={{ color: textColor }}
-        className="text-xs md:text-sm text-center"
-      >
+      <p className="text-xs md:text-sm text-center text-white">
         These are just 30 randomly chosen participants. Want to explore them
         all?{" "}
-        <Link href="/participants">
+        <Link href="/exhibitors">
           <span
             className="underline transition-all duration-100
           "

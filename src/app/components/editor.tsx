@@ -66,11 +66,11 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 
     const previousUrl = editor.getAttributes("link").href;
     const url = window.prompt("Enter the URL", previousUrl || "");
-    
+
     if (url) {
       const { from, to } = editor.state.selection;
       const selectedText = editor.state.doc.textBetween(from, to);
-      
+
       if (selectedText) {
         // Text is selected, apply link to selection
         editor.chain().focus().setLink({ href: url }).run();
@@ -267,7 +267,7 @@ export const RichTextEditor = ({
     editorProps: {
       attributes: {
         class:
-          "min-h-[200px] max-h-[50dvh] lg:max-h-[40dvh] overflow-y-auto bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm max-w-none [&_a]:text-blue-500 [&_a]:underline [&_a]:cursor-pointer",
+          "min-h-[150px] max-h-[50dvh] lg:h-[150px] overflow-y-auto bg-white text-black w-full p-2 focus:outline-none prose prose-sm max-w-none [&_a]:text-blue-500 [&_a]:underline [&_a]:cursor-pointer",
       },
     },
   });

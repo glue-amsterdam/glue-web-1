@@ -7,86 +7,104 @@ import { config } from "@/config";
 import { ExhibitorNotFoundError } from "@/lib/participants/exhibitor-detail-types";
 import { fetchExhibitorDetailBySlug } from "@/lib/participants/fetch-exhibitor-detail";
 import { toDisplayPropsFromParticipant } from "@/lib/participants/map-exhibitor-display-props";
+import {
+  buildEntityMetadata,
+  buildFallbackEntityMetadata,
+} from "@/lib/seo/build-entity-metadata";
+import { buildExhibitorPersonJsonLd } from "@/lib/seo/build-json-ld";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 interface PageProps {
-    params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string }>;
 }
 
+const isPublicExhibitor = (status: string, isSticky: boolean) =>
+  isSticky || status === "accepted";
+
 export async function generateMetadata({
-    params,
+  params,
 }: PageProps): Promise<Metadata> {
-    const { slug } = await params;
+  const { slug } = await params;
 
-    try {
-        const exhibitor = await fetchExhibitorDetailBySlug(slug);
-        const title = `GLUE ${config.cityName} - ${exhibitor.name}`;
-        const description =
-            exhibitor.description ??
-            `Discover ${exhibitor.name} at GLUE ${config.cityName}.`;
+  try {
+    const exhibitor = await fetchExhibitorDetailBySlug(slug);
+    const title = `GLUE ${config.cityName} - ${exhibitor.name}`;
+    const description =
+      exhibitor.description ??
+      `Discover ${exhibitor.name} at GLUE ${config.cityName}.`;
+    const indexable = isPublicExhibitor(exhibitor.status, exhibitor.is_sticky);
 
-        return {
-            title,
-            description,
-            alternates: {
-                canonical: `${config.baseUrl}/exhibitors/${slug}`,
-            },
-            openGraph: {
-                title,
-                description,
-                url: `${config.baseUrl}/exhibitors/${slug}`,
-                siteName: `GLUE ${config.cityName}`,
-                images: [
-                    {
-                        url: exhibitor.imageUrl,
-                        alt: `Profile image of ${exhibitor.name}`,
-                    },
-                ],
-                type: "profile",
-            },
-            twitter: {
-                card: "summary_large_image",
-                title,
-                description,
-                images: [exhibitor.imageUrl],
-            },
-        };
-    } catch {
-        return {
-            title: `GLUE ${config.cityName} | Exhibitor`,
-            description: `Exhibitor profile at GLUE ${config.cityName}.`,
-        };
-    }
+    return buildEntityMetadata({
+      title,
+      description,
+      canonicalPath: `/exhibitors/${slug}`,
+      imageUrl: exhibitor.imageUrl,
+      imageAlt: `Profile image of ${exhibitor.name}`,
+      keywords: [
+        "GLUE",
+        config.cityName,
+        exhibitor.name,
+        "exhibitor",
+        "design routes",
+      ],
+      authors: [exhibitor.name],
+      creator: exhibitor.name,
+      indexable,
+      openGraphType: "profile",
+      structuredData: indexable
+        ? buildExhibitorPersonJsonLd(exhibitor)
+        : undefined,
+    });
+  } catch {
+    return buildFallbackEntityMetadata({
+      title: `GLUE ${config.cityName} | Exhibitor`,
+      description: `Exhibitor profile at GLUE ${config.cityName}.`,
+      canonicalPath: `/exhibitors/${slug}`,
+    });
+  }
 }
 
 export default async function ExhibitorPage({ params }: PageProps) {
-    const { slug } = await params;
+  const { slug } = await params;
 
-    try {
-        const participant = await fetchExhibitorDetailBySlug(slug);
+  try {
+    const participant = await fetchExhibitorDetailBySlug(slug);
 
-        if (participant.is_sticky || participant.status === "accepted") {
-            return (
-                <MainContainer>
-                    <ExhibitorDetailView {...toDisplayPropsFromParticipant(participant)} />
-                    <BottomBlock />
-                </MainContainer>
-            );
-        }
-
-        switch (participant.status) {
-            case "pending":
-                return <ExhibitorPending />;
-            case "declined":
-                return <ExhibitorDeclined />;
-            default:
-                throw new Error(`Unknown exhibitor status: ${participant.status}`);
-        }
-    } catch (error) {
-        if (error instanceof ExhibitorNotFoundError) {
-            notFound();
-        }
-        throw error;
+    if (participant.is_sticky || participant.status === "accepted") {
+      return (
+        <main id="exhibitor-detail-page">
+          <MainContainer>
+            <nav className="sr-only" aria-label="Breadcrumb">
+              <ol>
+                <li>
+                  <a href={config.baseUrl}>Home</a>
+                </li>
+                <li>
+                  <a href={`${config.baseUrl}/exhibitors`}>Exhibitors</a>
+                </li>
+                <li>{participant.name}</li>
+              </ol>
+            </nav>
+            <ExhibitorDetailView {...toDisplayPropsFromParticipant(participant)} />
+            <BottomBlock />
+          </MainContainer>
+        </main>
+      );
     }
+
+    switch (participant.status) {
+      case "pending":
+        return <ExhibitorPending />;
+      case "declined":
+        return <ExhibitorDeclined />;
+      default:
+        notFound();
+    }
+  } catch (error) {
+    if (error instanceof ExhibitorNotFoundError) {
+      notFound();
+    }
+    throw error;
+  }
 }

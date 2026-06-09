@@ -51,6 +51,7 @@ export default function CreativeCitizensDescription({
         ? "overflow-y-auto"
         : "overflow-hidden";
 
+
     return (
         <div className="pt-[15px]">
             <p

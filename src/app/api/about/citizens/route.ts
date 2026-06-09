@@ -11,7 +11,7 @@ export async function GET() {
 
     const { data: section, error: headerError } = await supabase
       .from("about_citizens_section")
-      .select("title, description, is_visible, text_color, background_color")
+      .select("title, description, is_visible")
       .single();
 
     if (headerError) {
@@ -19,15 +19,12 @@ export async function GET() {
       throw headerError;
     }
 
-    // If not visible, return early with only header data
     if (!section.is_visible) {
       return NextResponse.json({
         title: "",
         description: "",
         is_visible: false,
         citizensByYear: {},
-        text_color: "#ffffff",
-        background_color: "#000000",
       });
     }
 
@@ -40,7 +37,6 @@ export async function GET() {
       throw error;
     }
 
-    // Group citizens by year
     const citizensByYear = (citizens as ClientCitizen[]).reduce(
       (acc, citizen) => {
         if (!acc[citizen.year]) {
@@ -57,11 +53,8 @@ export async function GET() {
       description: section?.description,
       is_visible: section?.is_visible,
       citizensByYear,
-      text_color: section?.text_color,
-      background_color: section?.background_color,
     };
 
-    // Validate response with client schema
     const validatedResponse = clientCitizensSectionSchema.parse(response);
 
     return NextResponse.json(validatedResponse);

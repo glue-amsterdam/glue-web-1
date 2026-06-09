@@ -1,7 +1,6 @@
 "use client";
 
 
-import { useColors } from "../context/MainContext";
 import { useRef, useMemo } from "react";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -19,9 +18,6 @@ export default function EventsClientPage({
 }: {
   headerTitle: string;
 }) {
-
-  /* STATES - REFERENCES - HOOKS CALL*/
-  const { box1, box2 } = useColors();
 
   /* MAIN CONTAINER REFERENCE */
   const container = useRef<HTMLDivElement>(null);
@@ -89,13 +85,13 @@ export default function EventsClientPage({
       <div
         ref={animationBlockRef}
         id="animation-block"
-        style={{ backgroundColor: box1 }}
+        style={{ backgroundColor: "var(--color-box1)" }}
         className="h-full w-1/2 z-50 absolute"
       />
       <main
         ref={container}
         className="min-h-dvh h-full overflow-x-hidden"
-        style={{ backgroundColor: box2 }}
+        style={{ backgroundColor: "var(--color-box2)" }}
       >
 
         <div

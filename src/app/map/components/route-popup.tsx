@@ -22,8 +22,9 @@ type RoutePopupProps = {
   tourMode: MapTourMode;
   anchor: ExhibitorPopupAnchor;
   offset: [number, number];
+  popupLongitude: number;
+  popupLatitude: number;
   activeStopId?: string | null;
-  onActiveStopChange?: (stop: RouteStopDisplay) => void;
   onClose: () => void;
   onDownloadRoutePdf: () => void | Promise<void>;
 };
@@ -98,8 +99,9 @@ const RoutePopup = ({
   tourMode,
   anchor,
   offset,
+  popupLongitude,
+  popupLatitude,
   activeStopId,
-  onActiveStopChange,
   onClose,
   onDownloadRoutePdf,
 }: RoutePopupProps) => {
@@ -129,11 +131,6 @@ const RoutePopup = ({
     }
   }, [activeStopId, stops, setCurrentIndex]);
 
-  useEffect(() => {
-    if (!currentStop || !onActiveStopChange) return;
-    onActiveStopChange(currentStop);
-  }, [currentStop, onActiveStopChange]);
-
   const redirectRouteToGoogleMaps = useCallback(() => {
     if (route.dots.length === 0) return;
     const origin = `${route.dots[0].latitude},${route.dots[0].longitude}`;
@@ -154,8 +151,8 @@ const RoutePopup = ({
   if (!currentStop) return null;
 
   const popupConfig = {
-    longitude: currentStop.longitude,
-    latitude: currentStop.latitude,
+    longitude: popupLongitude,
+    latitude: popupLatitude,
     onClose,
     closeButton: false,
     closeOnClick: false,

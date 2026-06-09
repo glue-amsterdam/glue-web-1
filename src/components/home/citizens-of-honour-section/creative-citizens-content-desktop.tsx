@@ -13,13 +13,14 @@ type Props = {
     currentIndex: number
     handleSelect: (index: number) => void
     citizens: ClientCitizen[]
+    archiveYear?: number
 }
 
 
 
-const CreativeCitizensContentDesktop = ({ description, currentCitizen, hasMultiple, currentIndex, handleSelect, citizens }: Props) => {
-
-    const citizenDescriptionHtml = useSanitizedHTML(currentCitizen?.description ?? '');
+const CreativeCitizensContentDesktop = ({ description, currentCitizen, hasMultiple, currentIndex, handleSelect, citizens, archiveYear }: Props) => {
+    const sectionDescriptionHtml = useSanitizedHTML(description ?? "");
+    const citizenDescriptionHtml = useSanitizedHTML(currentCitizen?.description ?? "");
     return (
         <>
             <div className="flex w-full gap-[30px]">
@@ -36,14 +37,17 @@ const CreativeCitizensContentDesktop = ({ description, currentCitizen, hasMultip
                             aria-atomic="true"
                         >
                             <>
-                                <CreativeCitizensImage citizen={currentCitizen} />
+                                <CreativeCitizensImage citizen={currentCitizen} archiveYear={archiveYear} />
 
                             </>
                         </motion.div>
                     )}
                 </AnimatePresence>
-                {description && (<div>
-                    <p className="text-[15px] leading-[22px] lg:text-[23px] lg:leading-[29px]">{description}</p>
+                {sectionDescriptionHtml && (<div>
+                    <div
+                        className="text-[15px] leading-[22px] lg:text-[23px] lg:leading-[29px]"
+                        dangerouslySetInnerHTML={{ __html: sectionDescriptionHtml }}
+                    />
                     {currentCitizen && (<>
                         <CreativeCitizensTitle title={currentCitizen.name} />
                         <CreativeCitizensDescription

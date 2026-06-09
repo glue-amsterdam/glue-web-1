@@ -23,20 +23,23 @@ export { participantExtraDataSchema, type ParticipantExtraDataFormData };
 interface ParticipantExtraDataFormProps {
   onSubmit: (data: ParticipantExtraDataFormData) => void;
   onBack: () => void;
+  defaultValues?: Partial<ParticipantExtraDataFormData>;
 }
 
 export function ParticipantExtraDataForm({
   onSubmit,
   onBack,
+  defaultValues,
 }: ParticipantExtraDataFormProps) {
   const form = useForm<ParticipantExtraDataFormData>({
     resolver: zodResolver(participantExtraDataSchema),
     defaultValues: {
-      phone_numbers: [],
-      visible_emails: [],
-      glue_communication_email: "",
-      visible_websites: [],
-      social_media: {},
+      short_description: defaultValues?.short_description ?? "",
+      phone_numbers: defaultValues?.phone_numbers ?? [],
+      visible_emails: defaultValues?.visible_emails ?? [],
+      glue_communication_email: defaultValues?.glue_communication_email ?? "",
+      visible_websites: defaultValues?.visible_websites ?? [],
+      social_media: defaultValues?.social_media ?? {},
     },
   });
 

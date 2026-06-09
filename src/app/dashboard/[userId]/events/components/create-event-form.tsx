@@ -38,6 +38,13 @@ import { Button } from "@/components/ui/button";
 import { config } from "@/config";
 import { LocationSelector } from "@/app/dashboard/[userId]/events/components/location-selector";
 import Image from "next/image";
+import {
+  ImageUploadOverlay,
+  createUploadProgressHandler,
+  type UploadState,
+} from "@/components/image-upload-overlay";
+
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
 
 interface EventFormProps {
   targetUserId: string;
@@ -55,6 +62,7 @@ export function EventForm({
   canCreateEvent,
 }: EventFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadState, setUploadState] = useState<UploadState | null>(null);
   const { toast } = useToast();
 
   const { data: eventDays = [], isLoading: isLoadingEventDays } = useSWR<
@@ -114,31 +122,57 @@ export function EventForm({
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const imageUrl = URL.createObjectURL(file);
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-      form.setValue("image_url", imageUrl, { shouldDirty: true });
-      form.setValue("file", file, { shouldDirty: true });
-      setImagePreview(imageUrl);
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file.",
+        variant: "destructive",
+      });
+      return;
     }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      toast({
+        title: "File too large",
+        description:
+          "Large images are compressed automatically, but must be under 20 MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const imageUrl = URL.createObjectURL(file);
+
+    form.setValue("image_url", imageUrl, { shouldDirty: true });
+    form.setValue("file", file, { shouldDirty: true });
+    setImagePreview(imageUrl);
   };
+
+  const handleUploadProgress = createUploadProgressHandler(setUploadState);
 
   const onSubmit = async (data: EventType) => {
     setIsSubmitting(true);
     try {
       let newImageUrl = data.image_url;
       if (data.file) {
+        setUploadState({ stage: "compressing", progress: 5 });
+
         const { imageUrl, error } = await uploadImage({
           file: data.file,
           bucket: config.bucketName,
           folder: `events/${targetUserId}`,
+          onProgress: handleUploadProgress,
         });
         if (error) {
           throw new Error(`Failed to upload image: ${error}`);
         }
         newImageUrl = imageUrl;
       }
+
+      setUploadState({ stage: "saving", progress: 96 });
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { file, ...restData } = data;
@@ -159,6 +193,8 @@ export function EventForm({
         throw new Error("Failed to create event");
       }
 
+      setUploadState({ stage: "saving", progress: 100 });
+
       toast({
         title: "Success",
         description: "Event created successfully.",
@@ -174,6 +210,7 @@ export function EventForm({
       });
     } finally {
       setIsSubmitting(false);
+      setUploadState(null);
     }
   };
 
@@ -305,7 +342,7 @@ export function EventForm({
             render={() => (
               <FormItem>
                 <FormLabel>Event Image</FormLabel>
-                <div className="w-full h-80 overflow-hidden bg-gray object-cover  relative mb-2">
+                <div className="w-full h-80 overflow-hidden bg-gray object-cover relative mb-2">
                   {imagePreview ? (
                     <Image
                       src={imagePreview || "/placeholder.svg"}
@@ -319,12 +356,19 @@ export function EventForm({
                       <ImageIcon className="w-12 h-12 text-gray-400" />
                     </div>
                   )}
+                  {uploadState && (
+                    <ImageUploadOverlay
+                      stage={uploadState.stage}
+                      progress={uploadState.progress}
+                    />
+                  )}
                 </div>
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full mb-2"
+                  disabled={isSubmitting || Boolean(uploadState)}
                 >
                   {imagePreview ? "Change Image" : "Upload Image"}
                 </Button>

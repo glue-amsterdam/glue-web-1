@@ -13,12 +13,12 @@ import {
 } from "react-icons/fa6";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
-import { LinkItem, mainLinksSchema } from "@/schemas/mainSchema";
+import { LinkItemAdmin, mainLinksAdminSchema } from "@/schemas/mainSchema";
 import { mutate } from "swr";
 import { createSubmitHandler } from "@/utils/form-helpers";
 
 interface MainLinksFormProps {
-  initialData: { mainLinks: LinkItem[] };
+  initialData: { mainLinks: LinkItemAdmin[] };
 }
 
 const platformIcons: { [key: string]: React.ReactNode } = {
@@ -33,8 +33,8 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
   const { toast } = useToast();
   const router = useRouter();
 
-  const methods = useForm<{ mainLinks: LinkItem[] }>({
-    resolver: zodResolver(mainLinksSchema),
+  const methods = useForm<{ mainLinks: LinkItemAdmin[] }>({
+    resolver: zodResolver(mainLinksAdminSchema),
     defaultValues: initialData,
   });
 
@@ -49,7 +49,7 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
     name: "mainLinks",
   });
 
-  const onSubmit = createSubmitHandler<{ mainLinks: LinkItem[] }>(
+  const onSubmit = createSubmitHandler<{ mainLinks: LinkItemAdmin[] }>(
     "/api/admin/main/links",
     async (data) => {
       console.log("Form submitted successfully", data);
@@ -71,7 +71,7 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
     }
   );
 
-  const handleFormSubmit = async (data: { mainLinks: LinkItem[] }) => {
+  const handleFormSubmit = async (data: { mainLinks: LinkItemAdmin[] }) => {
     console.log("handleFormSubmit called with data:", data);
     setIsSubmitting(true);
     try {
@@ -93,7 +93,7 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
                 platformIcons.default}
               <span className="font-medium">{field.platform}</span>
             </div>
-            <div className="flex-grow space-y-2">
+            <div className="grow space-y-2">
               <Input
                 {...methods.register(`mainLinks.${index}.link`)}
                 defaultValue={field.link}
@@ -113,11 +113,11 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
             </div>
           </div>
         ))}
-        <SaveChangesButton
-          isSubmitting={isSubmitting}
-          className="w-full"
-          watchFields={["mainLinks"]}
-        />
+        <div className="flex justify-start">
+          <SaveChangesButton
+            watchFields={["mainLinks"]}
+            isSubmitting={isSubmitting}
+          /></div>
       </form>
     </FormProvider>
   );

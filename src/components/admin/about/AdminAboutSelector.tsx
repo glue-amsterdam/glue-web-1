@@ -1,16 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 const navItems = [
-  { name: "Carousel", section: "about-carousel" },
-  { name: "Participants", section: "about-participants" },
-  { name: "Citizens", section: "about-citizens" },
-  { name: "Curated", section: "about-curated" },
-  { name: "Info", section: "about-info" },
-  { name: "Press", section: "about-press" },
-  { name: "International", section: "about-international" },
-  { name: "Sponsors", section: "about-sponsors" },
+  { name: "Team", section: "about-team" },
+  { name: "Foundation", section: "about-foundation" },
+  { name: "Mission", section: "about-mission" },
+  { name: "Press", section: "about-press-media" },
+  { name: "FAQ", section: "about-faq" },
 ];
 
 interface AboutSectionSelectorProps {
@@ -21,24 +19,27 @@ export default function AdminAboutSelector({
   currentSection,
 }: AboutSectionSelectorProps) {
   return (
-    <div className="flex flex-wrap gap-2 p-4 bg-gray-100 rounded-lg shadow-inner overflow-x-auto">
-      {navItems.map((item) => (
-        <Link
-          key={item.section}
-          href={`?section=${item.section}`}
-          className={`
-            px-4 py-2 rounded-md font-medium transition-all duration-200 ease-in-out
-            ${
-              currentSection === item.section
-                ? "bg-blue-600 text-white shadow-md"
-                : "bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600"
-            }
-            focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50
-          `}
-        >
-          {item.name}
-        </Link>
-      ))}
+    <div className="mb-6 flex flex-wrap gap-2 overflow-x-auto">
+      {navItems.map((item) => {
+        const isActive = currentSection === item.section;
+
+        return (
+          <Link
+            key={item.section}
+            href={`?section=${item.section}`}
+            className={cn(
+              "rounded-md px-4 py-2 font-medium transition-colors duration-200 ease-in-out",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              isActive
+                ? "bg-(--primary-color) text-(--white-color)"
+                : "text-(--black-color) hover:text-(--primary-color)"
+            )}
+            aria-current={isActive ? "page" : undefined}
+          >
+            {item.name}
+          </Link>
+        );
+      })}
     </div>
   );
 }

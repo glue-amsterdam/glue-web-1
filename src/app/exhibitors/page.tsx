@@ -4,6 +4,7 @@ import ExhibitorsClientPage from "@/app/exhibitors/exhibitors-client-page";
 import { config } from "@/config";
 import { exhibitorsMetadata } from "@/lib/metadata";
 import { fetchExhibitorsPage } from "@/lib/participants/fetch-exhibitors";
+import { buildExhibitorsCollectionJsonLd } from "@/lib/seo/build-json-ld";
 import {
   filtersToQueryParams,
   recordToSearchParams,
@@ -18,7 +19,6 @@ type PageProps = {
 
 export const metadata: Metadata = exhibitorsMetadata;
 
-
 export default async function Page({ searchParams }: PageProps) {
   const resolvedSearchParams = await searchParams;
   const urlSearchParams = recordToSearchParams(resolvedSearchParams);
@@ -26,15 +26,27 @@ export default async function Page({ searchParams }: PageProps) {
   const initialData = await fetchExhibitorsPage(
     filtersToQueryParams(initialFilters, 0)
   );
-
+  const structuredData = buildExhibitorsCollectionJsonLd(initialData.items);
 
   return (
     <main id="exhibitors-page" className="pt-(--nav-total-h)">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <MainContainer className="pt-[40px] lg:pt-[calc(var(--nav-secondary-h)-3px)]">
+        <nav className="sr-only" aria-label="Breadcrumb">
+          <ol>
+            <li>
+              <a href={config.baseUrl}>Home</a>
+            </li>
+            <li>
+              <a href={`${config.baseUrl}/exhibitors`}>Exhibitors</a>
+            </li>
+          </ol>
+        </nav>
         <section id="exhibitors-section">
-          <h1 className="sr-only">
-            GLUE {config.cityName} Exhibitors
-          </h1>
+          <h1 className="sr-only">GLUE {config.cityName} Exhibitors</h1>
           <p className="sr-only">
             Browse all exhibitors of GLUE {config.cityName} design route.
           </p>

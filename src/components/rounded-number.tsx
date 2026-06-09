@@ -11,10 +11,12 @@ const RoundedNumber = ({ type, participant_n, className }: Props) => {
 
   return (
     <div
-      className={`flex size-[26px] shrink-0 items-center justify-center rounded-full font-lausanne md:size-[30px] ${background} ${text} ${className ?? ""}`}
+      className={`flex size-[26px] shrink-0 items-center justify-center rounded-full font-lausanne md:size-[30px] ${background} ${className ?? ""}`}
       aria-hidden
     >
-      <span className="m-0 block min-w-[1ch] text-center text-[15px] leading-none tabular-nums translate-y-[1.5px]">
+      <span
+        className={`m-0 block min-w-[1ch] text-center text-[15px] leading-none tabular-nums ${text}`}
+      >
         {participant_n}
       </span>
     </div>

@@ -10,7 +10,7 @@ export async function GET() {
 
     const { data: curatedData } = await supabase
       .from("about_curated")
-      .select("title,description, is_visible, text_color, background_color")
+      .select("title, description, is_visible")
       .single();
 
     if (!curatedData) {
@@ -50,8 +50,6 @@ export async function PUT(request: Request) {
         title: validatedData.title,
         description: validatedData.description,
         is_visible: validatedData.is_visible,
-        text_color: validatedData.text_color,
-        background_color: validatedData.background_color,
       })
       .eq("id", "about-curated");
 

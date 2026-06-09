@@ -1,125 +1,18 @@
-import BigButton from '@/components/big-button';
 import BottomBlock from '@/components/bottom-block';
+import CmsIntroSection from '@/components/cms/cms-intro-section';
+import CmsTextSection from '@/components/cms/cms-text-section';
 import MainContainer from '@/components/main-container'
+import ParticipatePlanCardView from '@/components/participate/participate-plan-card';
 import Separator from '@/components/separator';
-import { getParticipatePlans } from '@/lib/participate/get-participate-plans';
-import type { ParticipatePlanCard } from '@/lib/participate/types';
+import YearNumbersSection from '@/components/yearly-sections/year-numbers-section';
+import { getParticipationEligibility } from '@/lib/participate/get-participation-eligibility';
+import { getCachedParticipatePageData } from '@/lib/participate/get-participate-plans';
+import { TEXT_SECTION_REVALIDATE_SECONDS } from '@/lib/text-sections/types';
+import { getCachedLatestYearNumbers } from '@/lib/year-numbers/cached-year-numbers';
+import { formatYearNumbersTitle } from '@/lib/year-numbers/format-year-numbers-title';
+import Link from 'next/link';
 
-const page_text = {
-    intro: {
-        title: "Become part of the GLUE design route 2026",
-        description: "GLUE gives you the opportunity to showcase your work to an international design-focused audience. You will be featured on the GLUE platform. This will give you direct visibility and allow you to invite visitors to join you on your creative journey. You will also have the chance to connect with other creatives, reach potential clients, and expand your network.",
-    },
-    numbers: {
-        title: "Last year numbers",
-        items: [
-            {
-                label: "Spaces",
-                value: "60+"
-            },
-            {
-                label: "Exhibitors",
-                value: "150+"
-            },
-            {
-                label: "Sticky",
-                value: "20+"
-            },
-            {
-                label: "Visitors",
-                value: "2500+"
-            }
-        ]
-    },
-    explication: {
-        title: "How it works",
-        steps: [
-            {
-
-                title: "1. Select a plan",
-                description: "Select a fitting plan."
-            },
-            {
-
-                title: "2. Sign up",
-                description: "Create an account to begin your application."
-            },
-            {
-                title: "3. Get Access",
-                description: "Once your application has been approved, you will gain access to your personal dashboard."
-            },
-            {
-                title: "4. Complete Portfolio",
-                description: "Enter your details, images and other information to appear on the GLUE website."
-            }
-        ]
-    },
-    plans_block: {
-        title: "Select a plan",
-        deadline: "Application deadline 1 June 2026.",
-        description: "Combi discount if you participate both at GLUE Utrecht (www.glue-utrecht.nl) and GLUE Amsterdam you get a 10% discount over the total fee of both GLUE participant fees. Optional at extra charge are a GLUE beach flag, printed maps, organising a bike-tour (please send us an email if your interested and we make you an offer). In general part of all the packages are:",
-        plan_list: [
-            {
-                is_selectable: false,
-                id: "base-card",
-                plan_label: `GLUE Packages`,
-                plan_price: "(you get with every package)",
-                features: [
-                    { label: "Year through connection opportunities in the design community" },
-                    { label: "Dot on the GLUE Map and along GLUE route" },
-                    { label: "Landing page and visibility on the GLUE Website" },
-                    { label: "Publicity; for example item in newsletter, insta post" },
-                ]
-            },
-        ]
-    }
-}
-
-const IntroCard = () => {
-    const basePlan = page_text.plans_block.plan_list.find((plan) => plan.id === "base-card");
-    return (
-        <article className="base-text-size lg:border-t-2 lg:border-(--black-color)">
-            <h3 className='lg:pt-[15px]'>{basePlan?.plan_label.toUpperCase()}</h3>
-            <p>{basePlan?.plan_price.toUpperCase()}</p>
-            <ul className='list-none pt-[15px] flex-col flex gap-[20px] max-w-[90%] lg:max-w-full'>
-                {
-                    basePlan?.features.map((feature) => (
-                        <li key={feature.label}>- {feature.label}</li>
-                    ))
-                }
-            </ul>
-        </article>
-    )
-
-}
-
-const BaseCard = ({ plan, intent }: { plan: ParticipatePlanCard; intent?: string }) => {
-    const intentQuery =
-        intent === "reactivation" ? "&intent=reactivation" : "";
-
-    return (
-        <article className="main-boder-top lg:h-[480px]">
-            <h3 className='pt-[15px] text-[19px] leading-[26px] lg:text-[23px] lg:leading-[29px]'>{plan?.plan_label.toUpperCase()}</h3>
-            <p className='text-[19px] leading-[26px]'>{plan?.plan_price.toUpperCase()}</p>
-            <ul className='list-none pt-[40px] flex-col flex gap-[20px] max-w-[90%] lg:max-w-full lg:h-[310px] overflow-y-auto'>
-                {
-                    plan?.features.map((feature) => (
-                        <li className='base-text-size' key={feature.label}>- {feature.label}</li>
-                    ))
-                }
-            </ul>
-            <div className='pt-[40px] flex justify-center'>
-                <BigButton
-                    as="link"
-                    label="select plan"
-                    href={`/participate/apply?planId=${plan.id}${intentQuery}`}
-                    mode="big"
-                />
-            </div>
-        </article>
-    )
-
-}
+export const revalidate = TEXT_SECTION_REVALIDATE_SECONDS;
 
 const ApplicationClosed = ({ message }: { message: string }) => {
     return (
@@ -129,6 +22,32 @@ const ApplicationClosed = ({ message }: { message: string }) => {
     )
 }
 
+const ParticipationBlockedNotice = ({
+    message,
+    dashboardHref,
+}: {
+    message: string;
+    dashboardHref: string | null;
+}) => {
+    return (
+        <div
+            className="col-span-full rounded-md border border-(--black-color)/15 bg-(--white-color) px-4 py-5"
+            role="status"
+        >
+            <p className="base-text-size">{message}</p>
+            {dashboardHref ? (
+                <p className="pt-[20px]">
+                    <Link
+                        href={dashboardHref}
+                        className="base-text-size underline hover:no-underline"
+                    >
+                        Go to your dashboard
+                    </Link>
+                </p>
+            ) : null}
+        </div>
+    );
+};
 
 async function Page({
     searchParams,
@@ -136,72 +55,65 @@ async function Page({
     searchParams: Promise<{ intent?: string }>;
 }) {
     const { intent } = await searchParams;
-    const { applicationClosed, closedMessage, selectablePlans } =
-        await getParticipatePlans();
+    const [
+        { applicationClosed, closedMessage, basePackage, selectablePlans },
+        latestYearNumbers,
+        eligibility,
+    ] = await Promise.all([
+        getCachedParticipatePageData(),
+        getCachedLatestYearNumbers(),
+        getParticipationEligibility(intent),
+    ]);
 
     return (
         <main id="participate-page">
             <MainContainer className='cta-padding'>
-                <section id='participate-intro-section'>
-                    <h1 className='title-text'>{page_text.intro.title}</h1>
-                    <p className='pt-[40px] base-text-size lg:max-w-(--paragraph-max-width)'>{page_text.intro.description}</p>
-                </section>
+                <CmsIntroSection slug="participate-intro" />
                 <Separator />
-                <section id='participate-numbers-section'>
-                    <h2 className='title-text pt-[15px]'>{page_text.numbers.title.toUpperCase()}</h2>
-                    <ul className='pt-[40px] lg:pt-[60px] grid grid-cols-2 lg:flex lg:items-center lg:justify-center lg:w-full gap-[20px] lg:gap-[30px] justify-items-center'>
-                        {
-                            page_text.numbers.items.map((item) => (
-                                <li className='flex flex-col items-center lg:min-w-[230px]' key={item.label}>
-                                    <span className="title-text">{item.value}</span> <p className="base-text-size">{item.label}</p>
-                                </li>
-                            ))
-                        }
-                    </ul>
-                </section>
+                {latestYearNumbers.items.length > 0 ? (
+                    <>
+                        <YearNumbersSection
+                            title={formatYearNumbersTitle(latestYearNumbers.year)}
+                            items={latestYearNumbers.items}
+                            sectionId="participate-numbers-section"
+                        />
+                        <Separator />
+                    </>
+                ) : null}
+                <CmsTextSection slug="participate-how-it-works" />
                 <Separator />
-                <section id='participate-explication-section'>
-                    <h2 className='title-text pt-[15px]'>{page_text.explication.title.toUpperCase()}</h2>
-                    <ul className='pt-[40px] list-none flex-col flex gap-[40px] base-text-size'>
-                        {
-                            page_text.explication.steps.map((step) => (
-                                <li key={step.title}>
-                                    <h3>{step.title}</h3>
-                                    <p>{step.description}</p>
-                                </li>
-                            ))
-                        }
-                    </ul>
-                    <div className='pt-[40px] flex justify-center'>
-                        <BigButton
-                            as="link"
-                            label="start now"
-                            href="#plans-selection-section"
-                            mode="big"
-                        /></div>
-                </section>
-                <Separator />
-                <section id='plans-selection-section'>
-                    <h2 className='title-text pt-[15px]'>{page_text.plans_block.title.toUpperCase()}</h2>
-                    <h3 className='base-text-size pt-[40px] lg:pt-[60px]'>{page_text.plans_block.deadline}</h3>
-                    <p className='base-text-size pt-[20px] lg:pt-[30px] lg:max-w-(--paragraph-max-width)'>{page_text.plans_block.description}</p>
-                    <ul className='pt-[40px] lg:pt-[60px] grid grid-cols-1 lg:grid-cols-3 gap-[40px] lg:gap-x-[30px] lg:gap-y-[100px]'>
-                        {
-                            applicationClosed ?
-                                (<>
-                                    <IntroCard />
-                                    <ApplicationClosed message={closedMessage} />
-                                </>)
-                                : (
-                                    <>
-                                        <IntroCard />
-                                        {selectablePlans.map((plan) => (
-                                            <BaseCard key={plan.id} plan={plan} intent={intent} />
-                                        ))}
-                                    </>
-                                )}
-                    </ul>
-                </section>
+                <CmsTextSection slug="participate-select-plan" />
+                {!eligibility.canSelectPlan && eligibility.blockReason ? (
+                    <div className="pt-[40px]">
+                        <ParticipationBlockedNotice
+                            message={eligibility.blockReason}
+                            dashboardHref={eligibility.dashboardHref}
+                        />
+                    </div>
+                ) : null}
+                <ul className="pt-[40px] lg:pt-[60px] grid grid-cols-1 lg:grid-cols-3 gap-[40px] lg:gap-x-[30px] lg:gap-y-[100px]">
+                    {
+                        applicationClosed ?
+                            (<>
+                                <ParticipatePlanCardView plan={basePackage} variant="base" />
+                                <ApplicationClosed message={closedMessage} />
+                            </>)
+                            : (
+                                <>
+                                    <ParticipatePlanCardView plan={basePackage} variant="base" />
+                                    {selectablePlans.map((plan) => (
+                                        <ParticipatePlanCardView
+                                            key={plan.id}
+                                            plan={plan}
+                                            applyIntent={eligibility.resolvedIntent}
+                                            variant="selectable"
+                                            planSelectionDisabled={!eligibility.canSelectPlan}
+                                            disabledReason={eligibility.blockReason}
+                                        />
+                                    ))}
+                                </>
+                            )}
+                </ul>
                 <BottomBlock />
             </MainContainer>
 

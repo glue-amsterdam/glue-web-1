@@ -84,6 +84,84 @@ export const uploadImage = async ({
   return { imageUrl, error: "" };
 };
 
+export const MAX_HERO_VIDEO_BYTES = 10 * 1024 * 1024;
+
+const ACCEPTED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"] as const;
+
+export const isAcceptedVideoFile = (file: File): boolean => {
+  if (file.type.startsWith("video/")) {
+    return true;
+  }
+
+  const extension = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+  return ACCEPTED_VIDEO_EXTENSIONS.includes(
+    extension as (typeof ACCEPTED_VIDEO_EXTENSIONS)[number]
+  );
+};
+
+type UploadVideoProps = {
+  file: File;
+  bucket: string;
+  folder?: string;
+  maxBytes?: number;
+  onProgress?: (progress: number) => void;
+};
+
+export const uploadVideo = async ({
+  file,
+  bucket,
+  folder,
+  maxBytes = MAX_HERO_VIDEO_BYTES,
+  onProgress,
+}: UploadVideoProps) => {
+  if (!file || !bucket) {
+    return { videoUrl: "", error: "Missing file or bucket" };
+  }
+
+  if (file.size > maxBytes) {
+    return {
+      videoUrl: "",
+      error: "Video must be 10 MB or smaller",
+    };
+  }
+
+  if (!isAcceptedVideoFile(file)) {
+    return { videoUrl: "", error: "File must be a video" };
+  }
+
+  const fileName = file.name;
+  const fileExtension = fileName.slice(
+    ((fileName.lastIndexOf(".") - 1) >>> 0) + 2
+  );
+  const path = `${folder ? folder + "/" : ""}${uuidv4()}.${fileExtension}`;
+
+  const storage = getStorage();
+
+  if (!storage) {
+    return { videoUrl: "", error: "Storage not initialized" };
+  }
+
+  onProgress?.(10);
+
+  const { data, error } = await storage.from(bucket).upload(path, file, {
+    cacheControl: "3600",
+  });
+
+  if (error) {
+    return { videoUrl: "", error: `Video upload failed: ${error.message}` };
+  }
+
+  if (!data?.path) {
+    return { videoUrl: "", error: "No path returned from upload" };
+  }
+
+  onProgress?.(95);
+
+  const videoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${data.path}`;
+
+  return { videoUrl, error: "" };
+};
+
 export const deleteImage = async (imageUrl: string) => {
   if (!imageUrl) {
     return { data: null, error: "No image URL provided" };

@@ -1,6 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { HomeStickyGroupData, HomeStickyParticipant } from "./types";
-import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
+import {
+  buildHomeStickyMemberDisplays,
+  buildStickyGroupMemberApiRows,
+} from "@/lib/admin/sticky-group-members";
+import type { HomeStickyGroupData } from "./types";
 
 export const EMPTY_STICKY_GROUP: HomeStickyGroupData = {
   title: "",
@@ -11,10 +14,10 @@ export const EMPTY_STICKY_GROUP: HomeStickyGroupData = {
   participants: [],
 };
 
-type ParticipantDetailRow = {
-  user_id: string;
-  slug: string;
-  display_name: string | null;
+type StickyGroupParticipantRow = {
+  participant_user_id: string | null;
+  display_name_only: string | null;
+  is_curated: boolean;
 };
 
 export const fetchLatestStickyGroup = async (
@@ -73,7 +76,7 @@ export const fetchLatestStickyGroup = async (
 
   const { data: groupParticipants, error: participantsError } = await supabase
     .from("sticky_group_participants")
-    .select("participant_user_id")
+    .select("participant_user_id, display_name_only, is_curated")
     .eq("sticky_group_id", group.id);
 
   if (participantsError || !groupParticipants?.length) {
@@ -87,56 +90,10 @@ export const fetchLatestStickyGroup = async (
     };
   }
 
-  const userIds = groupParticipants.map((p) => p.participant_user_id);
-
-  const { data: details, error: detailsError } = await supabase
-    .from("participant_details")
-    .select("user_id, slug, display_name")
-    .in("user_id", userIds);
-
-  if (detailsError || !details?.length) {
-    return {
-      title: section.title ?? "",
-      description: section.description ?? "",
-      is_visible: section.is_visible,
-      year: group.year,
-      group_photo_url: group.group_photo_url ?? null,
-      participants: [],
-    };
-  }
-
-  const { data: images, error: imagesError } = await supabase
-    .from("participant_image")
-    .select("user_id, image_url")
-    .in("user_id", userIds);
-
-  if (imagesError) {
-    return {
-      title: section.title ?? "",
-      description: section.description ?? "",
-      is_visible: section.is_visible,
-      year: group.year,
-      group_photo_url: group.group_photo_url ?? null,
-      participants: [],
-    };
-  }
-
-  const participants: HomeStickyParticipant[] = (
-    details as ParticipantDetailRow[]
-  ).map((detail) => {
-    const name = getParticipantDisplayName(detail);
-    const imageRow = images?.find((img) => img.user_id === detail.user_id);
-
-    return {
-      userId: detail.user_id,
-      slug: detail.slug,
-      userName: name,
-      image: {
-        image_url: imageRow?.image_url ?? "/placeholder.jpg",
-        alt: `${name} profile image - participant from GLUE design routes`,
-      },
-    };
-  });
+  const memberRows = await buildStickyGroupMemberApiRows(
+    supabase,
+    groupParticipants as StickyGroupParticipantRow[]
+  );
 
   return {
     title: section.title ?? "",
@@ -144,6 +101,6 @@ export const fetchLatestStickyGroup = async (
     is_visible: section.is_visible,
     year: group.year,
     group_photo_url: group.group_photo_url ?? null,
-    participants,
+    participants: buildHomeStickyMemberDisplays(memberRows),
   };
 };

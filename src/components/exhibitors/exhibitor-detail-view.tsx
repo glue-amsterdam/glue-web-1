@@ -52,7 +52,6 @@ const ExhibitorDetailView = ({
                 className="shrink-0"
               />
               <div className="min-w-0 flex-1">
-                <h2 className="base-text-size h-[26px] pt-1">{name.toUpperCase()}</h2>
                 {contactInfo && (
                   <ExhibitorDetailInfo contactInfo={contactInfo} />
                 )}

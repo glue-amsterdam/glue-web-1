@@ -11,6 +11,7 @@ export type DashboardAuth = {
   displayName: string;
   isPendingLimitedAccess: boolean;
   isParticipant: boolean;
+  isVisitorOnly: boolean;
   is_active: boolean;
   participantStatus: string | null;
 };
@@ -61,6 +62,8 @@ export const getDashboardAuth = async (
   const hasParticipantRow = Boolean(participantDetails);
   const isLegacyParticipant = loggedUserInfo?.plan_type === "participant";
   const isParticipant = hasParticipantRow || isLegacyParticipant;
+  const isVisitorOnly =
+    Boolean(visitorRow) && !hasParticipantRow && !isLegacyParticipant;
 
   const displayName =
     getVisitorDisplayName(visitorRow ?? {}) ||
@@ -80,6 +83,7 @@ export const getDashboardAuth = async (
     displayName,
     isPendingLimitedAccess,
     isParticipant,
+    isVisitorOnly,
     is_active: participantDetails?.is_active ?? false,
     participantStatus,
   };

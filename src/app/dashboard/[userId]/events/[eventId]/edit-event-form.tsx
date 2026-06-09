@@ -37,6 +37,13 @@ import useSWR from "swr";
 import type { EventDay } from "@/schemas/eventSchemas";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  ImageUploadOverlay,
+  createUploadProgressHandler,
+  type UploadState,
+} from "@/components/image-upload-overlay";
+
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -50,6 +57,7 @@ export const EditEventForm = ({ event, targetUserId }: EditEventFormProps) => {
   const router = useRouter();
   const [isImageDirty, setIsImageDirty] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadState, setUploadState] = useState<UploadState | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(
     typeof event.image_url === "string" ? event.image_url : null
   );
@@ -76,35 +84,63 @@ export const EditEventForm = ({ event, targetUserId }: EditEventFormProps) => {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-        form.setValue("file", file);
-        setIsImageDirty(true);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file.",
+        variant: "destructive",
+      });
+      return;
     }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      toast({
+        title: "File too large",
+        description:
+          "Large images are compressed automatically, but must be under 20 MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+      form.setValue("file", file);
+      setIsImageDirty(true);
+    };
+    reader.readAsDataURL(file);
   };
+
+  const handleUploadProgress = createUploadProgressHandler(setUploadState);
 
   const onSubmit = async (data: EventType) => {
     setIsSubmitting(true);
+    const previousImageUrl =
+      typeof event.image_url === "string" ? event.image_url : "";
+    let uploadedImageUrl: string | null = null;
+
     try {
       let newImageUrl = data.image_url;
       if (data.file) {
-        if (event.image_url) {
-          await deleteImage(event.image_url as string);
-        }
+        setUploadState({ stage: "compressing", progress: 5 });
+
         const { imageUrl, error } = await uploadImage({
           file: data.file,
           bucket: config.bucketName,
           folder: `events/${targetUserId}`,
+          onProgress: handleUploadProgress,
         });
         if (error) {
           throw new Error(`Failed to upload image: ${error}`);
         }
         newImageUrl = imageUrl;
+        uploadedImageUrl = imageUrl;
       }
+
+      setUploadState({ stage: "saving", progress: 96 });
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { file, ...restData } = data;
@@ -126,6 +162,23 @@ export const EditEventForm = ({ event, targetUserId }: EditEventFormProps) => {
         throw new Error("Failed to update event");
       }
 
+      if (
+        previousImageUrl &&
+        typeof newImageUrl === "string" &&
+        previousImageUrl !== newImageUrl
+      ) {
+        try {
+          const { error: deleteError } = await deleteImage(previousImageUrl);
+          if (deleteError) {
+            console.error("Error deleting old event image:", deleteError);
+          }
+        } catch (deleteError) {
+          console.error("Error deleting old event image:", deleteError);
+        }
+      }
+
+      setUploadState({ stage: "saving", progress: 100 });
+
       toast({
         title: "Success",
         description: "Event updated successfully.",
@@ -134,6 +187,24 @@ export const EditEventForm = ({ event, targetUserId }: EditEventFormProps) => {
       router.push(`/dashboard/${targetUserId}/events`);
     } catch (error) {
       console.error("Error updating event:", error);
+
+      if (uploadedImageUrl) {
+        try {
+          const { error: cleanupError } = await deleteImage(uploadedImageUrl);
+          if (cleanupError) {
+            console.error(
+              "Error cleaning up uploaded event image:",
+              cleanupError
+            );
+          }
+        } catch (cleanupError) {
+          console.error(
+            "Error cleaning up uploaded event image:",
+            cleanupError
+          );
+        }
+      }
+
       toast({
         title: "Error",
         description: "Failed to update event. Please try again.",
@@ -141,6 +212,7 @@ export const EditEventForm = ({ event, targetUserId }: EditEventFormProps) => {
       });
     } finally {
       setIsSubmitting(false);
+      setUploadState(null);
     }
   };
 
@@ -370,6 +442,12 @@ export const EditEventForm = ({ event, targetUserId }: EditEventFormProps) => {
                         <ImageIcon className="w-12 h-12 text-gray-400" />
                       </div>
                     )}
+                    {uploadState && (
+                      <ImageUploadOverlay
+                        stage={uploadState.stage}
+                        progress={uploadState.progress}
+                      />
+                    )}
                   </div>
                   <FormControl>
                     <div>
@@ -378,6 +456,7 @@ export const EditEventForm = ({ event, targetUserId }: EditEventFormProps) => {
                         variant="secondary"
                         onClick={() => fileInputRef.current?.click()}
                         className="w-full mb-2"
+                        disabled={isSubmitting || Boolean(uploadState)}
                       >
                         {imagePreview ? "Change Image" : "Upload Image"}
                       </Button>
@@ -412,7 +491,7 @@ export const EditEventForm = ({ event, targetUserId }: EditEventFormProps) => {
               ]}
               className="w-full"
             >
-              Save Changes
+              {isSubmitting ? "Saving..." : "Save Changes"}
             </SaveChangesButton>
           </form>
         </Form>

@@ -1,6 +1,6 @@
 "use client";
 import { useAuth } from "@/app/context/AuthContext";
-import { useMenu } from "@/app/context/MainContext";
+import type { MainMenuItem } from "@/schemas/mainSchema";
 import { useTransitionRouter } from "next-view-transitions";
 import React, { useEffect, useRef } from "react";
 import {
@@ -13,10 +13,10 @@ import HomeAreaButton from "./HomeAreaButton";
 interface ClickAreasProps {
   setIsLoginModalOpen: (isOpen: boolean) => void;
   refs: HomeExitAnimationRefs;
+  mainMenu: MainMenuItem[];
 }
 
-function ClickAreas({ refs, setIsLoginModalOpen }: ClickAreasProps) {
-  const mainMenu = useMenu();
+function ClickAreas({ refs, setIsLoginModalOpen, mainMenu }: ClickAreasProps) {
   const { user, isLoading } = useAuth();
   const router = useTransitionRouter();
   const orderedSections = ["dashboard", "events", "map", "about"];

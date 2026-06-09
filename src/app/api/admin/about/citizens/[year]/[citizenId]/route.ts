@@ -113,7 +113,7 @@ export async function PUT(
       }
     }
 
-    revalidateHomeCitizensCache();
+    revalidateHomeCitizensCache(Number(year));
 
     return NextResponse.json({
       message: `Citizen ${citizenId} for year ${year} updated successfully`,
@@ -186,7 +186,7 @@ export async function DELETE(
       }
     }
 
-    revalidateHomeCitizensCache();
+    revalidateHomeCitizensCache(Number(year));
 
     return NextResponse.json({
       message: `Citizen ${citizenId} for year ${year} deleted successfully`,

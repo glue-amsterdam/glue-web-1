@@ -1,17 +1,30 @@
 import { ExhibitorItem } from '@/lib/participants/exhibitor-types'
 import { getExhibitorItemKey } from "@/lib/participants/exhibitors-filters";
 
+import SrOnlySanitized from "@/components/sr-only-sanitized";
 import ExhibitorCard from './exhibitor-card';
 
-type Props = {
+type SectionProps = {
     exhibitors: ExhibitorItem[]
     loading: boolean
-    mode: 'fullpage' | 'section'
+    mode: 'section'
+    title: string
+    description: string
 }
+
+type FullPageProps = {
+    exhibitors: ExhibitorItem[]
+    loading: boolean
+    mode: 'fullpage'
+    title?: never
+    description?: never
+}
+
+type Props = SectionProps | FullPageProps
 
 const MOBILE_COUNT = 3;
 
-function ExhibitorsGrid({ exhibitors, loading, mode }: Props) {
+function ExhibitorsGrid({ exhibitors, loading, mode, title, description }: Props) {
     if (mode === 'fullpage') {
         return (
             <ul
@@ -29,6 +42,11 @@ function ExhibitorsGrid({ exhibitors, loading, mode }: Props) {
     }
     if (mode === 'section') {
         return (
+            <>
+            <h2 className="title-text border-t lg:border-t-2 border-[var(--black-color)] pt-[15px] lg:pt-[30px]">
+                {title.toUpperCase()}
+            </h2>
+            <SrOnlySanitized html={description} />
             <div className="grid grid-cols-1 lg:grid-cols-3 pt-10 gap-y-[40px] lg:gap-x-[30px] justify-self-center lg:justify-self-auto">
                 {/* Mobile: 3 */}
                 <div className="contents lg:hidden">
@@ -43,6 +61,7 @@ function ExhibitorsGrid({ exhibitors, loading, mode }: Props) {
                     ))}
                 </div>
             </div>
+            </>
         )
     }
 }

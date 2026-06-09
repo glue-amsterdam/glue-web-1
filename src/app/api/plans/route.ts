@@ -7,7 +7,6 @@ export async function GET(req: NextRequest) {
 
     const all = req.nextUrl.searchParams.get("all");
 
-    // Check application status first
     const { data: status, error: statusError } = await supabase
       .from("plans_status")
       .select("application_closed, closed_message")
@@ -21,12 +20,19 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const applicationClosed = status?.application_closed ?? false;
+
+    if (applicationClosed && all !== "true") {
+      return NextResponse.json({
+        plans: [],
+        applicationClosed: true,
+        closedMessage: status?.closed_message || "",
+      });
+    }
+
     let query = supabase.from("plans").select("*").order("order_by");
 
-    // If applications are closed and not requesting all plans, only show free and member plans
-    if (status?.application_closed && all !== "true") {
-      query = query.in("plan_type", ["free", "member"]);
-    } else if (all !== "true") {
+    if (all !== "true") {
       query = query.eq("is_participant_enabled", true);
     }
 
@@ -40,10 +46,9 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Include application status in response
     return NextResponse.json({
       plans,
-      applicationClosed: status?.application_closed || false,
+      applicationClosed,
       closedMessage: status?.closed_message || "",
     });
   } catch (error) {

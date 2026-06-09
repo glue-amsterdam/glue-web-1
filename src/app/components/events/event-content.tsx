@@ -72,7 +72,7 @@ export default function EventContent({ event }: EventContentProps) {
                 <div className="flex items-center justify-center gap-2">
                   {event.organizer.slug ? (
                     <Link
-                      href={`/participants/${event.organizer.slug}`}
+                      href={`/exhibitors/${event.organizer.slug}`}
                       className="text-sm hover:underline"
                       target="_blank"
                     >
@@ -94,7 +94,7 @@ export default function EventContent({ event }: EventContentProps) {
                       >
                         {contributor.slug ? (
                           <Link
-                            href={`/participants/${contributor.slug}`}
+                            href={`/exhibitors/${contributor.slug}`}
                             className="text-sm hover:underline"
                             target="_blank"
                           >

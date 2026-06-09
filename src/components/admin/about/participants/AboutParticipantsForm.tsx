@@ -21,8 +21,8 @@ import {
 } from "@/schemas/participantsAdminSchema";
 import { mutate } from "swr";
 import { Switch } from "@/components/ui/switch";
-import { ColorPicker } from "@/components/ui/color-picker";
 import { RichTextEditor } from "@/app/components/editor";
+import { Input } from "@/components/ui/input";
 
 function AboutParticipantsForm({
   initialData,
@@ -48,8 +48,8 @@ function AboutParticipantsForm({
     "/api/admin/about/participants",
     async () => {
       toast({
-        title: "Participants header updated",
-        description: "The participants header have been successfully updated.",
+        title: "Exhibitors header updated",
+        description: "The exhibitors header have been successfully updated.",
       });
       await mutate("/api/admin/about/participants");
       router.refresh();
@@ -58,7 +58,7 @@ function AboutParticipantsForm({
       toast({
         title: "Error",
         description:
-          "Failed to update participants header. Please try again." + error,
+          "Failed to update exhibitors header. Please try again." + error,
         variant: "destructive",
       });
     }
@@ -72,7 +72,7 @@ function AboutParticipantsForm({
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-2">
         <FormField
           control={control}
           name="is_visible"
@@ -81,7 +81,7 @@ function AboutParticipantsForm({
               <div className="space-y-0.5">
                 <FormLabel className="text-base">Visible</FormLabel>
                 <FormDescription>
-                  Toggle to show or hide the participants section
+                  Toggle to show or hide the exhibitors section
                 </FormDescription>
               </div>
               <FormControl>
@@ -100,7 +100,8 @@ function AboutParticipantsForm({
             <FormItem>
               <FormLabel>Title</FormLabel>
               <FormControl>
-                <RichTextEditor
+                <Input
+                  type="text"
                   value={field.value || ""}
                   onChange={field.onChange}
                 />
@@ -125,59 +126,12 @@ function AboutParticipantsForm({
             </FormItem>
           )}
         />
-        <FormField
-          control={control}
-          name="text_color"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Text Color</FormLabel>
-              <FormDescription>
-                Pick the color of the text in the carousel
-              </FormDescription>
-              <FormControl>
-                <ColorPicker
-                  value={field.value || "#fff"}
-                  onChange={field.onChange}
-                  label="Pick text color"
-                  className="w-full"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name="background_color"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Background Color</FormLabel>
-              <FormDescription>
-                Pick the color of the background of the participants section
-              </FormDescription>
-              <FormControl>
-                <ColorPicker
-                  value={field.value || "#000000"}
-                  onChange={field.onChange}
-                  label="Pick background color"
-                  className="w-full"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <SaveChangesButton
-          isSubmitting={isSubmitting}
-          watchFields={[
-            "title",
-            "description",
-            "is_visible",
-            "text_color",
-            "background_color",
-          ]}
-          className="w-full"
-        />
+        <div className="flex justify-start">
+          <SaveChangesButton
+            isSubmitting={isSubmitting}
+            watchFields={["title", "description", "is_visible"]}
+
+          /></div>
       </form>
     </FormProvider>
   );

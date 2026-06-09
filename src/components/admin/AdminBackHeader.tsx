@@ -6,7 +6,7 @@ export default function AdminBackHeader({
   sectionTitle: string;
 }) {
   return (
-    <h2 className="text-5xl font-semibold pb-6 underline text-uiblack">
+    <h2 className="text-5xl font-semibold pb-6 underline text-uiblack pt-4">
       {sectionTitle}
     </h2>
   );

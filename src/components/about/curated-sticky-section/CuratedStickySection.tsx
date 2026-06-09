@@ -21,8 +21,6 @@ interface CuratedStickySectionProps {
     title: string;
     description: string;
     is_visible: boolean;
-    text_color: string;
-    background_color: string;
   };
   curatedGroups: Record<number, CuratedV2Group>;
 }
@@ -311,9 +309,8 @@ const CuratedStickySection: React.FC<CuratedStickySectionProps> = ({
     <section
       ref={sectionRef}
       id="curated"
-      style={{ backgroundColor: headerData.background_color }}
       aria-labelledby="curated-title curated-description"
-      className="min-h-dvh w-full flex flex-col pt-[6rem] pb-[4rem]"
+      className="min-h-dvh w-full flex flex-col pt-[6rem] pb-[4rem] bg-black text-white"
     >
       <div
         id="curated-background-black-gradient"
@@ -321,7 +318,6 @@ const CuratedStickySection: React.FC<CuratedStickySectionProps> = ({
         className="absolute inset-0 opacity-50 pointer-events-none z-[9]"
       />
       <CuratedStickyHeader
-        textColor={headerData.text_color}
         sanitizedTitle={sanitizedTitle}
         sanitizedDescription={sanitizedDescription}
       />
@@ -330,18 +326,13 @@ const CuratedStickySection: React.FC<CuratedStickySectionProps> = ({
       <div className="hidden md:grid md:grid-cols-4 w-full h-[70vh] min-h-[70vh] max-h-[70vh]">
         <div className="col-span-1 h-full hover:scale-image overflow-hidden">
           <StickySelectorBlock
-            textColor={headerData.text_color}
-            bgColor={headerData.background_color}
             years={years}
             selectedYear={selectedYear}
             setSelectedYear={handleYearChange}
             participants={participants}
           />
         </div>
-        <div
-          className="col-span-3 relative overflow-hidden h-full"
-          style={{ backgroundColor: headerData.background_color }}
-        >
+        <div className="col-span-3 relative overflow-hidden h-full bg-black">
           <LogoImageContent
             refs={desktopRefs}
             groupPhotoUrl={group?.group_photo_url || ""}
@@ -356,8 +347,7 @@ const CuratedStickySection: React.FC<CuratedStickySectionProps> = ({
         {/* Mobile Toggle Button */}
         <button
           onClick={handleToggleDrawer}
-          className="absolute items-center top-1/2 -translate-y-1/2 left-4 z-20 p-3 rounded-lg bg-black/20 backdrop-blur-sm border border-white/20 hover:bg-black/30 transition-colors duration-200"
-          style={{ color: headerData.text_color }}
+          className="absolute items-center top-1/2 -translate-y-1/2 left-4 z-20 p-3 rounded-lg bg-black/20 backdrop-blur-sm border border-white/20 hover:bg-black/30 transition-colors duration-200 text-white"
           aria-label="Toggle participants list"
         >
           <svg
@@ -398,8 +388,7 @@ const CuratedStickySection: React.FC<CuratedStickySectionProps> = ({
             {/* Close Button */}
             <button
               onClick={handleCloseDrawer}
-              className="absolute top-2 left-2 z-50 p-2 rounded-full backdrop-blur-sm duration-200"
-              style={{ color: headerData.text_color }}
+              className="absolute top-2 left-2 z-50 p-2 rounded-full backdrop-blur-sm duration-200 text-white"
               aria-label="Close participants list"
             >
               <svg
@@ -416,8 +405,6 @@ const CuratedStickySection: React.FC<CuratedStickySectionProps> = ({
 
             {/* Drawer Content */}
             <StickySelectorBlock
-              textColor={headerData.text_color}
-              bgColor={headerData.background_color}
               years={years}
               selectedYear={selectedYear}
               setSelectedYear={handleYearChange}
@@ -428,11 +415,8 @@ const CuratedStickySection: React.FC<CuratedStickySectionProps> = ({
 
         {/* Mobile Image Container */}
         <div
-          className="flex-1 relative overflow-hidden"
-          style={{
-            height: "calc(100vh - 6rem)",
-            backgroundColor: headerData.background_color,
-          }}
+          className="flex-1 relative overflow-hidden bg-black"
+          style={{ height: "calc(100vh - 6rem)" }}
         >
           <LogoImageContent
             refs={mobileRefs}

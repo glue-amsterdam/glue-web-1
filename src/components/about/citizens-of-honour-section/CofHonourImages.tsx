@@ -12,7 +12,6 @@ export default function CofHonourImages({
   selectedYear,
   setSelectedYear,
   onOpen,
-  textColor,
 }: {
   citizens: ClientCitizen[];
   years: string[];
@@ -20,7 +19,6 @@ export default function CofHonourImages({
   selectedYear: string;
   onOpen: (citizen: ClientCitizen) => void;
   setSelectedYear: (year: string) => void;
-  textColor: string;
 }) {
   const filteredCitizens = citizens;
   // Animation for year changes - only entrance animation
@@ -59,17 +57,15 @@ export default function CofHonourImages({
           Select year
         </label>
         <select
-          style={{ backgroundColor: textColor }}
           id="year-select"
           aria-label="Select year"
-          className="text-center tracking-widest font-overpass text-white py-1 px-4 hover:scale-[0.95] transition-all duration-300"
+          className="text-center tracking-widest font-overpass bg-black text-white py-1 px-4 hover:scale-[0.95] transition-all duration-300"
           value={selectedYear}
           onChange={(e) => setSelectedYear(e.target.value)}
         >
           {years.map((year) => (
             <option
-              style={{ backgroundColor: textColor }}
-              className="text-white "
+              className="bg-black text-white"
               key={year}
               value={year}
             >

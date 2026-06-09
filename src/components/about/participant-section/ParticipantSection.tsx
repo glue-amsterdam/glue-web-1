@@ -98,22 +98,19 @@ export default function ParticipantSection({
     <section
       ref={sectionRef}
       id="participants"
-      style={{ backgroundColor: headerData.background_color }}
       aria-labelledby="participants-heading participants-description "
-      className="min-h-dvh w-full relative flex flex-col pt-[6rem] pb-[4rem]"
+      className="min-h-dvh w-full relative flex flex-col pt-[6rem] pb-[4rem] bg-black"
     >
       {/* HEADER */}
       <>
         <h2
           id="participants-heading"
-          style={{ color: headerData.text_color }}
-          className="about-title text-3xl md:text-5xl lg:text-6xl xl:text-7xl px-4"
+          className="about-title text-3xl md:text-5xl lg:text-6xl xl:text-7xl px-4 text-white"
           dangerouslySetInnerHTML={{ __html: sanitizedTitle }}
         />
         <p
           id="about-description"
-          style={{ color: headerData.text_color }}
-          className="about-description text-xs md:text-sm lg:text-base px-6"
+          className="about-description text-xs md:text-sm lg:text-base px-6 text-white"
           dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
         />
       </>
@@ -124,7 +121,6 @@ export default function ParticipantSection({
         className="flex flex-col md:flex-row justify-center items-center z-30 gap-4 flex-grow relative"
       >
         <ParticipantInfoPanel
-          textColor={headerData.text_color}
           participantSelectedImage={participantSelectedImage}
           participant={participants[activeIndex]}
         />
@@ -134,7 +130,7 @@ export default function ParticipantSection({
         >
           <Link
             target="_blank"
-            href={`/participants/${participants[activeIndex].slug}`}
+            href={`/exhibitors/${participants[activeIndex].slug}`}
           >
             <Image
               src={
@@ -152,7 +148,6 @@ export default function ParticipantSection({
         <div className="md:flex-1" />
       </div>
       <ParticipantsCarousel
-        textColor={headerData.text_color}
         carouselRef={carouselRef}
         participants={participants}
         activeIndex={activeIndex}

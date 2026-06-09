@@ -6,8 +6,6 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
-import AdminHeader from "@/components/admin/AdminHeader";
-import AdminBackHeader from "@/components/admin/AdminBackHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -404,12 +402,8 @@ const VisitorAreasPanel = () => {
 
 const VisitorsClientPage = () => {
   return (
-    <div className="container mx-auto text-black min-h-dvh h-full pt-[6rem] pb-4">
-      <div className="bg-white p-4 rounded-lg shadow-md flex flex-col gap-4">
-        <AdminHeader />
-        <AdminBackHeader backLink="/admin" sectionTitle="Visitors" />
-        <VisitorAreasPanel />
-      </div>
+    <div className="flex flex-col gap-4 rounded-lg bg-white p-4 shadow-md">
+      <VisitorAreasPanel />
     </div>
   );
 };

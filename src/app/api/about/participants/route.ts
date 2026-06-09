@@ -10,7 +10,7 @@ export async function GET() {
     // Fetch header data first
     const { data: headerData, error: headerError } = await supabase
       .from("about_participants")
-      .select("title,is_visible,text_color,description,background_color")
+      .select("title,is_visible,description")
       .single();
 
     if (headerError) {
@@ -25,8 +25,6 @@ export async function GET() {
           title: "",
           description: "",
           is_visible: false,
-          text_color: "#fff",
-          background_color: "#000000",
         },
         participants: [],
       });

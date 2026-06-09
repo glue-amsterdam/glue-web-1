@@ -55,7 +55,7 @@ export default function AboutSponsorsForm() {
           mutate={() => mutate("/api/admin/about/sponsors")}
         />
       </div>
-      <div className="flex justify-center flex-col items-center">
+      <div className="flex flex-col items-start">
         <h2 className="text-2xl font-bold mb-4">Add Sponsor</h2>
         <SponsorForm
           sponsorTypes={sponsorsHeaderData.sponsors_types}

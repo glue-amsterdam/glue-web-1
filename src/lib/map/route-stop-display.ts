@@ -1,8 +1,12 @@
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
 import type { MapLocation, MapRoute } from "@/lib/map/types";
 import {
+  getRouteStopMarkerColors,
+  type MapThemeColors,
+} from "@/lib/map/locations-geojson";
+import {
   exhibitorTypeBackgroundCss,
-  exhibitorTypeForegroundHex,
+  exhibitorTypeFontCss,
 } from "@/lib/participants/exhibitor-type-styles";
 
 export type RouteStopDisplay = {
@@ -24,7 +28,8 @@ const ROUTE_STOP_FOREGROUND = "#ffffff";
 
 export const getRouteStopsForDisplay = (
   route: MapRoute,
-  locations: MapLocation[]
+  locations: MapLocation[],
+  colors?: MapThemeColors
 ): RouteStopDisplay[] => {
   const locationById = new Map(locations.map((loc) => [loc.id, loc]));
 
@@ -37,9 +42,13 @@ export const getRouteStopsForDisplay = (
       let backgroundColor: string;
       let color: string;
 
-      if (participantType) {
+      if (colors) {
+        const markerColors = getRouteStopMarkerColors(participantType, colors);
+        backgroundColor = markerColors.backgroundColor;
+        color = markerColors.color;
+      } else if (participantType) {
         backgroundColor = exhibitorTypeBackgroundCss(participantType);
-        color = exhibitorTypeForegroundHex[participantType];
+        color = exhibitorTypeFontCss(participantType);
       } else {
         backgroundColor = ROUTE_STOP_BACKGROUND;
         color = ROUTE_STOP_FOREGROUND;

@@ -1,28 +1,13 @@
-import CreativeCitizensDisplay from "@/components/home/citizens-of-honour-section/creative-citizens-display";
+import CitizensOfHonourSection from "@/components/yearly-sections/citizens-of-honour-section";
+import { toCitizensSectionProps } from "@/lib/yearly-sections/map-yearly-section-props";
 import type { HomeCitizensData } from "@/lib/home/types";
 
 type Props = {
   data: HomeCitizensData;
 };
 
-const CreativeCitizensOfHonour = ({
-  data: { title, description, is_visible, citizens },
-}: Props) => {
-  if (!is_visible) {
-    return null;
-  }
-
-  return (
-    <section id="creative-citizens-of-honour" className="main-padding">
-      <h2 className="title-text border-t lg:border-t-2 border-[var(--black-color)] pt-[15px] lg:pt-[30px]">
-        {title.toUpperCase()}
-      </h2>
-      <CreativeCitizensDisplay
-        description={description}
-        citizens={citizens}
-      />
-    </section>
-  );
-};
+const CreativeCitizensOfHonour = ({ data }: Props) => (
+  <CitizensOfHonourSection {...toCitizensSectionProps(data)} />
+);
 
 export default CreativeCitizensOfHonour;

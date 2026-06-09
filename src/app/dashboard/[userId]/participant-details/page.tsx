@@ -9,10 +9,10 @@ export default async function ParticipantDetailsPage({
 }) {
   const { userId } = await params;
 
-  const [{ isMod }, profileData] = await Promise.all([
-    getDashboardAuth(userId),
-    getParticipantProfileData(userId),
-  ]);
+  const { isMod } = await getDashboardAuth(userId);
+  const profileData = await getParticipantProfileData(userId, {
+    includePlans: isMod,
+  });
 
   return (
     <ParticipantDetailsClient

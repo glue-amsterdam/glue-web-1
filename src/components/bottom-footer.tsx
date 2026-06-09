@@ -3,16 +3,18 @@
 import Link from 'next/link';
 import BigButton from './big-button'
 import { usePathname } from 'next/navigation';
+import { useMainLinks } from '@/app/context/MainContext';
 
 type FooterLink = {
     title: string;
     link: string;
 };
+
 const navLinks: FooterLink[] = [
     { title: 'Home', link: '/' },
     { title: 'About', link: '/about' },
     { title: 'Participate', link: '/participate' },
-    { title: 'Exhibitors', link: '/participants' },
+    { title: 'Exhibitors', link: '/exhibitors' },
     { title: 'Map', link: '/map' },
     { title: 'Program', link: '/program' },
 ];
@@ -25,29 +27,52 @@ const helpLinks: FooterLink[] = [
     { title: 'Privacy Policy', link: '/privacy-policy' },
     { title: 'Imprint', link: '/imprint' },
 ];
-const socialLinks: FooterLink[] = [
-    { title: 'Instagram', link: 'https://www.instagram.com/glue.amsterdam' },
-    { title: 'LinkedIn', link: 'https://www.linkedin.com/company/glue-amsterdam-connected-by-design/' },
-    { title: 'Youtube', link: 'https://www.youtube.com/@GLUETV_amsterdam' },
-];
-const mobileColumns = [
-    { title: 'Web Navigation', links: navLinks },
-    { title: 'Help & Support', links: helpLinks },
-    { title: 'Follow Us', links: socialLinks },
-];
-const desktopLinkColumns: FooterLink[][] = [
-    navLinks.slice(0, 3),   // Home, About, Participate
-    navLinks.slice(3),      // Exhibitors, Map, Program
-    helpLinks.slice(0, 3),  // FAQ, Press & Media, Archive
-    helpLinks.slice(3),     // Contact, Terms, Privacy, Imprint
-    socialLinks,            // Instagram, LinkedIn, Youtube
-];
 
+const SOCIAL_PLATFORMS = new Set(["instagram", "linkedin", "youtube"]);
 
+const platformLabels: Record<string, string> = {
+    instagram: 'Instagram',
+    linkedin: 'LinkedIn',
+    youtube: 'Youtube',
+};
+
+const isHttpUrl = (url: string) =>
+    url.startsWith("http://") || url.startsWith("https://");
+
+const buildSocialLinks = (
+    mainLinks: { platform: string; link: string }[]
+): FooterLink[] =>
+    mainLinks
+        .filter(({ platform, link }) =>
+            SOCIAL_PLATFORMS.has(platform.toLowerCase()) &&
+            isHttpUrl(link?.trim() ?? "")
+        )
+        .map(({ platform, link }) => ({
+            title: platformLabels[platform.toLowerCase()] ?? platform,
+            link,
+        }));
 
 function BottomFooter() {
     const pathname = usePathname();
+    const mainLinks = useMainLinks();
+    const socialLinks = buildSocialLinks(mainLinks);
     const isHome = pathname === '/';
+
+    const mobileColumns = [
+        { title: 'Web Navigation', links: navLinks },
+        { title: 'Help & Support', links: helpLinks },
+        ...(socialLinks.length > 0
+            ? [{ title: 'Follow Us', links: socialLinks }]
+            : []),
+    ];
+    const desktopLinkColumns: FooterLink[][] = [
+        navLinks.slice(0, 3),
+        navLinks.slice(3),
+        helpLinks.slice(0, 3),
+        helpLinks.slice(3),
+        ...(socialLinks.length > 0 ? [socialLinks] : []),
+    ];
+
     return (
         <footer id='footer' className={`main-padding ${isHome ? 'lg:pb-(--nav-secondary-h-mobile)' : ''}`}>
             <section className="bg-(--black-color) p-[20px] lg:p-[60px] text-(--white-color)">

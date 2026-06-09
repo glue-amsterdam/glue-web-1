@@ -1,13 +1,13 @@
 "use client";
-import { Button } from "../ui/button";
+
 import { usePathname, useRouter } from "next/navigation";
-import { StepBack } from "lucide-react";
-import Link from "next/link";
+import BigButton from "../big-button";
 
 export default function AdminHeader() {
   const router = useRouter();
   const pathname = usePathname();
   const isAdminMainPage = pathname === "/admin";
+
   const handleLogout = async () => {
     try {
       const response = await fetch("/api/admin/logout", {
@@ -23,29 +23,19 @@ export default function AdminHeader() {
       console.error("Failed to log out:", error);
     }
   };
+
+  if (isAdminMainPage) {
+    return null;
+  }
+
   return (
-    <div className="container mx-auto">
-      <div
-        className={`flex ${isAdminMainPage ? "justify-end" : "justify-between"
-          } items-start pb-8`}
-      >
-        {!isAdminMainPage && (
-          <Link
-            href={"/admin"}
-            className="hover:underline flex text-[var(--color-box1)]"
-          >
-            <StepBack />
-            Back
-          </Link>
-        )}
-        <Button
-          type="button"
-          className="bg-red-500 hover:bg-red-600 text-white"
-          onClick={handleLogout}
-        >
-          Log out
-        </Button>
-      </div>
+    <div className="mb-4 flex justify-end">
+      <BigButton
+        mode="big"
+        as="button"
+        onClick={() => handleLogout()}
+        label="Log out"
+      />
     </div>
   );
 }

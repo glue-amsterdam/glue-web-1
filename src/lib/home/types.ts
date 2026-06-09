@@ -6,7 +6,7 @@ export const HOME_VIDEO_CACHE_TAG = "home-video";
 
 export type HomeStickyParticipant = {
   userId: string;
-  slug: string;
+  slug: string | null;
   userName: string;
   image: { image_url: string; alt: string };
 };
@@ -28,7 +28,14 @@ export type HomeCitizensData = {
   citizens: ClientCitizen[];
 };
 
-export type HomeVideoData = {
+export const HOME_HERO_REVALIDATE_SECONDS = 2_592_000;
+
+export type HomeHeroData = {
+  id: string | null;
+  description: string;
   videoUrl: string;
   posterUrl: string;
 };
+
+/** @deprecated Use HomeHeroData */
+export type HomeVideoData = HomeHeroData;

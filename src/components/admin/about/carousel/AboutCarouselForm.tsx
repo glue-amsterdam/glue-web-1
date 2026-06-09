@@ -4,15 +4,19 @@ import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ImageIcon, PlusCircle, X } from "lucide-react";
+import { PlusCircle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { deleteImage, uploadImage } from "@/utils/supabase/storage/client";
 import { ImageData } from "@/schemas/baseSchema";
 import { Label } from "@/components/ui/label";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { config } from "@/config";
+import { AdminImagePreview } from "@/components/admin/admin-image-preview";
+import {
+  createUploadProgressHandler,
+  type UploadState,
+} from "@/components/image-upload-overlay";
 import {
   FormControl,
   FormDescription,
@@ -35,9 +39,14 @@ interface CarouselFormProps {
 
 export default function AboutCarouselForm({ initialData }: CarouselFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadState, setUploadState] = useState<UploadState | null>(null);
+  const [uploadingSlideIndex, setUploadingSlideIndex] = useState<number | null>(
+    null
+  );
   const { toast } = useToast();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const handleUploadProgress = createUploadProgressHandler(setUploadState);
 
   const methods = useForm<CarouselSection>({
     resolver: zodResolver(carouselSectionSchema),
@@ -108,22 +117,30 @@ export default function AboutCarouselForm({ initialData }: CarouselFormProps) {
       for (let i = 0; i < data.slides.length; i++) {
         const slide = data.slides[i] as ImageData & { file?: File };
         if (slide.file) {
-          // If there's an existing image_url, delete it first
+          setUploadingSlideIndex(i);
+
           if (slide.image_url && !slide.image_url.startsWith("blob:")) {
+            setUploadState({ stage: "deleting", progress: 10 });
             await deleteImage(slide.image_url);
           }
+
+          setUploadState({ stage: "compressing", progress: 20 });
+
           const { imageUrl, error } = await uploadImage({
             file: slide.file,
             bucket: config.bucketName,
             folder: "about/carousel-images",
+            onProgress: handleUploadProgress,
           });
           if (error) {
             throw new Error(`Failed to upload image: ${error}`);
           }
           data.slides[i].image_url = imageUrl;
-          delete data.slides[i].file; // Remove the file property before sending to API
+          delete data.slides[i].file;
         }
       }
+
+      setUploadState({ stage: "saving", progress: 96 });
 
       // Submit the form data with updated image URLs
       const response = await fetch("/api/admin/about/carousel", {
@@ -152,9 +169,13 @@ export default function AboutCarouselForm({ initialData }: CarouselFormProps) {
         variant: "destructive",
       });
     } finally {
+      setUploadState(null);
+      setUploadingSlideIndex(null);
       setIsSubmitting(false);
     }
   };
+
+  const isBusy = isSubmitting || uploadState !== null;
 
   return (
     <FormProvider {...methods}>
@@ -236,22 +257,19 @@ export default function AboutCarouselForm({ initialData }: CarouselFormProps) {
           <Label>Slides (Max 15)</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
             {fields.map((field, index) => (
-              <div key={field.id} className="relative border p-4 rounded-md">
-                <div className="w-full h-40 object-cover rounded-md relative mb-2">
-                  {field.image_url ? (
-                    <Image
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      src={field.image_url}
-                      alt={""}
-                      className="object-cover rounded-md"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-md">
-                      <ImageIcon className="w-12 h-12 text-gray-400" />
-                    </div>
-                  )}
-                </div>
+              <div key={field.id} className="relative space-y-2 border-t pt-4 first:border-t-0 first:pt-0">
+                <AdminImagePreview
+                  src={field.image_url}
+                  alt={`Carousel slide ${index + 1}`}
+                  uploadState={
+                    uploadingSlideIndex === index ? uploadState : null
+                  }
+                />
+                {field.file && uploadingSlideIndex !== index && (
+                  <p className="text-xs text-muted-foreground">
+                    New file selected — save to apply
+                  </p>
+                )}
 
                 <div className="flex gap-2">
                   <Button
@@ -259,6 +277,7 @@ export default function AboutCarouselForm({ initialData }: CarouselFormProps) {
                     variant="outline"
                     size="sm"
                     className="flex-1"
+                    disabled={isBusy}
                     onClick={() => {
                       if (fileInputRef.current) {
                         fileInputRef.current.click();
@@ -277,6 +296,7 @@ export default function AboutCarouselForm({ initialData }: CarouselFormProps) {
                     variant="destructive"
                     size="sm"
                     className="flex-1"
+                    disabled={isBusy}
                     onClick={() => handleDeleteImage(index)}
                   >
                     <X className="mr-2 h-4 w-4" /> Remove Slide
@@ -290,6 +310,7 @@ export default function AboutCarouselForm({ initialData }: CarouselFormProps) {
           {fields.length < 15 && (
             <Button
               type="button"
+              disabled={isBusy}
               onClick={() => {
                 if (fileInputRef.current) {
                   fileInputRef.current.click();

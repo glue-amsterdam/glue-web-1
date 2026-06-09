@@ -3,12 +3,10 @@ import { ParticipantsResponse } from "@/schemas/participantsSchema";
 
 const PARTICIPANT_FALLBACK_DATA: ParticipantsResponse = {
   headerData: {
-    text_color: "#fff",
     title: "Participants Section!",
     description:
       "Discover all participating brands, designers, studio's and academies of GLUE amsterdam connected by design",
     is_visible: false,
-    background_color: "#000000",
   },
   participants: [
     {

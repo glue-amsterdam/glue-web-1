@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import AdminHeader from "@/components/admin/AdminHeader";
-import AdminBackHeader from "@/components/admin/AdminBackHeader";
 import EmailTemplatesList from "./EmailTemplatesList";
 
 type EmailTemplate = {
@@ -40,7 +38,6 @@ export default function EmailTemplatesClientPage() {
   }, []);
 
   const handleTemplateUpdate = () => {
-    // Refetch templates after update
     fetch("/api/admin/email-templates")
       .then((res) => res.json())
       .then((data) => setTemplates(data))
@@ -49,40 +46,26 @@ export default function EmailTemplatesClientPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto text-black min-h-dvh h-full pt-[6rem] pb-4">
-        <div className="bg-white p-4 rounded-lg shadow-md flex flex-col gap-4">
-          <AdminHeader />
-          <AdminBackHeader backLink="/admin" sectionTitle="Email Templates" />
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-          </div>
-        </div>
+      <div className="flex items-center justify-center py-8">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto text-black min-h-dvh h-full pt-[6rem] pb-4">
-        <div className="bg-white p-4 rounded-lg shadow-md flex flex-col gap-4">
-          <AdminHeader />
-          <AdminBackHeader backLink="/admin" sectionTitle="Email Templates" />
-          <div className="text-red-500 p-4">{error}</div>
-        </div>
+      <div className="rounded-lg bg-white p-4 shadow-md">
+        <div className="base-text-size p-4 text-red-500">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto text-black min-h-dvh h-full pt-[6rem] pb-4">
-      <div className="bg-white p-4 rounded-lg shadow-md flex flex-col gap-4">
-        <AdminHeader />
-        <AdminBackHeader backLink="/admin" sectionTitle="Email Templates" />
-        <EmailTemplatesList
-          templates={templates}
-          onTemplateUpdate={handleTemplateUpdate}
-        />
-      </div>
+    <div className="flex flex-col gap-4 rounded-lg bg-white p-4 shadow-md">
+      <EmailTemplatesList
+        templates={templates}
+        onTemplateUpdate={handleTemplateUpdate}
+      />
     </div>
   );
 }

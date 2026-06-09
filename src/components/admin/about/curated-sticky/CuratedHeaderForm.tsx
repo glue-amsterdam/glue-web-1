@@ -11,14 +11,14 @@ import {
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { RichTextEditor } from "@/app/components/editor";
-import { ColorPicker } from "@/components/ui/color-picker";
 import { CuratedMemberSectionHeader } from "@/schemas/curatedSchema";
+import { Input } from "@/components/ui/input";
 
 export const CuratedHeaderForm = () => {
   const { control } = useFormContext<CuratedMemberSectionHeader>();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <FormField
         name="is_visible"
         render={({ field }) => (
@@ -26,7 +26,7 @@ export const CuratedHeaderForm = () => {
             <div className="space-y-0.5">
               <FormLabel className="text-base">Visible</FormLabel>
               <FormDescription>
-                Toggle to show or hide the CURATED STICKY section
+                Toggle to show or hide the sticky groups section on the home page
               </FormDescription>
             </div>
             <FormControl>
@@ -42,7 +42,8 @@ export const CuratedHeaderForm = () => {
           <FormItem>
             <FormLabel>Title</FormLabel>
             <FormControl>
-              <RichTextEditor
+              <Input
+                type="text"
                 value={field.value || ""}
                 onChange={field.onChange}
               />
@@ -61,48 +62,6 @@ export const CuratedHeaderForm = () => {
               <RichTextEditor
                 value={field.value || ""}
                 onChange={field.onChange}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField
-        control={control}
-        name="text_color"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Text Color</FormLabel>
-            <FormDescription>
-              Pick the color of the text in the carousel
-            </FormDescription>
-            <FormControl>
-              <ColorPicker
-                value={field.value || "#fff"}
-                onChange={field.onChange}
-                label="Pick text color"
-                className="w-full"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField
-        control={control}
-        name="background_color"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Background Color</FormLabel>
-            <FormDescription>
-              Pick the color of the background of the curated sticky section
-            </FormDescription>
-            <FormControl>
-              <ColorPicker
-                value={field.value || "#000000"}
-                onChange={field.onChange}
-                label="Pick background color"
-                className="w-full"
               />
             </FormControl>
             <FormMessage />

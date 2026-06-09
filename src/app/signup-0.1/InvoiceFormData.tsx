@@ -11,15 +11,28 @@ export type InvoiceFormData = z.infer<typeof invoiceDataTypeSchema>;
 interface InvoiceFormProps {
   onSubmit: (data: InvoiceFormData) => void;
   onBack: () => void;
+  defaultValues?: Partial<InvoiceFormData>;
 }
 
-export function InvoiceForm({ onSubmit, onBack }: InvoiceFormProps) {
+export function InvoiceForm({
+  onSubmit,
+  onBack,
+  defaultValues,
+}: InvoiceFormProps) {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceDataTypeSchema),
+    defaultValues: {
+      invoice_company_name: defaultValues?.invoice_company_name ?? "",
+      invoice_zip_code: defaultValues?.invoice_zip_code ?? "",
+      invoice_address: defaultValues?.invoice_address ?? "",
+      invoice_country: defaultValues?.invoice_country ?? "",
+      invoice_city: defaultValues?.invoice_city ?? "",
+      invoice_extra: defaultValues?.invoice_extra ?? null,
+    },
   });
 
   return (

@@ -44,13 +44,12 @@ const ProgramDetailView = ({ event }: Props) => {
                   ? `${event.startTime} – ${event.endTime}`
                   : ""}</p>
                 <p>{event.type}</p>
-                <h3 className="pt-[30px]">{event.name.toUpperCase()}</h3>
-                <h4 className="truncate pt-[30px]">
-                  <p>ORGANISER</p>
-                  <p>{event.organizer.userName}
-                    {event.coOrganizers.length > 0 &&
-                      ` x ${event.coOrganizers.map((c) => c.userName).join("x ")}`}</p>
-                </h4>
+                <h2 className="pt-[30px]">ORGANISER</h2>
+                <p className="truncate pt-[30px]">
+                  {event.organizer.userName}
+                  {event.coOrganizers.length > 0 &&
+                    ` x ${event.coOrganizers.map((c) => c.userName).join("x ")}`}
+                </p>
                 {event.location?.formattedAddress ? (
                   <p className="pt-[30px] flex flex-col">
                     <span>ADDRESS </span>

@@ -5,45 +5,33 @@ export default function StickySelectorBlock({
   selectedYear,
   setSelectedYear,
   participants,
-  bgColor,
-  textColor,
 }: {
-  textColor: string;
-  bgColor: string;
   years: number[];
   selectedYear: number;
   setSelectedYear: (year: number) => void;
   participants: {
     userId: string;
     userName: string;
-    slug: string;
+    slug: string | null;
   }[];
 }) {
   return (
     <div
       data-lenis-prevent={true}
       id="curated-participants-and-selector"
-      className="border-r border-white/50 h-full w-full flex flex-col"
-      style={{ backgroundColor: bgColor }}
+      className="border-r border-white/50 h-full w-full flex flex-col bg-black text-white"
     >
       {years.length > 0 && (
         <div className="flex items-center justify-end flex-shrink-0 p-2">
-          <div
-            style={{ color: textColor }}
-            className="flex items-center gap-2 border-b border-white/50"
-          >
+          <div className="flex items-center gap-2 border-b border-white/50 text-white">
             <p>Year: </p>
             <div className="relative inline-block">
               <select
-                className="text-center tracking-widest font-overpass py-1 px-4 z-10 border-none outline-none pr-8"
+                className="text-center tracking-widest font-overpass py-1 px-4 z-10 border-none outline-none pr-8 bg-black text-white"
                 style={{
-                  border: "none",
-                  outline: "none",
                   appearance: "none",
-                  background: bgColor,
                   WebkitAppearance: "none",
                   MozAppearance: "none",
-                  color: textColor,
                 }}
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
@@ -51,7 +39,7 @@ export default function StickySelectorBlock({
               >
                 {years.map((year) => (
                   <option
-                    className="text-center w-full"
+                    className="text-center w-full bg-black text-white"
                     key={year}
                     value={year}
                   >
@@ -83,33 +71,31 @@ export default function StickySelectorBlock({
         }}
       >
         {participants.length === 0 ? (
-          <div
-            className="text-center text-sm mt-8"
-            style={{ color: textColor }}
-          >
+          <div className="text-center text-sm mt-8 text-white">
             No curated members for this year.
           </div>
         ) : (
           <ul
             id="curated-participants-list"
-            className="w-full p-2 overflow-x-hidden flex flex-col gap-1"
-            style={{ color: textColor }}
+            className="w-full p-2 overflow-x-hidden flex flex-col gap-1 text-white"
           >
             {participants.map((participant, idx) => (
-              <Link
+              <li
                 key={participant.userId + idx}
-                target="_blank"
-                href={`/participants/${participant.slug}`}
-                className="text-sm hover:tracking-widest transition-tracking duration-300"
-                style={{ color: textColor }}
+                className="relative flex items-center gap-2 p-1"
               >
-                <li
-                  key={participant.userId + idx}
-                  className="relative flex items-center gap-2 p-1"
-                >
-                  {participant.userName}
-                </li>
-              </Link>
+                {participant.slug ? (
+                  <Link
+                    target="_blank"
+                    href={`/exhibitors/${participant.slug}`}
+                    className="text-sm hover:tracking-widest transition-tracking duration-300 text-white"
+                  >
+                    {participant.userName}
+                  </Link>
+                ) : (
+                  <span className="text-sm text-white">{participant.userName}</span>
+                )}
+              </li>
             ))}
           </ul>
         )}

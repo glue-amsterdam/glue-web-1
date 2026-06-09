@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { Plus, XIcon } from "lucide-react";
 import type { UserInfo } from "@/schemas/userInfoSchemas";
 
@@ -12,11 +13,14 @@ const tableWrapClass =
 const tableClass = "w-full table-fixed text-sm";
 const cellClass = "px-2 py-1.5 align-top";
 const truncateClass = `${cellClass} truncate max-w-0`;
+const profileLinkClass =
+  "text-xs border border-gray-300 rounded px-2 py-1";
 
 const getParticipantLabel = (participant: UserInfo) =>
-  participant.user_name ||
-  participant.visible_emails?.[0] ||
-  participant.user_id;
+  participant.user_name?.trim() || "Unknown participant";
+
+const getParticipantProfileHref = (userId: string) =>
+  `/dashboard/${userId}/participant-details`;
 
 type HubSelectedParticipantsProps = {
   userInfoList: UserInfo[];
@@ -46,14 +50,15 @@ export const HubSelectedParticipants = ({
             <tr className="border-b border-gray-200 text-left">
               <th className={`${cellClass} font-medium`}>Participant</th>
               <th className={`${cellClass} w-20 font-medium`}>Host</th>
-              <th className={`${cellClass} w-28 font-medium`} />
+              <th className={`${cellClass} w-20 font-medium`}>Profile</th>
+              <th className={`${cellClass} w-10 font-medium`} />
             </tr>
           </thead>
           <tbody>
             {selectedParticipants.length === 0 ? (
               <tr>
                 <td
-                  colSpan={3}
+                  colSpan={4}
                   className="px-2 py-4 text-muted-foreground text-center"
                 >
                   No participants selected
@@ -85,6 +90,15 @@ export const HubSelectedParticipants = ({
                           Set host
                         </button>
                       )}
+                    </td>
+                    <td className={cellClass}>
+                      <Link
+                        href={getParticipantProfileHref(userId)}
+                        className={profileLinkClass}
+                        aria-label={`Open profile for ${label}`}
+                      >
+                        Open
+                      </Link>
                     </td>
                     <td className={cellClass}>
                       <div className="flex justify-end">
@@ -149,19 +163,19 @@ export const HubAvailableParticipants = ({
         <p className="text-xs font-medium shrink-0">Available participants</p>
         <input
           type="text"
-          placeholder="Search participant..."
+          placeholder="Search by name, email or ID..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           className="text-sm border border-gray-300 rounded px-2 py-1.5 bg-white text-black w-full min-w-0 sm:max-w-md sm:ml-auto"
-          aria-label="Search available participants"
+          aria-label="Search available participants by name, email or ID"
         />
       </div>
       <div className={tableWrapClass}>
         <table className={tableClass}>
           <thead className="sticky top-0 z-10 bg-gray-50">
             <tr className="border-b border-gray-200 text-left">
-              <th className={`${cellClass} w-[38%] font-medium`}>Participant</th>
-              <th className={`${cellClass} font-medium`}>ID / Email</th>
+              <th className={`${cellClass} font-medium`}>Participant</th>
+              <th className={`${cellClass} w-20 font-medium`}>Profile</th>
               <th className={`${cellClass} w-10 font-medium`} />
             </tr>
           </thead>
@@ -179,8 +193,6 @@ export const HubAvailableParticipants = ({
               filteredUserInfoList.map((userInfo) => {
                 const isSelected = selectedIds.has(userInfo.user_id);
                 const label = getParticipantLabel(userInfo);
-                const secondary =
-                  userInfo.visible_emails?.[0] || userInfo.user_id;
 
                 return (
                   <tr key={userInfo.id} className="border-b border-gray-100">
@@ -190,11 +202,14 @@ export const HubAvailableParticipants = ({
                     >
                       {label}
                     </td>
-                    <td
-                      className={`${truncateClass} text-muted-foreground`}
-                      title={secondary}
-                    >
-                      {secondary}
+                    <td className={cellClass}>
+                      <Link
+                        href={getParticipantProfileHref(userInfo.user_id)}
+                        className={profileLinkClass}
+                        aria-label={`Open profile for ${label}`}
+                      >
+                        Open
+                      </Link>
                     </td>
                     <td className={cellClass}>
                       <button

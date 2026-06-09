@@ -1,5 +1,5 @@
 import BigButton from './big-button'
-import SanitizedDescription from './sanitized-description'
+import { sanitizeHtml } from '@/lib/sanitize-html'
 
 type Props = {
     button: boolean,
@@ -11,10 +11,15 @@ type Props = {
 }
 
 function TextSectionBlock({ button = true, description, title, sectionId, buttonLink, buttonLabel }: Props) {
+    const sanitizedDescription = sanitizeHtml(description);
+
     return (
         <section id={sectionId}>
             <h2 className="title-text pt-[15px] lg:pt-[30px]">{title.toUpperCase()}</h2>
-            <SanitizedDescription description={description} />
+            <div
+                className="pt-[40px] lg:max-w-(--paragraph-max-width) base-text-size"
+                dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+            />
             {button &&
                 <div className='pt-[40px] lg:pt-[60px] flex justify-center'>
                     <BigButton as="link" label={buttonLabel ?? 'no_label'} href={buttonLink ?? 'no_link'} mode='big' />

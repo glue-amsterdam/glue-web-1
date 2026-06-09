@@ -70,7 +70,7 @@ export async function POST(
 
     if (insertError) throw insertError;
 
-    revalidateHomeCitizensCache();
+    revalidateHomeCitizensCache(Number(year));
 
     return NextResponse.json({
       message: `Citizen created successfully for year ${year}`,
@@ -118,7 +118,7 @@ export async function DELETE(
       if (storageError) throw storageError;
     }
 
-    revalidateHomeCitizensCache();
+    revalidateHomeCitizensCache(Number(year));
 
     return NextResponse.json({
       message: `Citizens and images for year ${year} deleted successfully`,

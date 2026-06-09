@@ -10,9 +10,19 @@ import { visitorRegisterSchema } from "@/schemas/visitorSchemas";
 
 export type VisitorAccountValues = z.infer<typeof visitorRegisterSchema>;
 
+const defaultAccountValues: VisitorAccountValues = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  password: "",
+  termsAccepted: true,
+  newsletterSubscribe: true,
+};
+
 type VisitorAccountStepProps = {
   onSubmit: (data: VisitorAccountValues) => void;
   onBack: () => void;
+  initialValues?: Partial<VisitorAccountValues>;
   submitError?: string;
   submitLabel?: string;
   backLabel?: string;
@@ -25,6 +35,7 @@ type VisitorAccountStepProps = {
 export const VisitorAccountStep = ({
   onSubmit,
   onBack,
+  initialValues,
   submitError,
   backLabel = "back",
   submitLabel = "submit application",
@@ -35,12 +46,8 @@ export const VisitorAccountStep = ({
 }: VisitorAccountStepProps) => {
   const [isTermsDialogOpen, setIsTermsDialogOpen] = useState(false);
   const [values, setValues] = useState<VisitorAccountValues>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    termsAccepted: true,
-    newsletterSubscribe: true,
+    ...defaultAccountValues,
+    ...initialValues,
   });
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<keyof VisitorAccountValues, string>>

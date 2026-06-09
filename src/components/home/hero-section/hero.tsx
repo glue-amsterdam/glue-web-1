@@ -3,9 +3,10 @@ import { config } from "@/config";
 type Props = {
   videoUrl: string;
   posterUrl: string;
+  description: string;
 };
 
-const Hero = ({ videoUrl, posterUrl }: Props) => {
+const Hero = ({ videoUrl, posterUrl, description }: Props) => {
   const { cityName } = config;
   const videoAriaLabel = `Video introducing GLUE ${cityName} design route from last year`;
 
@@ -27,9 +28,7 @@ const Hero = ({ videoUrl, posterUrl }: Props) => {
         />
       </div>
       <p className="text-[25px] lg:text-[50px] lg:leading-[58px] pt-[40px] lg:pt-[200px] leading-[31px] font-[400] lg:w-[830px]">
-        The {cityName} design route connecting the best design hotspots in town
-        including over 140 designers, studios, showrooms, co-working labs,
-        academies, galleries and more.{" "}
+        {description}
       </p>
     </section>
   );

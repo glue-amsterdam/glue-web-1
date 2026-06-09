@@ -1,5 +1,6 @@
 import type { InvoiceData } from "@/schemas/invoiceSchemas";
 import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
+import type { PlanType } from "@/schemas/plansSchema";
 import type { VisitingHoursDays } from "@/schemas/visitingHoursSchema";
 import { getPlanMaxImagesForUser } from "@/lib/plans/get-plan-max-images-for-user";
 import { createClient } from "@/utils/supabase/server";
@@ -15,10 +16,12 @@ export type ParticipantProfileData = {
   invoiceData: InvoiceData | null;
   profileImages: ProfileImageRow[];
   planMaxImages: number;
+  plans: PlanType[];
 };
 
 export const getParticipantProfileData = async (
-  userId: string
+  userId: string,
+  options?: { includePlans?: boolean }
 ): Promise<ParticipantProfileData> => {
   const supabase = await createClient();
 
@@ -28,6 +31,7 @@ export const getParticipantProfileData = async (
     invoiceDataRes,
     profileImagesRes,
     planMaxImages,
+    plansRes,
   ] = await Promise.all([
     supabase
       .from("participant_details")
@@ -46,6 +50,9 @@ export const getParticipantProfileData = async (
       .eq("user_id", userId)
       .order("created_at"),
     getPlanMaxImagesForUser(userId),
+    options?.includePlans
+      ? supabase.from("plans").select("*").order("order_by")
+      : Promise.resolve({ data: [] as PlanType[], error: null }),
   ]);
 
   return {
@@ -54,5 +61,6 @@ export const getParticipantProfileData = async (
     invoiceData: invoiceDataRes.data ?? null,
     profileImages: profileImagesRes.data ?? [],
     planMaxImages,
+    plans: (plansRes.data ?? []) as PlanType[],
   };
 };

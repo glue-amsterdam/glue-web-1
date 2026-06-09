@@ -16,37 +16,12 @@ import BigButton from "../big-button";
 import ExhibitorsNavbar from "./exhibitors-navbar";
 import ProgramNavbar from "./program-navbar";
 import MainContainer from "../main-container";
+import type { NavbarLink } from "@/lib/nav/build-navbar-links";
 
-const navItems = {
-  buttons: [
-    {
-      label: "Participate",
-      href: "/participate",
-    },
-    {
-      label: "Visit",
-      href: "/visit",
-    },
-  ],
-  links: [
-    {
-      label: "Exhibitors",
-      href: "/exhibitors",
-    },
-    {
-      label: "Map",
-      href: "/map",
-    },
-    {
-      label: "Program",
-      href: "/program",
-    },
-    {
-      label: "About",
-      href: "/about",
-    },
-  ],
-};
+const navButtons = [
+  { label: "Participate", href: "/participate" },
+  { label: "Visit", href: "/visit" },
+];
 
 const Block = ({
   children,
@@ -80,6 +55,7 @@ const participateLinkClassName =
 
 type NavbarClientProps = {
   initialIdentity: NavbarIdentity | null;
+  navLinks: NavbarLink[];
 };
 
 type NavbarAuthProps = {
@@ -102,7 +78,7 @@ const Buttons = ({ identity, isAuthenticated, userId }: NavbarAuthProps) => {
   if (!isAuthenticated) {
     return (
       <Container className="sm:gap-[30px] gap-[15px]">
-        {navItems.buttons.map((item, i) => (
+        {navButtons.map((item, i) => (
           <BigButton
             as="link"
             key={i}
@@ -142,14 +118,20 @@ const Buttons = ({ identity, isAuthenticated, userId }: NavbarAuthProps) => {
   );
 };
 
-const Links = ({ className }: { className?: string }) => {
+const Links = ({
+  className,
+  navLinks,
+}: {
+  className?: string;
+  navLinks: NavbarLink[];
+}) => {
   const pathname = usePathname();
 
   return (
     <Container className={cn("sm:gap-[30px] gap-[20px]", className)}>
-      {navItems.links.map((item, i) => (
+      {navLinks.map((item) => (
         <Link
-          key={i}
+          key={item.href}
           href={item.href}
           className={cn(
             "transition-colors duration-100 text-[15px] leading-[15px] lg:text-[23px] lg:leading-[29px]",
@@ -188,7 +170,10 @@ const ParticipateLinks = ({ isAuthenticated }: { isAuthenticated: boolean }) => 
   );
 };
 
-export const NavBarClient = ({ initialIdentity }: NavbarClientProps) => {
+export const NavBarClient = ({
+  initialIdentity,
+  navLinks,
+}: NavbarClientProps) => {
   const pathname = usePathname();
   const { user, isLoading, navbarIdentity } = useAuth();
   const [liveIdentity, setLiveIdentity] = useState<NavbarIdentity | null>(null);
@@ -234,13 +219,13 @@ export const NavBarClient = ({ initialIdentity }: NavbarClientProps) => {
 
   return (
     <div className="fixed font-normal top-0 w-full z-50">
-      <nav className="bg-(--white-color)">
+      <nav className="bg-(--background-color)">
         <MainContainer>
           <Block className="h-(--nav-primary-h-mobile) lg:h-(--nav-primary-h)">
             <div className="lg:w-[250px]">
               <LogoWithLink className="size-10 lg:size-[60px] lg:hover:scale-105 lg:transition-all lg:duration-100" />
             </div>
-            <Links className="hidden lg:flex" />
+            <Links className="hidden lg:flex" navLinks={navLinks} />
             <Buttons
               identity={identity}
               isAuthenticated={isAuthenticated}
@@ -248,7 +233,7 @@ export const NavBarClient = ({ initialIdentity }: NavbarClientProps) => {
             />
           </Block>
           <Block className="flex lg:hidden h-(--nav-secondary-h-mobile)">
-            <Links />
+            <Links navLinks={navLinks} />
           </Block>
         </MainContainer>
       </nav>

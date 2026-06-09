@@ -1,19 +1,13 @@
-import { Metadata } from "next";
+import { AdminLayoutShell } from "@/components/admin/admin-layout-shell";
 
-export const metadata: Metadata = {
-  title: "GLUE Admin Dashboard",
+export const metadata = {
+  title: "GLUE Admin",
 };
 
-function AdminLayout({
+export default function AdminLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  return (
-    <div className="bg-[var(--color-box2)] h-full min-h-screen">
-      {children}
-    </div>
-  );
+}) {
+  return <AdminLayoutShell>{children}</AdminLayoutShell>;
 }
-
-export default AdminLayout;

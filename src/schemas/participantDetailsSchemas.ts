@@ -1,21 +1,43 @@
 import { z } from "zod";
+import { invoiceDataTypeSchema } from "@/schemas/invoiceSchemas";
+import { participantExtraDataSchema } from "@/schemas/participantExtraDataSchema";
+
+const emptyToNull = (val: unknown) => (val === "" ? null : val);
+
+const emptyToUndefined = (val: unknown) =>
+  val === "" || val === null || val === undefined ? undefined : val;
+
+const optionalUrlField = z.preprocess(
+  emptyToUndefined,
+  z.string().url().optional()
+);
+
+export const participantSocialMediaSchema = z
+  .object({
+    instagramLink: optionalUrlField,
+    facebookLink: optionalUrlField,
+    linkedinLink: optionalUrlField,
+  })
+  .optional()
+  .nullable();
 
 export type ParticipantDetails = z.infer<typeof participantDetailsSchema>;
 
-export const reactivationNotesSchema = z.object({
-  plan_id: z.string().optional().nullable(),
-  plan_type: z.string().optional().nullable(),
-  plan_label: z.string().optional().nullable(),
-  formatted_address: z.string().optional().nullable(),
-  latitude: z.number().optional().nullable(),
-  longitude: z.number().optional().nullable(),
-  no_address: z.boolean().optional(),
-  notes: z.string().optional().nullable(),
-  exhibition_space_preference: z.string().optional().nullable(),
-  termsAccepted: z.boolean().refine((val) => val === true, {
-    message: "You must accept the General terms and conditions",
-  }),
-});
+export const reactivationNotesSchema = z
+  .object({
+    plan_id: z.string().optional().nullable(),
+    plan_type: z.string().optional().nullable(),
+    plan_label: z.string().optional().nullable(),
+    formatted_address: z.string().optional().nullable(),
+    latitude: z.number().optional().nullable(),
+    longitude: z.number().optional().nullable(),
+    no_address: z.boolean().optional(),
+    notes: z.string().optional().nullable(),
+    exhibition_space_preference: z.string().optional().nullable(),
+    termsAccepted: z.boolean().optional(),
+  })
+  .merge(invoiceDataTypeSchema.partial())
+  .merge(participantExtraDataSchema.partial());
 
 export type ReactivationNotes = z.infer<typeof reactivationNotesSchema>;
 
@@ -23,6 +45,9 @@ export type ReactivationNotes = z.infer<typeof reactivationNotesSchema>;
 export const reactivationRequestSubmissionSchema =
   reactivationNotesSchema.extend({
     plan_id: z.string().min(1, "You must select a plan"),
+    termsAccepted: z.boolean().refine((val) => val === true, {
+      message: "You must accept the General terms and conditions",
+    }),
   });
 
 export type ReactivationRequestSubmission = z.infer<
@@ -57,11 +82,26 @@ export const participantDetailsSchema = z.object({
   plan_id: z.string().uuid().optional().nullable(),
   plan_type: z.string().optional().nullable(),
   display_name: z.string().optional().nullable(),
-  phone_numbers: z.array(z.string()).optional().nullable(),
-  social_media: z.record(z.string(), z.any()).optional().nullable(),
-  visible_emails: z.array(z.string()).optional().nullable(),
-  visible_websites: z.array(z.string()).optional().nullable(),
-  glue_communication_email: z.string().email().optional().nullable(),
+  phone_numbers: z
+    .array(z.string())
+    .max(3, "Only 3 items max")
+    .optional()
+    .nullable(),
+  social_media: participantSocialMediaSchema,
+  visible_emails: z
+    .array(z.string())
+    .max(3, "Only 3 items max")
+    .optional()
+    .nullable(),
+  visible_websites: z
+    .array(z.string())
+    .max(3, "Only 3 items max")
+    .optional()
+    .nullable(),
+  glue_communication_email: z.preprocess(
+    emptyToNull,
+    z.union([z.string().email(), z.null()]).optional().nullable()
+  ),
   upgrade_requested: z.boolean().optional(),
   upgrade_requested_plan_id: z.string().uuid().optional().nullable(),
   upgrade_requested_plan_type: z.string().optional().nullable(),

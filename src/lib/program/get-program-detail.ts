@@ -1,5 +1,4 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { buildMapLocations } from "@/lib/map/build-map-locations";
 import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
 import { loadOrganizerProfiles } from "@/lib/participants/load-organizer-profiles";
 import type { TourStatus } from "@/lib/participants/exhibitor-visibility";
@@ -7,9 +6,8 @@ import type { EventType } from "@/schemas/eventSchemas";
 import type { ProgramDetail } from "./program-types";
 import { ProgramNotFoundError } from "./program-types";
 import {
-  buildLocationBadgeIndex,
   organizerBadgeFromParticipant,
-  resolveOrganizerBadge,
+  resolveLocationOrganizerBadge,
 } from "./resolve-program-organizer-badge";
 import {
   getCurrentTourStatus,
@@ -105,8 +103,6 @@ export const getProgramDetail = async (
 
   const tourStatus: TourStatus =
     currentTourStatus === "older" ? "older" : "new";
-  const locations = await buildMapLocations(supabase, tourStatus);
-  const badgeByLocationId = buildLocationBadgeIndex(locations);
 
   const participantDetails = organizer?.participant_details as Parameters<
     typeof organizerBadgeFieldsFromEmbed
@@ -117,9 +113,10 @@ export const getProgramDetail = async (
     specialProgram,
     displayNumber
   );
-  const badge = resolveOrganizerBadge(
+  const badge = await resolveLocationOrganizerBadge(
+    supabase,
     event.location_id,
-    badgeByLocationId,
+    tourStatus,
     organizerFallback
   );
 

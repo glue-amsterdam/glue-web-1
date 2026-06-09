@@ -2,7 +2,7 @@ import { BASE_URL } from "@/constants";
 
 export interface CuratedV2Participant {
   userId: string;
-  slug: string;
+  slug: string | null;
   userName: string;
   image: { image_url: string; alt: string };
 }
@@ -18,18 +18,18 @@ export interface CuratedV2Response {
     title: string;
     description: string;
     is_visible: boolean;
-    text_color: string;
-    background_color: string;
   };
   curatedGroups: Record<number, CuratedV2Group>;
 }
 
 interface APIGroupParticipant {
-  user_id: string;
+  user_id: string | null;
   slug: string;
   name: string;
   image_url: string;
   is_curated: boolean;
+  kind?: "user" | "display_name";
+  display_name_only?: string | null;
 }
 
 const FALLBACK_HEADER_DATA = {
@@ -37,8 +37,6 @@ const FALLBACK_HEADER_DATA = {
   description:
     "Discover the GLUE STICKY MEMBER, a curated group of designers, architects, and creatives who have made a significant impact on the industry.",
   is_visible: true,
-  text_color: "#ffffff",
-  background_color: "#000000",
 };
 
 export async function fetchCuratedSectionV2(): Promise<CuratedV2Response> {
@@ -60,11 +58,6 @@ export async function fetchCuratedSectionV2(): Promise<CuratedV2Response> {
           headerDataFromAPI.description || FALLBACK_HEADER_DATA.description,
         is_visible:
           headerDataFromAPI.is_visible ?? FALLBACK_HEADER_DATA.is_visible,
-        text_color:
-          headerDataFromAPI.text_color || FALLBACK_HEADER_DATA.text_color,
-        background_color:
-          headerDataFromAPI.background_color ||
-          FALLBACK_HEADER_DATA.background_color,
       };
     }
 
@@ -94,12 +87,12 @@ export async function fetchCuratedSectionV2(): Promise<CuratedV2Response> {
       // Map API participant structure to CuratedV2Participant
       const participants: CuratedV2Participant[] = groupParticipants.map(
         (p) => ({
-          userId: p.user_id,
-          slug: p.slug,
+          userId: p.user_id ?? `display:${p.name}`,
+          slug: p.slug || null,
           userName: p.name,
           image: {
             image_url: p.image_url || "/placeholder.jpg",
-            alt: `${p.name} profile image - participant from GLUE design routes`,
+            alt: `${p.name} profile image - member from GLUE design routes`,
           },
         })
       );

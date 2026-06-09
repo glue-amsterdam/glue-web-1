@@ -14,28 +14,44 @@ export async function GET(
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
-      .from("user_info")
-      .select("plan_id")
-      .eq("user_id", userId)
-      .single();
+    const { data: participantDetails, error: participantError } =
+      await supabase
+        .from("participant_details")
+        .select("plan_id")
+        .eq("user_id", userId)
+        .maybeSingle();
 
-    if (!data) {
+    if (participantError) {
+      console.error("Error fetching participant plan_id:", participantError);
       return NextResponse.json(
-        { error: "map info not found" },
-        { status: 404 }
-      );
-    }
-
-    if (error) {
-      console.error("Error fetching map info:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch map info" },
+        { error: "Failed to fetch plan id" },
         { status: 500 }
       );
     }
 
-    return NextResponse.json(data);
+    if (participantDetails?.plan_id) {
+      return NextResponse.json({ plan_id: participantDetails.plan_id });
+    }
+
+    const { data: userInfo, error: userInfoError } = await supabase
+      .from("user_info")
+      .select("plan_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (userInfoError) {
+      console.error("Error fetching user_info plan_id:", userInfoError);
+      return NextResponse.json(
+        { error: "Failed to fetch plan id" },
+        { status: 500 }
+      );
+    }
+
+    if (!userInfo?.plan_id) {
+      return NextResponse.json({ error: "Plan not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ plan_id: userInfo.plan_id });
   } catch (error) {
     console.error("Unexpected error:", error);
     return NextResponse.json(

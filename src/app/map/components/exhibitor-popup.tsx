@@ -127,7 +127,6 @@ const ExhibitorPopUp = ({
             onClick={handleGoogleMapsRedirect} />
           {currentSlide.profileHref && (
             <BigButton
-              target="_blank"
               as="link"
               mode="footer"
               fontSize="small"

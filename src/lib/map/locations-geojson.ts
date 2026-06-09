@@ -42,6 +42,9 @@ export type MapThemeColors = {
   hub: string;
   upToThreeParticipants: string;
   specialProgram: string;
+  hubFont: string;
+  upToThreeParticipantsFont: string;
+  specialProgramFont: string;
   route: string;
   primaryColor: string;
 };
@@ -50,6 +53,10 @@ export const DEFAULT_MAP_THEME_COLORS: MapThemeColors = {
   hub: exhibitorTypeBackgroundHex.hub,
   upToThreeParticipants: exhibitorTypeBackgroundHex["up-to-three-participants"],
   specialProgram: exhibitorTypeBackgroundHex["special-program"],
+  hubFont: exhibitorTypeForegroundHex.hub,
+  upToThreeParticipantsFont:
+    exhibitorTypeForegroundHex["up-to-three-participants"],
+  specialProgramFont: exhibitorTypeForegroundHex["special-program"],
   route: MAP_ROUTE_STOP_BACKGROUND_HEX,
   primaryColor: "#10069F",
 };
@@ -73,6 +80,15 @@ export const getMapThemeColorsFromDocument = (): MapThemeColors => {
       "--special-program-color",
       DEFAULT_MAP_THEME_COLORS.specialProgram
     ),
+    hubFont: read("--hub-font-color", DEFAULT_MAP_THEME_COLORS.hubFont),
+    upToThreeParticipantsFont: read(
+      "--up-to-three-participants-font-color",
+      DEFAULT_MAP_THEME_COLORS.upToThreeParticipantsFont
+    ),
+    specialProgramFont: read(
+      "--special-program-font-color",
+      DEFAULT_MAP_THEME_COLORS.specialProgramFont
+    ),
     route: MAP_ROUTE_STOP_BACKGROUND_HEX,
     primaryColor: read(
       "--primary-color",
@@ -95,6 +111,40 @@ const backgroundForType = (
   }
 };
 
+const fontForType = (type: ExhibitorType, colors: MapThemeColors): string => {
+  switch (type) {
+    case "hub":
+      return colors.hubFont;
+    case "up-to-three-participants":
+      return colors.upToThreeParticipantsFont;
+    case "special-program":
+      return colors.specialProgramFont;
+  }
+};
+
+export type RouteStopMarkerColors = {
+  backgroundColor: string;
+  color: string;
+};
+
+/** Resolved fill/text colors for a route stop marker (canvas, PDF, GeoJSON). */
+export const getRouteStopMarkerColors = (
+  participantType: ExhibitorType | null,
+  colors: MapThemeColors
+): RouteStopMarkerColors => {
+  if (!participantType) {
+    return {
+      backgroundColor: colors.route,
+      color: "#ffffff",
+    };
+  }
+
+  return {
+    backgroundColor: backgroundForType(participantType, colors),
+    color: fontForType(participantType, colors),
+  };
+};
+
 const toPointFeature = (
   id: string,
   locationId: string,
@@ -107,11 +157,11 @@ const toPointFeature = (
   sortKey: number,
   colors: MapThemeColors
 ): MapPointFeature => {
-  const exhibitorType = type === "route" ? "hub" : type;
-  const circleColor =
-    type === "route" ? colors.route : backgroundForType(type, colors);
-  const textColor =
-    type === "route" ? "#ffffff" : exhibitorTypeForegroundHex[exhibitorType];
+  const markerColors =
+    type === "route"
+      ? getRouteStopMarkerColors(null, colors)
+      : getRouteStopMarkerColors(type, colors);
+  const { backgroundColor: circleColor, color: textColor } = markerColors;
 
   return {
     type: "Feature",

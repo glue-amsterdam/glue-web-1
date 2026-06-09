@@ -6,8 +6,6 @@ export const participantHeaderSchema = z.object({
   title: z.string(),
   description: z.string(),
   is_visible: z.boolean(),
-  text_color: z.string(),
-  background_color: z.string(),
 });
 
 export const participantClientSchema = z.object({

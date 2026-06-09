@@ -71,6 +71,17 @@ export const LayoutMetadata: Metadata = {
 export const exhibitorsMetadata: Metadata = {
   title: `GLUE ${config.cityName} | Exhibitors`,
   description: `Browse all exhibitors of GLUE ${config.cityName} design route — designers, studios, showrooms, galleries and more.`,
+  keywords: [
+    "GLUE",
+    config.cityName,
+    "exhibitors",
+    "design routes",
+    "designers",
+    "studios",
+    "showrooms",
+    "galleries",
+    "connected by design",
+  ],
   alternates: {
     canonical: `${config.baseUrl}/exhibitors`,
   },
@@ -85,10 +96,47 @@ export const exhibitorsMetadata: Metadata = {
   },
 };
 
+// POSTS PAGE METADATA
+export const postsMetadata: Metadata = {
+  title: `GLUE ${config.cityName} | Posts`,
+  description: `Read the latest news and stories from GLUE ${config.cityName} — design routes, events, and community updates.`,
+  keywords: [
+    "GLUE",
+    config.cityName,
+    "posts",
+    "news",
+    "design routes",
+    "connected by design",
+  ],
+  alternates: {
+    canonical: `${config.baseUrl}/posts`,
+  },
+  openGraph: {
+    title: `GLUE ${config.cityName} | Posts`,
+    description: `Read the latest news and stories from GLUE ${config.cityName} — design routes, events, and community updates.`,
+    url: `${config.baseUrl}/posts`,
+  },
+  twitter: {
+    title: `GLUE ${config.cityName} | Posts`,
+    description: `Read the latest news and stories from GLUE ${config.cityName} — design routes, events, and community updates.`,
+  },
+};
+
 // PROGRAM PAGE METADATA
 export const programMetadata: Metadata = {
   title: `GLUE ${config.cityName} | Program`,
   description: `Browse the program of GLUE ${config.cityName} design route — lectures, workshops, tours and more.`,
+  keywords: [
+    "GLUE",
+    config.cityName,
+    "program",
+    "events",
+    "lectures",
+    "workshops",
+    "tours",
+    "design routes",
+    "connected by design",
+  ],
   alternates: {
     canonical: `${config.baseUrl}/program`,
   },
@@ -107,6 +155,16 @@ export const programMetadata: Metadata = {
 export const mapMetadata: Metadata = {
   title: `GLUE ${config.cityName} | Map`,
   description: `Explore the GLUE ${config.cityName} design route map — find exhibitors, hubs, and curated routes.`,
+  keywords: [
+    "GLUE",
+    config.cityName,
+    "map",
+    "exhibitors",
+    "design routes",
+    "hubs",
+    "curated routes",
+    "connected by design",
+  ],
   alternates: {
     canonical: `${config.baseUrl}/map`,
   },
@@ -128,6 +186,34 @@ export const individualExhibitorMetadata = {
   openGraph: {
     title: `GLUE ${config.cityName} | Exhibitor`,
     description: `Discover the details of the exhibitor ${config.cityName} design route.`,
+  },
+};
+
+// ABOUT PAGE METADATA
+export const aboutPageMetadata: Metadata = {
+  title: `About GLUE ${config.cityName} | Team, Foundation & Archive`,
+  description: `Meet the GLUE ${config.cityName} team, learn about the GLUE Foundation, mission, press, and browse the GLUE archive by year.`,
+  keywords: [
+    "GLUE",
+    config.cityName,
+    "about",
+    "team",
+    "foundation",
+    "archive",
+    "design routes",
+    "connected by design",
+  ],
+  alternates: {
+    canonical: `${config.baseUrl}/about`,
+  },
+  openGraph: {
+    title: `About GLUE ${config.cityName} | Team, Foundation & Archive`,
+    description: `Meet the GLUE ${config.cityName} team, learn about the GLUE Foundation, mission, press, and browse the GLUE archive by year.`,
+    url: `${config.baseUrl}/about`,
+  },
+  twitter: {
+    title: `About GLUE ${config.cityName} | Team, Foundation & Archive`,
+    description: `Meet the GLUE ${config.cityName} team, learn about the GLUE Foundation, mission, press, and browse the GLUE archive by year.`,
   },
 };
 

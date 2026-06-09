@@ -48,13 +48,11 @@ export default function SponsorsCarouselSection({
       {showHeader ? (
         <div>
           <h2
-            style={{ color: sponsorsData.sponsorsHeaderSchema.text_color }}
-            className="font-bold tracking-widest text-center text-2xl md:text-4xl lg:text-7xl"
+            className="about-title font-bold tracking-widest text-center text-2xl md:text-4xl lg:text-7xl text-white"
             dangerouslySetInnerHTML={{ __html: sanitizedTitle }}
           />
           <p
-            style={{ color: sponsorsData.sponsorsHeaderSchema.text_color }}
-            className="text-sm md:text-md lg:text-lg text-center"
+            className="about-description text-sm md:text-md lg:text-lg text-center text-white"
             dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
           />
         </div>

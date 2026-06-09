@@ -37,6 +37,7 @@ import { measureMapBottomInset } from "@/lib/map/map-viewport-insets";
 import { composeRoutePrintMapDataUrl } from "@/lib/map/route-static-map";
 import { downloadRoutePdf } from "@/lib/map/route-pdf";
 import { getRouteStopsForDisplay } from "@/lib/map/route-stop-display";
+import { loadGlueLogoDataUrl } from "@/lib/branding/glue-logo-mark";
 import type { RouteStopDisplay } from "@/lib/map/route-stop-display";
 import {
   buildLocationsGeoJSON,
@@ -62,6 +63,11 @@ import { useMapFilterPanel } from "../stores/use-map-store";
 type ExhibitorPopupLayoutState = {
   anchor: ExhibitorPopupAnchor;
   offset: [number, number];
+};
+
+type RoutePopupLayoutState = ExhibitorPopupLayoutState & {
+  longitude: number;
+  latitude: number;
 };
 
 const isRouteStopLayer = (layerId: string) =>
@@ -147,6 +153,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
   const prevFocusLocationRef = useRef<string | null>(null);
   const prevFeatureStateLocationRef = useRef<string | null>(null);
   const prevSelectedRouteRef = useRef<string | null>(null);
+  const prevActiveRouteStopIdRef = useRef<string | null>(null);
   const initialFocusDoneRef = useRef(false);
 
   if (!initialViewStateRef.current) {
@@ -167,7 +174,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
   const [exhibitorPopupLayout, setExhibitorPopupLayout] =
     useState<ExhibitorPopupLayoutState | null>(null);
   const [routePopupLayout, setRoutePopupLayout] =
-    useState<ExhibitorPopupLayoutState | null>(null);
+    useState<RoutePopupLayoutState | null>(null);
 
   const locationsGeoJSON = useMemo(
     () => buildLocationsGeoJSON(locations, themeColors),
@@ -221,22 +228,31 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
 
   const downloadSelectedRoutePdf = useCallback(async () => {
     if (!selectedRouteObject || !mapLoaded) return;
-    const stops = getRouteStopsForDisplay(selectedRouteObject, locations);
+    const stops = getRouteStopsForDisplay(
+      selectedRouteObject,
+      locations,
+      themeColors
+    );
     if (stops.length === 0) return;
 
     try {
-      const mapDataUrl = await composeRoutePrintMapDataUrl(
-        selectedRouteObject,
-        stops,
-        config.mapboxAccesToken,
-        mapRef.current?.getMap(),
-        themeColors.primaryColor
-      );
-      downloadRoutePdf(selectedRouteObject, mapDataUrl, stops);
+      const [mapDataUrl, logoDataUrl] = await Promise.all([
+        composeRoutePrintMapDataUrl(
+          selectedRouteObject,
+          stops,
+          config.mapboxAccesToken,
+          themeColors.primaryColor
+        ),
+        loadGlueLogoDataUrl(themeColors.primaryColor),
+      ]);
+      await downloadRoutePdf(selectedRouteObject, mapDataUrl, stops, {
+        primaryColor: themeColors.primaryColor,
+        logoDataUrl,
+      });
     } catch (error) {
       console.error("Route PDF generation failed:", error);
     }
-  }, [selectedRouteObject, mapLoaded, locations, themeColors.primaryColor]);
+  }, [selectedRouteObject, mapLoaded, locations, themeColors]);
 
   const getFocusBottomPadding = useCallback(() => {
     return measureMapBottomInset();
@@ -279,6 +295,8 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
       setRoutePopupLayout({
         anchor: layout.anchor,
         offset: layout.offset,
+        longitude: stop.longitude,
+        latitude: stop.latitude,
       });
     },
     [isLargeScreen, focusOnPoint, filterPanel?.openFilter, getFocusBottomPadding]
@@ -443,6 +461,29 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     locations,
     focusOnExhibitor,
     focusOnRoute,
+  ]);
+
+  useEffect(() => {
+    prevActiveRouteStopIdRef.current = null;
+  }, [selectedRoute]);
+
+  useEffect(() => {
+    if (!mapLoaded || !selectedRouteObject || !activeRouteStopId) return;
+    if (activeRouteStopId === prevActiveRouteStopIdRef.current) return;
+
+    prevActiveRouteStopIdRef.current = activeRouteStopId;
+
+    const stops = getRouteStopsForDisplay(selectedRouteObject, locations);
+    const stop = stops.find((item) => item.dotId === activeRouteStopId);
+    if (stop) {
+      focusOnRouteStop(stop, true);
+    }
+  }, [
+    mapLoaded,
+    selectedRouteObject,
+    activeRouteStopId,
+    locations,
+    focusOnRouteStop,
   ]);
 
   useEffect(() => {
@@ -639,8 +680,9 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
             tourMode={tourMode}
             anchor={routePopupLayout.anchor}
             offset={routePopupLayout.offset}
+            popupLongitude={routePopupLayout.longitude}
+            popupLatitude={routePopupLayout.latitude}
             activeStopId={activeRouteStopId}
-            onActiveStopChange={focusOnRouteStop}
             onClose={handleRoutePopupClose}
             onDownloadRoutePdf={downloadSelectedRoutePdf}
           />

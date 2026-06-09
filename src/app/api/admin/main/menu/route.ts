@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidateSiteThemeCache } from "@/lib/main/revalidate-site-theme-cache";
 
 export async function GET() {
   const supabase = await createClient();
@@ -81,6 +82,8 @@ export async function PUT(request: Request) {
       ...item,
       subItems: item.subItems ? JSON.parse(item.subItems) : null,
     }));
+
+    revalidateSiteThemeCache();
 
     return NextResponse.json({ mainMenu: parsedData });
   } catch (error) {

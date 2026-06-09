@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Link from "next/link";
 import type { AdminUserDetail } from "@/types/admin-user";
 import { useEventsDays } from "@/app/context/MainContext";
 import { useSanitizedHTML } from "@/app/hooks/useSanitizedHTML";
@@ -42,23 +41,8 @@ export default function UserDetailAccordion({ detail }: Props) {
     return day ? day.label : dayId;
   };
 
-  const editHref =
-    detail.entityType === "participant"
-      ? `/dashboard/${detail.userId}/participant-details`
-      : `/dashboard/${detail.userId}/visitor-data`;
-
   return (
     <div className="px-3 pb-3 pt-1 bg-gray-50 border-t border-gray-200">
-      <div className="flex justify-end mb-2">
-        <Link
-          href={editHref}
-          className="text-xs border border-gray-300 rounded px-2 py-1"
-          aria-label={`Edit ${detail.displayName}`}
-        >
-          Edit
-        </Link>
-      </div>
-
       <dl className="space-y-0">
         <DetailRow label="User ID" value={detail.userId} />
         <DetailRow label="Type" value={detail.entityType} />

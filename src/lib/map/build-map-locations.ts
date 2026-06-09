@@ -29,7 +29,7 @@ type MapInfoRow = {
   user_id: string;
   latitude: number;
   longitude: number;
-  formatted_address: string;
+  formatted_address: string | null;
 };
 
 type HubRow = {

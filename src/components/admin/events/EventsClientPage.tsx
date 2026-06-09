@@ -5,14 +5,12 @@ import EventsHeaderTitleForm, {
   EventsHeaderTitleFormValues,
 } from "./EventsHeaderTitleForm";
 import EventsReport from "./EventsReport";
-import AdminHeader from "../AdminHeader";
-import AdminBackHeader from "../AdminBackHeader";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
-export type SelectableField = 
+export type SelectableField =
   | "id"
   | "title"
   | "description"
@@ -86,110 +84,98 @@ export default function EventsClientPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto text-black min-h-dvh h-full pt-[6rem] pb-4">
-        <div className="bg-white p-4 rounded-lg shadow-md flex flex-col gap-4">
-          <AdminHeader />
-          <AdminBackHeader backLink="/admin" sectionTitle="Events" />
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-          </div>
-        </div>
+      <div className="flex items-center justify-center py-8">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto text-black min-h-dvh h-full pt-[6rem] pb-4">
-      <div className="bg-white p-4 rounded-lg shadow-md flex flex-col gap-4">
-        <AdminHeader />
-        <AdminBackHeader backLink="/admin" sectionTitle="Events" />
-        {headerTitle && (
-          <EventsHeaderTitleForm initialData={headerTitle} />
-        )}
-        <div className="border-t pt-4">
-          <Button
-            onClick={() => {
-              if (!showReport) {
-                setShowFieldSelector(true);
-              } else {
-                setShowReport(false);
-                setShowFieldSelector(false);
-              }
-            }}
-            className="flex items-center gap-2"
-            variant="outline"
-          >
-            <FileText className="h-4 w-4" />
-            {showReport ? "Hide" : "Show"} Events Report
-          </Button>
-        </div>
-        {showFieldSelector && !showReport && (
-          <div className="border-t pt-4 space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold mb-3">Select Fields to Display</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {AVAILABLE_FIELDS.map((field) => (
-                  <div key={field.key} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={field.key}
-                      checked={selectedFields.includes(field.key)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedFields([...selectedFields, field.key]);
-                        } else {
-                          setSelectedFields(
-                            selectedFields.filter((f) => f !== field.key)
-                          );
-                        }
-                      }}
-                    />
-                    <Label
-                      htmlFor={field.key}
-                      className="text-sm font-normal cursor-pointer"
-                    >
-                      {field.label}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => {
-                  if (selectedFields.length > 0) {
-                    setShowReport(true);
-                    setShowFieldSelector(false);
-                  } else {
-                    alert("Please select at least one field to display.");
-                  }
-                }}
-                variant="default"
-              >
-                Generate Report
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowFieldSelector(false);
-                }}
-                variant="outline"
-              >
-                Cancel
-              </Button>
+    <div className="flex flex-col gap-4 rounded-lg bg-white p-4 shadow-md">
+      {headerTitle && <EventsHeaderTitleForm initialData={headerTitle} />}
+      <div className="border-t pt-4">
+        <Button
+          onClick={() => {
+            if (!showReport) {
+              setShowFieldSelector(true);
+            } else {
+              setShowReport(false);
+              setShowFieldSelector(false);
+            }
+          }}
+          className="flex items-center gap-2"
+          variant="outline"
+        >
+          <FileText className="h-4 w-4" />
+          {showReport ? "Hide" : "Show"} Events Report
+        </Button>
+      </div>
+      {showFieldSelector && !showReport && (
+        <div className="space-y-4 border-t pt-4">
+          <div>
+            <h2 className="title-text mb-3">Select Fields to Display</h2>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+              {AVAILABLE_FIELDS.map((field) => (
+                <div key={field.key} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={field.key}
+                    checked={selectedFields.includes(field.key)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedFields([...selectedFields, field.key]);
+                      } else {
+                        setSelectedFields(
+                          selectedFields.filter((f) => f !== field.key)
+                        );
+                      }
+                    }}
+                  />
+                  <Label
+                    htmlFor={field.key}
+                    className="base-text-size cursor-pointer font-normal"
+                  >
+                    {field.label}
+                  </Label>
+                </div>
+              ))}
             </div>
           </div>
-        )}
-        {showReport && (
-          <div className="border-t pt-4">
-            <EventsReport
-              onClose={() => {
-                setShowReport(false);
+          <div className="flex gap-2">
+            <Button
+              onClick={() => {
+                if (selectedFields.length > 0) {
+                  setShowReport(true);
+                  setShowFieldSelector(false);
+                } else {
+                  alert("Please select at least one field to display.");
+                }
+              }}
+              variant="default"
+            >
+              Generate Report
+            </Button>
+            <Button
+              onClick={() => {
                 setShowFieldSelector(false);
               }}
-              selectedFields={selectedFields}
-            />
+              variant="outline"
+            >
+              Cancel
+            </Button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+      {showReport && (
+        <div className="border-t pt-4">
+          <EventsReport
+            onClose={() => {
+              setShowReport(false);
+              setShowFieldSelector(false);
+            }}
+            selectedFields={selectedFields}
+          />
+        </div>
+      )}
     </div>
   );
 }

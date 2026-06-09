@@ -5,10 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { ImageIcon } from "lucide-react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import { uploadImage } from "@/utils/supabase/storage/client";
 import {
   Form,
@@ -22,6 +20,11 @@ import {
 import { RichTextEditor } from "@/app/components/editor";
 import { Switch } from "@/components/ui/switch";
 import { config } from "@/config";
+import { AdminImagePreview } from "@/components/admin/admin-image-preview";
+import {
+  createUploadProgressHandler,
+  type UploadState,
+} from "@/components/image-upload-overlay";
 import { z } from "zod";
 import type { PressItem } from "@/schemas/pressSchema";
 import { mutate } from "swr";
@@ -62,7 +65,10 @@ interface PressItemsFormProps {
 export function PressItemsForm({ initialItems }: PressItemsFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [uploadState, setUploadState] = React.useState<UploadState | null>(null);
+  const [uploadingIndex, setUploadingIndex] = React.useState<number | null>(null);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const handleUploadProgress = createUploadProgressHandler(setUploadState);
 
   const form = useForm<{ pressItems: PressItem[] }>({
     resolver: zodResolver(z.object({ pressItems: pressItemsSchema })),
@@ -118,20 +124,26 @@ export function PressItemsForm({ initialItems }: PressItemsFormProps) {
 
   const onSubmitPressItem = async (index: number) => {
     setIsSubmitting(true);
+    setUploadingIndex(index);
     const pressItem = form.getValues(`pressItems.${index}`);
     try {
       let newImageUrl = pressItem.image_url;
       if (pressItem.file) {
+        setUploadState({ stage: "compressing", progress: 5 });
+
         const { imageUrl, error } = await uploadImage({
           file: pressItem.file,
           bucket: config.bucketName,
           folder: "about/press-items",
+          onProgress: handleUploadProgress,
         });
         if (error) {
           throw new Error(`Failed to upload image: ${error}`);
         }
         newImageUrl = imageUrl;
       }
+
+      setUploadState({ stage: "saving", progress: 96 });
 
       const response = await fetch(`/api/admin/about/press/${pressItem.id}`, {
         method: "PUT",
@@ -168,9 +180,13 @@ export function PressItemsForm({ initialItems }: PressItemsFormProps) {
         variant: "destructive",
       });
     } finally {
+      setUploadState(null);
+      setUploadingIndex(null);
       setIsSubmitting(false);
     }
   };
+
+  const isBusy = isSubmitting || uploadState !== null;
 
   return (
     <Form {...form}>
@@ -218,24 +234,21 @@ export function PressItemsForm({ initialItems }: PressItemsFormProps) {
               )}
             />
 
-            <div className="w-full h-40 object-cover rounded-md relative mb-2">
-              {field.image_url ? (
-                <Image
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  src={field.image_url || "/placeholder.jpg"}
-                  alt={`Press item ${index + 1}`}
-                  className="object-cover rounded-md"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-md">
-                  <ImageIcon className="w-12 h-12 text-gray-400" />
-                </div>
-              )}
-            </div>
+            <AdminImagePreview
+              src={field.image_url}
+              alt={`Press item ${index + 1}`}
+              uploadState={uploadingIndex === index ? uploadState : null}
+            />
+            {field.file && uploadingIndex !== index && (
+              <p className="mb-2 text-xs text-muted-foreground">
+                New file selected — save to apply
+              </p>
+            )}
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
+              size="sm"
+              disabled={isBusy}
               onClick={() => fileInputRefs.current[index]?.click()}
               className="w-full mb-2"
             >

@@ -6,6 +6,7 @@ import MainContainer from "@/components/main-container";
 import { config } from "@/config";
 import { programMetadata } from "@/lib/metadata";
 import { fetchProgramPage } from "@/lib/program/fetch-program-page";
+import { buildProgramCollectionJsonLd } from "@/lib/seo/build-json-ld";
 import {
   filtersToQueryParams,
   recordToSearchParams,
@@ -26,9 +27,14 @@ export default async function Page({ searchParams }: PageProps) {
   const initialData = await fetchProgramPage(
     filtersToQueryParams(initialFilters, 0)
   );
+  const structuredData = buildProgramCollectionJsonLd(initialData.items);
 
   return (
     <main id="program-page" className="pt-(--nav-total-h)">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <MainContainer className="pt-[40px] lg:pt-[calc(var(--nav-secondary-h)-3px)]">
         <section id="program-section">
           <h1 className="sr-only">GLUE {config.cityName} Program</h1>

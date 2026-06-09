@@ -1,7 +1,10 @@
 "use server";
 
-import type { PlanType } from "@/schemas/plansSchema";
+import type { PlanAdminInput, PlanType } from "@/schemas/plansSchema";
+import { revalidateParticipatePlansCache } from "@/lib/participate/revalidate-participate-plans-cache";
 import { createClient } from "@/utils/supabase/server";
+
+const PARTICIPANT_PLAN_TYPE = "participant" as const;
 
 export async function getPlans(): Promise<PlanType[]> {
   const supabase = await createClient();
@@ -26,7 +29,6 @@ export async function updatePlanOrder(
 ): Promise<void> {
   const supabase = await createClient();
 
-  // Start a transaction
   const { error } = await supabase.rpc("update_plan_order", {
     p_plan_id: planId,
     p_new_order: newOrder,
@@ -37,9 +39,13 @@ export async function updatePlanOrder(
     console.error("Error updating plan order:", error);
     throw new Error("Failed to update plan order");
   }
+
+  revalidateParticipatePlansCache();
 }
 
-export async function updatePlan(plan: PlanType): Promise<PlanType> {
+export async function updatePlan(
+  plan: Omit<PlanType, "plan_type">
+): Promise<PlanType> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -52,7 +58,7 @@ export async function updatePlan(plan: PlanType): Promise<PlanType> {
       plan_description: plan.plan_description,
       plan_items: plan.plan_items,
       is_participant_enabled: plan.is_participant_enabled,
-      plan_type: plan.plan_type,
+      plan_type: PARTICIPANT_PLAN_TYPE,
       plan_max_images: plan.plan_max_images,
       max_events: plan.max_events,
     })
@@ -65,13 +71,14 @@ export async function updatePlan(plan: PlanType): Promise<PlanType> {
     throw new Error("Failed to update plan");
   }
 
+  revalidateParticipatePlansCache();
+
   return data as PlanType;
 }
 
 export async function deletePlan(planId: string): Promise<void> {
   const supabase = await createClient();
 
-  // Eliminar el plan
   const { error: deleteError } = await supabase
     .from("plans")
     .delete()
@@ -82,7 +89,6 @@ export async function deletePlan(planId: string): Promise<void> {
     throw new Error("Failed to delete plan");
   }
 
-  // Reordenar todos los planes después de la eliminación
   const { error: updateError } = await supabase.rpc(
     "update_plan_order_after_delete"
   );
@@ -91,14 +97,13 @@ export async function deletePlan(planId: string): Promise<void> {
     console.error("Error updating plan order:", updateError);
     throw new Error("Failed to update plan order after deletion");
   }
+
+  revalidateParticipatePlansCache();
 }
 
-export async function createPlan(
-  newPlan: Omit<PlanType, "plan_id" | "order_by">
-): Promise<PlanType> {
+export async function createPlan(newPlan: PlanAdminInput): Promise<PlanType> {
   const supabase = await createClient();
 
-  // Get the maximum order_by value
   const { data: maxOrderData, error: maxOrderError } = await supabase
     .from("plans")
     .select("order_by")
@@ -112,10 +117,13 @@ export async function createPlan(
 
   const newOrder = (maxOrderData[0]?.order_by || 0) + 1;
 
-  // Insert the new plan with auto-generated UUID and the new order
   const { data, error } = await supabase
     .from("plans")
-    .insert({ ...newPlan, order_by: newOrder })
+    .insert({
+      ...newPlan,
+      plan_type: PARTICIPANT_PLAN_TYPE,
+      order_by: newOrder,
+    })
     .select()
     .single();
 
@@ -123,6 +131,8 @@ export async function createPlan(
     console.error("Error creating plan:", error);
     throw new Error("Failed to create plan");
   }
+
+  revalidateParticipatePlansCache();
 
   return data as PlanType;
 }

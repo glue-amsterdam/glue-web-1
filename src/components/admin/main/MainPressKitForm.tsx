@@ -234,11 +234,12 @@ export default function MainPressKitForm({
           )}
 
           {fields.length > 0 && (
-            <SaveChangesButton
-              isSubmitting={isSubmitting}
-              className="w-full"
-              watchFields={["pressKitLinks"]}
-            />
+            <div className="flex justify-start">
+              <SaveChangesButton
+                isSubmitting={isSubmitting}
+                watchFields={["pressKitLinks"]}
+              />
+            </div>
           )}
         </form>
       </div>

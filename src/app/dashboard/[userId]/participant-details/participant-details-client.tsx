@@ -23,5 +23,6 @@ export const ParticipantDetailsClient = ({
     invoiceData={profileData.invoiceData}
     profileImages={profileData.profileImages}
     planMaxImages={profileData.planMaxImages}
+    plans={profileData.plans}
   />
 );

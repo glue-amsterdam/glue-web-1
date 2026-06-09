@@ -10,9 +10,16 @@ import { AddressAutocompleteField } from "@/components/map/address-autocomplete-
 interface MapInfoFormProps {
   onSubmit: (data: MapInfo) => void;
   onBack: () => void;
+  defaultValues?: Partial<MapInfo>;
+  submitLabel?: string;
 }
 
-export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
+export function MapInfoForm({
+  onSubmit,
+  onBack,
+  defaultValues,
+  submitLabel = "Next Step",
+}: MapInfoFormProps) {
   const {
     control,
     handleSubmit,
@@ -22,8 +29,12 @@ export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
   } = useForm<MapInfo>({
     resolver: zodResolver(mapInfoSchema),
     defaultValues: {
-      no_address: false,
-      exhibition_space_preference: null,
+      no_address: defaultValues?.no_address ?? false,
+      formatted_address: defaultValues?.formatted_address ?? null,
+      latitude: defaultValues?.latitude ?? null,
+      longitude: defaultValues?.longitude ?? null,
+      exhibition_space_preference:
+        defaultValues?.exhibition_space_preference ?? null,
     },
   });
 
@@ -97,7 +108,7 @@ export function MapInfoForm({ onSubmit, onBack }: MapInfoFormProps) {
           className="bg-[var(--color-box1)] hover:bg-[var(--color-box1)] hover:opacity-75 text-pretty h-fit"
           type="submit"
         >
-          Next Step
+          {submitLabel}
         </Button>
       </div>
     </form>
