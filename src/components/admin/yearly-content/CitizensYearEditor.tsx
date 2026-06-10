@@ -13,15 +13,12 @@ export const CitizensYearEditor = ({
   isNewYear = false,
   onChanged,
 }: CitizensYearEditorProps) => {
-  const handleYearDeleted = () => {
-    onChanged?.();
-  };
-
   return (
     <AboutCitizenWrapper
       selectedYear={String(year)}
       isNewYear={isNewYear}
-      onYearDeleted={handleYearDeleted}
+      onChanged={onChanged}
+      onYearDeleted={() => onChanged?.()}
       compact
     />
   );

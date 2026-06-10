@@ -8,6 +8,7 @@ import { Form } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import {
   type ParticipantDetails,
+  type ParticipantDetailsInput,
   participantDetailsSchema,
 } from "@/schemas/participantDetailsSchemas";
 import type { PlanType } from "@/schemas/plansSchema";
@@ -49,7 +50,7 @@ const PROFILE_WATCH_FIELDS = [
 const PLAN_WATCH_FIELDS = ["plan_id", "plan_type"] as const;
 
 const buildDefaultSocialMedia = (
-  socialMedia: ParticipantDetails["social_media"]
+  socialMedia: ParticipantDetailsInput["social_media"]
 ) => ({
   facebookLink: socialMedia?.facebookLink ?? "",
   linkedinLink: socialMedia?.linkedinLink ?? "",
@@ -83,7 +84,7 @@ export function ParticipantDetailsForm({
   const { toast } = useToast();
   const router = useRouter();
 
-  const form = useForm<ParticipantDetails>({
+  const form = useForm<ParticipantDetailsInput, unknown, ParticipantDetails>({
     resolver: zodResolver(participantDetailsSchema),
     defaultValues: {
       short_description: participantDetails?.short_description || "",
@@ -175,8 +176,7 @@ export function ParticipantDetailsForm({
       const currentPlan = plans.find((plan) => plan.plan_id === previousPlanId);
       const newPlan = plans.find((plan) => plan.plan_id === values.plan_id);
       const confirmed = window.confirm(
-        `Are you sure you want to change the user's plan from ${
-          currentPlan?.plan_label || "current plan"
+        `Are you sure you want to change the user's plan from ${currentPlan?.plan_label || "current plan"
         } to ${newPlan?.plan_label || "new plan"}?`
       );
       if (!confirmed) {
@@ -196,8 +196,6 @@ export function ParticipantDetailsForm({
   return (
     <div className="px-[30px] mini-padding">
       <h1 className="title-text">{participantDetails?.display_name}</h1>
-
-      <Separator />
 
       <Form {...form}>
         <form onSubmit={(e) => e.preventDefault()} className="space-y-6">

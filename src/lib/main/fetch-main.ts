@@ -1,4 +1,5 @@
 import { BASE_URL } from "@/constants";
+import { MAIN_SECTION_CACHE_TAG } from "@/lib/main/main-section-cache-tags";
 import { MainSectionData, mainSectionSchema } from "@/schemas/mainSchema";
 import { ApiMainSectionData } from "@/types/api-main-raw";
 
@@ -69,7 +70,7 @@ function transformApiData(data: ApiMainSectionData): MainSectionData {
 export async function fetchMain(): Promise<MainSectionData> {
   try {
     const response = await fetch(`${BASE_URL}/main`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 3600, tags: [MAIN_SECTION_CACHE_TAG] },
     });
 
     if (!response.ok) {

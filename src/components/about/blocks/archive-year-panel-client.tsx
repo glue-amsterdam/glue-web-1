@@ -11,6 +11,7 @@ import {
 } from "@/lib/yearly-sections/map-yearly-section-props";
 import type { ArchiveYearSection } from "@/schemas/aboutPageSchema";
 import Separator from "@/components/separator";
+import TextSectionBlock from "@/components/text-section-block";
 
 type Props = {
   section: ArchiveYearSection;
@@ -37,17 +38,17 @@ const ArchiveYearPanelClient = ({
       </h3>
 
       {section.media.video ? (
-        <video
+        <><video
           src={section.media.video.src}
           poster={section.media.video.poster || undefined}
           controls
           className="aspect-video w-full max-w-4xl mx-auto"
           aria-label={section.media.video.alt}
-        />
+        /><Separator /></>
       ) : null}
 
       {section.media.image ? (
-        <div className="relative aspect-video w-full max-w-4xl mx-auto">
+        <><div className="relative aspect-video w-full max-w-4xl mx-auto">
           <Image
             src={section.media.image.src}
             alt={section.media.image.alt}
@@ -55,40 +56,29 @@ const ArchiveYearPanelClient = ({
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 896px"
           />
-        </div>
+        </div><Separator /></>
       ) : null}
 
       {section.numbers.length > 0 ? (
         <>
-          <Separator />
+
           <YearNumbersSection
             {...toArchiveYearNumbersSectionProps(section.year, section.numbers)}
             headingLevel="h3"
-          />
+          /><Separator />
         </>
       ) : null}
 
-      {section.text_block.title ? (
-        <>
-          <Separator />
-          <h4 className="title-text mini-padding">{section.text_block.title}</h4>
-        </>
-      ) : null}
-      {section.text_block.description ? (
-        <div
-          className="base-text-size"
-          dangerouslySetInnerHTML={{ __html: sanitizedTextBlockDescription }}
-        />
-      ) : null}
+      <TextSectionBlock
+        title={section.text_block.title} description={sanitizedTextBlockDescription} button={false} sectionId={`archive-${section.year}-text-section`} />
 
       {citizensData?.citizens?.length ? (
-        <section aria-label={`Creative Citizens of Honour ${section.year}`}>
-          <CitizensOfHonourSection
-            {...toArchiveCitizensSectionProps(section.year, citizensData)}
-            headingLevel="h3"
-            archiveYear={section.year}
-          />
-        </section>
+        <CitizensOfHonourSection
+          hasPadding={false}
+          {...toArchiveCitizensSectionProps(section.year, citizensData)}
+          headingLevel="h3"
+          archiveYear={section.year}
+        />
       ) : null}
 
       {stickyData?.participants?.length ? (

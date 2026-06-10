@@ -1,4 +1,5 @@
 import { config } from "@/config";
+import { revalidateProgramCache } from "@/lib/program/revalidate-program-cache";
 import { EventType } from "@/schemas/eventSchemas";
 import {
   collectOrganizerUserIds,
@@ -237,6 +238,8 @@ export async function POST(request: Request) {
       console.error("Error inserting event:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    revalidateProgramCache();
 
     return NextResponse.json({
       message: "Event created successfully",

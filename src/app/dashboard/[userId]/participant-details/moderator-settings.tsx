@@ -11,7 +11,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useFormContext } from "react-hook-form";
-import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
+import type { ParticipantDetailsInput } from "@/schemas/participantDetailsSchemas";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { ModeratorActiveStatus } from "./active-status-section";
 import { DisplayNumberField } from "./display-number-field";
@@ -34,7 +34,7 @@ export function ModeratorSettings({
   onSave: () => void;
   isSubmitting: boolean;
 }) {
-  const { control, setValue } = useFormContext<ParticipantDetails>();
+  const { control, setValue } = useFormContext<ParticipantDetailsInput>();
 
   return (
     <div className="base-text-size mini-padding lg:grid lg:grid-cols-3 space-y-[50px] lg:space-y-0 lg:gap-[15px]">

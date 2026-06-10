@@ -1,3 +1,7 @@
+import {
+  formatHubHostName,
+  getHubHostProfiles,
+} from "@/lib/hubs/get-hub-host-profiles";
 import { createClient } from "@/utils/supabase/server";
 
 export type HubSummary = {
@@ -5,18 +9,6 @@ export type HubSummary = {
   name: string;
   hostName: string;
   participantCount: number;
-};
-
-const formatHostName = (user: {
-  user_id: string;
-  user_name: string | null;
-  visible_emails: string[] | null;
-}): string => {
-  return (
-    user.user_name ||
-    user.visible_emails?.[0] ||
-    user.user_id
-  );
 };
 
 export const getHubsSummary = async (): Promise<HubSummary[]> => {
@@ -44,19 +36,7 @@ export const getHubsSummary = async (): Promise<HubSummary[]> => {
   }
 
   const hostIds = [...new Set(hubs.map((hub) => hub.hub_host_id))];
-
-  const { data: hostUsers, error: hostError } = await supabase
-    .from("user_info")
-    .select("user_id, user_name, visible_emails")
-    .in("user_id", hostIds);
-
-  if (hostError) {
-    console.error("getHubsSummary host users:", hostError);
-  }
-
-  const hostUserMap = new Map(
-    (hostUsers ?? []).map((user) => [user.user_id, user])
-  );
+  const hostUserMap = await getHubHostProfiles(hostIds);
 
   return hubs.map((hub) => {
     const host =
@@ -69,7 +49,7 @@ export const getHubsSummary = async (): Promise<HubSummary[]> => {
     return {
       id: hub.id,
       name: hub.name,
-      hostName: formatHostName(host),
+      hostName: formatHubHostName(host),
       participantCount: hub.participants?.length ?? 0,
     };
   });

@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidateMainSectionCache } from "@/lib/main/revalidate-main-section-cache";
 import { EventDay, eventDaysResponseSchema } from "@/schemas/eventSchemas";
 
 export async function GET() {
@@ -152,6 +153,8 @@ export async function PUT(request: Request) {
         `Error fetching updated days: ${finalFetchError.message}`
       );
     }
+
+    revalidateMainSectionCache();
 
     return NextResponse.json({ eventDays: updatedDays });
   } catch (error) {

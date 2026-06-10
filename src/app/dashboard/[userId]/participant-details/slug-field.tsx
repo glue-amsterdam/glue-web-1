@@ -9,14 +9,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
-import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
+import type { ParticipantDetailsInput } from "@/schemas/participantDetailsSchemas";
 import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 export function SlugField({ readOnly = false }: { readOnly?: boolean }) {
   const { control, setError, clearErrors } =
-    useFormContext<ParticipantDetails>();
+    useFormContext<ParticipantDetailsInput>();
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [isSlugUnique, setIsSlugUnique] = useState<boolean | null>(null);
 

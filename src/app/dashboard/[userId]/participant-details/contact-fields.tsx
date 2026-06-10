@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
-import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
+import type { ParticipantDetailsInput } from "@/schemas/participantDetailsSchemas";
 
 const inputClassName =
   "bg-(--white-color) text-(--black-color) disabled:opacity-60";
@@ -26,7 +26,7 @@ type ContactFieldsProps = {
 };
 
 export const ContactFields = ({ readOnly = false }: ContactFieldsProps) => {
-  const { control } = useFormContext<ParticipantDetails>();
+  const { control } = useFormContext<ParticipantDetailsInput>();
 
   return (
     <div className="mini-padding space-y-[15px]">
@@ -106,7 +106,7 @@ export const ContactFields = ({ readOnly = false }: ContactFieldsProps) => {
             <FormControl>
               <Input
                 type="email"
-                value={field.value || ""}
+                value={typeof field.value === "string" ? field.value : ""}
                 disabled={readOnly}
                 className={inputClassName}
                 placeholder="Enter email for practical GLUE communication"

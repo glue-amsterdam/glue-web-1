@@ -347,7 +347,9 @@ export const ArchiveYearEditor = ({
         <div className="flex gap-2">
           <SaveChangesButton
             isSubmitting={isSubmitting}
-            isDirty={form.formState.isDirty || hasMediaChanges}
+            isDirty={
+              !existsInDb || form.formState.isDirty || hasMediaChanges
+            }
             disabled={isBusy}
             className="flex-1"
             label={existsInDb ? "Update archive" : "Create archive"}

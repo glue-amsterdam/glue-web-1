@@ -14,13 +14,15 @@ import LoadingSpinner from "@/app/components/LoadingSpinner";
 interface AboutCitizenWrapperProps {
   selectedYear: string;
   isNewYear: boolean;
+  onChanged?: () => void;
   onYearDeleted?: () => void;
   compact?: boolean;
 }
 
 export function AboutCitizenWrapper({
   selectedYear,
-  isNewYear,
+  isNewYear: _isNewYear,
+  onChanged,
   onYearDeleted,
   compact = false,
 }: AboutCitizenWrapperProps) {
@@ -31,11 +33,6 @@ export function AboutCitizenWrapper({
   const { toast } = useToast();
 
   const fetchCitizens = useCallback(async () => {
-    if (isNewYear) {
-      setCitizens([]);
-      return;
-    }
-
     setIsLoading(true);
     try {
       const response = await fetch(`/api/admin/about/citizens/${selectedYear}`);
@@ -54,7 +51,7 @@ export function AboutCitizenWrapper({
     } finally {
       setIsLoading(false);
     }
-  }, [selectedYear, isNewYear, toast]);
+  }, [selectedYear, toast]);
 
   useEffect(() => {
     fetchCitizens();
@@ -70,8 +67,9 @@ export function AboutCitizenWrapper({
     setIsModalOpen(true);
   };
 
-  const handleCitizenSaved = () => {
-    fetchCitizens();
+  const handleCitizenSaved = async () => {
+    await fetchCitizens();
+    onChanged?.();
   };
 
   const handleDeleteYear = async () => {
@@ -140,7 +138,7 @@ export function AboutCitizenWrapper({
             <Plus className="w-4 h-4" />
             Add Citizen
           </Button>
-          {!isNewYear && citizens.length > 0 && (
+          {citizens.length > 0 ? (
             <Button
               variant="destructive"
               onClick={handleDeleteYear}
@@ -149,7 +147,7 @@ export function AboutCitizenWrapper({
               <Trash2 className="w-4 h-4" />
               Delete Year
             </Button>
-          )}
+          ) : null}
         </div>
       </div>
 

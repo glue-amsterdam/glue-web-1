@@ -152,8 +152,6 @@ export function MapInfoForm({ initialData, targetUserId }: MapInfoFormProps) {
 
   return (
     <div className="px-[30px] mini-padding">
-      <h1 className="title-text">Map Information</h1>
-      <Separator />
       <FormProvider {...form}>
         <form
           onSubmit={form.handleSubmit(handleSubmit)}

@@ -21,8 +21,6 @@ export const participantSocialMediaSchema = z
   .optional()
   .nullable();
 
-export type ParticipantDetails = z.infer<typeof participantDetailsSchema>;
-
 export const reactivationNotesSchema = z
   .object({
     plan_id: z.string().optional().nullable(),
@@ -108,3 +106,6 @@ export const participantDetailsSchema = z.object({
   upgrade_request_notes: z.string().optional().nullable(),
   upgrade_requested_at: z.string().optional().nullable(),
 });
+
+export type ParticipantDetailsInput = z.input<typeof participantDetailsSchema>;
+export type ParticipantDetails = z.output<typeof participantDetailsSchema>;

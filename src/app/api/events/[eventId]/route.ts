@@ -1,5 +1,6 @@
 import { config } from "@/config";
 import { loadOrganizerProfiles } from "@/lib/participants/load-organizer-profiles";
+import { revalidateProgramCache } from "@/lib/program/revalidate-program-cache";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -193,6 +194,9 @@ export async function PUT(
       console.error("Error updating event:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    revalidateProgramCache();
+
     return NextResponse.json({
       message: "Event updated successfully",
       event: data[0],
@@ -220,6 +224,8 @@ export async function DELETE(
       console.error("Error deleting event:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    revalidateProgramCache();
 
     return NextResponse.json({
       message: "Event deleted successfully",

@@ -1,5 +1,6 @@
 import type { ClientCitizen } from "@/schemas/citizenSchema";
 import CreativeCitizensDisplay from "@/components/home/citizens-of-honour-section/creative-citizens-display";
+import { cn } from "@/lib/utils";
 
 type HeadingLevel = "h2" | "h3";
 
@@ -11,6 +12,7 @@ type Props = {
   isVisible?: boolean;
   headingLevel?: HeadingLevel;
   archiveYear?: number;
+  hasPadding?: boolean;
 };
 
 const CitizensOfHonourSection = ({
@@ -21,6 +23,7 @@ const CitizensOfHonourSection = ({
   isVisible = true,
   headingLevel = "h2",
   archiveYear,
+  hasPadding = true,
 }: Props) => {
   if (!isVisible || citizens.length === 0) {
     return null;
@@ -29,7 +32,7 @@ const CitizensOfHonourSection = ({
   const HeadingTag = headingLevel;
 
   return (
-    <section id={sectionId} className="main-padding">
+    <section id={sectionId} className={cn(hasPadding ? "main-padding" : "mini-padding")}>
       <HeadingTag className="title-text border-t lg:border-t-2 border-[var(--black-color)] pt-[15px] lg:pt-[30px]">
         {title.toUpperCase()}
       </HeadingTag>

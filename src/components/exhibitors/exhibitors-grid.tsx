@@ -33,7 +33,7 @@ function ExhibitorsGrid({ exhibitors, loading, mode, title, description }: Props
                 aria-busy={loading}
             >
                 {exhibitors.map((exhibitor) => (
-                    <li key={getExhibitorItemKey(exhibitor) + Math.random()} className="mx-auto w-full">
+                    <li key={getExhibitorItemKey(exhibitor)} className="mx-auto w-full">
                         <ExhibitorCard exhibitor={exhibitor} />
                     </li>
                 ))}
@@ -43,24 +43,24 @@ function ExhibitorsGrid({ exhibitors, loading, mode, title, description }: Props
     if (mode === 'section') {
         return (
             <>
-            <h2 className="title-text border-t lg:border-t-2 border-[var(--black-color)] pt-[15px] lg:pt-[30px]">
-                {title.toUpperCase()}
-            </h2>
-            <SrOnlySanitized html={description} />
-            <div className="grid grid-cols-1 lg:grid-cols-3 pt-10 gap-y-[40px] lg:gap-x-[30px] justify-self-center lg:justify-self-auto">
-                {/* Mobile: 3 */}
-                <div className="contents lg:hidden">
-                    {exhibitors.slice(0, MOBILE_COUNT).map((participant) => (
-                        <ExhibitorCard key={getExhibitorItemKey(participant)} exhibitor={participant} />
-                    ))}
+                <h2 className="title-text border-t lg:border-t-2 border-[var(--black-color)] pt-[15px] lg:pt-[30px]">
+                    {title.toUpperCase()}
+                </h2>
+                <SrOnlySanitized html={description} />
+                <div className="grid grid-cols-1 lg:grid-cols-3 pt-10 gap-y-[40px] lg:gap-x-[30px] justify-self-center lg:justify-self-auto">
+                    {/* Mobile: 3 */}
+                    <div className="contents lg:hidden">
+                        {exhibitors.slice(0, MOBILE_COUNT).map((participant) => (
+                            <ExhibitorCard key={getExhibitorItemKey(participant)} exhibitor={participant} />
+                        ))}
+                    </div>
+                    {/* Desktop: 6 */}
+                    <div className="hidden lg:contents">
+                        {exhibitors.map((exhibitor) => (
+                            <ExhibitorCard key={getExhibitorItemKey(exhibitor)} exhibitor={exhibitor} />
+                        ))}
+                    </div>
                 </div>
-                {/* Desktop: 6 */}
-                <div className="hidden lg:contents">
-                    {exhibitors.map((exhibitor) => (
-                        <ExhibitorCard key={getExhibitorItemKey(exhibitor)} exhibitor={exhibitor} />
-                    ))}
-                </div>
-            </div>
             </>
         )
     }

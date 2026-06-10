@@ -352,6 +352,9 @@ export const ArchiveYearMediaFields = ({
     <div className="space-y-4">
       <FormItem>
         <FormLabel>Media Type</FormLabel>
+        <p className="text-sm text-muted-foreground">
+          Media is optional. Leave as None to create a text-only archive.
+        </p>
         <FormControl>
           <select
             className="w-full rounded border px-2 py-1"

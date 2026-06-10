@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import type { UseFormReturn } from "react-hook-form";
 import { MapPin, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
+import {
+  type ParticipantDetails,
+  type ParticipantDetailsInput,
+  participantDetailsSchema,
+} from "@/schemas/participantDetailsSchemas";
 import {
   createSubmitHandler,
   resetWatchedFieldsDirtyState,
@@ -16,7 +20,7 @@ import { mapInfoSchema } from "@/schemas/mapInfoSchemas";
 type MapInfoType = z.infer<typeof mapInfoSchema>;
 
 type UseModeratorActionsParams = {
-  form: UseFormReturn<ParticipantDetails>;
+  form: UseFormReturn<ParticipantDetailsInput, unknown, ParticipantDetails>;
   targetUserId: string;
   participantDetails: ParticipantDetails | null;
   hasExistingRecord: boolean;
@@ -49,6 +53,15 @@ export const useModeratorActions = ({
   const resetModeratorDirtyState = () => {
     resetWatchedFieldsDirtyState(form, MODERATOR_WATCH_FIELDS);
   };
+
+  const getParsedFormValues = (
+    overrides: Partial<ParticipantDetailsInput> = {}
+  ): ParticipantDetails =>
+    participantDetailsSchema.parse({
+      ...form.getValues(),
+      user_id: targetUserId,
+      ...overrides,
+    });
 
   const onSubmit = createSubmitHandler<ParticipantDetails>(
     `/api/users/participants/${targetUserId}/details`,
@@ -214,14 +227,12 @@ export const useModeratorActions = ({
     form.setValue("reactivation_requested", false);
     form.setValue("reactivation_status", "approved");
     await upsertParticipantDetailsAndMapInfo(
-      {
-        ...form.getValues(),
-        user_id: targetUserId,
+      getParsedFormValues({
         is_active: true,
         reactivation_requested: false,
         reactivation_status: "approved",
-      },
-      getValidMapInfo(mapInfo, form.getValues())
+      }),
+      getValidMapInfo(mapInfo, getParsedFormValues())
     );
     await sendReactivationApprovedEmail();
     resetModeratorDirtyState();
@@ -235,14 +246,12 @@ export const useModeratorActions = ({
     form.setValue("reactivation_requested", false);
     form.setValue("reactivation_status", "approved");
     await upsertParticipantDetailsAndMapInfo(
-      {
-        ...form.getValues(),
-        user_id: targetUserId,
+      getParsedFormValues({
         is_active: true,
         reactivation_requested: false,
         reactivation_status: "approved",
-      },
-      getValidMapInfo(mapInfo, form.getValues())
+      }),
+      getValidMapInfo(mapInfo, getParsedFormValues())
     );
     resetModeratorDirtyState();
     setMapInfo(null);
@@ -251,13 +260,13 @@ export const useModeratorActions = ({
   };
 
   const handleConfirmSendEmail = async () => {
-    await onSubmit({ ...form.getValues(), user_id: targetUserId });
+    await onSubmit(getParsedFormValues());
     setIsDialogOpen(false);
     await sendAcceptanceEmail();
   };
 
   const handleCancelSendEmail = async () => {
-    await onSubmit({ ...form.getValues(), user_id: targetUserId });
+    await onSubmit(getParsedFormValues());
     setIsDialogOpen(false);
   };
 
@@ -265,11 +274,9 @@ export const useModeratorActions = ({
     setIsModeratorSubmitting(true);
     try {
       form.setValue("reactivation_status", "declined");
-      await onSubmit({
-        ...form.getValues(),
-        user_id: targetUserId,
-        reactivation_status: "declined",
-      });
+      await onSubmit(
+        getParsedFormValues({ reactivation_status: "declined" })
+      );
 
       const response = await fetch(`/api/send-decline-reactivation`, {
         method: "POST",
@@ -303,11 +310,7 @@ export const useModeratorActions = ({
 
   const handleReconsiderRequest = () => {
     form.setValue("reactivation_status", "pending");
-    onSubmit({
-      ...form.getValues(),
-      user_id: targetUserId,
-      reactivation_status: "pending",
-    });
+    onSubmit(getParsedFormValues({ reactivation_status: "pending" }));
   };
 
   const renderReactivationDetails = () => {

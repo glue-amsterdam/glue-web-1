@@ -1,3 +1,4 @@
+import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
 import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 import { requirePlatformMod } from "@/lib/permissions/require-platform-mod";
 import { resolveRouteZoneName } from "@/lib/routes/resolve-route-zone-name";
@@ -234,6 +235,8 @@ export async function PUT(
       );
     }
 
+    await revalidateMapDataCacheIfLiveTour(supabase);
+
     return NextResponse.json({ success: true, route: routeData });
   } catch (error) {
     console.error("Error in route update:", error);
@@ -300,6 +303,8 @@ export async function DELETE(
         { status: 500 }
       );
     }
+
+    await revalidateMapDataCacheIfLiveTour(supabase);
 
     return NextResponse.json({ success: true });
   } catch (error) {

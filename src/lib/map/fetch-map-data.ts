@@ -100,7 +100,7 @@ export const getCachedMapPageData = unstable_cache(
     );
   },
   ["map-page-data"],
-  { tags: [MAP_DATA_CACHE_TAG], revalidate: 3600 }
+  { tags: [MAP_DATA_CACHE_TAG], revalidate: 60 }
 );
 
 export const fetchMapPageDataForSnapshot = async (

@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFormContext } from "react-hook-form";
-import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
+import type { ParticipantDetailsInput } from "@/schemas/participantDetailsSchemas";
 import type { PlanType } from "@/schemas/plansSchema";
 
 type PlanSettingsFieldsProps = {
@@ -27,7 +27,7 @@ export const PlanSettingsFields = ({
   plans,
   readOnly = false,
 }: PlanSettingsFieldsProps) => {
-  const { control, setValue, watch } = useFormContext<ParticipantDetails>();
+  const { control, setValue, watch } = useFormContext<ParticipantDetailsInput>();
   const currentPlanId = watch("plan_id");
 
   return (

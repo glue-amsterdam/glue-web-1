@@ -1,3 +1,4 @@
+import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
 import { mapInfoSchema } from "@/schemas/mapInfoSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
@@ -113,6 +114,8 @@ async function handleRequest(
         { status: 404 }
       );
     }
+
+    await revalidateMapDataCacheIfLiveTour(supabase);
 
     return NextResponse.json(data);
   } catch (error) {

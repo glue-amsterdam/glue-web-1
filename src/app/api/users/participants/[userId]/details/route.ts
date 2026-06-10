@@ -1,6 +1,11 @@
 import { filterParticipantDetailsPayload } from "@/lib/participants/filter-participant-details-payload";
 import { guardParticipantProfileWrite } from "@/lib/participants/guard-participant-profile-write";
 import {
+  hasParticipantVisibilityChanged,
+  revalidateExhibitorSlugPaths,
+  revalidateParticipantVisibilityCaches,
+} from "@/lib/participants/revalidate-participant-visibility-caches";
+import {
   resolvePlanTypeFromPlanId,
   syncParticipantContactToUserInfo,
 } from "@/lib/participants/sync-participant-to-user-info";
@@ -177,6 +182,14 @@ async function handleRequest(
         );
       }
 
+      const updatedDetails = data as ParticipantDetails;
+
+      if (hasParticipantVisibilityChanged(existing, updatedDetails)) {
+        await revalidateParticipantVisibilityCaches(supabase);
+      }
+
+      revalidateExhibitorSlugPaths(existing?.slug, updatedDetails.slug);
+
       return NextResponse.json(data);
     }
 
@@ -222,6 +235,8 @@ async function handleRequest(
         { status: 500 }
       );
     }
+
+    await revalidateParticipantVisibilityCaches(supabase);
 
     return NextResponse.json(data);
   } catch (error) {

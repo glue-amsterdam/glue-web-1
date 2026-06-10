@@ -1,3 +1,4 @@
+import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
 import { requirePlatformMod } from "@/lib/permissions/require-platform-mod";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
@@ -52,6 +53,8 @@ export async function PATCH(request: Request, context: RouteContext) {
       throw error;
     }
 
+    await revalidateMapDataCacheIfLiveTour(supabase);
+
     return NextResponse.json({ zone: data });
   } catch (err) {
     console.error("PATCH /api/maps/route-zones/[id]:", err);
@@ -99,6 +102,8 @@ export async function DELETE(_request: Request, context: RouteContext) {
     if (!data || data.length === 0) {
       return NextResponse.json({ error: "Route zone not found" }, { status: 404 });
     }
+
+    await revalidateMapDataCacheIfLiveTour(supabase);
 
     return NextResponse.json({
       success: true,

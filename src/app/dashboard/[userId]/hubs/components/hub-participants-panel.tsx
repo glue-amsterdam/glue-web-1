@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { Plus, XIcon } from "lucide-react";
+import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 import type { UserInfo } from "@/schemas/userInfoSchemas";
 
 const panelClass = "flex flex-col min-h-0 lg:h-full";
@@ -17,7 +18,7 @@ const profileLinkClass =
   "text-xs border border-gray-300 rounded px-2 py-1";
 
 const getParticipantLabel = (participant: UserInfo) =>
-  participant.user_name?.trim() || "Unknown participant";
+  getParticipantDisplayName(participant);
 
 const getParticipantProfileHref = (userId: string) =>
   `/dashboard/${userId}/participant-details`;
@@ -146,9 +147,10 @@ export const HubAvailableParticipants = ({
   const filteredUserInfoList = useMemo(() => {
     const searchLower = searchTerm.toLowerCase();
     return userInfoList.filter((userInfo) => {
-      if (userInfo.plan_type !== "participant") return false;
+      const label = getParticipantDisplayName(userInfo).toLowerCase();
+
       return (
-        userInfo.user_name?.toLowerCase().includes(searchLower) ||
+        label.includes(searchLower) ||
         userInfo.visible_emails?.some((email) =>
           email.toLowerCase().includes(searchLower)
         ) ||

@@ -214,15 +214,8 @@ export const ParticipationWizard = ({
     void submitApplication(data);
   };
 
-  const stepLabel = isReactivation ? "Reactivation" : "Application";
-
   return (
     <MainContainer className="pt-[160px] lg:pt-[195px] pb-[80px]">
-      <p className="base-text-size pb-[20px]">
-        {stepLabel} · Plan: <strong>{plan.plan_label}</strong> · Step {step} of{" "}
-        {totalSteps}
-      </p>
-
       {step === 1 && (
         <>
           <ParticipationPrefilledHint show={sectionStatus.invoice === "complete"} />
@@ -236,7 +229,6 @@ export const ParticipationWizard = ({
           />
         </>
       )}
-
       {step === 2 && (
         <>
           <ParticipationPrefilledHint show={sectionStatus.extra === "complete"} />
@@ -250,7 +242,6 @@ export const ParticipationWizard = ({
           />
         </>
       )}
-
       {step === 3 && (
         <>
           <ParticipationPrefilledHint show={sectionStatus.map === "complete"} />
@@ -268,7 +259,6 @@ export const ParticipationWizard = ({
           />
         </>
       )}
-
       {step === 4 && showAccountStep && (
         <VisitorAccountStep
           initialValues={accountData ?? undefined}
@@ -279,7 +269,6 @@ export const ParticipationWizard = ({
           termsContent={termsContent}
         />
       )}
-
       {loading && step !== 4 ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <LoadingSpinner />

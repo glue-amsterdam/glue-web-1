@@ -54,7 +54,7 @@ const AccordionTrigger = React.forwardRef<
         <AccordionPrimitive.Trigger
           ref={ref}
           className={cn(
-            "group flex flex-1 items-center gap-3 py-4 text-sm font-medium transition-all hover:underline",
+            "group flex flex-1 cursor-pointer items-center gap-3 py-4 text-sm font-medium transition-all hover:underline",
             iconPosition === "end" ? "justify-between" : "justify-start",
             className
           )}

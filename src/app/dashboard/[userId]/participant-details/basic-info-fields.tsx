@@ -10,10 +10,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { RichTextEditor } from "@/app/components/editor";
 import { useFormContext } from "react-hook-form";
-import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
+import type { ParticipantDetailsInput } from "@/schemas/participantDetailsSchemas";
 
 export function BasicInfoFields({ readOnly = false }: { readOnly?: boolean }) {
-  const { control } = useFormContext<ParticipantDetails>();
+  const { control } = useFormContext<ParticipantDetailsInput>();
 
   return (
     <div className="mini-padding space-y-[15px]">

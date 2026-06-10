@@ -4,7 +4,7 @@ import type React from "react";
 
 import { Button } from "@/components/ui/button";
 import { useFormContext } from "react-hook-form";
-import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
+import type { ParticipantDetailsInput } from "@/schemas/participantDetailsSchemas";
 import { AlertCircle, RefreshCw, X } from "lucide-react";
 import BigButton from "@/components/big-button";
 
@@ -21,7 +21,7 @@ export function ModeratorActiveStatus({
   onReconsiderRequest,
   renderReactivationDetails,
 }: ModeratorActiveStatusProps) {
-  const { watch } = useFormContext<ParticipantDetails>();
+  const { watch } = useFormContext<ParticipantDetailsInput>();
   const isActive = watch("is_active");
   const reactivationRequested = watch("reactivation_requested");
   const reactivationStatus = watch("reactivation_status");
@@ -125,7 +125,7 @@ type ParticipantActiveStatusProps = {
 export function ParticipantActiveStatus({
   onOpenReactivationModal,
 }: ParticipantActiveStatusProps) {
-  const { watch } = useFormContext<ParticipantDetails>();
+  const { watch } = useFormContext<ParticipantDetailsInput>();
   const isActive = watch("is_active");
   const slug = watch("slug");
   const reactivationRequested = watch("reactivation_requested");

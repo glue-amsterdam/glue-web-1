@@ -2,6 +2,7 @@ import {
   buildMapLocations,
   createMapLocationSnapshot,
 } from "@/lib/map/build-map-locations";
+import { revalidateMainSectionCache } from "@/lib/main/revalidate-main-section-cache";
 import { revalidateMapDataCache } from "@/lib/map/revalidate-map-cache";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
@@ -160,6 +161,7 @@ export async function PUT(request: Request) {
 
       const mapLocationsCount = mapInfoSnapshot.locations.length;
       revalidateMapDataCache();
+      revalidateMainSectionCache();
       return NextResponse.json({
         ...data[0],
         participantCount: participantCount || 0,
@@ -264,6 +266,7 @@ export async function PUT(request: Request) {
 
       const deletedCount = oldEvents?.length || 0;
       revalidateMapDataCache();
+      revalidateMainSectionCache();
       return NextResponse.json({
         ...data[0],
         deletedEventsCount: deletedCount,

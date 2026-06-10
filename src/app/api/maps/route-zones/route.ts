@@ -1,3 +1,4 @@
+import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
 import { requirePlatformMod } from "@/lib/permissions/require-platform-mod";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
@@ -69,6 +70,8 @@ export async function POST(request: Request) {
       }
       throw error;
     }
+
+    await revalidateMapDataCacheIfLiveTour(supabase);
 
     return NextResponse.json({ zone: data });
   } catch (err) {

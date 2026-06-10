@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { config } from "@/config";
+import { revalidateParticipantVisibilityCaches } from "@/lib/participants/revalidate-participant-visibility-caches";
 import {
   getEmailTemplateWithFallback,
   processEmailTemplate,
@@ -272,6 +273,8 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+
+    await revalidateParticipantVisibilityCaches(supabase);
 
     return NextResponse.json({ success: true });
   } catch (error) {

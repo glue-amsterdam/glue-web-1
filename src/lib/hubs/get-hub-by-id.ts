@@ -1,4 +1,5 @@
 import type { HubApiCall } from "@/schemas/hubSchemas";
+import { getHubHostProfile } from "@/lib/hubs/get-hub-host-profiles";
 import { createClient } from "@/utils/supabase/server";
 
 export const getHubById = async (
@@ -30,25 +31,17 @@ export const getHubById = async (
     return null;
   }
 
-  const { data: hostUser, error: hostError } = await supabase
-    .from("user_info")
-    .select("user_id, user_name, visible_emails")
-    .eq("user_id", hub.hub_host_id)
-    .maybeSingle();
-
-  if (hostError) {
-    console.error("getHubById host user:", hostError);
-  }
+  const hostUser = await getHubHostProfile(hub.hub_host_id);
 
   return {
     id: hub.id,
     name: hub.name,
     description: hub.description ?? "",
     display_number: hub.display_number,
-    hub_host: hostUser ?? {
-      user_id: hub.hub_host_id,
-      user_name: undefined,
-      visible_emails: [],
+    hub_host: {
+      user_id: hostUser.user_id,
+      user_name: hostUser.user_name ?? undefined,
+      visible_emails: hostUser.visible_emails,
     },
     participants: hub.participants ?? [],
   };

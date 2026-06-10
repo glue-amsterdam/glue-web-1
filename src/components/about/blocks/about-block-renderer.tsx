@@ -10,14 +10,36 @@ type Props = {
   block: AboutBlock;
 };
 
+const renderWithLeadingSeparator = (
+  content: React.ReactElement,
+  isVisible: boolean
+) => {
+  if (!isVisible) {
+    return null;
+  }
+
+  return (
+    <>
+      <Separator />
+      {content}
+    </>
+  );
+};
+
 const AboutBlockRenderer = ({ block }: Props) => {
   switch (block.id) {
     case ABOUT_BLOCK_IDS.TEAM:
       return <TeamBlock block={block} />;
     case ABOUT_BLOCK_IDS.FOUNDATION:
-      return <><Separator /><TextDualBlockView block={block} flex={true} maxWidth={"723px"} /></>;
+      return renderWithLeadingSeparator(
+        <TextDualBlockView block={block} flex={true} maxWidth={"723px"} />,
+        block.is_visible
+      );
     case ABOUT_BLOCK_IDS.MISSION:
-      return <><Separator /><TextDualBlockView block={block} grid={true} /></>;
+      return renderWithLeadingSeparator(
+        <TextDualBlockView block={block} grid={true} />,
+        block.is_visible
+      );
     case ABOUT_BLOCK_IDS.PRESS:
       return <TextDualBlockView block={block} grid={true} />;
     case ABOUT_BLOCK_IDS.NEWSLETTER:
@@ -25,7 +47,10 @@ const AboutBlockRenderer = ({ block }: Props) => {
     case ABOUT_BLOCK_IDS.ARCHIVE:
       return <ArchiveBlockView block={block} />;
     case ABOUT_BLOCK_IDS.FAQ:
-      return <><Separator /><FaqBlockView block={block} /></>;
+      return renderWithLeadingSeparator(
+        <FaqBlockView block={block} />,
+        block.is_visible
+      );
     default:
       return null;
   }

@@ -1,7 +1,10 @@
 "use client";
 
 import { useFormContext } from "react-hook-form";
-import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
+import type {
+  ParticipantDetails,
+  ParticipantDetailsInput,
+} from "@/schemas/participantDetailsSchemas";
 import { ModeratorSettings } from "@/app/dashboard/[userId]/participant-details/moderator-settings";
 import { ParticipantSection } from "@/app/dashboard/[userId]/participant-details/participant-section";
 import { ConfirmationDialog } from "@/app/dashboard/[userId]/participant-details/confirmation-dialog";
@@ -19,7 +22,11 @@ export function ModeratorPanel({
   participantDetails,
   hasExistingRecord,
 }: ModeratorPanelProps) {
-  const form = useFormContext<ParticipantDetails>();
+  const form = useFormContext<
+    ParticipantDetailsInput,
+    unknown,
+    ParticipantDetails
+  >();
   const status = form.watch("status");
   const isActive = form.watch("is_active");
 

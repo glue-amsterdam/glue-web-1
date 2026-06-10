@@ -113,8 +113,7 @@ const FaqBlockClient = ({ block, sanitized }: Props) => {
               <FaqItemTrigger item={item} itemId={itemId} />
               <AccordionContent
                 className="pt-[30px]"
-                aria-labelledby={`${itemId}-mobile-question`}
-              >
+                aria-labelledby={`${itemId}-mobile-question`}>
                 <FaqItemContent sanitizedAnswer={sanitized.answers[index] ?? ""} />
               </AccordionContent>
             </AccordionItem>
@@ -124,7 +123,6 @@ const FaqBlockClient = ({ block, sanitized }: Props) => {
       <div className="hidden w-full pt-[40px] lg:grid lg:grid-cols-2 lg:gap-x-[30px] lg:gap-y-[60px]">
         {block.items.map((item, index) => {
           const itemId = getFaqItemId(item, index);
-
           return (
             <FaqGridItem
               key={itemId}

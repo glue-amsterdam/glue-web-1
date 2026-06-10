@@ -1,3 +1,4 @@
+import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
 import { requirePlatformMod } from "@/lib/permissions/require-platform-mod";
 import { resolveRouteZoneName } from "@/lib/routes/resolve-route-zone-name";
 import { routeSchema } from "@/schemas/mapSchema";
@@ -109,6 +110,8 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
+
+    await revalidateMapDataCacheIfLiveTour(supabase);
 
     return NextResponse.json({ success: true, route: routeData });
   } catch (error) {

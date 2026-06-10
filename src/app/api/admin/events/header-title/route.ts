@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { revalidateProgramCache } from "@/lib/program/revalidate-program-cache";
 
 export async function GET() {
   try {
@@ -81,9 +82,8 @@ async function updateHeaderTitle(req: Request) {
         );
       }
 
-      // Revalidate the events page to show the updated title immediately
       revalidatePath("/events");
-      revalidatePath("/program");
+      revalidateProgramCache();
 
       return NextResponse.json({ header_title: insertData.header_title });
     }
@@ -106,7 +106,7 @@ async function updateHeaderTitle(req: Request) {
     }
 
     revalidatePath("/events");
-    revalidatePath("/program");
+    revalidateProgramCache();
 
     return NextResponse.json({ header_title: data.header_title });
   } catch (error) {

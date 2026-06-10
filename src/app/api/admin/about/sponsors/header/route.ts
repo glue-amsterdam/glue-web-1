@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidateSponsorsCache } from "@/lib/about/revalidate-sponsors-cache";
 import { sponsorsHeaderSchema } from "@/schemas/sponsorsSchema";
 import { createClient } from "@/utils/supabase/server";
 
@@ -54,6 +55,8 @@ export async function PUT(request: Request) {
       .select();
 
     if (error) throw error;
+
+    revalidateSponsorsCache();
 
     return NextResponse.json(data);
   } catch (error) {

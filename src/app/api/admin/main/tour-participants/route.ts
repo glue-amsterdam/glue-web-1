@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/utils/supabase/adminClient";
-import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
+import { revalidateParticipantVisibilityCaches } from "@/lib/participants/revalidate-participant-visibility-caches";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -133,7 +133,7 @@ export async function PUT(request: Request) {
       .eq("was_active_last_year", true)
       .eq("is_active", true);
 
-    await revalidateMapDataCacheIfLiveTour(supabase);
+    await revalidateParticipantVisibilityCaches(supabase);
 
     return NextResponse.json({
       message: "Participant carryover updated successfully",

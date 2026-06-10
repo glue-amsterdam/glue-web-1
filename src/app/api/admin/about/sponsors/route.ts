@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidateSponsorsCache } from "@/lib/about/revalidate-sponsors-cache";
 import { sponsorSchema } from "@/schemas/sponsorsSchema";
 import { createClient } from "@/utils/supabase/server";
 import { config } from "@/config";
@@ -50,6 +51,8 @@ export async function POST(request: Request) {
       .select();
 
     if (insertError) throw insertError;
+
+    revalidateSponsorsCache();
 
     return NextResponse.json({ message: "Sponsor added successfully", data });
   } catch (error) {
@@ -119,6 +122,8 @@ export async function PUT(request: Request) {
       .select();
 
     if (updateError) throw updateError;
+
+    revalidateSponsorsCache();
 
     return NextResponse.json({ message: "Sponsor updated successfully", data });
   } catch (error) {
@@ -206,6 +211,8 @@ export async function DELETE(request: Request) {
         `Failed to delete sponsor from database: ${deleteError.message}`
       );
     }
+
+    revalidateSponsorsCache();
 
     return NextResponse.json({ message: "Sponsor deleted successfully" });
   } catch (error) {

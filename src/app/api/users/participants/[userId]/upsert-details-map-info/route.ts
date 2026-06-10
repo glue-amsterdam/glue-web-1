@@ -1,4 +1,9 @@
 import { guardParticipantProfileWrite } from "@/lib/participants/guard-participant-profile-write";
+import {
+  revalidateExhibitorSlugPaths,
+  revalidateParticipantVisibilityCaches,
+} from "@/lib/participants/revalidate-participant-visibility-caches";
+import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -51,6 +56,12 @@ export async function PUT(
       }
       throw err;
     }
+
+    const { data: existingDetails } = await supabase
+      .from("participant_details")
+      .select("slug")
+      .eq("user_id", userId)
+      .maybeSingle();
 
     const { data: participantData, error: participantError } = await supabase
       .from("participant_details")
@@ -125,6 +136,12 @@ export async function PUT(
         );
       }
     }
+
+    await revalidateParticipantVisibilityCaches(supabase);
+    revalidateExhibitorSlugPaths(
+      existingDetails?.slug,
+      (participantData as ParticipantDetails).slug
+    );
 
     return NextResponse.json({
       participantDetails: participantData,

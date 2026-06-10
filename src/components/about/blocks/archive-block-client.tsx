@@ -129,6 +129,8 @@ const ArchiveBlockClient = ({
     );
   }
 
+  const sortedYears = [...block.years].sort((a, b) => b - a);
+
   return (
     <section id={ABOUT_ANCHORS.ARCHIVE} aria-labelledby="archive-heading">
       <h2 id="archive-heading" className="title-text mini-padding">
@@ -147,7 +149,7 @@ const ArchiveBlockClient = ({
         defaultValue={[]}
         onValueChange={handleValueChange}
       >
-        {block.years.map((year) => {
+        {sortedYears.map((year) => {
           const yearId = getYearId(year);
           const section = sectionsByYear[year];
           const isLoading = loadingYears.has(year);

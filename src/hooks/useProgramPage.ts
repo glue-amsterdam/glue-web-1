@@ -340,6 +340,15 @@ export const useProgramPage = (
     [syncUrl, updateCatalog]
   );
 
+  const hadSessionSnapshotRef = useRef(initialState.suppressFetchKey !== null);
+
+  useEffect(() => {
+    if (!hadSessionSnapshotRef.current) return;
+
+    clearSuppressFetch();
+    void fetchPage(initialState.filters, 0, false, false, { silent: true });
+  }, [clearSuppressFetch, fetchPage, initialState.filters]);
+
   const handleFiltersChange = useCallback(
     (next: Partial<ProgramFilters>) => {
       clearSuppressFetch();

@@ -15,6 +15,7 @@ import {
   sendParticipantRegistrationEmail,
 } from "@/lib/email";
 import { config } from "@/config";
+import { revalidateParticipantVisibilityCaches } from "@/lib/participants/revalidate-participant-visibility-caches";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -469,6 +470,8 @@ export async function POST(request: Request) {
     },
     user.email ?? userEmail
   );
+
+  await revalidateParticipantVisibilityCaches(admin);
 
   return NextResponse.json({ success: true, userId: user.id });
 }
