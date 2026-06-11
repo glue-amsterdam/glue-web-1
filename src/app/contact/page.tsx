@@ -1,6 +1,10 @@
 import BottomBlock from '@/components/bottom-block';
 import MainContainer from '@/components/main-container';
+import { contactMetadata } from '@/lib/metadata';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = contactMetadata;
 
 type Props = {}
 

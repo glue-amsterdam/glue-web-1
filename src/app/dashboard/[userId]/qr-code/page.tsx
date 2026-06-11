@@ -1,7 +1,18 @@
 import { resolveQrCodeSubject } from "@/lib/dashboard/resolve-qr-code-subject";
+import { generateDashboardSectionMetadata } from "@/lib/metadata/build-dashboard-metadata";
 import { getIsPlatformMod } from "@/lib/permissions/get-is-mod";
 import { createClient } from "@/utils/supabase/server";
 import { notFound, redirect } from "next/navigation";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}): Promise<Metadata> {
+  const { userId } = await params;
+  return generateDashboardSectionMetadata(userId, "QR Code");
+}
 
 export default async function DashboardQrCodePage({
   params,

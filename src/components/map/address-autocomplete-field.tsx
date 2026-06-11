@@ -8,14 +8,13 @@ import {
   Path,
   UseFormSetValue,
 } from "react-hook-form";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { config } from "@/config";
 import { strToNumber } from "@/constants";
 import {
   forwardGeocode,
   type GeocodeSuggestion,
 } from "@/lib/mapbox/forward-geocode";
+import { participateFieldClassName } from "@/components/participate/participate-form-field";
 
 type AddressFormFields = {
   formatted_address: string | null;
@@ -32,6 +31,7 @@ type AddressAutocompleteFieldProps<T extends FieldValues & AddressFormFields> =
     id?: string;
     error?: string;
     className?: string;
+    wrapperClassName?: string;
   };
 
 export const AddressAutocompleteField = <
@@ -44,6 +44,7 @@ export const AddressAutocompleteField = <
   id = "address",
   error,
   className,
+  wrapperClassName,
 }: AddressAutocompleteFieldProps<T>) => {
   const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
 
@@ -92,40 +93,55 @@ export const AddressAutocompleteField = <
   };
 
   return (
-    <div className={className}>
-      <Label htmlFor={id}>{label}</Label>
-      <Controller
-        name={"formatted_address" as Path<T>}
-        control={control}
-        render={({ field }) => (
-          <Input
-            id={id}
-            onChange={(event) => {
-              field.onChange(event);
-              void handleAddressChange(event.target.value);
-            }}
-            onBlur={field.onBlur}
-            value={(field.value as string | null) ?? ""}
-            name={field.name}
-            ref={field.ref}
-            placeholder={placeholder}
-            aria-autocomplete="list"
-            aria-controls={suggestions.length > 0 ? `${id}-suggestions` : undefined}
-            aria-expanded={suggestions.length > 0}
-          />
-        )}
-      />
-      {error && (
-        <p className="text-red-500 text-sm mt-1" role="alert">
-          {error}
-        </p>
-      )}
-      {suggestions.length > 0 && (
+    <div
+      className={`flex flex-col gap-[10px] ${wrapperClassName ?? ""} ${className ?? ""}`}
+    >
+      <label htmlFor={id} className="base-text-size">
+        {label}
+      </label>
+      <div className="relative">
+        {error ? (
+          <span
+            id={`${id}-error`}
+            role="alert"
+            className="pointer-events-none absolute bottom-full left-0 right-0 mb-[4px] text-[12px] leading-[14px] text-(--primary-color) line-clamp-2"
+          >
+            {error}
+          </span>
+        ) : null}
+        <Controller
+          name={"formatted_address" as Path<T>}
+          control={control}
+          render={({ field }) => (
+            <input
+              id={id}
+              onChange={(event) => {
+                field.onChange(event);
+                void handleAddressChange(event.target.value);
+              }}
+              onBlur={field.onBlur}
+              value={(field.value as string | null) ?? ""}
+              name={field.name}
+              ref={field.ref}
+              placeholder={placeholder}
+              aria-autocomplete="list"
+              aria-controls={
+                suggestions.length > 0 ? `${id}-suggestions` : undefined
+              }
+              aria-expanded={suggestions.length > 0}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? `${id}-error` : undefined}
+              className={`${participateFieldClassName} h-[42px]`}
+            />
+          )}
+        />
+      </div>
+      {suggestions.length > 0 ? (
         <ul
           id={`${id}-suggestions`}
           role="listbox"
           aria-label="Address suggestions"
-          className="mt-2 bg-white border border-gray-300 rounded-md shadow-sm"
+          className="bg-(--white-color) border border-(--black-color)"
         >
           {suggestions.map((suggestion, index) => (
             <li
@@ -133,7 +149,7 @@ export const AddressAutocompleteField = <
               role="option"
               tabIndex={0}
               aria-label={suggestion.place_name}
-              className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+              className="px-3 py-2 base-text-size hover:bg-(--primary-color)/10 cursor-pointer"
               onClick={() => handleSuggestionSelect(suggestion)}
               onKeyDown={(event) => handleSuggestionKeyDown(event, suggestion)}
             >
@@ -141,7 +157,7 @@ export const AddressAutocompleteField = <
             </li>
           ))}
         </ul>
-      )}
+      ) : null}
     </div>
   );
 };

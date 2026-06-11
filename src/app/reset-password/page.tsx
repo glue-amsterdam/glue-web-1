@@ -1,5 +1,9 @@
 import ResetPasswordForm from "@/app/reset-password/reset-password-form";
+import { resetPasswordMetadata } from "@/lib/metadata";
+import type { Metadata } from "next";
 import { Suspense } from "react";
+
+export const metadata: Metadata = resetPasswordMetadata;
 
 export default function ResetPasswordPage() {
   return (

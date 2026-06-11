@@ -340,7 +340,7 @@ export async function POST(request: Request) {
 
   const participantPayload = {
     user_id: user.id,
-    short_description: data.short_description,
+    short_description: null as string | null,
     description: null as string | null,
     slug,
     status: "pending",
@@ -431,7 +431,6 @@ export async function POST(request: Request) {
     email: userEmail,
     plan_id: data.plan_id,
     plan_type: PARTICIPANT_PLAN_TYPE,
-    short_description: data.short_description,
     invoice_company_name: data.invoice_company_name,
     invoice_address: data.invoice_address,
     invoice_city: data.invoice_city,

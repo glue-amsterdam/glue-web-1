@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import type { AdminUserDetail } from "@/types/admin-user";
-import { useEventsDays } from "@/app/context/MainContext";
+import { useEventsDays } from "@/context/MainContext";
 import { useSanitizedHTML } from "@/app/hooks/useSanitizedHTML";
 
 type Props = {
@@ -133,8 +133,8 @@ export default function UserDetailAccordion({ detail }: Props) {
                   <span className="font-medium">{getDayLabel(vh.day_id)}:</span>{" "}
                   {vh.hours.length > 0
                     ? vh.hours
-                        .map((h) => `${h.open}–${h.close}`)
-                        .join(", ")
+                      .map((h) => `${h.open}–${h.close}`)
+                      .join(", ")
                     : "—"}
                 </div>
               ))}

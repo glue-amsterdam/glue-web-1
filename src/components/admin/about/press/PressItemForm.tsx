@@ -17,7 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { RichTextEditor } from "@/app/components/editor";
+import { RichTextEditor } from "@/components/editor";
 import { Switch } from "@/components/ui/switch";
 import { config } from "@/config";
 import { AdminImagePreview } from "@/components/admin/admin-image-preview";

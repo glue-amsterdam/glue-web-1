@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import MainContainer from "@/components/main-container";
 import { TermsContent } from "@/components/terms-content";
+import { termsAndConditionsMetadata } from "@/lib/metadata";
 import { getCachedTerms } from "@/lib/terms/get-cached-terms";
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: "General Terms and Conditions",
-  description: "Read the general terms and conditions for GLUE.",
-};
+export const metadata: Metadata = termsAndConditionsMetadata;
 
 export default async function TermsAndConditionsPage() {
   const content = await getCachedTerms();

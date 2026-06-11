@@ -1,4 +1,4 @@
-import type { InvoiceFormData } from "@/app/signup-0.1/InvoiceFormData";
+import type { InvoiceDataType } from "@/schemas/invoiceSchemas";
 import type { ParticipantExtraDataFormData } from "@/schemas/participantExtraDataSchema";
 import type { MapInfo } from "@/schemas/mapInfoSchemas";
 import type { ParticipationIntent } from "@/schemas/participationSchemas";
@@ -21,7 +21,7 @@ export type ParticipationFormContext = {
   intent: ParticipationIntent;
   isAuthenticated: boolean;
   initialValues: {
-    invoice: InvoiceFormData | null;
+    invoice: InvoiceDataType | null;
     extra: ParticipantExtraDataFormData | null;
     map: MapInfo | null;
   };

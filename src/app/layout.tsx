@@ -4,10 +4,10 @@ import { LayoutMetadata } from "@/lib/metadata";
 
 import { fetchMain } from "@/lib/main/fetch-main";
 import { getTheme } from "@/lib/theme";
-import { buildNavbarLinks } from "@/lib/nav/build-navbar-links";
+import { buildNavbarLinks } from "@/lib/nav/build-navbar-links"; 1450
 
-import { AppProviders } from "@/app/components/app-providers";
-import { MainContextProvider } from "./context/MainContext";
+import { AppProviders } from "@/components/app-providers";
+import { MainContextProvider } from "../context/MainContext";
 import { getNavbarInitialIdentity } from "@/lib/users/get-navbar-initial-identity";
 import { AdminSiteChrome } from "@/components/admin/admin-site-chrome";
 
@@ -47,11 +47,6 @@ export default async function RootLayout({
           "--up-to-three-participants-font-color":
             theme.upToThreeParticipantsFontColor,
           "--special-program-font-color": theme.specialProgramFontColor,
-          "--color-box1": theme.box1,
-          "--color-box2": theme.box2,
-          "--color-box3": theme.box3,
-          "--color-box4": theme.box4,
-          "--color-triangle": theme.triangle,
         } as React.CSSProperties
       }
     >

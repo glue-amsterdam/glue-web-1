@@ -2,9 +2,20 @@ import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { EventForm } from "@/app/dashboard/[userId]/events/components/create-event-form";
 import { getParticipantEventsSummary } from "@/lib/events/get-participant-events-summary";
+import { generateDashboardSectionMetadata } from "@/lib/metadata/build-dashboard-metadata";
 import { getPlanMaxEventsForUser } from "@/lib/plans/get-plan-max-events-for-user";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}): Promise<Metadata> {
+  const { userId } = await params;
+  return generateDashboardSectionMetadata(userId, "Create Event");
+}
 
 export default async function NewEventPage({
   params,

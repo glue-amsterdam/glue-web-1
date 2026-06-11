@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { RichTextEditor } from "@/app/components/editor";
+import { RichTextEditor } from "@/components/editor";
 import { Upload, X } from "lucide-react";
 import { AdminImagePreview } from "@/components/admin/admin-image-preview";
 import {
@@ -258,14 +258,6 @@ export function AboutCitizenModal({
             <span>
               {citizen ? `Edit Citizen: ${citizen.name}` : "Add New Citizen"}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
           </DialogTitle>
         </DialogHeader>
 

@@ -1,9 +1,13 @@
 import { redirect } from "next/navigation";
 import { ParticipationWizard } from "@/app/participate/apply/participation-wizard";
+import { participateApplyMetadata } from "@/lib/metadata";
 import { getParticipationEligibility } from "@/lib/participate/get-participation-eligibility";
 import { getParticipationFormContext } from "@/lib/participate/get-participation-form-context";
 import { getPlanByIdForApply } from "@/lib/participate/get-plan-by-id";
 import { getCachedTerms } from "@/lib/terms/get-cached-terms";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = participateApplyMetadata;
 
 type PageProps = {
   searchParams: Promise<{

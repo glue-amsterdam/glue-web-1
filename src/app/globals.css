@@ -50,6 +50,7 @@
 }
 
 @layer base {
+
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
@@ -86,7 +87,12 @@
     --site-footer-h: 65px;
     --total-nav-height: calc(var(--nav-primary-h) + var(--site-footer-h));
   }
- 
+
+  
+  html {
+    background-color: var(--background-color);
+    color: var(--black-color);
+  }
 }
 
 /* Home page < */

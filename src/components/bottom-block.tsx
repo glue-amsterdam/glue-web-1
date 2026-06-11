@@ -1,16 +1,16 @@
+import OurPartners from "./partners-section/our-partners";
+import BottomFooter from "./bottom-footer";
+import { getCachedMainLinks } from "@/lib/main/get-main-links";
 
-import OurPartners from './partners-section/our-partners'
-import BottomFooter from './bottom-footer'
+const BottomBlock = async () => {
+  const mainLinks = await getCachedMainLinks();
 
-type Props = {}
+  return (
+    <div className="pb-[65px]">
+      <OurPartners />
+      <BottomFooter mainLinks={mainLinks} />
+    </div>
+  );
+};
 
-function BottomBlock({ }: Props) {
-    return (
-        <div className="pb-[65px]">
-            <OurPartners />
-            <BottomFooter />
-        </div>
-    )
-}
-
-export default BottomBlock
+export default BottomBlock;

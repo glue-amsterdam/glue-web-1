@@ -1,4 +1,41 @@
-import type { Metadata } from "next"; import { config } from "@/config";
+import type { Metadata } from "next";
+import { config } from "@/config";
+
+const NOINDEX_ROBOTS: Metadata["robots"] = {
+  index: false,
+  follow: false,
+};
+
+const buildPageMetadata = ({
+  path,
+  title,
+  description,
+  keywords,
+  robots,
+}: {
+  path: string;
+  title: string;
+  description: string;
+  keywords: string[];
+  robots?: Metadata["robots"];
+}): Metadata => ({
+  title,
+  description,
+  keywords,
+  ...(robots ? { robots } : {}),
+  alternates: {
+    canonical: `${config.baseUrl}${path}`,
+  },
+  openGraph: {
+    title,
+    description,
+    url: `${config.baseUrl}${path}`,
+  },
+  twitter: {
+    title,
+    description,
+  },
+});
 
 // BASE IN LAYOUT
 export const LayoutMetadata: Metadata = {
@@ -179,17 +216,6 @@ export const mapMetadata: Metadata = {
   },
 };
 
-// INDIVIDUAL EXHIBITOR PAGE METADATA
-export const individualExhibitorMetadata = {
-  title: `GLUE ${config.cityName} | Exhibitor`,
-  description: `Discover the details of the exhibitor ${config.cityName} design route.`,
-  openGraph: {
-    title: `GLUE ${config.cityName} | Exhibitor`,
-    description: `Discover the details of the exhibitor ${config.cityName} design route.`,
-  },
-};
-
-// ABOUT PAGE METADATA
 export const aboutPageMetadata: Metadata = {
   title: `About GLUE ${config.cityName} | Team, Foundation & Archive`,
   description: `Meet the GLUE ${config.cityName} team, learn about the GLUE Foundation, mission, press, and browse the GLUE archive by year.`,
@@ -218,11 +244,114 @@ export const aboutPageMetadata: Metadata = {
 };
 
 // NEWSLETTER PAGE METADATA
-export const newsletterMetadata = {
+export const newsletterMetadata: Metadata = {
   title: `GLUE ${config.cityName} | Newsletter`,
   description: `Subscribe to our newsletter to stay updated with the latest news and events of GLUE ${config.cityName}.`,
+  keywords: [
+    "GLUE",
+    config.cityName,
+    "newsletter",
+    "design routes",
+    "connected by design",
+  ],
+  alternates: {
+    canonical: `${config.baseUrl}/newsletter`,
+  },
   openGraph: {
     title: `GLUE ${config.cityName} Newsletter | Connected by Design`,
     description: `Subscribe to our newsletter to stay updated with the latest news and events of GLUE ${config.cityName}.`,
+    url: `${config.baseUrl}/newsletter`,
+  },
+  twitter: {
+    title: `GLUE ${config.cityName} | Newsletter`,
+    description: `Subscribe to our newsletter to stay updated with the latest news and events of GLUE ${config.cityName}.`,
   },
 };
+
+// CONTACT PAGE METADATA
+export const contactMetadata: Metadata = buildPageMetadata({
+  path: "/contact",
+  title: `GLUE ${config.cityName} | Contact`,
+  description: `Get in touch with the GLUE ${config.cityName} team — questions about design routes, participation, and events.`,
+  keywords: ["GLUE", config.cityName, "contact", "design routes", "connected by design"],
+});
+
+// PARTICIPATE PAGE METADATA
+export const participateMetadata: Metadata = buildPageMetadata({
+  path: "/participate",
+  title: `GLUE ${config.cityName} | Participate`,
+  description: `Apply to participate in GLUE ${config.cityName} design route — explore plans for designers, studios, and showrooms.`,
+  keywords: [
+    "GLUE",
+    config.cityName,
+    "participate",
+    "apply",
+    "design routes",
+    "connected by design",
+  ],
+});
+
+// SIGN UP PAGE METADATA
+export const signUpMetadata: Metadata = buildPageMetadata({
+  path: "/sign-up",
+  title: `GLUE ${config.cityName} | Sign Up`,
+  description:
+    "Register for a GLUE account to access the map, program, and community. Registering is free and does not subscribe you to our newsletter.",
+  keywords: ["GLUE", config.cityName, "sign up", "register", "design routes"],
+});
+
+// VISIT PAGE METADATA
+export const visitMetadata: Metadata = buildPageMetadata({
+  path: "/visit",
+  title: `GLUE ${config.cityName} | Visit`,
+  description: `Plan your visit to GLUE ${config.cityName} design route — practical information for visitors and design enthusiasts.`,
+  keywords: ["GLUE", config.cityName, "visit", "design routes", "connected by design"],
+});
+
+// LOGIN PAGE METADATA
+export const loginMetadata: Metadata = buildPageMetadata({
+  path: "/login",
+  title: `GLUE ${config.cityName} | Log In`,
+  description: "Sign in to your GLUE account with your email and password.",
+  keywords: ["GLUE", config.cityName, "login", "sign in", "design routes"],
+});
+
+// PARTICIPATE APPLY PAGE METADATA
+export const participateApplyMetadata: Metadata = buildPageMetadata({
+  path: "/participate/apply",
+  title: `GLUE ${config.cityName} | Apply to Participate`,
+  description: `Complete your GLUE ${config.cityName} participation application.`,
+  keywords: ["GLUE", config.cityName, "participate", "apply", "design routes"],
+  robots: NOINDEX_ROBOTS,
+});
+
+// RESET PASSWORD PAGE METADATA
+export const resetPasswordMetadata: Metadata = buildPageMetadata({
+  path: "/reset-password",
+  title: `GLUE ${config.cityName} | Reset Password`,
+  description: "Reset your GLUE account password.",
+  keywords: ["GLUE", config.cityName, "reset password", "account"],
+  robots: NOINDEX_ROBOTS,
+});
+
+// LEGAL PAGE METADATA
+export const privacyPolicyMetadata: Metadata = buildPageMetadata({
+  path: "/privacy-policy",
+  title: `GLUE ${config.cityName} | Privacy Policy`,
+  description: `Privacy policy for GLUE ${config.cityName} — how we collect, use, and protect your personal data.`,
+  keywords: ["GLUE", config.cityName, "privacy policy", "legal"],
+});
+
+export const termsAndConditionsMetadata: Metadata = buildPageMetadata({
+  path: "/terms-and-conditions",
+  title: `GLUE ${config.cityName} | Terms and Conditions`,
+  description: `General terms and conditions for GLUE ${config.cityName} participation and platform use.`,
+  keywords: ["GLUE", config.cityName, "terms and conditions", "legal"],
+});
+
+export const imprintMetadata: Metadata = buildPageMetadata({
+  path: "/imprint",
+  title: `GLUE ${config.cityName} | Imprint`,
+  description: `Legal imprint and company information for GLUE ${config.cityName}.`,
+  keywords: ["GLUE", config.cityName, "imprint", "legal"],
+});

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { fetchMainLinks } from "@/lib/main/get-main-links";
 
 import type { MainSectionData } from "@/schemas/mainSchema";
 import type { EventDay } from "@/schemas/eventSchemas";
@@ -36,28 +35,13 @@ export async function GET() {
       eventsDays = { data, error };
     }
 
-    const [
-      { data: pressKitLinks, error: pressKitLinksError },
-      mainLinks,
-    ] = await Promise.all([
-      supabase.from("press_kit_links").select(),
-      fetchMainLinks(),
-    ]);
-
     if (eventsDays.error) {
       throw new Error(
         `Error fetching events_days: ${eventsDays.error.message}`
       );
     }
 
-    if (pressKitLinksError) {
-      throw new Error(
-        `Error fetching press_kit_links: ${pressKitLinksError.message}`
-      );
-    }
-
     const eventsDaysData = eventsDays.data || [];
-    const pressKitLinksData = pressKitLinks ?? [];
 
     const events_days: EventDay[] = eventsDaysData.map((day) => ({
       dayId: day.dayId,
@@ -67,15 +51,7 @@ export async function GET() {
 
     const formattedData: MainSectionData = {
       eventDays: events_days,
-      pressKitLinks: {
-        pressKitLinks: pressKitLinksData.map(({ id, link, description }) => ({
-          id,
-          link,
-          description,
-        })),
-      },
       currentTourStatus: currentTourStatus as "new" | "older",
-      mainLinks,
     };
 
     return NextResponse.json(formattedData);

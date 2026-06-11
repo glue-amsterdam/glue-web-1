@@ -21,7 +21,7 @@ import {
 import { mutate } from "swr";
 import { useRouter } from "next/navigation";
 import { createSubmitHandler } from "@/utils/form-helpers";
-import { RichTextEditor } from "@/app/components/editor";
+import { RichTextEditor } from "@/components/editor";
 import { ColorPicker } from "@/components/ui/color-picker";
 
 const mainInfoSchema = z.object({

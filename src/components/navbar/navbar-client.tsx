@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useState, type ReactNode } from "react";
 
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { SignUpNavLink } from "@/components/sign-up/sign-up-nav-link";
 import { fetchNavbarIdentity } from "@/lib/users/fetch-navbar-identity";
 import type { NavbarIdentity } from "@/lib/users/get-navbar-identity";

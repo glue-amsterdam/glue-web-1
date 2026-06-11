@@ -26,17 +26,7 @@ const mainSection: MainSectionData = {
       label: "Sunday",
     },
   ],
-  pressKitLinks: {
-    pressKitLinks: [
-      {
-        id: 1,
-        link: "https://www.example.com",
-        description: "Example description",
-      },
-    ],
-  },
   currentTourStatus: "new" as const,
-  mainLinks: [],
 };
 
 function transformApiData(data: ApiMainSectionData): MainSectionData {
@@ -46,24 +36,9 @@ function transformApiData(data: ApiMainSectionData): MainSectionData {
     date: day.date || null,
   }));
 
-  const transformedPressKitLinks = {
-    pressKitLinks: (data.pressKitLinks?.pressKitLinks || []).map((link) => ({
-      id: link.id,
-      link: link.link || "",
-      description: link.description || null,
-    })),
-  };
-
-  const transformedMainLinks = (data.mainLinks ?? []).map((item) => ({
-    platform: item.platform,
-    link: item.link,
-  }));
-
   return {
     eventDays: transformedEventDays,
-    pressKitLinks: transformedPressKitLinks,
     currentTourStatus: (data.currentTourStatus as "new" | "older") || "new",
-    mainLinks: transformedMainLinks,
   };
 }
 

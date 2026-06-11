@@ -3,12 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { PlanType } from "@/schemas/plansSchema";
-import { InvoiceForm, type InvoiceFormData } from "@/app/signup-0.1/InvoiceFormData";
-import {
-  ParticipantExtraDataForm,
-  type ParticipantExtraDataFormData,
-} from "@/app/signup-0.1/ParticipantExtraData";
-import { MapInfoForm } from "@/app/signup-0.1/MapInfoForm";
+import { InvoiceStep } from "@/components/participate/invoice-step";
+import type { InvoiceDataType } from "@/schemas/invoiceSchemas";
+import { ParticipantExtraDataStep } from "@/components/participate/participant-extra-data-step";
+import type { ParticipantExtraDataFormData } from "@/schemas/participantExtraDataSchema";
+import { MapInfoStep } from "@/components/participate/map-info-step";
 import type { MapInfo } from "@/schemas/mapInfoSchemas";
 import {
   VisitorAccountStep,
@@ -44,7 +43,7 @@ export const ParticipationWizard = ({
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [invoiceData, setInvoiceData] = useState<InvoiceFormData | null>(
+  const [invoiceData, setInvoiceData] = useState<InvoiceDataType | null>(
     formContext.initialValues.invoice
   );
   const [extraData, setExtraData] = useState<ParticipantExtraDataFormData | null>(
@@ -70,7 +69,7 @@ export const ParticipationWizard = ({
   };
 
   const submitReactivation = async (
-    invoice: InvoiceFormData,
+    invoice: InvoiceDataType,
     extra: ParticipantExtraDataFormData,
     map: MapInfo
   ) => {
@@ -215,11 +214,11 @@ export const ParticipationWizard = ({
   };
 
   return (
-    <MainContainer className="pt-[160px] lg:pt-[195px] pb-[80px]">
+    <MainContainer className="pt-[160px] lg:pt-[122px] lg:pb-[80px]">
       {step === 1 && (
         <>
           <ParticipationPrefilledHint show={sectionStatus.invoice === "complete"} />
-          <InvoiceForm
+          <InvoiceStep
             defaultValues={invoiceData ?? undefined}
             onSubmit={(data) => {
               setInvoiceData(data);
@@ -232,7 +231,7 @@ export const ParticipationWizard = ({
       {step === 2 && (
         <>
           <ParticipationPrefilledHint show={sectionStatus.extra === "complete"} />
-          <ParticipantExtraDataForm
+          <ParticipantExtraDataStep
             defaultValues={extraData ?? undefined}
             onSubmit={(data) => {
               setExtraData(data);
@@ -245,7 +244,7 @@ export const ParticipationWizard = ({
       {step === 3 && (
         <>
           <ParticipationPrefilledHint show={sectionStatus.map === "complete"} />
-          <MapInfoForm
+          <MapInfoStep
             defaultValues={mapInfo ?? undefined}
             onSubmit={handleMapSubmit}
             onBack={handleBack}
@@ -264,6 +263,7 @@ export const ParticipationWizard = ({
           initialValues={accountData ?? undefined}
           onSubmit={handleAccountSubmit}
           onBack={handleBack}
+          backLabel="Back"
           isSubmitting={loading}
           loadingMessage="Submitting your application…"
           termsContent={termsContent}

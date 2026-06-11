@@ -1,10 +1,22 @@
 import { notFound, redirect } from "next/navigation";
 import { EditRouteForm } from "@/app/dashboard/[userId]/routes/[routeId]/edit-route-form";
+import { generateDashboardSectionMetadata } from "@/lib/metadata/build-dashboard-metadata";
 import { getIsPlatformMod } from "@/lib/permissions/get-is-mod";
 import { getRouteById } from "@/lib/routes/get-route-by-id";
 import { getMapLocationsList } from "@/lib/routes/get-map-locations-list";
 import { getRouteZones } from "@/lib/routes/get-route-zones";
 import { createClient } from "@/utils/supabase/server";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ userId: string; routeId: string }>;
+}): Promise<Metadata> {
+  const { userId, routeId } = await params;
+  const route = await getRouteById(routeId);
+  return generateDashboardSectionMetadata(userId, route?.name ?? "Edit Route");
+}
 
 export default async function EditRoutePage({
   params,

@@ -23,7 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { RichTextEditor } from "@/app/components/editor";
+import { RichTextEditor } from "@/components/editor";
 import { Plus, Trash2 } from "lucide-react";
 import { ABOUT_BLOCK_IDS } from "@/schemas/aboutPageSchema";
 

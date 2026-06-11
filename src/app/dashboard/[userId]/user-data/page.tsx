@@ -1,10 +1,19 @@
 import { getDashboardHomePath } from "@/lib/users/get-dashboard-home-path";
+import { generateDashboardSectionMetadata } from "@/lib/metadata/build-dashboard-metadata";
 import { createClient } from "@/utils/supabase/server";
 import { notFound, redirect } from "next/navigation";
+import type { Metadata } from "next";
 
 const showLegacyRedirect = true;
 
-
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}): Promise<Metadata> {
+  const { userId } = await params;
+  return generateDashboardSectionMetadata(userId, "User Data");
+}
 
 export default async function UserDataLegacyRedirectPage({
   params,

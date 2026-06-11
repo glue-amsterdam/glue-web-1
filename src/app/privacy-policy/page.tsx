@@ -1,14 +1,12 @@
 import { sanitizeHtml } from "@/lib/sanitize-html";
+import { privacyPolicyMetadata } from "@/lib/metadata";
 import CookieBloock from "./components/cookie-block";
 import MainContainer from "@/components/main-container";
 import BottomBlock from "@/components/bottom-block";
+import type { Metadata } from "next";
 
 
-export const metadata = {
-  title: "Privacy Policy - Cookie Usage",
-  description:
-    "Our privacy policy regarding the use of cookies on our website.",
-};
+export const metadata: Metadata = privacyPolicyMetadata;
 
 const privacyPolicyContent = {
   title: "Privacy Policy - Cookie Usage",

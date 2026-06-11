@@ -2,7 +2,7 @@
 
 import { useCallback, useId } from "react";
 import { EVENT_TYPES } from "@/constants";
-import { useEventsDays } from "@/app/context/MainContext";
+import { useEventsDays } from "@/context/MainContext";
 import { useDebouncedUrlSearch } from "@/hooks/useDebouncedUrlSearch";
 import { useProgramFiltersFromUrl } from "@/hooks/useProgramFiltersFromUrl";
 import { useFilterPanel } from "@/hooks/useFilterPanel";

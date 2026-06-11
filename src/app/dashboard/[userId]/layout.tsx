@@ -5,8 +5,21 @@ import { DashboardParticipateInvite } from "@/components/dashboard/dashboard-par
 import MainContainer from "@/components/main-container";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { getDashboardAuth } from "@/lib/dashboard/get-dashboard-auth";
-import { createClient } from "@/utils/supabase/server";
+import {
+  generateDashboardBaseMetadata,
+  getDashboardSubjectProfile,
+} from "@/lib/metadata/build-dashboard-metadata";
+import type { Metadata } from "next";
 import React from "react";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}): Promise<Metadata> {
+  const { userId: targetUserId } = await params;
+  return generateDashboardBaseMetadata(targetUserId);
+}
 
 export default async function DashboardLayout({
   params,
@@ -30,30 +43,9 @@ export default async function DashboardLayout({
     );
   }
 
-  let targetParticipantName: string | null = null;
-  let targetParticipantSlug: string | null = null;
-
-  if (auth.isMod) {
-    const supabase = await createClient();
-    const [targetUserInfoRes, targetParticipantDetailsRes] = await Promise.all([
-      supabase
-        .from("user_info")
-        .select("user_name")
-        .eq("user_id", targetUserId)
-        .maybeSingle(),
-      supabase
-        .from("participant_details")
-        .select("slug, display_name")
-        .eq("user_id", targetUserId)
-        .maybeSingle(),
-    ]);
-
-    targetParticipantName =
-      targetParticipantDetailsRes.data?.display_name ??
-      targetUserInfoRes.data?.user_name ??
-      null;
-    targetParticipantSlug = targetParticipantDetailsRes.data?.slug ?? null;
-  }
+  const subjectProfile = auth.isMod
+    ? await getDashboardSubjectProfile(targetUserId)
+    : null;
 
   const isOwnProfile = auth.loggedInUserId === targetUserId;
   const showParticipateInvite =
@@ -81,8 +73,8 @@ export default async function DashboardLayout({
           is_active={auth.is_active}
           targetUserId={targetUserId}
           loggedInUserId={auth.loggedInUserId}
-          targetParticipantName={targetParticipantName}
-          targetParticipantSlug={targetParticipantSlug}
+          targetParticipantName={subjectProfile?.name ?? null}
+          targetParticipantSlug={subjectProfile?.slug ?? null}
         />
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain py-4">
           <DashboardPendingGate

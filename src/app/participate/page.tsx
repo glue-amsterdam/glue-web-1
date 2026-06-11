@@ -5,12 +5,16 @@ import MainContainer from '@/components/main-container'
 import ParticipatePlanCardView from '@/components/participate/participate-plan-card';
 import Separator from '@/components/separator';
 import YearNumbersSection from '@/components/yearly-sections/year-numbers-section';
+import { participateMetadata } from '@/lib/metadata';
 import { getParticipationEligibility } from '@/lib/participate/get-participation-eligibility';
 import { getCachedParticipatePageData } from '@/lib/participate/get-participate-plans';
 import { TEXT_SECTION_REVALIDATE_SECONDS } from '@/lib/text-sections/types';
 import { getCachedLatestYearNumbers } from '@/lib/year-numbers/cached-year-numbers';
 import { formatYearNumbersTitle } from '@/lib/year-numbers/format-year-numbers-title';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = participateMetadata;
 
 export const revalidate = TEXT_SECTION_REVALIDATE_SECONDS;
 

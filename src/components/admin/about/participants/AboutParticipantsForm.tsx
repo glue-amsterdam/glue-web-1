@@ -21,7 +21,7 @@ import {
 } from "@/schemas/participantsAdminSchema";
 import { mutate } from "swr";
 import { Switch } from "@/components/ui/switch";
-import { RichTextEditor } from "@/app/components/editor";
+import { RichTextEditor } from "@/components/editor";
 import { Input } from "@/components/ui/input";
 
 function AboutParticipantsForm({

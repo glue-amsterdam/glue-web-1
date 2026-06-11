@@ -181,42 +181,42 @@ const LogoImageContent: React.FC<{
   photoId,
   sizes = "(max-width: 768px) 100vw, 80vw",
 }) => {
-  if (!groupPhotoUrl) return null;
+    if (!groupPhotoUrl) return null;
 
-  return (
-    <>
-      <HomeLogo
-        lettersContainerRef={refs.lettersContainerRef}
-        g_letterRef={refs.g_letterRef}
-        l_letterRef={refs.l_letterRef}
-        u_letterRef={refs.u_letterRef}
-        e_letterRef={refs.e_letterRef}
-        gl_line={refs.gl_line}
-        lu_line={refs.lu_line}
-        ue_line={refs.ue_line}
-        eg_line={refs.eg_line}
-        className="absolute inset-0 z-10"
-        size="w-[95%] h-[90%]"
-      />
-      <Image
-        id={photoId}
-        src={groupPhotoUrl || "/placeholder.svg"}
-        alt={`Group photo for year ${selectedYear}`}
-        width={1920}
-        height={1080}
-        quality={95}
-        sizes={sizes}
-        className="object-cover w-full h-full absolute inset-0 z-0 transition-transform duration-300"
-        style={{
-          objectPosition: "center",
-          width: "100%",
-          height: "100%",
-        }}
-        priority
-      />
-    </>
-  );
-};
+    return (
+      <>
+        <HomeLogo
+          lettersContainerRef={refs.lettersContainerRef}
+          g_letterRef={refs.g_letterRef}
+          l_letterRef={refs.l_letterRef}
+          u_letterRef={refs.u_letterRef}
+          e_letterRef={refs.e_letterRef}
+          gl_line={refs.gl_line}
+          lu_line={refs.lu_line}
+          ue_line={refs.ue_line}
+          eg_line={refs.eg_line}
+          className="absolute inset-0 z-10"
+          size="w-[95%] h-[90%]"
+        />
+        <Image
+          id={photoId}
+          src={groupPhotoUrl || "/placeholder.svg"}
+          alt={`Group photo for year ${selectedYear}`}
+          width={1920}
+          height={1080}
+          quality={95}
+          sizes={sizes}
+          className="object-cover w-full h-full absolute inset-0 z-0 transition-transform duration-300"
+          style={{
+            objectPosition: "center",
+            width: "100%",
+            height: "100%",
+          }}
+          priority
+        />
+      </>
+    );
+  };
 
 const CuratedStickySection: React.FC<CuratedStickySectionProps> = ({
   headerData,
@@ -380,9 +380,8 @@ const CuratedStickySection: React.FC<CuratedStickySectionProps> = ({
 
         {/* Mobile Drawer */}
         <div
-          className={`absolute top-0 left-0 h-full w-80 max-w-[85vw] z-40 transform transition-transform duration-300 ease-in-out md:hidden ${
-            isMobileDrawerOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          className={`absolute top-0 left-0 h-full w-80 max-w-[85vw] z-40 transform transition-transform duration-300 ease-in-out md:hidden ${isMobileDrawerOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
         >
           <div className="h-full w-full relative">
             {/* Close Button */}

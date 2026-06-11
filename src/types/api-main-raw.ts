@@ -22,7 +22,5 @@ export type ApiMainLinks = {
 
 export type ApiMainSectionData = {
   eventDays?: ApiEventDay[];
-  pressKitLinks?: ApiPressKitLinks;
   currentTourStatus?: "new" | "older";
-  mainLinks?: ApiMainLinks["mainLinks"];
 };

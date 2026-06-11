@@ -1,6 +1,17 @@
+import type { Metadata } from "next";
 import BigButton from "@/components/big-button";
 import HeadlineWCross from "@/components/headline-w-cross";
 import MainContainer from "@/components/main-container";
+import { config } from "@/config";
+
+export const metadata: Metadata = {
+  title: `GLUE ${config.cityName} | Hub not found`,
+  description: `This exhibitor hub may no longer be available at GLUE ${config.cityName}.`,
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function ExhibitorHubNotFound() {
   return (

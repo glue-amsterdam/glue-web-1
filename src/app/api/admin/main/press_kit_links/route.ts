@@ -5,6 +5,7 @@ import {
   pressKitLinksSchema,
   pressKitLinksFormSchema,
 } from "@/schemas/mainSchema";
+import { revalidatePressKitLinksCache } from "@/lib/main/revalidate-press-kit-links-cache";
 
 export async function GET() {
   try {
@@ -65,6 +66,8 @@ export async function POST(request: Request) {
       throw error;
     }
 
+    revalidatePressKitLinksCache();
+
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error creating press kit link:", error);
@@ -120,6 +123,8 @@ export async function PUT(request: Request) {
     // Validate the response against the schema
     const validatedResponse = pressKitLinksSchema.parse(response);
 
+    revalidatePressKitLinksCache();
+
     return NextResponse.json(validatedResponse);
   } catch (error) {
     console.error("Error updating press kit links:", error);
@@ -161,6 +166,8 @@ export async function DELETE(request: Request) {
     if (error) {
       throw error;
     }
+
+    revalidatePressKitLinksCache();
 
     return NextResponse.json({ success: true });
   } catch (error) {

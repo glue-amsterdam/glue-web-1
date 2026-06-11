@@ -2,14 +2,10 @@
 
 import type React from "react";
 import { useRef, useState } from "react";
-import {
-  useController,
-  type Control,
-  type UseFormSetValue,
-} from "react-hook-form";
+import { useController, type Control } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { RichTextEditor } from "@/app/components/editor";
+import { RichTextEditor } from "@/components/editor";
 import type { CitizensSection } from "@/schemas/citizenSchema";
 import { uploadImage } from "@/utils/supabase/storage/client";
 import { useToast } from "@/hooks/use-toast";
@@ -23,14 +19,12 @@ import {
 
 interface CitizenFormProps {
   control: Control<CitizensSection>;
-  setValue: UseFormSetValue<CitizensSection>;
   selectedYear: string;
   index: number;
 }
 
 export function AboutCitForm({
   control,
-  setValue,
   selectedYear,
   index,
 }: CitizenFormProps) {
@@ -62,6 +56,11 @@ export function AboutCitForm({
 
   const { field: oldImageUrlField } = useController({
     name: `citizensByYear.${selectedYear}.${index}.oldImageUrl`,
+    control,
+  });
+
+  const { field: imageNameField } = useController({
+    name: `citizensByYear.${selectedYear}.${index}.image_name`,
     control,
   });
 
@@ -97,10 +96,7 @@ export function AboutCitForm({
 
       oldImageUrlField.onChange(citizen.image_url);
       imageUrlField.onChange(imageUrl);
-      setValue(
-        `citizensByYear.${selectedYear}.${index}.image_name`,
-        file.name
-      );
+      imageNameField.onChange(file.name);
       fileField.onChange(file);
 
       toast({

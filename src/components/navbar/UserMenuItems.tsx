@@ -2,7 +2,7 @@
 
 import { Suspense, useState, type Dispatch, type SetStateAction } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { User } from "@supabase/supabase-js";
 import LoginForm from "@/app/components/login-form/login-form";
 import { SignUpNavLink } from "@/components/sign-up/sign-up-nav-link";

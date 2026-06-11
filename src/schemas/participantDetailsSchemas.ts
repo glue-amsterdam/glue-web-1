@@ -33,6 +33,7 @@ export const reactivationNotesSchema = z
     notes: z.string().optional().nullable(),
     exhibition_space_preference: z.string().optional().nullable(),
     termsAccepted: z.boolean().optional(),
+    short_description: z.string().optional().nullable(),
   })
   .merge(invoiceDataTypeSchema.partial())
   .merge(participantExtraDataSchema.partial());
@@ -54,10 +55,16 @@ export type ReactivationRequestSubmission = z.infer<
 
 export const participantDetailsSchema = z.object({
   user_id: z.string().uuid(),
-  short_description: z
-    .string()
-    .min(1, "Short description is required")
-    .max(200, "Short description must be less than 200 characters"),
+  short_description: z.preprocess(
+    emptyToNull,
+    z
+      .union([
+        z.string().max(200, "Short description must be less than 200 characters"),
+        z.null(),
+      ])
+      .optional()
+      .nullable()
+  ),
   description: z
     .string()
     .max(5000, "Description must be less than 5000 characters")

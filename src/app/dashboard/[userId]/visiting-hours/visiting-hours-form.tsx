@@ -11,7 +11,7 @@ import {
   VisitingHoursDays,
 } from "@/schemas/visitingHoursSchema";
 import { PlusIcon, XIcon } from "lucide-react";
-import { useEventsDays } from "@/app/context/MainContext";
+import { useEventsDays } from "@/context/MainContext";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { createSubmitHandler } from "@/utils/form-helpers";

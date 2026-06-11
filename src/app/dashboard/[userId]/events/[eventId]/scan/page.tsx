@@ -1,4 +1,20 @@
 import ScanCheckInClient from "@/app/dashboard/[userId]/events/[eventId]/scan/scan-checkin-client";
+import { getParticipantEventById } from "@/lib/events/get-participant-event-by-id";
+import { generateDashboardSectionMetadata } from "@/lib/metadata/build-dashboard-metadata";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ userId: string; eventId: string }>;
+}): Promise<Metadata> {
+  const { userId, eventId } = await params;
+  const event = await getParticipantEventById(userId, eventId);
+  const sectionLabel = event?.title
+    ? `Scan Check-Ins — ${event.title}`
+    : "Scan Check-Ins";
+  return generateDashboardSectionMetadata(userId, sectionLabel);
+}
 
 export default async function EventScanPage({
   params,

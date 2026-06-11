@@ -1,8 +1,10 @@
 import DashboardBodyScrollLock from "@/app/dashboard/components/dashboard-body-scroll-lock";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "GLUE Dashboard",
-  description: "Admin dashboard for GLUE users",
+export const metadata: Metadata = {
+  title: "GLUE dashboard",
+  description: "Manage your GLUE profile and participation settings.",
+  robots: { index: false, follow: false },
 };
 
 export default async function DashboardLayout({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEventsDays } from "@/app/context/MainContext";
+import { useEventsDays } from "@/context/MainContext";
 import { ParticipantClientResponse } from "@/types/api-visible-user";
 import { formatUrl } from "@/utils/formatUrl";
 import { useGSAP } from "@gsap/react";

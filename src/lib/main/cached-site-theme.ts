@@ -13,35 +13,14 @@ import { createPublicSupabaseClient } from "@/utils/supabase/public";
 
 const CACHE_REVALIDATE = false as const;
 
-const DEFAULT_HOME_BACKGROUND = {
-  box1: "#10069f",
-  box2: "#230051",
-  box3: "#000000",
-  box4: "#bfb030",
-  triangle: "#e1d237",
-};
-
 export type SiteTheme = SiteThemeColors & {
-  box1: string;
-  box2: string;
-  box3: string;
-  box4: string;
-  triangle: string;
   navMenu: NavMenuItem[];
   homeTexts: HomeTextItem[];
 };
 
-const mapHomeBackgroundFromRow = (row: MainColorsDbRow | null) => ({
-  box1: row?.box1 ?? DEFAULT_HOME_BACKGROUND.box1,
-  box2: row?.box2 ?? DEFAULT_HOME_BACKGROUND.box2,
-  box3: row?.box3 ?? DEFAULT_HOME_BACKGROUND.box3,
-  box4: row?.box4 ?? DEFAULT_HOME_BACKGROUND.box4,
-  triangle: row?.triangle ?? DEFAULT_HOME_BACKGROUND.triangle,
-});
 
 const buildFallbackSiteTheme = (): SiteTheme => ({
   ...DEFAULT_SITE_THEME,
-  ...DEFAULT_HOME_BACKGROUND,
   navMenu: [],
   homeTexts: [],
 });
@@ -82,7 +61,6 @@ export const getCachedSiteTheme = unstable_cache(
 
       return {
         ...siteColors,
-        ...mapHomeBackgroundFromRow(colorsRow as MainColorsDbRow | null),
         navMenu: (menuRows ?? []).map((item) => ({
           section: item.section,
           label: item.label,

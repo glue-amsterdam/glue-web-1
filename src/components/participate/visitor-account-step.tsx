@@ -37,8 +37,8 @@ export const VisitorAccountStep = ({
   onBack,
   initialValues,
   submitError,
-  backLabel = "back",
   submitLabel = "submit application",
+  backLabel = "Already have an account, Login here.",
   submitDisabled = false,
   isSubmitting = false,
   loadingMessage = "Submitting…",
@@ -117,7 +117,8 @@ export const VisitorAccountStep = ({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-[508px] mx-auto pt-[40px] lg:pt-[60px] pb-[15px] lg:pb-[30px]" noValidate>
+    <form onSubmit={handleSubmit} className="max-w-[508px] lg:max-w-[1045px] mx-auto pt-[40px] lg:pt-[60px] pb-[15px] lg:pb-[30px]" noValidate>
+      <h1 className="title-text pb-[30px]">Create Account</h1>
       {submitError ? (
         <p
           role="alert"
@@ -126,7 +127,7 @@ export const VisitorAccountStep = ({
           {submitError}
         </p>
       ) : null}
-      <div className="flex flex-col gap-[15px] md:gap-[30px]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-[15px] lg:gap-[30px]">
         <ParticipateFormField
           label="First name"
           name="firstName"
@@ -279,8 +280,16 @@ export const VisitorAccountStep = ({
       ) : null}
 
       <div className="flex justify-between pt-[30px] gap-4">
-        <button type="button" onClick={onBack} className="base-text-size text-left max-w-[155px] lg:max-w-none hover:underline cursor-pointer">
-          Already have an account, Login here.
+        <button
+          type="button"
+          onClick={onBack}
+          className={
+            backLabel.includes("Login")
+              ? "base-text-size text-left max-w-[155px] lg:max-w-none hover:underline cursor-pointer"
+              : "base-text-size text-left hover:underline cursor-pointer"
+          }
+        >
+          {backLabel}
         </button>
         <BigButton
           as="submit"

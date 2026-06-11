@@ -48,7 +48,7 @@ const participantUserBaseSchema = z.object({
   plan_id: z.enum(["planId-2", "planId-3", "planId-4", "planId-5"]),
   plan_type: z.literal("participant"),
   invoice_data: invoiceDataCallSchema,
-  short_description: z.string(),
+  short_description: z.string().optional(),
   phone_number: z.array(z.string()).optional(),
   social_media: socialMediaLinksSchema.optional(),
   visible_email: z.array(z.string().email()).optional(),

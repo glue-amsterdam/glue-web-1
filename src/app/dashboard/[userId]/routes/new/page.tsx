@@ -1,9 +1,20 @@
 import { CreateRouteClient } from "@/app/dashboard/[userId]/routes/new/create-route-client";
+import { generateDashboardSectionMetadata } from "@/lib/metadata/build-dashboard-metadata";
 import { getIsPlatformMod } from "@/lib/permissions/get-is-mod";
 import { getMapLocationsList } from "@/lib/routes/get-map-locations-list";
 import { getRouteZones } from "@/lib/routes/get-route-zones";
 import { createClient } from "@/utils/supabase/server";
 import { notFound, redirect } from "next/navigation";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}): Promise<Metadata> {
+  const { userId } = await params;
+  return generateDashboardSectionMetadata(userId, "Create Route");
+}
 
 export default async function NewRoutePage({
   params,

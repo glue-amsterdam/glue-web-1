@@ -1,4 +1,4 @@
-import { useEventsDays } from "@/app/context/MainContext";
+import { useEventsDays } from "@/context/MainContext";
 import type { ExhibitorContactInfo } from "@/lib/participants/exhibitor-detail-types";
 import { formatUrl } from "@/utils/formatUrl";
 import Link from "next/link";

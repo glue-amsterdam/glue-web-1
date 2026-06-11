@@ -11,7 +11,7 @@ import {
 } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { ExhibitorsFilterType } from "@/lib/participants/exhibitors-filters";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useDebouncedUrlSearch } from "@/hooks/useDebouncedUrlSearch";
 import { useMapFiltersFromUrl } from "@/hooks/useMapFiltersFromUrl";
 import { useFilterPanel } from "@/hooks/useFilterPanel";

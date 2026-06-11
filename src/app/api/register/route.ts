@@ -99,7 +99,7 @@ export async function POST(request: Request) {
         .from("participant_details")
         .insert({
           user_id: realUserId,
-          short_description: validatedData.short_description,
+          short_description: validatedData.short_description ?? null,
           description: validatedData.description,
           slug: slug,
           status: validatedData.status || "pending",

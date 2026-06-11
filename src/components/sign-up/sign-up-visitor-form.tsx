@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { getCookieConsent } from "@/app/actions/cookieConsent";
 import { submitNewsletter } from "@/app/actions/newsletter";
 import {
@@ -107,7 +107,6 @@ export const SignUpVisitorForm = ({ termsContent }: SignUpVisitorFormProps) => {
         onSubmit={(data) => void handleSubmit(data)}
         onBack={handleBack}
         submitLabel={isSubmitting ? "creating…" : "create account"}
-        backLabel="back"
         submitDisabled={isSubmitting || isRedirecting}
         isSubmitting={isSubmitting || isRedirecting}
         loadingMessage="Creating your account…"

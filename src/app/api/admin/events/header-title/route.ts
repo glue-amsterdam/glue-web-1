@@ -82,7 +82,7 @@ async function updateHeaderTitle(req: Request) {
         );
       }
 
-      revalidatePath("/events");
+      revalidatePath("/program");
       revalidateProgramCache();
 
       return NextResponse.json({ header_title: insertData.header_title });
@@ -105,7 +105,7 @@ async function updateHeaderTitle(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    revalidatePath("/events");
+    revalidatePath("/program");
     revalidateProgramCache();
 
     return NextResponse.json({ header_title: data.header_title });

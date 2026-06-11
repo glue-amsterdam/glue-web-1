@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { RichTextEditor } from "@/app/components/editor";
+import { RichTextEditor } from "@/components/editor";
 import { uploadImage } from "@/utils/supabase/storage/client";
 import { config } from "@/config";
 import { Plus, Trash2 } from "lucide-react";

@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/form";
 import { mutate } from "swr";
 import { Switch } from "@/components/ui/switch";
-import { RichTextEditor } from "@/app/components/editor";
+import { RichTextEditor } from "@/components/editor";
 
 export default function SponsorHeaderForm({
   initialData,

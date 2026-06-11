@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { RichTextEditor } from "@/app/components/editor";
+import { RichTextEditor } from "@/components/editor";
 import { uploadImage } from "@/utils/supabase/storage/client";
 import { config } from "@/config";
 import { cn } from "@/lib/utils";

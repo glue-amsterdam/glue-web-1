@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 interface ParticipantDetailsRow {
   user_id: string;
   slug: string;
-  short_description: string;
+  short_description: string | null;
   description: string | null;
   status: string;
   display_name: string | null;

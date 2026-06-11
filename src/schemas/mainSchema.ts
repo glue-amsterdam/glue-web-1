@@ -158,13 +158,13 @@ export const pressKitLinksFormSchema = z.object({
   pressKitLinks: z.array(pressKitLinkFormSchema),
 });
 
+export type PressKitLink = z.infer<typeof pressKitLinkSchema>;
+
 export const tourStatusSchema = z.enum(["new", "older"]);
 
 export const mainSectionSchema = z.object({
   eventDays: z.array(eventDaySchema),
-  pressKitLinks: pressKitLinksSchema,
   currentTourStatus: tourStatusSchema,
-  mainLinks: z.array(linkItemSchema).default([]),
 });
 
 export type MainSectionData = z.infer<typeof mainSectionSchema>;

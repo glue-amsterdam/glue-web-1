@@ -10,7 +10,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import { RichTextEditor } from "@/app/components/editor";
+import { RichTextEditor } from "@/components/editor";
 import type { CitizensSectionHeader } from "@/schemas/citizenSchema";
 import { Input } from "@/components/ui/input";
 

@@ -1,4 +1,4 @@
-import type { InvoiceFormData } from "@/app/signup-0.1/InvoiceFormData";
+import type { InvoiceDataType } from "@/schemas/invoiceSchemas";
 import type { ParticipantExtraDataFormData } from "@/schemas/participantExtraDataSchema";
 import type { InvoiceData } from "@/schemas/invoiceSchemas";
 import type { MapInfo } from "@/schemas/mapInfoSchemas";
@@ -11,7 +11,7 @@ export type SectionStatus = "empty" | "complete";
 
 export const mapInvoiceRowToFormValues = (
   row: InvoiceData | null | undefined
-): InvoiceFormData | null => {
+): InvoiceDataType | null => {
   if (!row) return null;
 
   const candidate = {
@@ -33,7 +33,6 @@ export const mapParticipantDetailsToExtraFormValues = (
   if (!row) return null;
 
   const candidate = {
-    short_description: row.short_description ?? "",
     phone_numbers: row.phone_numbers ?? [],
     visible_emails: row.visible_emails ?? [],
     glue_communication_email: row.glue_communication_email ?? "",
@@ -68,7 +67,7 @@ export const mapMapInfoRowToFormValues = (
 };
 
 export const getInvoiceSectionStatus = (
-  values: InvoiceFormData | null
+  values: InvoiceDataType | null
 ): SectionStatus => (values ? "complete" : "empty");
 
 export const getExtraSectionStatus = (

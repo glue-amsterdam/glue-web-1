@@ -28,13 +28,14 @@ import { ParticipantSection } from "@/app/dashboard/[userId]/participant-details
 import { ProfileImageForm } from "@/app/dashboard/[userId]/profile-image/profile-image-form";
 import { VisitingHoursForm } from "@/app/dashboard/[userId]/visiting-hours/visiting-hours-form";
 import { InvoiceDataForm } from "@/app/dashboard/[userId]/invoice-data/invoice-data-form";
+import { PressKitDownloadSection } from "@/app/dashboard/[userId]/participant-details/press-kit-download-section";
 import type { ProfileImageRow } from "@/lib/dashboard/get-participant-profile-data";
 import type { VisitingHoursDays } from "@/schemas/visitingHoursSchema";
 import type { InvoiceData } from "@/schemas/invoiceSchemas";
+import type { PressKitLink } from "@/schemas/mainSchema";
 import Separator from "@/components/separator";
 
 const PROFILE_WATCH_FIELDS = [
-  "short_description",
   "description",
   "slug",
   "display_name",
@@ -66,6 +67,7 @@ type ParticipantDetailsFormProps = {
   profileImages: ProfileImageRow[];
   planMaxImages: number;
   plans: PlanType[];
+  pressKitLinks: PressKitLink[];
 };
 
 export function ParticipantDetailsForm({
@@ -77,6 +79,7 @@ export function ParticipantDetailsForm({
   profileImages,
   planMaxImages,
   plans,
+  pressKitLinks,
 }: ParticipantDetailsFormProps) {
   const hasExistingRecord = Boolean(participantDetails);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,7 +90,6 @@ export function ParticipantDetailsForm({
   const form = useForm<ParticipantDetailsInput, unknown, ParticipantDetails>({
     resolver: zodResolver(participantDetailsSchema),
     defaultValues: {
-      short_description: participantDetails?.short_description || "",
       description: participantDetails?.description || "",
       slug: participantDetails?.slug || "",
       status: participantDetails?.status || "pending",
@@ -246,12 +248,11 @@ export function ParticipantDetailsForm({
             </div>
           )}
 
+          <PressKitDownloadSection pressKitLinks={pressKitLinks} />
+
           <ParticipantSection title="Participant Profile">
             <BasicInfoFields readOnly={isProfileReadOnly} />
             <SlugField readOnly={isProfileReadOnly} />
-          </ParticipantSection>
-
-          <ParticipantSection title="Contact & visibility">
             <ContactFields readOnly={isProfileReadOnly} />
             <SocialMediaFields readOnly={isProfileReadOnly} />
             <div className="flex justify-center mini-padding">

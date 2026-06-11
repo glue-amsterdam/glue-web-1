@@ -19,7 +19,7 @@ export function AboutCitizenYearForm({
   onRemoveCitizen,
   fields,
 }: CitizensYearFormProps) {
-  const { control, setValue } = useFormContext<CitizensSection>();
+  const { control } = useFormContext<CitizensSection>();
   const [localFields, setLocalFields] = useState(fields);
 
   useEffect(() => {
@@ -34,7 +34,6 @@ export function AboutCitizenYearForm({
           <div key={field.id} className="relative">
             <AboutCitForm
               control={control}
-              setValue={setValue}
               index={index}
               selectedYear={selectedYear}
             />

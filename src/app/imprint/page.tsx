@@ -1,14 +1,12 @@
 import MainContainer from '@/components/main-container'
+import { imprintMetadata } from '@/lib/metadata';
 import { Metadata } from 'next'
 import { sanitizeHtml } from "@/lib/sanitize-html";
 import BottomBlock from '@/components/bottom-block';
 
 type Props = {}
 
-export const metadata: Metadata = {
-    title: 'Imprint - GLUE',
-    description: 'Imprint - GLUE',
-}
+export const metadata: Metadata = imprintMetadata;
 
 const imprintContent = {
     title: 'Imprint',

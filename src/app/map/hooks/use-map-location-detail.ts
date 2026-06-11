@@ -20,6 +20,7 @@ export const useMapLocationDetail = (
     }
 
     let cancelled = false;
+    setDetail(null);
     setIsLoading(true);
     setError(false);
 

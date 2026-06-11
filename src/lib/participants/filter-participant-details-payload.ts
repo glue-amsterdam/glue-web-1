@@ -1,7 +1,6 @@
 import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
 
 export const PARTICIPANT_WRITABLE_DETAIL_FIELDS = [
-  "short_description",
   "description",
   "slug",
   "display_name",

@@ -30,7 +30,7 @@ import {
   CarouselSection,
   carouselSectionSchema,
 } from "@/schemas/carouselSchema";
-import { RichTextEditor } from "@/app/components/editor";
+import { RichTextEditor } from "@/components/editor";
 import { ColorPicker } from "@/components/ui/color-picker";
 
 interface CarouselFormProps {

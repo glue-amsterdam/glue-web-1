@@ -1,10 +1,6 @@
 import { z } from "zod";
 
 export const participantExtraDataSchema = z.object({
-  short_description: z
-    .string()
-    .min(1, "Short description is required")
-    .max(500, "Short description must be 500 characters or less"),
   phone_numbers: z
     .array(z.string())
     .max(3, "Only 3 items max")
