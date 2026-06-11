@@ -39,7 +39,7 @@ export async function PUT(
     } catch (err) {
       if (err instanceof ZodError) {
         return NextResponse.json(
-          { error: "Invalid participantDetails", details: err.errors },
+          { error: "Invalid participantDetails", details: err.issues },
           { status: 400 }
         );
       }
@@ -50,7 +50,7 @@ export async function PUT(
     } catch (err) {
       if (err instanceof ZodError) {
         return NextResponse.json(
-          { error: "Invalid mapInfo", details: err.errors },
+          { error: "Invalid mapInfo", details: err.issues },
           { status: 400 }
         );
       }
@@ -150,7 +150,7 @@ export async function PUT(
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Invalid data", details: error.errors },
+        { error: "Invalid data", details: error.issues },
         { status: 400 }
       );
     }

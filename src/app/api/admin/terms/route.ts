@@ -91,7 +91,7 @@ export async function PUT(request: Request) {
     console.error("Error in PUT /api/admin/terms:", error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Validation error", details: error.errors },
+        { error: "Validation error", details: error.issues },
         { status: 400 }
       );
     }

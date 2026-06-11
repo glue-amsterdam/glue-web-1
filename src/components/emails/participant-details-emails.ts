@@ -1,5 +1,3 @@
-import { config } from "@/config";
-
 export const sendDeclineReactivationEmail = (
   user_name: string,
   email: string
@@ -16,9 +14,7 @@ const baseParticipantAcceptedEmail = `<p>Congratulations! Your application to be
 
 export const sendParticipantAcceptedEmail = (email: string) => `
           <h1>Hello ${email}</h1>
-          ${(
-    config.baseParticipantAcceptedEmail || baseParticipantAcceptedEmail
-  ).replace(/\\n/g, "")}
+          ${baseParticipantAcceptedEmail.replace(/\\n/g, "")}
         `;
 
 export const sendReactivationApprovedEmail = (

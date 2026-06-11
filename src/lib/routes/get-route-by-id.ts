@@ -1,7 +1,15 @@
 import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 import { resolveRouteZoneName } from "@/lib/routes/resolve-route-zone-name";
-import type { IndividualRoute } from "@/schemas/routeSchema";
+import type { IndividualRoute, RouteDot } from "@/schemas/routeSchema";
 import { createClient } from "@/utils/supabase/server";
+
+const getMapInfoId = (
+  mapInfo: { id: string } | { id: string }[] | null | undefined
+): string => {
+  if (!mapInfo) return "";
+  if (Array.isArray(mapInfo)) return mapInfo[0]?.id ?? "";
+  return mapInfo.id ?? "";
+};
 
 export const getRouteById = async (
   routeId: string
@@ -77,13 +85,32 @@ export const getRouteById = async (
     ])
   );
 
-  const processedRouteDots = routeData.route_dots.map((dot) => ({
-    ...dot,
-    map_info_id: dot.map_info?.id ?? "",
-    route_dot_name: dot.hub_id
-      ? hubMap.get(dot.hub_id) || "Unknown Hub"
-      : displayNameById.get(dot.user_id) || "Unknown User",
-  }));
+  const processedRouteDots: RouteDot[] = routeData.route_dots.map((dot) => {
+    const rawMapInfo = dot.map_info;
+    const normalizedMapInfo = Array.isArray(rawMapInfo)
+      ? rawMapInfo[0]
+      : rawMapInfo;
+
+    return {
+      id: dot.id,
+      route_id: routeData.id,
+      map_info_id: getMapInfoId(dot.map_info),
+      user_id: dot.user_id,
+      hub_id: dot.hub_id,
+      route_step: dot.route_step,
+      ...(normalizedMapInfo
+        ? {
+            map_info: {
+              id: normalizedMapInfo.id,
+              formatted_address: normalizedMapInfo.formatted_address,
+            },
+          }
+        : {}),
+      route_dot_name: dot.hub_id
+        ? hubMap.get(dot.hub_id) || "Unknown Hub"
+        : displayNameById.get(dot.user_id) || "Unknown User",
+    };
+  });
 
   return {
     id: routeData.id,

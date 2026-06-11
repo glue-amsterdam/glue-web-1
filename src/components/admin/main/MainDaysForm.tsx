@@ -249,7 +249,6 @@ export default function MainDaysForm({ initialData, onDataUpdated }: EventDaysFo
                             new Date(watchEventDays[index]?.date || "")
                           )
                         }
-                        initialFocus
                       />
                     </PopoverContent>
                   </Popover>

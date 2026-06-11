@@ -1,6 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
-import { loadOrganizerProfiles } from "@/lib/participants/load-organizer-profiles";
+import {
+  loadOrganizerProfiles,
+  type OrganizerProfile,
+} from "@/lib/participants/load-organizer-profiles";
 import type { TourStatus } from "@/lib/participants/exhibitor-visibility";
 import type { EventType } from "@/schemas/eventSchemas";
 import type { ProgramDetail } from "./program-types";
@@ -142,13 +145,13 @@ export const getProgramDetail = async (
       type: badge.type,
       displayNumber: badge.displayNumber,
     },
-    coOrganizers: (event.co_organizers ?? [])
-      .map((userId: string) => organizerProfiles.get(userId))
-      .filter(Boolean)
+    coOrganizers: ((event.co_organizers ?? []) as string[])
+      .map((userId) => organizerProfiles.get(userId))
+      .filter((co): co is OrganizerProfile => Boolean(co))
       .map((co) => ({
-        userId: co!.user_id,
-        userName: co!.user_name,
-        slug: slugFromEmbed(co!.participant_details),
+        userId: co.user_id,
+        userName: co.user_name,
+        slug: slugFromEmbed(co.participant_details),
       })),
     rsvp: event.rsvp ?? false,
   };

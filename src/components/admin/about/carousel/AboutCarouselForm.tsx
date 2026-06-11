@@ -27,7 +27,8 @@ import {
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import {
-  CarouselSection,
+  type CarouselSection,
+  type CarouselSectionInput,
   carouselSectionSchema,
 } from "@/schemas/carouselSchema";
 import { RichTextEditor } from "@/components/editor";
@@ -48,7 +49,7 @@ export default function AboutCarouselForm({ initialData }: CarouselFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const handleUploadProgress = createUploadProgressHandler(setUploadState);
 
-  const methods = useForm<CarouselSection>({
+  const methods = useForm<CarouselSectionInput>({
     resolver: zodResolver(carouselSectionSchema),
     defaultValues: initialData,
   });
@@ -110,7 +111,7 @@ export default function AboutCarouselForm({ initialData }: CarouselFormProps) {
     remove(index);
   };
 
-  const onSubmit = async (data: CarouselSection) => {
+  const onSubmit = async (data: CarouselSectionInput) => {
     setIsSubmitting(true);
     try {
       // Upload new images and update existing ones

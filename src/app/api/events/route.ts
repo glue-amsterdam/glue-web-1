@@ -4,6 +4,7 @@ import { EventType } from "@/schemas/eventSchemas";
 import {
   collectOrganizerUserIds,
   loadOrganizerProfiles,
+  type OrganizerProfile,
 } from "@/lib/participants/load-organizer-profiles";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
@@ -179,13 +180,13 @@ export async function GET(request: Request) {
         id: event.location?.id || "",
         formatted_address: event.location?.formatted_address || "",
       },
-      coOrganizers: (event.co_organizers ?? [])
-        .map((userId: string) => organizerProfiles.get(userId))
-        .filter(Boolean)
+      coOrganizers: ((event.co_organizers ?? []) as string[])
+        .map((userId) => organizerProfiles.get(userId))
+        .filter((co): co is OrganizerProfile => Boolean(co))
         .map((co) => ({
-          user_id: co!.user_id,
-          user_name: co!.user_name,
-          slug: slugFromEmbed(co!.participant_details),
+          user_id: co.user_id,
+          user_name: co.user_name,
+          slug: slugFromEmbed(co.participant_details),
         })),
       rsvp: event.rsvp ?? false,
       rsvpMessage: event.rsvp_message || "",

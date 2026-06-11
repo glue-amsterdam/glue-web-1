@@ -4,12 +4,12 @@ import CmsIntroSection from "@/components/cms/cms-intro-section";
 import MainContainer from "@/components/main-container";
 import Separator from "@/components/separator";
 import { visitMetadata } from "@/lib/metadata";
-import { TEXT_SECTION_REVALIDATE_SECONDS } from "@/lib/text-sections/types";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = visitMetadata;
 
-export const revalidate = TEXT_SECTION_REVALIDATE_SECONDS;
+/** Must match TEXT_SECTION_REVALIDATE_SECONDS (segment config requires a literal). */
+export const revalidate = 5_184_000;
 
 const Page = () => {
   return (

@@ -32,7 +32,7 @@ export const curatedHeaderSchema = z.object({
 
 export const curatedResponseSchema = z.object({
   headerData: curatedHeaderSchema,
-  curatedParticipants: z.record(z.array(curatedParticipantSchema)),
+  curatedParticipants: z.record(z.string(), z.array(curatedParticipantSchema)),
 });
 
 export type CuratedParticipant = z.infer<typeof curatedParticipantSchema>;

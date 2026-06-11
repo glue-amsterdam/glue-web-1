@@ -1,4 +1,4 @@
-import { useSanitizedHTML } from '@/app/hooks/useSanitizedHTML';
+import { useSanitizedHTML } from "@/hooks/useSanitizedHTML";
 import { ClientCitizen } from '@/schemas/citizenSchema';
 import { AnimatePresence, motion } from 'framer-motion'
 

@@ -121,7 +121,7 @@ async function handleRequest(
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Invalid map info", details: error.errors },
+        { error: "Invalid map info", details: error.issues },
         { status: 400 }
       );
     }

@@ -8,7 +8,6 @@ import YearNumbersSection from '@/components/yearly-sections/year-numbers-sectio
 import { participateMetadata } from '@/lib/metadata';
 import { getParticipationEligibility } from '@/lib/participate/get-participation-eligibility';
 import { getCachedParticipatePageData } from '@/lib/participate/get-participate-plans';
-import { TEXT_SECTION_REVALIDATE_SECONDS } from '@/lib/text-sections/types';
 import { getCachedLatestYearNumbers } from '@/lib/year-numbers/cached-year-numbers';
 import { formatYearNumbersTitle } from '@/lib/year-numbers/format-year-numbers-title';
 import Link from 'next/link';
@@ -16,7 +15,8 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = participateMetadata;
 
-export const revalidate = TEXT_SECTION_REVALIDATE_SECONDS;
+/** Must match TEXT_SECTION_REVALIDATE_SECONDS (segment config requires a literal). */
+export const revalidate = 5_184_000;
 
 const ApplicationClosed = ({ message }: { message: string }) => {
     return (

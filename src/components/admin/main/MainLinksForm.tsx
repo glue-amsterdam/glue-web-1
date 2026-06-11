@@ -96,7 +96,7 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
             <div className="grow space-y-2">
               <Input
                 {...methods.register(`mainLinks.${index}.link`)}
-                defaultValue={field.link}
+                defaultValue={field.link ?? ""}
                 placeholder="Link URL"
                 className="dashboard-input"
               />

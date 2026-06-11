@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import CreativeCitizensImage from "./creative-citizens-image";
 import CreativeCitizensTitle from "./creative-citizens-title";
 import CreativeCitizensDescription from "./creative-citizens-description";
-import { useSanitizedHTML } from "@/app/hooks/useSanitizedHTML";
+import { useSanitizedHTML } from "@/hooks/useSanitizedHTML";
 
 
 type Props = {

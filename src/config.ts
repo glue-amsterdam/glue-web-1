@@ -24,4 +24,13 @@ baseUrl => The base URL of the website
 baseApiUrl => The base API URL of the website
 adminEmails => The admin emails of the website
 baseEmail => The base email of the website
+
+cityBoundWest => The west boundary of the city
+cityBoundEast => The east boundary of the city
+cityBoundNorth => The north boundary of the city
+cityBoundSouth => The south boundary of the city
+cityCenterLng => The longitude of the city center
+cityCenterLat => The latitude of the city center
+countryPreFix => The country prefix of the website
+mapboxAccesToken => The Mapbox access token
 */

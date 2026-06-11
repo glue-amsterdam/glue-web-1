@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import type { AdminUserDetail } from "@/types/admin-user";
 import { useEventsDays } from "@/context/MainContext";
-import { useSanitizedHTML } from "@/app/hooks/useSanitizedHTML";
+import { useSanitizedHTML } from "@/hooks/useSanitizedHTML";
 
 type Props = {
   detail: AdminUserDetail;

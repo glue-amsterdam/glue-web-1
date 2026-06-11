@@ -1,6 +1,6 @@
 "use client";
 
-import { useSanitizedHTML } from "@/app/hooks/useSanitizedHTML";
+import { useSanitizedHTML } from "@/hooks/useSanitizedHTML";
 
 type Props = {
   html: string;

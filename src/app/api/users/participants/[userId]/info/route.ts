@@ -99,7 +99,7 @@ export async function PUT(
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Invalid user data", details: error.errors },
+        { error: "Invalid user data", details: error.issues },
         { status: 400 }
       );
     }

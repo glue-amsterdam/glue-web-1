@@ -28,9 +28,6 @@ import {
   Hash,
 } from "lucide-react";
 
-/** Legacy route; redirects to participant-details or visitor-data. */
-export const DEPRECATED_DASHBOARD_HREFS = ["user-data"] as const;
-
 export const USER_DASHBOARD_SECTIONS = [
   {
     href: `visitor-data`,

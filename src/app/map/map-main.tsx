@@ -9,7 +9,7 @@ import {
   useRef,
 } from "react";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
-import { useMapPageState } from "@/app/hooks/useMapPageState";
+import { useMapPageState } from "@/hooks/useMapPageState";
 import { useMapFiltersFromUrl } from "@/hooks/useMapFiltersFromUrl";
 import {
   filterMapLocationsForList,

@@ -19,7 +19,7 @@ export const citizensSectionHeaderSchema = z.object({
 });
 
 export const citizensSectionSchema = citizensSectionHeaderSchema.extend({
-  citizensByYear: z.record(z.array(citizenSchema)),
+  citizensByYear: z.record(z.string(), z.array(citizenSchema)),
 });
 
 export type Citizen = z.infer<typeof citizenSchema>;
@@ -35,7 +35,7 @@ export const clientCitizenSchema = z.object({
 });
 
 export const clientCitizensSectionSchema = citizensSectionHeaderSchema.extend({
-  citizensByYear: z.record(z.array(clientCitizenSchema)),
+  citizensByYear: z.record(z.string(), z.array(clientCitizenSchema)),
 });
 
 export type ClientCitizen = z.infer<typeof clientCitizenSchema>;

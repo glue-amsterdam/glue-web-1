@@ -19,7 +19,7 @@ import { YEAR_NUMBER_LABELS } from "@/lib/year-numbers/year-number-labels";
 import { Trash2 } from "lucide-react";
 
 const yearFormSchema = z.object({
-  year: z.coerce.number().int(),
+  year: z.number().int(),
   items: z.array(
     z.object({
       label: z.string(),
@@ -28,7 +28,8 @@ const yearFormSchema = z.object({
   ),
 });
 
-type YearFormData = z.infer<typeof yearFormSchema>;
+type YearFormInput = z.input<typeof yearFormSchema>;
+type YearFormData = z.output<typeof yearFormSchema>;
 
 type YearNumbersFormProps = {
   year: number;
@@ -60,7 +61,7 @@ export const YearNumbersForm = ({
     existsInDbRef.current = existsInDb;
   }, [existsInDb]);
 
-  const form = useForm<YearFormData>({
+  const form = useForm<YearFormInput>({
     resolver: zodResolver(yearFormSchema),
     defaultValues: {
       year,
@@ -199,7 +200,7 @@ export const YearNumbersForm = ({
     }
   };
 
-  const handleSubmit = (data: YearFormData) => {
+  const handleSubmit = (data: YearFormInput) => {
     if (existsInDbRef.current) {
       return handleSave(data);
     }
