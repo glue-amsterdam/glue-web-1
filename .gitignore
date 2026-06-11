@@ -41,6 +41,8 @@ next-env.d.ts
 #cursor
 .cursor/
 .agents/
+migrations/
+
 
 skills-lock.json
 
@@ -48,5 +50,6 @@ skills-lock.json
 *.sql
 
 TODO.md
+AGENTS.md
 # next-agents-md
 .next-docs/
