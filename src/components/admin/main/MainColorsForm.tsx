@@ -3,7 +3,7 @@
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Label } from "@/components/ui/label";
-import { createSubmitHandler } from "@/utils/form-helpers";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
@@ -13,7 +13,7 @@ import {
   MainColorsFormData,
   mainColorsFormSchema,
 } from "@/schemas/mainSchema";
-import { mutate } from "swr";
+import { saveMainColors } from "@/app/actions/admin/main";
 import { ColorPicker } from "@/components/ui/color-picker";
 
 interface MainColorsFormProps {
@@ -119,15 +119,14 @@ export default function MainColorsForm({ initialData }: MainColorsFormProps) {
     reset(initialData);
   }, [initialData, reset]);
 
-  const onSubmit = createSubmitHandler<MainColorsFormData>(
-    "/api/admin/main/colors",
+  const onSubmit = createActionSubmitHandler<MainColorsFormData>(
+    saveMainColors,
     async (data) => {
       toast({
         title: "Colors updated",
         description: "The colors have been successfully updated.",
       });
       reset(data);
-      await mutate("/api/admin/main/colors");
       router.refresh();
     },
     (error) => {

@@ -1,5 +1,7 @@
 import { config } from "@/config";
 
+import HeroVideo from "@/components/home/hero-section/hero-video";
+
 type Props = {
   videoUrl: string;
   posterUrl: string;
@@ -17,14 +19,10 @@ const Hero = ({ videoUrl, posterUrl, description }: Props) => {
         hotspots in town
       </h1>
       <div className="relative w-full h-[413px] lg:h-[630px] 2xl:h-[735px] mx-auto">
-        <video
+        <HeroVideo
           src={videoUrl}
-          autoPlay
           poster={posterUrl}
-          muted
-          loop
-          className="w-full h-full object-cover"
-          aria-label={videoAriaLabel}
+          ariaLabel={videoAriaLabel}
         />
       </div>
       <p className="text-[25px] lg:text-[50px] lg:leading-[58px] pt-[40px] lg:pt-[200px] leading-[31px] font-[400] lg:w-[830px]">

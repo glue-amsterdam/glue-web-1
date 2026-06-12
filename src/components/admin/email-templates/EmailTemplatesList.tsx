@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,13 +18,13 @@ type EmailTemplate = {
   subject: string;
   html_content: string;
   description: string | null;
-  created_at: string;
+  created_at?: string;
   updated_at: string;
 };
 
 interface EmailTemplatesListProps {
   templates: EmailTemplate[];
-  onTemplateUpdate: () => void;
+  onTemplateUpdate?: () => void;
 }
 
 const getTemplateDisplayInfo = (slug: string) => {
@@ -72,6 +73,7 @@ export default function EmailTemplatesList({
   templates,
   onTemplateUpdate,
 }: EmailTemplatesListProps) {
+  const router = useRouter();
   const [selectedTemplate, setSelectedTemplate] =
     useState<EmailTemplate | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -87,7 +89,11 @@ export default function EmailTemplatesList({
   };
 
   const handleSave = () => {
-    onTemplateUpdate();
+    if (onTemplateUpdate) {
+      onTemplateUpdate();
+    } else {
+      router.refresh();
+    }
     handleClose();
   };
 

@@ -1,4 +1,3 @@
-import { BASE_URL } from "@/constants";
 import type {
   ExhibitorsPageResponse,
   ExhibitorsQueryParams,
@@ -9,7 +8,7 @@ export const fetchExhibitorsPageClient = async (
   params: ExhibitorsQueryParams
 ): Promise<ExhibitorsPageResponse> => {
   const searchParams = buildExhibitorsSearchParams(params);
-  const url = `${BASE_URL}/participants?${searchParams.toString()}`;
+  const url = `/api/participants?${searchParams.toString()}`;
   const response = await fetch(url);
 
   if (!response.ok) {

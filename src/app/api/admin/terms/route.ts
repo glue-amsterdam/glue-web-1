@@ -8,35 +8,6 @@ const termsSchema = z.object({
   content: z.string().min(1, "Terms and conditions content is required"),
 });
 
-export async function GET() {
-  try {
-    const supabase = await createClient();
-
-    const { data, error } = await supabase
-      .from("terms_and_conditions")
-      .select("*")
-      .single();
-
-    if (error) {
-      // If table doesn't exist or no record found, return default
-      if (error.code === "PGRST116" || error.code === "42P01") {
-        return NextResponse.json({
-          content: "<p>Terms and conditions content will be displayed here.</p>",
-        });
-      }
-      throw error;
-    }
-
-    return NextResponse.json(data || { content: "" });
-  } catch (error) {
-    console.error("Error in GET /api/admin/terms:", error);
-    return NextResponse.json(
-      { error: "An error occurred while fetching terms and conditions" },
-      { status: 500 }
-    );
-  }
-}
-
 export async function PUT(request: Request) {
   try {
     const supabase = await createClient();

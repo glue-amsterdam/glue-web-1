@@ -8,6 +8,7 @@ import type {
 } from "@/lib/admin/yearly-content-types";
 import { YearContentStatusGrid } from "./YearContentStatusGrid";
 import { YearSelectorBar } from "./YearSelectorBar";
+import { getYearlyContentSummary } from "@/app/actions/admin/yearly-content";
 import { YearlyContentSheet } from "./YearlyContentSheet";
 
 const isValidSection = (value: string | null): value is YearlyContentSection =>
@@ -16,7 +17,11 @@ const isValidSection = (value: string | null): value is YearlyContentSection =>
   value === "citizens" ||
   value === "archive";
 
-export const YearlyContentManager = () => {
+export const YearlyContentManager = ({
+  initialYears = [],
+}: {
+  initialYears?: number[];
+}) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -26,10 +31,10 @@ export const YearlyContentManager = () => {
   const selectedYear = yearParam ? Number(yearParam) : null;
   const activeSection = isValidSection(sectionParam) ? sectionParam : null;
 
-  const [years, setYears] = useState<number[]>([]);
+  const [years, setYears] = useState<number[]>(initialYears);
   const [pendingYears, setPendingYears] = useState<number[]>([]);
   const [status, setStatus] = useState<YearlyContentYearStatus | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const allYears = useMemo(() => {
     const merged = new Set([...years, ...pendingYears]);
@@ -63,17 +68,9 @@ export const YearlyContentManager = () => {
   const loadSummary = useCallback(async (year?: number) => {
     setIsLoading(true);
     try {
-      const url = year
-        ? `/api/admin/yearly-content/summary?year=${year}`
-        : "/api/admin/yearly-content/summary";
-      const res = await fetch(url);
-      if (!res.ok) {
-        return;
-      }
-
-      const data = await res.json();
+      const data = await getYearlyContentSummary(year);
       setYears(data.years ?? []);
-      if (year && data.status) {
+      if (year && "status" in data && data.status) {
         setStatus(data.status);
       } else {
         setStatus(null);

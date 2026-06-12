@@ -1,16 +1,9 @@
-import { config } from "@/config";
+import { getAdminSupabaseOrRedirect } from "@/lib/admin/get-admin-supabase";
+import { fetchTextSectionsByGroup } from "@/lib/text-sections/fetch-text-sections-by-group";
+import { createClient } from "@/utils/supabase/server";
 
 import TextSectionAdminForm from "@/components/admin/text-sections/text-section-admin-form";
 import type { TextSectionData } from "@/lib/text-sections/types";
-import Separator from "@/components/separator";
-
-const fetchVisitTextSections = async (): Promise<TextSectionData[]> => {
-  const res = await fetch(
-    `${config.baseApiUrl}/admin/text-sections?group=visit`,
-    { cache: "no-store" }
-  );
-  return res.json();
-};
 
 const getTextSectionBySlug = (
   sections: TextSectionData[],
@@ -24,7 +17,9 @@ const getTextSectionBySlug = (
 };
 
 export default async function VisitAdminPage() {
-  const visitTextSections = await fetchVisitTextSections();
+  await getAdminSupabaseOrRedirect();
+  const supabase = await createClient();
+  const visitTextSections = await fetchTextSectionsByGroup(supabase, "visit");
 
   return (
     <div className="space-y-10">
@@ -36,7 +31,6 @@ export default async function VisitAdminPage() {
           initialData={getTextSectionBySlug(visitTextSections, "visit-intro")}
         />
       </section>
-      <Separator />
       <section className="border-t pt-8">
         <h2 className="title-text mb-4">Sign Up Section</h2>
         <TextSectionAdminForm
@@ -45,7 +39,6 @@ export default async function VisitAdminPage() {
           initialData={getTextSectionBySlug(visitTextSections, "visit-sign-up")}
         />
       </section>
-      <Separator />
       <section className="border-t pt-8">
         <h2 className="title-text mb-4">Discover Routes</h2>
         <TextSectionAdminForm

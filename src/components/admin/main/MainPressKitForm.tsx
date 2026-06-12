@@ -10,8 +10,12 @@ import { Plus, Trash2, Link as LinkIcon } from "lucide-react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
 import { pressKitLinksFormSchema } from "@/schemas/mainSchema";
-import { mutate } from "swr";
-import { createSubmitHandler } from "@/utils/form-helpers";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
+import {
+  addPressKitLink,
+  removePressKitLink,
+  savePressKitLinks,
+} from "@/app/actions/admin/main";
 
 interface MainPressKitFormProps {
   initialData: {
@@ -48,18 +52,16 @@ export default function MainPressKitForm({
     name: "pressKitLinks",
   });
 
-  const onSubmit = createSubmitHandler<{
+  const onSubmit = createActionSubmitHandler<{
     pressKitLinks: { id: number; link: string; description?: string | null }[];
   }>(
-    "/api/admin/main/press_kit_links",
+    savePressKitLinks,
     async (data) => {
-      console.log("Form submitted successfully", data);
       toast({
         title: "Press kit links updated",
         description: "The press kit links have been successfully updated.",
       });
       reset(data);
-      await mutate("/api/admin/main/press_kit_links");
       router.refresh();
     },
     (error) => {
@@ -89,24 +91,7 @@ export default function MainPressKitForm({
   const handleAddNew = async () => {
     setIsAdding(true);
     try {
-      const newLink = {
-        link: "",
-        description: "",
-      };
-
-      const response = await fetch("/api/admin/main/press_kit_links", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newLink),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create new press kit link");
-      }
-
-      const newItem = await response.json();
+      const newItem = await addPressKitLink({ link: "", description: "" });
       append(newItem);
 
       toast({
@@ -127,16 +112,7 @@ export default function MainPressKitForm({
 
   const handleDelete = async (index: number, id: number) => {
     try {
-      const response = await fetch(`/api/admin/main/press_kit_links?id=${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Delete response error:", errorData);
-        throw new Error("Failed to delete press kit link");
-      }
-
+      await removePressKitLink(String(id));
       remove(index);
 
       toast({

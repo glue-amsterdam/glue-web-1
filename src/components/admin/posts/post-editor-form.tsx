@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { patchPost, removePost } from "@/app/actions/admin/posts";
 import type { PostWithMedia } from "@/schemas/postSchema";
 
 type PostEditorFormProps = {
@@ -90,27 +91,22 @@ const PostEditorForm = ({ initialData }: PostEditorFormProps) => {
     return JSON.stringify(formState) !== savedBaseline;
   }, [formState, savedBaseline]);
 
-  const patchPost = useCallback(
-    async (payload: Record<string, unknown>) => {
-      const response = await fetch(`/api/admin/posts/${initialData.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to save post");
-      }
-
-      return response.json();
+  const savePost = useCallback(
+    async (payload: {
+      title?: string;
+      author?: string | null;
+      keywords?: string[];
+      content_html?: string;
+      status?: "draft" | "published";
+    }) => {
+      return patchPost(initialData.id, payload);
     },
     [initialData.id]
   );
 
   const handleAutosave = useCallback(
     async (data: EditorFormState) => {
-      await patchPost({
+      await savePost({
         title: data.title,
         author: data.author.trim() ? data.author.trim() : null,
         keywords: data.keywords,
@@ -120,7 +116,7 @@ const PostEditorForm = ({ initialData }: PostEditorFormProps) => {
       setStatus("draft");
       setSavedBaseline(JSON.stringify(data));
     },
-    [patchPost]
+    [savePost]
   );
 
   const { markSaved } = useAutosave({
@@ -149,7 +145,7 @@ const PostEditorForm = ({ initialData }: PostEditorFormProps) => {
     setSaveStatus("saving");
 
     try {
-      await patchPost({
+      await savePost({
         title: title.trim(),
         author: author.trim() ? author.trim() : null,
         keywords: parseKeywordsInput(keywordsInput),
@@ -194,14 +190,7 @@ const PostEditorForm = ({ initialData }: PostEditorFormProps) => {
     setIsDeleting(true);
 
     try {
-      const response = await fetch(`/api/admin/posts/${initialData.id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to delete post");
-      }
+      await removePost(initialData.id);
 
       toast({
         title: "Post deleted",

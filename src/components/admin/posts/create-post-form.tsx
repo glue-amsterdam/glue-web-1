@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { createPost } from "@/app/actions/admin/posts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,18 +31,7 @@ const CreatePostForm = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/admin/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: trimmedTitle }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to create post");
-      }
-
-      const data = await response.json();
+      const data = await createPost({ title: trimmedTitle });
       router.push(`/admin/posts/${data.id}`);
       router.refresh();
     } catch (error) {

@@ -4,7 +4,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createSubmitHandler } from "@/utils/form-helpers";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useMemo, useState } from "react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
@@ -15,7 +15,7 @@ import {
   mainMenuSchema,
 } from "@/schemas/mainSchema";
 import { parseNavOrder } from "@/lib/nav/build-navbar-links";
-import { mutate } from "swr";
+import { saveMainMenu } from "@/app/actions/admin/main";
 
 interface MainMenuFormProps {
   initialData: MainMenuData;
@@ -56,15 +56,14 @@ export default function MainMenuForm({ initialData }: MainMenuFormProps) {
     reset(initialData);
   }, [initialData, reset]);
 
-  const onSubmit = createSubmitHandler<MainMenuData>(
-    "/api/admin/main/menu",
+  const onSubmit = createActionSubmitHandler<MainMenuData>(
+    saveMainMenu,
     async (data) => {
       toast({
         title: "Main menu updated",
         description: "The main menu has been successfully updated.",
       });
       reset(data);
-      await mutate("/api/admin/main/menu");
       router.refresh();
     },
     () => {

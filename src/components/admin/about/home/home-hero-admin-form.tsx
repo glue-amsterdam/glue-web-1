@@ -32,6 +32,7 @@ import {
   ImageUploadOverlay,
   type UploadState,
 } from "@/components/image-upload-overlay";
+import { saveHomeHero } from "@/app/actions/admin/home";
 
 type Props = {
   initialData: HomeHero;
@@ -210,22 +211,16 @@ const HomeHeroAdminForm = ({ initialData }: Props) => {
         }
       }
 
-      const response = await fetch("/api/admin/home/hero", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: data.id,
-          description: data.description,
-          video_url: videoUrl,
-          poster_url: posterUrl,
-        }),
+      const saved = await saveHomeHero({
+        id: data.id,
+        description: data.description,
+        video_url: videoUrl,
+        poster_url: posterUrl,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error ?? "Failed to update home hero");
-      }
-
+      reset(saved);
+      setVideoPreviewUrl(saved.video_url);
+      setPosterPreviewUrl(saved.poster_url);
       setPendingVideoFile(null);
       setPendingPosterFile(null);
       if (videoInputRef.current) videoInputRef.current.value = "";

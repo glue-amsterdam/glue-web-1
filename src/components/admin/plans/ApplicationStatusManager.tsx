@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,69 +9,44 @@ import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { savePlansApplicationStatus } from "@/app/actions/admin/plans";
 import type { ParticipateApplicationStatusAdminData } from "@/lib/participate/types";
 
-export default function ApplicationStatusManager() {
-  const [status, setStatus] = useState<ParticipateApplicationStatusAdminData | null>(
-    null
-  );
-  const [isLoading, setIsLoading] = useState(true);
+type ApplicationStatusManagerProps = {
+  initialData: ParticipateApplicationStatusAdminData;
+};
+
+export default function ApplicationStatusManager({
+  initialData,
+}: ApplicationStatusManagerProps) {
+  const [status, setStatus] = useState(initialData);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
-
-  const fetchStatus = useCallback(async () => {
-    try {
-      const response = await fetch("/api/admin/plans/status");
-      if (!response.ok) {
-        throw new Error("Failed to load application status");
-      }
-
-      const data = (await response.json()) as ParticipateApplicationStatusAdminData;
-      setStatus(data);
-    } catch (error) {
-      console.error("Unexpected error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load application status",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast]);
+  const router = useRouter();
 
   useEffect(() => {
-    fetchStatus();
-  }, [fetchStatus]);
+    setStatus(initialData);
+  }, [initialData]);
 
   const saveStatus = async (
     nextStatus: ParticipateApplicationStatusAdminData
   ) => {
     setIsSaving(true);
     try {
-      const response = await fetch("/api/admin/plans/status", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nextStatus),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update application status");
-      }
-
-      const data = (await response.json()) as ParticipateApplicationStatusAdminData;
+      const data = await savePlansApplicationStatus(nextStatus);
       setStatus(data);
 
       toast({
         title: "Status Updated",
-        description: `Applications ${data.application_closed ? "closed" : "opened"
-          } successfully`,
+        description: `Applications ${
+          data.application_closed ? "closed" : "opened"
+        } successfully`,
       });
+      router.refresh();
     } catch (error) {
       console.error("Unexpected error:", error);
       toast({
@@ -84,8 +60,6 @@ export default function ApplicationStatusManager() {
   };
 
   const handleToggleApplicationStatus = async (checked: boolean) => {
-    if (!status) return;
-
     await saveStatus({
       ...status,
       application_closed: checked,
@@ -93,37 +67,13 @@ export default function ApplicationStatusManager() {
   };
 
   const handleMessageChange = async () => {
-    if (!status) return;
     await saveStatus(status);
   };
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Application Status</CardTitle>
-          <CardDescription>Loading...</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
-  if (!status) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Application Status</CardTitle>
-          <CardDescription>Failed to load status</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
 
   return (
     <Card className="mb-6">
       <CardHeader>
         <CardTitle>Application Status Management</CardTitle>
-
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center justify-between">

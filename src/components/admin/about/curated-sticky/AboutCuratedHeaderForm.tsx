@@ -5,13 +5,13 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { createSubmitHandler } from "@/utils/form-helpers";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
+import { saveAboutCuratedSection } from "@/app/actions/admin/about";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import {
   CuratedMemberSectionHeader,
   curatedMembersSectionSchema,
 } from "@/schemas/curatedSchema";
-import { mutate } from "swr";
 import { CuratedHeaderForm } from "./CuratedHeaderForm";
 
 export default function AboutCuratedHeaderForm({
@@ -34,15 +34,14 @@ export default function AboutCuratedHeaderForm({
     reset(initialData);
   }, [initialData, reset]);
 
-  const onSubmit = createSubmitHandler<CuratedMemberSectionHeader>(
-    "/api/admin/about/curated",
+  const onSubmit = createActionSubmitHandler<CuratedMemberSectionHeader>(
+    saveAboutCuratedSection,
     async () => {
       toast({
         title: "Sticky participants section updated",
         description:
           "The sticky participants section has been successfully updated.",
       });
-      await mutate("/api/admin/about/curated");
       router.refresh();
     },
     () => {

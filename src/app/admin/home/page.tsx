@@ -1,4 +1,13 @@
-import { config } from "@/config";
+import { getAdminSupabaseOrRedirect } from "@/lib/admin/get-admin-supabase";
+import {
+  fetchAboutCitizensHeader,
+  fetchAboutCuratedSection,
+  fetchAboutParticipantsSection,
+} from "@/lib/about/fetch-about-admin";
+import { fetchHomeHero } from "@/lib/home/fetch-home-hero";
+import { fetchHomeTexts } from "@/lib/main/fetch-home-text-admin";
+import { fetchTextSectionsByGroup } from "@/lib/text-sections/fetch-text-sections-by-group";
+import { createClient } from "@/utils/supabase/server";
 
 import AboutParticipantsForm from "@/components/admin/about/participants/AboutParticipantsForm";
 import AboutCuratedHeaderForm from "@/components/admin/about/curated-sticky/AboutCuratedHeaderForm";
@@ -7,53 +16,19 @@ import HomeHeroAdminForm from "@/components/admin/about/home/home-hero-admin-for
 import HomeTextsForm from "@/components/admin/home/home-texts-form";
 import TextSectionAdminForm from "@/components/admin/text-sections/text-section-admin-form";
 import type { TextSectionData } from "@/lib/text-sections/types";
-import type { CitizensSectionHeader } from "@/schemas/citizenSchema";
 import type { HomeHero } from "@/schemas/homeHeroSchema";
-import type { HomeTextsFormData } from "@/schemas/mainSchema";
-import Separator from "@/components/separator";
 
-const fetchAboutParticipants = async () => {
-  const res = await fetch(`${config.baseApiUrl}/admin/about/participants`);
-  const data = await res.json();
-  return data;
-};
-
-const fetchAboutCurated = async () => {
-  const res = await fetch(`${config.baseApiUrl}/admin/about/curated`);
-  const data = await res.json();
-  return data;
-};
-
-const fetchAboutCitizensHeader = async (): Promise<CitizensSectionHeader> => {
-  const res = await fetch(`${config.baseApiUrl}/admin/about/citizens`);
-  const data = await res.json();
-  return {
-    title: data.title,
-    description: data.description,
-    is_visible: data.is_visible,
-  };
-};
-
-const fetchHomeHero = async (): Promise<HomeHero> => {
-  const res = await fetch(`${config.baseApiUrl}/admin/home/hero`);
-  const data = await res.json();
-  return data;
-};
-
-const fetchHomeTexts = async (): Promise<HomeTextsFormData> => {
-  const res = await fetch(`${config.baseApiUrl}/admin/main/home_text`, {
-    cache: "no-store",
-  });
-  return res.json();
-};
-
-const fetchHomeTextSections = async (): Promise<TextSectionData[]> => {
-  const res = await fetch(
-    `${config.baseApiUrl}/admin/text-sections?group=home`,
-    { cache: "no-store" }
-  );
-  return res.json();
-};
+const mapHeroDataToForm = (hero: {
+  id: string | null;
+  description: string;
+  videoUrl: string;
+  posterUrl: string;
+}): HomeHero => ({
+  id: hero.id ?? undefined,
+  description: hero.description,
+  video_url: hero.videoUrl,
+  poster_url: hero.posterUrl,
+});
 
 const getTextSectionBySlug = (
   sections: TextSectionData[],
@@ -67,6 +42,9 @@ const getTextSectionBySlug = (
 };
 
 export default async function HomeSectionPage() {
+  await getAdminSupabaseOrRedirect();
+  const supabase = await createClient();
+
   const [
     exhibitorsData,
     curatedData,
@@ -75,31 +53,28 @@ export default async function HomeSectionPage() {
     homeTextSections,
     homeTextsData,
   ] = await Promise.all([
-    fetchAboutParticipants(),
-    fetchAboutCurated(),
-    fetchAboutCitizensHeader(),
-    fetchHomeHero(),
-    fetchHomeTextSections(),
-    fetchHomeTexts(),
+    fetchAboutParticipantsSection(supabase),
+    fetchAboutCuratedSection(supabase),
+    fetchAboutCitizensHeader(supabase),
+    fetchHomeHero(supabase),
+    fetchTextSectionsByGroup(supabase, "home"),
+    fetchHomeTexts(supabase),
   ]);
 
   return (
     <div className="space-y-10">
       <section className="border-t pt-8">
         <h2 className="title-text mb-4">Hero Section</h2>
-        <HomeHeroAdminForm initialData={heroData} />
+        <HomeHeroAdminForm initialData={mapHeroDataToForm(heroData)} />
       </section>
-      <Separator />
       <section className="border-t pt-8">
         <h2 className="title-text mb-4">Home Texts</h2>
         <HomeTextsForm initialData={homeTextsData} />
       </section>
-      <Separator />
       <section className="border-t pt-8">
         <h2 className="title-text mb-4">Exhibitors Home Page Section</h2>
         <AboutParticipantsForm initialData={exhibitorsData} />
       </section>
-      <Separator />
       <section className="border-t pt-8">
         <h2 className="title-text mb-4">Become an Exhibitor</h2>
         <TextSectionAdminForm
@@ -111,12 +86,10 @@ export default async function HomeSectionPage() {
           )}
         />
       </section>
-      <Separator />
       <section className="border-t pt-8">
         <h2 className="title-text mb-4">Citizens of Honour Section</h2>
         <AboutCitizensHeaderForm initialData={citizensHeaderData} />
       </section>
-      <Separator />
       <section className="border-t pt-8">
         <h2 className="title-text mb-4">Alternatives from the Unexpected</h2>
         <TextSectionAdminForm
@@ -128,12 +101,10 @@ export default async function HomeSectionPage() {
           )}
         />
       </section>
-      <Separator />
       <section className="border-t pt-8">
         <h2 className="title-text mb-4">Sticky Participants Section</h2>
         <AboutCuratedHeaderForm initialData={curatedData} />
       </section>
-      <Separator />
       <section className="border-t pt-8">
         <h2 className="title-text mb-4">Newsletter</h2>
         <TextSectionAdminForm

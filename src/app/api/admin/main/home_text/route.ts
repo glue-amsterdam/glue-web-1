@@ -54,32 +54,6 @@ const countRowsByPlacement = async (
   return count ?? 0;
 };
 
-export async function GET() {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("home_text")
-      .select("id, label, color, href, placement, sort_order")
-      .order("sort_order");
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    const response = {
-      homeTexts: (data ?? []).map(mapHomeTextFromRow),
-    };
-
-    return NextResponse.json(homeTextsSchema.parse(response));
-  } catch (error) {
-    console.error("Error in GET /api/admin/main/home_text:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch home texts" },
-      { status: 500 }
-    );
-  }
-}
-
 export async function POST(request: Request) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;

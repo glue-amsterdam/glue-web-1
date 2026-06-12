@@ -5,29 +5,6 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-export async function GET() {
-  try {
-    const supabase = await createClient();
-
-    const { data: participantsData } = await supabase
-      .from("about_participants")
-      .select("title,description,is_visible")
-      .single();
-
-    if (!participantsData) {
-      throw new Error("Failed to fetch participants about data");
-    }
-
-    return NextResponse.json(participantsData);
-  } catch (error) {
-    console.error("Error in GET /api/admin/about/participants", error);
-    return NextResponse.json(
-      { error: "An error occurred while fetching participants about data" },
-      { status: 500 }
-    );
-  }
-}
-
 export async function PUT(request: Request) {
   const cookieStore = await cookies();
   const adminToken = cookieStore.get("admin_token");

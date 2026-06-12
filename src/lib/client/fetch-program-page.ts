@@ -1,4 +1,3 @@
-import { BASE_URL } from "@/constants";
 import type {
   ProgramPageResponse,
   ProgramQueryParams,
@@ -9,7 +8,7 @@ export const fetchProgramPageClient = async (
   params: ProgramQueryParams
 ): Promise<ProgramPageResponse> => {
   const searchParams = buildProgramSearchParams(params);
-  const url = `${BASE_URL}/program?${searchParams.toString()}`;
+  const url = `/api/program?${searchParams.toString()}`;
   const response = await fetch(url);
 
   if (!response.ok) {

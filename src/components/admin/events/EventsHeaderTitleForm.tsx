@@ -4,14 +4,13 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createSubmitHandler } from "@/utils/form-helpers";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
+import { saveEventHeaderTitle } from "@/app/actions/admin/events";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { mutate } from "swr";
-
 const eventsHeaderTitleFormSchema = z.object({
   header_title: z.string().min(1, "Header title is required"),
 });
@@ -47,16 +46,14 @@ export default function EventsHeaderTitleForm({
     reset(initialData);
   }, [initialData, reset]);
 
-  const onSubmit = createSubmitHandler<EventsHeaderTitleFormValues>(
-    "/api/admin/events/header-title",
+  const onSubmit = createActionSubmitHandler<EventsHeaderTitleFormValues>(
+    (data) => saveEventHeaderTitle(data.header_title),
     async (data) => {
       toast({
         title: "Header title updated",
         description: "The events header title has been successfully updated.",
       });
       reset(data);
-      await mutate("/api/admin/events/header-title");
-      await mutate("/api/events/header-title");
       router.refresh();
     },
     (error) => {

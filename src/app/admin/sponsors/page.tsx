@@ -1,14 +1,26 @@
-import { Suspense } from "react";
-
-import LoadingSpinner from "@/app/components/LoadingSpinner";
+import { getAdminSupabaseOrRedirect } from "@/lib/admin/get-admin-supabase";
+import {
+  fetchAboutSponsors,
+  fetchAboutSponsorsHeader,
+} from "@/lib/about/fetch-about-admin";
+import { createClient } from "@/utils/supabase/server";
 import AboutSponsorsForm from "@/components/admin/about/sponsors/AboutSponsorsForm";
 
-export default function SponsorsAdminPage() {
+export default async function SponsorsAdminPage() {
+  await getAdminSupabaseOrRedirect();
+  const supabase = await createClient();
+
+  const [sponsorsHeaderData, sponsorsData] = await Promise.all([
+    fetchAboutSponsorsHeader(supabase),
+    fetchAboutSponsors(supabase),
+  ]);
+
   return (
     <div className="rounded-lg bg-white p-4 shadow-md">
-      <Suspense fallback={<LoadingSpinner />}>
-        <AboutSponsorsForm />
-      </Suspense>
+      <AboutSponsorsForm
+        initialHeaderData={sponsorsHeaderData}
+        initialSponsors={sponsorsData}
+      />
     </div>
   );
 }

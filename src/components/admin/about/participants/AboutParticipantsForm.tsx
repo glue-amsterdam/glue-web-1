@@ -11,7 +11,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
-import { createSubmitHandler } from "@/utils/form-helpers";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
+import { saveAboutParticipantsSection } from "@/app/actions/admin/about";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
@@ -19,7 +20,6 @@ import {
   ParticipantsSectionHeader,
   participantsSectionSchema,
 } from "@/schemas/participantsAdminSchema";
-import { mutate } from "swr";
 import { Switch } from "@/components/ui/switch";
 import { RichTextEditor } from "@/components/editor";
 import { Input } from "@/components/ui/input";
@@ -44,14 +44,13 @@ function AboutParticipantsForm({
     reset(initialData);
   }, [initialData, reset]);
 
-  const onSubmit = createSubmitHandler<ParticipantsSectionHeader>(
-    "/api/admin/about/participants",
+  const onSubmit = createActionSubmitHandler<ParticipantsSectionHeader>(
+    saveAboutParticipantsSection,
     async () => {
       toast({
         title: "Exhibitors header updated",
         description: "The exhibitors header have been successfully updated.",
       });
-      await mutate("/api/admin/about/participants");
       router.refresh();
     },
     (error) => {

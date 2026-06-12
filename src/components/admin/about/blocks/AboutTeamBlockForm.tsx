@@ -29,6 +29,9 @@ import { config } from "@/config";
 import { Plus, Trash2 } from "lucide-react";
 import { ABOUT_BLOCK_IDS } from "@/schemas/aboutPageSchema";
 import { AdminImagePreview } from "@/components/admin/admin-image-preview";
+import type { AboutBlockAdminData } from "@/lib/about/fetch-about-block-admin";
+import { getAboutBlockAdmin, saveAboutBlock } from "@/app/actions/admin/about";
+import { useRouter } from "next/navigation";
 import {
   createUploadProgressHandler,
   type UploadState,
@@ -53,10 +56,30 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export default function AboutTeamBlockForm() {
+type Props = {
+  initialData?: AboutBlockAdminData | null;
+};
+
+const mapInitialDataToForm = (data: AboutBlockAdminData): FormData => ({
+  title: data.block?.title ?? "Team",
+  description: data.block?.description ?? "",
+  is_visible: data.block?.is_visible ?? false,
+  image_src: data.media?.image_src ?? "",
+  image_alt: data.media?.image_alt ?? "",
+  members: (data.members ?? []).map((m) => ({
+    name: m.name,
+    role: m.role,
+    email: (m.email as string | undefined) ?? "",
+    phone: (m.phone as string | undefined) ?? "",
+    description: (m.description as string | undefined) ?? "",
+  })),
+});
+
+export default function AboutTeamBlockForm({ initialData }: Props) {
   const { toast } = useToast();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialData);
   const [uploadState, setUploadState] = useState<UploadState | null>(null);
   const [openMemberId, setOpenMemberId] = useState<string | undefined>();
   const pendingOpenLastRef = useRef(false);
@@ -66,14 +89,16 @@ export default function AboutTeamBlockForm() {
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "Team",
-      description: "",
-      is_visible: false,
-      image_src: "",
-      image_alt: "",
-      members: [],
-    },
+    defaultValues: initialData
+      ? mapInitialDataToForm(initialData)
+      : {
+          title: "Team",
+          description: "",
+          is_visible: false,
+          image_src: "",
+          image_alt: "",
+          members: [],
+        },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -91,33 +116,20 @@ export default function AboutTeamBlockForm() {
   }, [fields]);
 
   useEffect(() => {
+    if (initialData) {
+      form.reset(mapInitialDataToForm(initialData));
+      setOpenMemberId(undefined);
+      setIsLoading(false);
+      return;
+    }
+
     const load = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/admin/about/blocks/${blockId}`);
-        const data = await res.json();
-        form.reset({
-          title: data.block?.title ?? "Team",
-          description: data.block?.description ?? "",
-          is_visible: data.block?.is_visible ?? false,
-          image_src: data.media?.image_src ?? "",
-          image_alt: data.media?.image_alt ?? "",
-          members: (data.members ?? []).map(
-            (m: {
-              name: string;
-              role: string;
-              email: string;
-              phone?: string;
-              description?: string;
-            }) => ({
-              name: m.name,
-              role: m.role,
-              email: m.email ?? "",
-              phone: m.phone ?? "",
-              description: m.description ?? "",
-            })
-          ),
-        });
+        const data = await getAboutBlockAdmin(blockId);
+        if (data) {
+          form.reset(mapInitialDataToForm(data));
+        }
         setOpenMemberId(undefined);
       } catch {
         toast({
@@ -130,7 +142,7 @@ export default function AboutTeamBlockForm() {
       }
     };
     load();
-  }, [blockId, form, toast]);
+  }, [blockId, form, initialData, toast]);
 
   const handleAddMember = () => {
     pendingOpenLastRef.current = true;
@@ -180,20 +192,13 @@ export default function AboutTeamBlockForm() {
   const handleSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      const blockRes = await fetch(`/api/admin/about/blocks/${blockId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: data.title,
-          description: data.description,
-          is_visible: data.is_visible,
-          image_src: data.image_src,
-          image_alt: data.image_alt,
-        }),
+      await saveAboutBlock(blockId, {
+        title: data.title,
+        description: data.description,
+        is_visible: data.is_visible,
+        image_src: data.image_src,
+        image_alt: data.image_alt,
       });
-      if (!blockRes.ok) {
-        throw new Error("Block update failed");
-      }
 
       const membersRes = await fetch(
         `/api/admin/about/blocks/meet-the-team/members`,
@@ -213,6 +218,7 @@ export default function AboutTeamBlockForm() {
       }
 
       toast({ title: "Team updated", description: "Block saved successfully." });
+      router.refresh();
     } catch {
       toast({
         title: "Error",

@@ -26,6 +26,9 @@ import {
   createUploadProgressHandler,
   type UploadState,
 } from "@/components/image-upload-overlay";
+import type { AboutBlockAdminData } from "@/lib/about/fetch-about-block-admin";
+import { getAboutBlockAdmin, saveAboutBlock } from "@/app/actions/admin/about";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -43,44 +46,62 @@ type Props = {
   blockId: string;
   blockLabel: string;
   disabled?: boolean;
+  initialData?: AboutBlockAdminData | null;
 };
 
-export default function AboutTextDualBlockForm({ blockId, blockLabel, disabled = false }: Props) {
+const mapInitialDataToForm = (data: AboutBlockAdminData): FormData => ({
+  title: data.block?.title ?? "",
+  description: data.block?.description ?? "",
+  is_visible: data.block?.is_visible ?? false,
+  image_src: data.media?.image_src ?? "",
+  image_alt: data.media?.image_alt ?? "",
+  text_block_1: data.text?.text_block_1 ?? "",
+  text_block_2: data.text?.text_block_2 ?? "",
+});
+
+export default function AboutTextDualBlockForm({
+  blockId,
+  blockLabel,
+  disabled = false,
+  initialData,
+}: Props) {
   const { toast } = useToast();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialData);
   const [uploadState, setUploadState] = useState<UploadState | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const handleUploadProgress = createUploadProgressHandler(setUploadState);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      is_visible: false,
-      image_src: "",
-      image_alt: "",
-      text_block_1: "",
-      text_block_2: "",
-    },
+    defaultValues: initialData
+      ? mapInitialDataToForm(initialData)
+      : {
+          title: "",
+          description: "",
+          is_visible: false,
+          image_src: "",
+          image_alt: "",
+          text_block_1: "",
+          text_block_2: "",
+        },
   });
 
   useEffect(() => {
+    if (initialData) {
+      form.reset(mapInitialDataToForm(initialData));
+      setIsLoading(false);
+      return;
+    }
+
     const load = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/admin/about/blocks/${blockId}`);
-        const data = await res.json();
-        form.reset({
-          title: data.block?.title ?? "",
-          description: data.block?.description ?? "",
-          is_visible: data.block?.is_visible ?? false,
-          image_src: data.media?.image_src ?? "",
-          image_alt: data.media?.image_alt ?? "",
-          text_block_1: data.text?.text_block_1 ?? "",
-          text_block_2: data.text?.text_block_2 ?? "",
-        });
+        const data = await getAboutBlockAdmin(blockId);
+        if (data) {
+          form.reset(mapInitialDataToForm(data));
+        }
       } catch {
         toast({
           title: "Error",
@@ -92,7 +113,7 @@ export default function AboutTextDualBlockForm({ blockId, blockLabel, disabled =
       }
     };
     load();
-  }, [blockId, blockLabel, form, toast]);
+  }, [blockId, blockLabel, form, initialData, toast]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) {
@@ -130,18 +151,12 @@ export default function AboutTextDualBlockForm({ blockId, blockLabel, disabled =
   const handleSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      const res = await fetch(`/api/admin/about/blocks/${blockId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        throw new Error("Update failed");
-      }
+      await saveAboutBlock(blockId, data);
       toast({
         title: `${blockLabel} updated`,
         description: "Block saved successfully.",
       });
+      router.refresh();
     } catch {
       toast({
         title: "Error",

@@ -2,10 +2,10 @@
 
 import {
   useCallback,
-  useEffect,
   useState,
   type KeyboardEvent,
 } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Pencil, Trash2 } from "lucide-react";
+import {
+  addVisitorArea,
+  removeVisitorArea,
+  saveVisitorArea,
+} from "@/app/actions/admin/visitors";
 
 export type VisitorAreaRow = {
   id: string;
@@ -27,10 +32,13 @@ export type VisitorAreaRow = {
   created_at: string | null;
 };
 
-const VisitorAreasPanel = () => {
+type VisitorsClientPageProps = {
+  initialAreas: VisitorAreaRow[];
+};
+
+const VisitorAreasPanel = ({ initialAreas }: VisitorsClientPageProps) => {
+  const router = useRouter();
   const { toast } = useToast();
-  const [areas, setAreas] = useState<VisitorAreaRow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [newName, setNewName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -41,37 +49,9 @@ const VisitorAreasPanel = () => {
   const [areaPendingDelete, setAreaPendingDelete] =
     useState<VisitorAreaRow | null>(null);
 
-  const fetchAreas = useCallback(async () => {
-    const response = await fetch("/api/admin/visitors/areas");
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({}));
-      throw new Error(
-        typeof body.error === "string"
-          ? body.error
-          : "Failed to load work areas"
-      );
-    }
-    const data = await response.json();
-    setAreas(data.areas ?? []);
-  }, []);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        await fetchAreas();
-      } catch (e) {
-        toast({
-          title: "Error",
-          description:
-            e instanceof Error ? e.message : "Could not load work areas.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    void load();
-  }, [fetchAreas, toast]);
+  const refreshAreas = useCallback(() => {
+    router.refresh();
+  }, [router]);
 
   const handleCreate = async () => {
     const trimmed = newName.trim();
@@ -86,19 +66,9 @@ const VisitorAreasPanel = () => {
 
     setIsCreating(true);
     try {
-      const response = await fetch("/api/admin/visitors/areas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmed }),
-      });
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(
-          typeof body.error === "string" ? body.error : "Create failed"
-        );
-      }
+      await addVisitorArea(trimmed);
       setNewName("");
-      await fetchAreas();
+      refreshAreas();
       toast({
         title: "Work area created",
         description: `"${trimmed}" was added.`,
@@ -137,20 +107,10 @@ const VisitorAreasPanel = () => {
 
     setSavingId(id);
     try {
-      const response = await fetch(`/api/admin/visitors/areas/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmed }),
-      });
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(
-          typeof body.error === "string" ? body.error : "Update failed"
-        );
-      }
+      await saveVisitorArea(id, trimmed);
       setEditingId(null);
       setEditName("");
-      await fetchAreas();
+      refreshAreas();
       toast({
         title: "Work area updated",
         description: `Saved as "${trimmed}".`,
@@ -178,18 +138,10 @@ const VisitorAreasPanel = () => {
     const id = areaPendingDelete.id;
     setDeletingId(id);
     try {
-      const response = await fetch(`/api/admin/visitors/areas/${id}`, {
-        method: "DELETE",
-      });
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(
-          typeof body.error === "string" ? body.error : "Delete failed"
-        );
-      }
+      await removeVisitorArea(id);
       setDeleteOpen(false);
       setAreaPendingDelete(null);
-      await fetchAreas();
+      refreshAreas();
       toast({
         title: "Work area removed",
         description:
@@ -226,18 +178,6 @@ const VisitorAreasPanel = () => {
       handleCancelEdit();
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <div
-          className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
-          aria-hidden
-        />
-        <span className="sr-only">Loading work areas</span>
-      </div>
-    );
-  }
 
   return (
     <section className="space-y-6" aria-labelledby="visitor-work-areas-heading">
@@ -283,13 +223,13 @@ const VisitorAreasPanel = () => {
         </p>
       </div>
 
-      {areas.length === 0 ? (
+      {initialAreas.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           No work areas yet. Add one above.
         </p>
       ) : (
         <ul className="divide-y divide-border rounded-lg border border-input overflow-hidden">
-          {areas.map((area) => (
+          {initialAreas.map((area) => (
             <li
               key={area.id}
               className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-background"
@@ -400,10 +340,10 @@ const VisitorAreasPanel = () => {
   );
 };
 
-const VisitorsClientPage = () => {
+const VisitorsClientPage = ({ initialAreas }: VisitorsClientPageProps) => {
   return (
     <div className="flex flex-col gap-4 rounded-lg bg-white p-4 shadow-md">
-      <VisitorAreasPanel />
+      <VisitorAreasPanel initialAreas={initialAreas} />
     </div>
   );
 };

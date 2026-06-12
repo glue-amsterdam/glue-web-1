@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { mutate } from "swr";
 import type { StickyParticipantOption } from "@/components/admin/about/curated-sticky/StickyParticipantPicker";
 import type { StickyMember } from "@/types/sticky-member";
 import {
@@ -40,6 +40,7 @@ export const StickyGroupEditor = ({
   onDeleted,
 }: StickyGroupEditorProps) => {
   const { toast } = useToast();
+  const router = useRouter();
   const [isLoadingGroup, setIsLoadingGroup] = useState(true);
   const [isSavingGroup, setIsSavingGroup] = useState(false);
   const [photoUploadState, setPhotoUploadState] = useState<UploadState | null>(
@@ -330,7 +331,7 @@ export const StickyGroupEditor = ({
         });
       }
 
-      await mutate("/api/admin/sticky-groups/years");
+      router.refresh();
       await loadGroup();
       onSaved?.();
     } catch (error) {
@@ -379,7 +380,7 @@ export const StickyGroupEditor = ({
         description: "Sticky group deleted!",
       });
 
-      await mutate("/api/admin/sticky-groups/years");
+      router.refresh();
       setGroupExistsInDb(false);
       setCurrentGroup({ year, group_photo_url: "", members: [] });
       onDeleted?.();

@@ -1,15 +1,9 @@
-import { config } from "@/config";
+import { getAdminSupabaseOrRedirect } from "@/lib/admin/get-admin-supabase";
+import { fetchTextSectionsByGroup } from "@/lib/text-sections/fetch-text-sections-by-group";
+import { createClient } from "@/utils/supabase/server";
 
 import TextSectionAdminForm from "@/components/admin/text-sections/text-section-admin-form";
 import type { TextSectionData } from "@/lib/text-sections/types";
-
-const fetchParticipateTextSections = async (): Promise<TextSectionData[]> => {
-  const res = await fetch(
-    `${config.baseApiUrl}/admin/text-sections?group=participate`,
-    { cache: "no-store" }
-  );
-  return res.json();
-};
 
 const getTextSectionBySlug = (
   sections: TextSectionData[],
@@ -23,7 +17,12 @@ const getTextSectionBySlug = (
 };
 
 export default async function ParticipateAdminPage() {
-  const participateTextSections = await fetchParticipateTextSections();
+  await getAdminSupabaseOrRedirect();
+  const supabase = await createClient();
+  const participateTextSections = await fetchTextSectionsByGroup(
+    supabase,
+    "participate"
+  );
 
   return (
     <div className="space-y-10">

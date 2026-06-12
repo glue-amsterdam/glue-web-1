@@ -6,8 +6,8 @@ import { z } from "zod";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { mutate } from "swr";
-import { createSubmitHandler } from "@/utils/form-helpers";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
+import { saveTerms } from "@/app/actions/admin/terms";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import {
   Form,
@@ -45,15 +45,14 @@ export default function TermsForm({ initialData }: TermsFormProps) {
     reset(initialData);
   }, [initialData, reset]);
 
-  const onSubmit = createSubmitHandler<TermsFormValues>(
-    "/api/admin/terms",
+  const onSubmit = createActionSubmitHandler<TermsFormValues>(
+    saveTerms,
     async (data) => {
       toast({
         title: "Terms and conditions updated",
         description: "The terms and conditions have been successfully updated.",
       });
       reset(data);
-      await mutate("/api/admin/terms");
       router.refresh();
     },
     (error) => {

@@ -6,7 +6,7 @@ import { ADMIN_QUICK_LINKS } from "@/constants/admin-navigation";
 
 export default function AdminDashboard() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 min-h-dvh">
       <p className="base-text-size text-zinc-600">
         Select a section from the sidebar to manage site content, tour settings,
         and yearly archives.

@@ -1,5 +1,6 @@
 import { getPlans } from "@/app/actions/plans";
 import ApplicationStatusManager from "@/components/admin/plans/ApplicationStatusManager";
+import { fetchPlansApplicationStatus } from "@/lib/participate/fetch-plans-admin";
 import ParticipateBasePackageForm from "@/components/admin/plans/ParticipateBasePackageForm";
 import PlansList from "@/components/admin/plans/PlansList";
 import {
@@ -43,16 +44,17 @@ const fetchBasePackageData = async (): Promise<ParticipateBasePackageAdminData> 
 };
 
 export default async function PlansPage() {
-  const [plans, basePackageData] = await Promise.all([
+  const [plans, basePackageData, applicationStatus] = await Promise.all([
     getPlans(),
     fetchBasePackageData(),
+    fetchPlansApplicationStatus(),
   ]);
 
   return (
     <div className="rounded-lg bg-white p-4 shadow-md">
       <div className="space-y-10">
         <section>
-          <ApplicationStatusManager />
+          <ApplicationStatusManager initialData={applicationStatus} />
         </section>
 
         <section className="border-t pt-8">

@@ -99,37 +99,14 @@ const createInitialCatalog = (
 const resolveInitialProgramState = (
   initialData: ProgramPageResponse,
   initialFilters: ProgramFilters
-): ResolvedProgramState => {
-  const defaults: ResolvedProgramState = {
-    items: initialData.items,
-    total: initialData.total,
-    hasMore: initialData.hasMore,
-    filters: initialFilters,
-    catalog: createInitialCatalog(initialFilters, initialData),
-    suppressFetchKey: null,
-  };
-
-  if (typeof window === "undefined") return defaults;
-
-  const filtersKey = getProgramFiltersCacheKey(initialFilters);
-  const snapshot = readListSnapshot<ProgramFilters>(
-    PROGRAM_LIST_ROUTE,
-    filtersKey,
-    areFiltersEqual,
-    initialFilters
-  );
-
-  if (!snapshot) return defaults;
-
-  return {
-    items: snapshot.items as ProgramListItem[],
-    total: snapshot.total,
-    hasMore: snapshot.hasMore,
-    filters: snapshot.filters,
-    catalog: snapshot.catalog as ProgramCatalog | null,
-    suppressFetchKey: filtersKey,
-  };
-};
+): ResolvedProgramState => ({
+  items: initialData.items,
+  total: initialData.total,
+  hasMore: initialData.hasMore,
+  filters: initialFilters,
+  catalog: createInitialCatalog(initialFilters, initialData),
+  suppressFetchKey: null,
+});
 
 export const useProgramPage = (
   initialData: ProgramPageResponse,
@@ -273,7 +250,7 @@ export const useProgramPage = (
       offset: number,
       append: boolean,
       shouldSyncUrl: boolean,
-      options?: { silent?: boolean }
+      options?: { silent?: boolean; preserveOnError?: boolean }
     ) => {
       const cacheKey = getProgramFiltersCacheKey(nextFilters);
 
@@ -294,6 +271,7 @@ export const useProgramPage = (
 
       const requestId = ++requestIdRef.current;
       const silent = options?.silent ?? false;
+      const preserveOnError = options?.preserveOnError ?? false;
 
       if (append) {
         setLoadingMore(true);
@@ -324,6 +302,10 @@ export const useProgramPage = (
       } catch (err) {
         if (requestId !== requestIdRef.current) return;
 
+        if (preserveOnError && listStateRef.current.items.length > 0) {
+          return;
+        }
+
         const message =
           err instanceof Error ? err.message : "Error loading program events";
         setError(message);
@@ -340,14 +322,35 @@ export const useProgramPage = (
     [syncUrl, updateCatalog]
   );
 
-  const hadSessionSnapshotRef = useRef(initialState.suppressFetchKey !== null);
+  const sessionRestoreDoneRef = useRef(false);
 
   useEffect(() => {
-    if (!hadSessionSnapshotRef.current) return;
+    if (sessionRestoreDoneRef.current) return;
+    sessionRestoreDoneRef.current = true;
+
+    const filtersKey = getProgramFiltersCacheKey(initialFilters);
+    const snapshot = readListSnapshot<ProgramFilters>(
+      PROGRAM_LIST_ROUTE,
+      filtersKey,
+      areFiltersEqual,
+      initialFilters
+    );
+
+    if (!snapshot) return;
+
+    suppressFetchForFiltersKeyRef.current = filtersKey;
+    catalogRef.current = snapshot.catalog as ProgramCatalog | null;
+    setItems(snapshot.items as ProgramListItem[]);
+    setTotal(snapshot.total);
+    setHasMore(snapshot.hasMore);
+    setFilters(snapshot.filters);
 
     clearSuppressFetch();
-    void fetchPage(initialState.filters, 0, false, false, { silent: true });
-  }, [clearSuppressFetch, fetchPage, initialState.filters]);
+    void fetchPage(snapshot.filters, 0, false, false, {
+      silent: true,
+      preserveOnError: true,
+    });
+  }, [clearSuppressFetch, fetchPage, initialFilters]);
 
   const handleFiltersChange = useCallback(
     (next: Partial<ProgramFilters>) => {
@@ -403,6 +406,7 @@ export const useProgramPage = (
 
     fetchPage(filters, 0, false, shouldSyncUrl, {
       silent: localResult !== null,
+      preserveOnError: localResult !== null,
     });
   }, [applyLocalPage, fetchPage, filters]);
 

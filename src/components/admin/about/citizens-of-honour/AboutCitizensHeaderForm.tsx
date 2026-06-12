@@ -5,13 +5,13 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { createSubmitHandler } from "@/utils/form-helpers";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
+import { saveAboutCitizensSection } from "@/app/actions/admin/about";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import {
   citizensSectionHeaderSchema,
   type CitizensSectionHeader,
 } from "@/schemas/citizenSchema";
-import { mutate } from "swr";
 import { CitizensHeaderForm } from "./CitizensHeaderForm";
 
 export default function AboutCitizensHeaderForm({
@@ -34,15 +34,14 @@ export default function AboutCitizensHeaderForm({
     reset(initialData);
   }, [initialData, reset]);
 
-  const onSubmit = createSubmitHandler<CitizensSectionHeader>(
-    "/api/admin/about/citizens",
+  const onSubmit = createActionSubmitHandler<CitizensSectionHeader>(
+    saveAboutCitizensSection,
     async () => {
       toast({
         title: "Citizens section updated",
         description:
           "The citizens of honour section has been successfully updated.",
       });
-      await mutate("/api/admin/about/citizens");
       router.refresh();
     },
     () => {

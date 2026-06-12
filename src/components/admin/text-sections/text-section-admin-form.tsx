@@ -5,6 +5,8 @@ import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
+import { saveTextSection } from "@/app/actions/admin/text-sections";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { RichTextEditor } from "@/components/editor";
 import {
@@ -146,20 +148,9 @@ const TextSectionAdminForm = ({ slug, sectionTitle, initialData }: Props) => {
     reset(toFormValues(initialData));
   }, [initialData, reset]);
 
-  const onSubmit = async (values: TextSectionUpdate) => {
-    setIsSubmitting(true);
-    try {
-      const response = await fetch(`/api/admin/text-sections/${slug}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save");
-      }
-
-      const updated: TextSectionData = await response.json();
+  const onSubmit = createActionSubmitHandler<TextSectionUpdate, TextSectionData>(
+    (values) => saveTextSection(slug, values),
+    async (updated) => {
       reset(toFormValues(updated));
 
       toast({
@@ -167,20 +158,25 @@ const TextSectionAdminForm = ({ slug, sectionTitle, initialData }: Props) => {
         description: `${sectionTitle} has been successfully updated.`,
       });
       router.refresh();
-    } catch {
+    },
+    () => {
       toast({
         title: "Error",
         description: "Failed to update the section. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
+  );
+
+  const handleFormSubmit = async (values: TextSectionUpdate) => {
+    setIsSubmitting(true);
+    await onSubmit(values);
+    setIsSubmitting(false);
   };
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <TextSectionFields variant={initialData.variant} />
         <SaveChangesButton isSubmitting={isSubmitting} />
       </form>

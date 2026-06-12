@@ -1,7 +1,10 @@
+import { getAdminSupabaseOrRedirect } from "@/lib/admin/get-admin-supabase";
+import { fetchVisitorAreas } from "@/lib/visitors/fetch-visitor-areas";
 import VisitorsClientPage from "@/components/admin/visitors/VisitorsClientPage";
 
-const VisitorsPage = () => {
-  return <VisitorsClientPage />;
-};
+export default async function VisitorsPage() {
+  const supabase = await getAdminSupabaseOrRedirect();
+  const areas = await fetchVisitorAreas(supabase);
 
-export default VisitorsPage;
+  return <VisitorsClientPage initialAreas={areas} />;
+}

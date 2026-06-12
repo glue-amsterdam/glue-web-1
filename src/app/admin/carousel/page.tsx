@@ -1,15 +1,13 @@
-import { config } from "@/config";
+import { getAdminSupabaseOrRedirect } from "@/lib/admin/get-admin-supabase";
+import { fetchAboutCarouselAdmin } from "@/lib/about/fetch-about-admin";
+import { createClient } from "@/utils/supabase/server";
 
 import AboutCarouselForm from "@/components/admin/about/carousel/AboutCarouselForm";
 
-const fetchAboutCarousel = async () => {
-  const res = await fetch(`${config.baseApiUrl}/admin/about/carousel`);
-  const data = await res.json();
-  return data;
-};
-
 export default async function CarouselAdminPage() {
-  const carouselData = await fetchAboutCarousel();
+  await getAdminSupabaseOrRedirect();
+  const supabase = await createClient();
+  const carouselData = await fetchAboutCarouselAdmin(supabase);
 
   return (
     <div className="rounded-lg bg-white p-4 shadow-md">

@@ -108,37 +108,14 @@ const createInitialCatalog = (
 const resolveInitialExhibitorsState = (
   initialData: ExhibitorsPageResponse,
   initialFilters: ExhibitorsFilters
-): ResolvedExhibitorsState => {
-  const defaults: ResolvedExhibitorsState = {
-    items: initialData.items,
-    total: initialData.total,
-    hasMore: initialData.hasMore,
-    filters: initialFilters,
-    catalog: createInitialCatalog(initialFilters, initialData),
-    suppressFetchKey: null,
-  };
-
-  if (typeof window === "undefined") return defaults;
-
-  const filtersKey = getExhibitorsFiltersCacheKey(initialFilters);
-  const snapshot = readListSnapshot<ExhibitorsFilters>(
-    EXHIBITORS_LIST_ROUTE,
-    filtersKey,
-    areFiltersEqual,
-    initialFilters
-  );
-
-  if (!snapshot) return defaults;
-
-  return {
-    items: snapshot.items as ExhibitorItem[],
-    total: snapshot.total,
-    hasMore: snapshot.hasMore,
-    filters: snapshot.filters,
-    catalog: snapshot.catalog as ExhibitorsCatalog | null,
-    suppressFetchKey: filtersKey,
-  };
-};
+): ResolvedExhibitorsState => ({
+  items: initialData.items,
+  total: initialData.total,
+  hasMore: initialData.hasMore,
+  filters: initialFilters,
+  catalog: createInitialCatalog(initialFilters, initialData),
+  suppressFetchKey: null,
+});
 
 export const useExhibitorsPage = (
   initialData: ExhibitorsPageResponse,
@@ -282,7 +259,7 @@ export const useExhibitorsPage = (
       offset: number,
       append: boolean,
       shouldSyncUrl: boolean,
-      options?: { silent?: boolean }
+      options?: { silent?: boolean; preserveOnError?: boolean }
     ) => {
       const cacheKey = getExhibitorsFiltersCacheKey(nextFilters);
 
@@ -303,6 +280,7 @@ export const useExhibitorsPage = (
 
       const requestId = ++requestIdRef.current;
       const silent = options?.silent ?? false;
+      const preserveOnError = options?.preserveOnError ?? false;
 
       if (append) {
         setLoadingMore(true);
@@ -333,6 +311,10 @@ export const useExhibitorsPage = (
       } catch (err) {
         if (requestId !== requestIdRef.current) return;
 
+        if (preserveOnError && listStateRef.current.items.length > 0) {
+          return;
+        }
+
         const message =
           err instanceof Error ? err.message : "Error loading exhibitors";
         setError(message);
@@ -349,14 +331,35 @@ export const useExhibitorsPage = (
     [syncUrl, updateCatalog]
   );
 
-  const hadSessionSnapshotRef = useRef(initialState.suppressFetchKey !== null);
+  const sessionRestoreDoneRef = useRef(false);
 
   useEffect(() => {
-    if (!hadSessionSnapshotRef.current) return;
+    if (sessionRestoreDoneRef.current) return;
+    sessionRestoreDoneRef.current = true;
+
+    const filtersKey = getExhibitorsFiltersCacheKey(initialFilters);
+    const snapshot = readListSnapshot<ExhibitorsFilters>(
+      EXHIBITORS_LIST_ROUTE,
+      filtersKey,
+      areFiltersEqual,
+      initialFilters
+    );
+
+    if (!snapshot) return;
+
+    suppressFetchForFiltersKeyRef.current = filtersKey;
+    catalogRef.current = snapshot.catalog as ExhibitorsCatalog | null;
+    setItems(snapshot.items as ExhibitorItem[]);
+    setTotal(snapshot.total);
+    setHasMore(snapshot.hasMore);
+    setFilters(snapshot.filters);
 
     clearSuppressFetch();
-    void fetchPage(initialState.filters, 0, false, false, { silent: true });
-  }, [clearSuppressFetch, fetchPage, initialState.filters]);
+    void fetchPage(snapshot.filters, 0, false, false, {
+      silent: true,
+      preserveOnError: true,
+    });
+  }, [clearSuppressFetch, fetchPage, initialFilters]);
 
   const handleFiltersChange = useCallback(
     (next: Partial<ExhibitorsFilters>) => {
@@ -412,6 +415,7 @@ export const useExhibitorsPage = (
 
     fetchPage(filters, 0, false, shouldSyncUrl, {
       silent: localResult !== null,
+      preserveOnError: localResult !== null,
     });
   }, [applyLocalPage, fetchPage, filters]);
 

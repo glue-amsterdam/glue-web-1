@@ -26,6 +26,9 @@ import { Input } from "@/components/ui/input";
 import { RichTextEditor } from "@/components/editor";
 import { Plus, Trash2 } from "lucide-react";
 import { ABOUT_BLOCK_IDS } from "@/schemas/aboutPageSchema";
+import type { AboutBlockAdminData } from "@/lib/about/fetch-about-block-admin";
+import { getAboutBlockAdmin, saveAboutBlock } from "@/app/actions/admin/about";
+import { useRouter } from "next/navigation";
 
 const faqItemSchema = z.object({
   question: z.string().min(1),
@@ -40,21 +43,37 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export default function AboutFaqForm() {
+type Props = {
+  initialData?: AboutBlockAdminData | null;
+};
+
+const mapInitialDataToForm = (data: AboutBlockAdminData): FormData => ({
+  title: data.block?.title ?? "FAQ",
+  is_visible: data.block?.is_visible ?? false,
+  items: (data.items ?? []).map((item) => ({
+    question: item.question,
+    answer: item.answer ?? "",
+  })),
+});
+
+export default function AboutFaqForm({ initialData }: Props) {
   const { toast } = useToast();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialData);
   const [openItemId, setOpenItemId] = useState<string | undefined>();
   const pendingOpenLastRef = useRef(false);
   const blockId = ABOUT_BLOCK_IDS.FAQ;
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "FAQ",
-      is_visible: false,
-      items: [],
-    },
+    defaultValues: initialData
+      ? mapInitialDataToForm(initialData)
+      : {
+          title: "FAQ",
+          is_visible: false,
+          items: [],
+        },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -72,22 +91,20 @@ export default function AboutFaqForm() {
   }, [fields]);
 
   useEffect(() => {
+    if (initialData) {
+      form.reset(mapInitialDataToForm(initialData));
+      setOpenItemId(undefined);
+      setIsLoading(false);
+      return;
+    }
+
     const load = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/admin/about/blocks/${blockId}`);
-        const data = await res.json();
-        const items = (data.items ?? []).map(
-          (item: { question: string; answer: string }) => ({
-            question: item.question,
-            answer: item.answer ?? "",
-          })
-        );
-        form.reset({
-          title: data.block?.title ?? "FAQ",
-          is_visible: data.block?.is_visible ?? false,
-          items,
-        });
+        const data = await getAboutBlockAdmin(blockId);
+        if (data) {
+          form.reset(mapInitialDataToForm(data));
+        }
         setOpenItemId(undefined);
       } catch {
         toast({
@@ -100,7 +117,7 @@ export default function AboutFaqForm() {
       }
     };
     load();
-  }, [blockId, form, toast]);
+  }, [blockId, form, initialData, toast]);
 
   const handleAddItem = () => {
     pendingOpenLastRef.current = true;
@@ -117,18 +134,11 @@ export default function AboutFaqForm() {
   const handleSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      const blockRes = await fetch(`/api/admin/about/blocks/${blockId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: data.title,
-          description: "",
-          is_visible: data.is_visible,
-        }),
+      await saveAboutBlock(blockId, {
+        title: data.title,
+        description: "",
+        is_visible: data.is_visible,
       });
-      if (!blockRes.ok) {
-        throw new Error("Block update failed");
-      }
 
       const itemsRes = await fetch(`/api/admin/about/blocks/faq/items`, {
         method: "PUT",
@@ -148,6 +158,7 @@ export default function AboutFaqForm() {
         title: "FAQ updated",
         description: "Block saved successfully.",
       });
+      router.refresh();
     } catch {
       toast({
         title: "Error",

@@ -47,6 +47,7 @@ export default async function RootLayout({
           "--up-to-three-participants-font-color":
             theme.upToThreeParticipantsFontColor,
           "--special-program-font-color": theme.specialProgramFontColor,
+
         } as React.CSSProperties
       }
     >

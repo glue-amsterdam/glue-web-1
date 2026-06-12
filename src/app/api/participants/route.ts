@@ -4,7 +4,7 @@ import {
   ExhibitorsQueryError,
   parseExhibitorsQuery,
 } from "@/lib/participants/exhibitors-query";
-import { createClient } from "@/utils/supabase/server";
+import { createPublicSupabaseClient } from "@/utils/supabase/public";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
       throw error;
     }
 
-    const supabase = await createClient();
+    const supabase = createPublicSupabaseClient();
     const response = await getExhibitorsPage(supabase, query);
 
     return NextResponse.json(response);

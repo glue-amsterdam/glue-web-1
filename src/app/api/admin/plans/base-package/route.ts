@@ -11,7 +11,6 @@ import type {
   ParticipatePlansStatusRow,
 } from "@/lib/participate/types";
 import { participateBasePackageUpdateSchema } from "@/schemas/participatePlansSchema";
-import { createPublicSupabaseClient } from "@/utils/supabase/public";
 import { NextResponse } from "next/server";
 
 const mapRowToAdminData = (
@@ -25,30 +24,6 @@ const mapRowToAdminData = (
       ? row.base_plan_items.map((item) => ({ label: item.label }))
       : DEFAULT_BASE_PLAN_ITEMS,
 });
-
-export async function GET() {
-  try {
-    const supabase = createPublicSupabaseClient();
-    const { data, error } = await supabase
-      .from("plans_status")
-      .select("base_plan_label, base_plan_subtitle, base_plan_items")
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    return NextResponse.json(
-      mapRowToAdminData(data as ParticipatePlansStatusRow)
-    );
-  } catch (error) {
-    console.error("Error in GET /api/admin/plans/base-package:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch base package" },
-      { status: 500 }
-    );
-  }
-}
 
 export async function PUT(request: Request) {
   const auth = await requireAdminToken();

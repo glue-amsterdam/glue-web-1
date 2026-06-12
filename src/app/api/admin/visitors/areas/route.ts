@@ -19,33 +19,6 @@ const requireAdmin = async () => {
   return null;
 };
 
-export async function GET() {
-  const unauthorized = await requireAdmin();
-  if (unauthorized) {
-    return unauthorized;
-  }
-
-  try {
-    const supabase = await createAdminClient();
-    const { data, error } = await supabase
-      .from("visitor_areas")
-      .select("id, name, created_at")
-      .order("name", { ascending: true });
-
-    if (error) {
-      throw error;
-    }
-
-    return NextResponse.json({ areas: data ?? [] });
-  } catch (err) {
-    console.error("Error in GET /api/admin/visitors/areas:", err);
-    return NextResponse.json(
-      { error: "Failed to fetch work areas" },
-      { status: 500 }
-    );
-  }
-}
-
 export async function POST(request: Request) {
   const unauthorized = await requireAdmin();
   if (unauthorized) {

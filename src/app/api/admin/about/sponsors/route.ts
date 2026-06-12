@@ -5,23 +5,6 @@ import { sponsorSchema } from "@/schemas/sponsorsSchema";
 import { createClient } from "@/utils/supabase/server";
 import { config } from "@/config";
 
-export async function GET() {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase.from("about_sponsors").select("*");
-
-    if (error) throw error;
-
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error in GET /api/admin/sponsors", error);
-    return NextResponse.json(
-      { error: "An error occurred while fetching sponsors" },
-      { status: 500 }
-    );
-  }
-}
-
 export async function POST(request: Request) {
   const cookieStore = await cookies();
   const adminToken = cookieStore.get("admin_token");

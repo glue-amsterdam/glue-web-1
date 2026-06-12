@@ -214,7 +214,8 @@ export const NavBarClient = ({
 
   const showExhibitorsNav = pathname === "/exhibitors";
   const showProgramNav = pathname === "/program";
-  const showParticipateNav = pathname === "/participate" && !isAuthenticated;
+  const showParticipateNav =
+    (pathname === "/participate" || pathname === "/") && !isAuthenticated;
   const showVisitNav = pathname === "/visit" && !isAuthenticated;
 
   return (

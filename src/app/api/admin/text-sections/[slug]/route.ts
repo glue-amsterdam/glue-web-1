@@ -14,27 +14,6 @@ type RouteContext = {
   params: Promise<{ slug: string }>;
 };
 
-export async function GET(_request: Request, context: RouteContext) {
-  try {
-    const { slug } = await context.params;
-
-    if (!isTextSectionSlug(slug)) {
-      return NextResponse.json({ error: "Invalid slug" }, { status: 400 });
-    }
-
-    const supabase = createPublicSupabaseClient();
-    const section = await fetchTextSection(supabase, slug);
-
-    return NextResponse.json(section);
-  } catch (error) {
-    console.error("Error in GET /api/admin/text-sections/[slug]:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch text section" },
-      { status: 500 }
-    );
-  }
-}
-
 export async function PUT(request: Request, context: RouteContext) {
   const auth = await requireAdminToken();
   if (!auth.ok) {

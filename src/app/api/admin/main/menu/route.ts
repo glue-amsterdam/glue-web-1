@@ -3,32 +3,6 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { revalidateSiteThemeCache } from "@/lib/main/revalidate-site-theme-cache";
 
-export async function GET() {
-  const supabase = await createClient();
-  const { data: mainMenu, error } = await supabase
-    .from("main_menu")
-    .select("*");
-
-  if (error) {
-    console.error("Error fetching main section:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch main menu" },
-      { status: 500 }
-    );
-  }
-
-  if (!mainMenu || mainMenu.length === 0) {
-    return NextResponse.json({ error: "Main menu not found" }, { status: 404 });
-  }
-
-  const parsedMainMenu = mainMenu.map((item) => ({
-    ...item,
-    subItems: item.subItems ? JSON.parse(item.subItems) : null,
-  }));
-
-  return NextResponse.json({ mainMenu: parsedMainMenu });
-}
-
 export async function PUT(request: Request) {
   const cookieStore = await cookies();
   const adminToken = cookieStore.get("admin_token");

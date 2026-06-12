@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
+import { savePlansBasePackage } from "@/app/actions/admin/plans";
 import type { ParticipateBasePackageAdminData } from "@/lib/participate/types";
 import {
   participateBasePackageUpdateSchema,
@@ -47,41 +49,34 @@ const ParticipateBasePackageForm = ({ initialData }: Props) => {
     reset(initialData);
   }, [initialData, reset]);
 
-  const onSubmit = async (values: ParticipateBasePackageUpdate) => {
-    setIsSubmitting(true);
-    try {
-      const response = await fetch("/api/admin/plans/base-package", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save");
-      }
-
-      const updated = (await response.json()) as ParticipateBasePackageAdminData;
+  const onSubmit = createActionSubmitHandler<ParticipateBasePackageUpdate>(
+    savePlansBasePackage,
+    async (updated) => {
       reset(updated);
-
       toast({
         title: "Base package updated",
         description: "The intro card has been successfully updated.",
       });
       router.refresh();
-    } catch {
+    },
+    () => {
       toast({
         title: "Error",
         description: "Failed to update the base package. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
+  );
+
+  const handleFormSubmit = async (values: ParticipateBasePackageUpdate) => {
+    setIsSubmitting(true);
+    await onSubmit(values);
+    setIsSubmitting(false);
   };
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <div>
           <Label htmlFor="base_plan_label">Card title</Label>
           <Input id="base_plan_label" {...register("base_plan_label")} />

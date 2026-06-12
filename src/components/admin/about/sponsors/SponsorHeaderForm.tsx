@@ -11,7 +11,8 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
-import { createSubmitHandler } from "@/utils/form-helpers";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
+import { saveAboutSponsorsHeader } from "@/app/actions/admin/about";
 import {
   FormControl,
   FormDescription,
@@ -20,7 +21,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { mutate } from "swr";
 import { Switch } from "@/components/ui/switch";
 import { RichTextEditor } from "@/components/editor";
 
@@ -55,14 +55,13 @@ export default function SponsorHeaderForm({
     reset(initialData);
   }, [initialData, reset]);
 
-  const onSubmit = createSubmitHandler<SponsorsHeader>(
-    "/api/admin/about/sponsors/header",
+  const onSubmit = createActionSubmitHandler<SponsorsHeader>(
+    saveAboutSponsorsHeader,
     async () => {
       toast({
         title: "Sponsors header updated",
         description: "The sponsors header have been successfully updated.",
       });
-      await mutate("/api/admin/about/sponsors/header");
       router.refresh();
     },
     (error) => {

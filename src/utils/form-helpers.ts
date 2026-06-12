@@ -35,6 +35,27 @@ export function createSubmitHandler<T extends FieldValues>(
   };
 }
 
+export function createActionSubmitHandler<TInput, TResult = TInput>(
+  action: (data: TInput) => Promise<TResult>,
+  onSuccess?: (data: TResult) => void | Promise<void>,
+  onError?: (error: unknown) => void
+) {
+  return async (data: TInput) => {
+    try {
+      const result = await action(data);
+
+      if (onSuccess) {
+        await onSuccess(result);
+      }
+    } catch (error) {
+      console.error("Error in server action:", error);
+      if (onError) {
+        onError(error);
+      }
+    }
+  };
+}
+
 export const resetWatchedFieldsDirtyState = <T extends FieldValues>(
   form: UseFormReturn<T>,
   fields: readonly string[]

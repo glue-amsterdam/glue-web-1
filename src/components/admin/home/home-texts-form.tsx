@@ -6,12 +6,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { createSubmitHandler } from "@/utils/form-helpers";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2 } from "lucide-react";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
-import { mutate } from "swr";
+import {
+  addHomeText,
+  removeHomeText,
+  saveHomeTexts,
+} from "@/app/actions/admin/home";
 import { ColorPicker } from "@/components/ui/color-picker";
 import {
   homeTextsFormSchema,
@@ -29,10 +33,9 @@ interface HomeTextsFormProps {
 
 const createFooterBootstrapPayload = (placement: HomeTextPlacement) => ({
   label: placement === FOOTER_LEFT ? "Footer left" : "Footer right",
-  color: null,
-  href: null,
+  color: "",
+  href: "",
   placement,
-  sort_order: 0,
 });
 
 const HomeTextRowFields = ({
@@ -179,32 +182,20 @@ export default function HomeTextsForm({ initialData }: HomeTextsFormProps) {
         const createdItems = [];
 
         if (!hasLeft) {
-          const response = await fetch("/api/admin/main/home_text", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(createFooterBootstrapPayload(FOOTER_LEFT)),
-          });
-          if (!response.ok) {
-            throw new Error("Failed to create footer left slot");
-          }
-          createdItems.push(await response.json());
+          createdItems.push(
+            await addHomeText(createFooterBootstrapPayload(FOOTER_LEFT))
+          );
         }
 
         if (!hasRight) {
-          const response = await fetch("/api/admin/main/home_text", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(createFooterBootstrapPayload(FOOTER_RIGHT)),
-          });
-          if (!response.ok) {
-            throw new Error("Failed to create footer right slot");
-          }
-          createdItems.push(await response.json());
+          createdItems.push(
+            await addHomeText(createFooterBootstrapPayload(FOOTER_RIGHT))
+          );
         }
 
         if (createdItems.length > 0) {
           reset({ homeTexts: [...currentTexts, ...createdItems] });
-          await mutate("/api/admin/main/home_text");
+          router.refresh();
         }
       } catch (error) {
         console.error("Error ensuring footer slots:", error);
@@ -219,17 +210,16 @@ export default function HomeTextsForm({ initialData }: HomeTextsFormProps) {
     };
 
     void ensureFooterSlots();
-  }, [initialData, reset, toast]);
+  }, [initialData, reset, router, toast]);
 
-  const onSubmit = createSubmitHandler<HomeTextsFormData>(
-    "/api/admin/main/home_text",
+  const onSubmit = createActionSubmitHandler<HomeTextsFormData>(
+    saveHomeTexts,
     async (data) => {
       toast({
         title: "Home texts updated",
         description: "Footer and marquee texts have been successfully updated.",
       });
       reset(data);
-      await mutate("/api/admin/main/home_text");
       router.refresh();
     },
     (error) => {
@@ -250,29 +240,19 @@ export default function HomeTextsForm({ initialData }: HomeTextsFormProps) {
   const handleAddMarquee = async () => {
     setIsAdding(true);
     try {
-      const response = await fetch("/api/admin/main/home_text", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          label: "",
-          color: null,
-          href: null,
-          placement: MARQUEE,
-          sort_order: fields.length,
-        }),
+      const newItem = await addHomeText({
+        label: "",
+        color: "",
+        href: "",
+        placement: MARQUEE,
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to create marquee text row");
-      }
-
-      const newItem = await response.json();
       append(newItem);
 
       toast({
         title: "Marquee text added",
         description: "A new marquee row has been added.",
       });
+      router.refresh();
     } catch (error) {
       console.error("Error adding marquee text row:", error);
       toast({
@@ -289,20 +269,14 @@ export default function HomeTextsForm({ initialData }: HomeTextsFormProps) {
     if (!id) return;
 
     try {
-      const response = await fetch(`/api/admin/main/home_text?id=${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete marquee text row");
-      }
-
+      await removeHomeText(id);
       remove(index);
 
       toast({
         title: "Marquee text deleted",
         description: "The marquee row has been deleted.",
       });
+      router.refresh();
     } catch (error) {
       console.error("Error deleting marquee text row:", error);
       toast({

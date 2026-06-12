@@ -14,8 +14,8 @@ import {
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
 import { LinkItemAdmin, mainLinksAdminSchema } from "@/schemas/mainSchema";
-import { mutate } from "swr";
-import { createSubmitHandler } from "@/utils/form-helpers";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
+import { saveMainLinks } from "@/app/actions/admin/main";
 
 interface MainLinksFormProps {
   initialData: { mainLinks: LinkItemAdmin[] };
@@ -49,16 +49,14 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
     name: "mainLinks",
   });
 
-  const onSubmit = createSubmitHandler<{ mainLinks: LinkItemAdmin[] }>(
-    "/api/admin/main/links",
+  const onSubmit = createActionSubmitHandler<{ mainLinks: LinkItemAdmin[] }>(
+    saveMainLinks,
     async (data) => {
-      console.log("Form submitted successfully", data);
       toast({
         title: "Links updated",
         description: "The main links have been successfully updated.",
       });
       methods.reset(data);
-      await mutate("/api/admin/main/links");
       router.refresh();
     },
     (error) => {

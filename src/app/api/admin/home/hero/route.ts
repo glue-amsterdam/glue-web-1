@@ -1,32 +1,8 @@
 import { requireAdminToken } from "@/lib/admin/require-admin-token";
-import { fetchHomeHero } from "@/lib/home/fetch-home-hero";
 import { mapHomeHeroToRow } from "@/lib/home/map-home-hero-row";
 import { revalidateHomeVideoCache } from "@/lib/home/revalidate-home-cache";
 import { homeHeroSchema } from "@/schemas/homeHeroSchema";
-import { createPublicSupabaseClient } from "@/utils/supabase/public";
 import { NextResponse } from "next/server";
-
-export async function GET() {
-  try {
-    const supabase = createPublicSupabaseClient();
-    const hero = await fetchHomeHero(supabase);
-
-    return NextResponse.json(
-      homeHeroSchema.parse({
-        id: hero.id ?? undefined,
-        description: hero.description,
-        video_url: hero.videoUrl,
-        poster_url: hero.posterUrl,
-      })
-    );
-  } catch (error) {
-    console.error("Error in GET /api/admin/home/hero:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch home hero data" },
-      { status: 500 }
-    );
-  }
-}
 
 export async function PUT(request: Request) {
   const auth = await requireAdminToken();

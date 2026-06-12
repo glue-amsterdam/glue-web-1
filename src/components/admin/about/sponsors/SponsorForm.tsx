@@ -18,6 +18,10 @@ import { Sponsor, sponsorSchema, SponsorType } from "@/schemas/sponsorsSchema";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import {
+  addAboutSponsor,
+  saveAboutSponsor,
+} from "@/app/actions/admin/about";
 import { uploadImage } from "@/utils/supabase/storage/client";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { config } from "@/config";
@@ -102,14 +106,10 @@ export default function SponsorForm({
         image_url: newImageUrl,
       };
 
-      const response = await fetch("/api/admin/about/sponsors", {
-        method: initialData ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sponsorData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save sponsor");
+      if (initialData) {
+        await saveAboutSponsor(sponsorData);
+      } else {
+        await addAboutSponsor(sponsorData);
       }
 
       toast({

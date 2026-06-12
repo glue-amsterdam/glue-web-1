@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import EventsHeaderTitleForm, {
   EventsHeaderTitleFormValues,
 } from "./EventsHeaderTitleForm";
@@ -9,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useState } from "react";
 
 export type SelectableField =
   | "id"
@@ -41,10 +41,13 @@ const AVAILABLE_FIELDS: { key: SelectableField; label: string }[] = [
   { key: "createdAt", label: "Created At" },
 ];
 
-export default function EventsClientPage() {
-  const [headerTitle, setHeaderTitle] =
-    useState<EventsHeaderTitleFormValues | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+type EventsClientPageProps = {
+  initialHeaderTitle: EventsHeaderTitleFormValues;
+};
+
+export default function EventsClientPage({
+  initialHeaderTitle,
+}: EventsClientPageProps) {
   const [showReport, setShowReport] = useState(false);
   const [selectedFields, setSelectedFields] = useState<SelectableField[]>([
     "title",
@@ -59,40 +62,9 @@ export default function EventsClientPage() {
   ]);
   const [showFieldSelector, setShowFieldSelector] = useState(false);
 
-  const fetchData = async () => {
-    try {
-      const headerTitleRes = await fetch("/api/admin/events/header-title");
-      if (!headerTitleRes.ok) {
-        throw new Error("Failed to fetch events header title");
-      }
-
-      const headerTitleData = await headerTitleRes.json();
-
-      setHeaderTitle({
-        header_title: headerTitleData.header_title || "Events",
-      });
-    } catch (error) {
-      console.error("Error fetching events admin data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900" />
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-4 rounded-lg bg-white p-4 shadow-md">
-      {headerTitle && <EventsHeaderTitleForm initialData={headerTitle} />}
+      <EventsHeaderTitleForm initialData={initialHeaderTitle} />
       <div className="border-t pt-4">
         <Button
           onClick={() => {
