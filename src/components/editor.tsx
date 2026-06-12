@@ -267,7 +267,7 @@ export const RichTextEditor = ({
   value,
   onChange,
   readOnly = false,
-  maxLength,
+  maxLength = 1700,
 }: RichTextEditorProps) => {
   const [isMounted, setIsMounted] = useState(false);
   const [charCount, setCharCount] = useState(0);

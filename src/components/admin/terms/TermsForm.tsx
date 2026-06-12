@@ -82,6 +82,7 @@ export default function TermsForm({ initialData }: TermsFormProps) {
               <FormLabel>Content</FormLabel>
               <FormControl>
                 <RichTextEditor
+                  maxLength={8000}
                   value={field.value || ""}
                   onChange={field.onChange}
                 />
