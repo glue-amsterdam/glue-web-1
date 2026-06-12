@@ -48,8 +48,8 @@ const ExhibitorImagesCarousel = ({
     }
 
     return `h-2 w-[90px] lg:w-[150px] shrink-0 cursor-pointer border-0 border-[var(--black-color)] bg-transparent p-0 ${isActive
-        ? "border-b-[3px] lg:border-b-[4px]"
-        : "border-b-[1px] lg:border-b-[2px]"
+      ? "border-b-[3px] lg:border-b-[4px]"
+      : "border-b-[1px] lg:border-b-[2px]"
       }`;
   };
 
