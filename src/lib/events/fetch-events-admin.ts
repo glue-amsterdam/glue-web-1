@@ -1,3 +1,4 @@
+import { fetchEventHeaderTitle as fetchEventHeaderTitleFromDb } from "@/lib/events/fetch-event-header-title";
 import { revalidateProgramCache } from "@/lib/program/revalidate-program-cache";
 import { EventDay, eventDaysResponseSchema } from "@/schemas/eventSchemas";
 import { createClient } from "@/utils/supabase/server";
@@ -7,18 +8,9 @@ import { cookies } from "next/headers";
 
 export const fetchEventHeaderTitle = async (
   supabase?: SupabaseClient
-): Promise<{ header_title: string }> => {
+) => {
   const client = supabase ?? (await createClient());
-  const { data, error } = await client
-    .from("event_settings")
-    .select("*")
-    .single();
-
-  if (error || !data) {
-    return { header_title: "Events" };
-  }
-
-  return { header_title: data.header_title || "Events" };
+  return fetchEventHeaderTitleFromDb(client);
 };
 
 export const upsertEventHeaderTitle = async (

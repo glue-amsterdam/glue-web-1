@@ -7,7 +7,9 @@ export type CitizensSectionProps = {
   description: string;
   citizens: HomeCitizensData["citizens"];
   sectionId?: string;
-  isVisible?: boolean;
+  headingLevel?: "h2" | "h3";
+  archiveYear?: number;
+  hasPadding?: boolean;
 };
 
 export type StickySectionProps = {
@@ -15,9 +17,9 @@ export type StickySectionProps = {
   description: string;
   year: number | null;
   groupPhotoUrl: string | null;
+  additionalMembersText: string;
   participants: HomeStickyGroupData["participants"];
   sectionId?: string;
-  isVisible?: boolean;
   showCta?: boolean;
 };
 
@@ -27,48 +29,53 @@ export type YearNumbersSectionProps = {
   sectionId?: string;
 };
 
+const fallbackCitizensTitle = (year: number | string) =>
+  `Creative Citizens of Honour ${year}`;
+
+const fallbackStickyTitle = (year: number | string) =>
+  `Sticky participants ${year}`;
+
 export const toCitizensSectionProps = (
   data: HomeCitizensData
 ): CitizensSectionProps => ({
-  title: data.title,
+  title: data.title || fallbackCitizensTitle(data.year),
   description: data.description,
   citizens: data.citizens,
-  isVisible: data.is_visible,
 });
 
 export const toStickySectionProps = (
   data: HomeStickyGroupData
 ): StickySectionProps => ({
-  title: data.title,
+  title: data.title || (data.year != null ? fallbackStickyTitle(data.year) : "Sticky participants"),
   description: data.description,
   year: data.year,
   groupPhotoUrl: data.group_photo_url,
+  additionalMembersText: data.additional_members_text,
   participants: data.participants,
-  isVisible: data.is_visible,
 });
 
 export const toArchiveCitizensSectionProps = (
   year: number,
   data: HomeCitizensData
 ): CitizensSectionProps => ({
-  title: `Creative Citizens of Honour ${year}`,
+  title: data.title || fallbackCitizensTitle(year),
   description: data.description,
   citizens: data.citizens,
   sectionId: `archive-citizens-${year}`,
-  isVisible: true,
 });
 
 export const toArchiveStickySectionProps = (
   year: number,
   data: HomeStickyGroupData
 ): StickySectionProps => ({
-  title: `Sticky participants ${year}`,
+  title: data.title || fallbackStickyTitle(year),
   description: data.description,
   year: data.year ?? year,
   groupPhotoUrl: data.group_photo_url,
+  additionalMembersText: data.additional_members_text,
   participants: data.participants,
   sectionId: `archive-sticky-${year}`,
-  isVisible: true,
+  showCta: false,
 });
 
 export const toArchiveYearNumbersSectionProps = (

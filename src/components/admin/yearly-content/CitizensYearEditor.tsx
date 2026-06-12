@@ -1,6 +1,7 @@
 "use client";
 
 import { AboutCitizenWrapper } from "@/components/admin/about/citizens-of-honour/AboutCitizenWrapper";
+import { CitizensYearHeaderForm } from "./CitizensYearHeaderForm";
 
 type CitizensYearEditorProps = {
   year: number;
@@ -14,12 +15,15 @@ export const CitizensYearEditor = ({
   onChanged,
 }: CitizensYearEditorProps) => {
   return (
-    <AboutCitizenWrapper
-      selectedYear={String(year)}
-      isNewYear={isNewYear}
-      onChanged={onChanged}
-      onYearDeleted={() => onChanged?.()}
-      compact
-    />
+    <div className="space-y-8">
+      <CitizensYearHeaderForm year={year} onSaved={onChanged} />
+      <AboutCitizenWrapper
+        selectedYear={String(year)}
+        isNewYear={isNewYear}
+        onChanged={onChanged}
+        onYearDeleted={() => onChanged?.()}
+        compact
+      />
+    </div>
   );
 };

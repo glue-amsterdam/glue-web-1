@@ -2,6 +2,8 @@
 
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Trash2, Upload, Edit } from "lucide-react";
 import {
   StickyParticipantPicker,
@@ -10,10 +12,14 @@ import {
 import type { StickyMember } from "@/types/sticky-member";
 import { AdminImagePreview } from "@/components/admin/admin-image-preview";
 import type { UploadState } from "@/components/image-upload-overlay";
+import { RichTextEditor } from "@/components/editor";
 
 type YearGroup = {
   year: number;
   group_photo_url?: string;
+  title: string;
+  description: string;
+  additional_members_text: string;
   members: StickyMember[];
 };
 
@@ -26,13 +32,9 @@ type StickyGroupFormContentProps = {
   groupExists: boolean;
   onPhotoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAddParticipant: (participant: StickyParticipantOption) => void;
-  onAddResolvedUser: (member: {
-    user_id: string;
-    name: string;
-    slug: string;
-  }) => void;
-  onAddDisplayName: (name: string) => void;
   onRemoveMember: (memberKey: string) => void;
+  onHeaderChange: (field: "title" | "description", value: string) => void;
+  onAdditionalMembersTextChange: (value: string) => void;
   onSaveGroup: () => void;
   onDeleteGroup: (year: number) => void;
 };
@@ -46,9 +48,9 @@ export const StickyGroupFormContent = ({
   groupExists,
   onPhotoUpload,
   onAddParticipant,
-  onAddResolvedUser,
-  onAddDisplayName,
   onRemoveMember,
+  onHeaderChange,
+  onAdditionalMembersTextChange,
   onSaveGroup,
   onDeleteGroup,
 }: StickyGroupFormContentProps) => {
@@ -76,6 +78,30 @@ export const StickyGroupFormContent = ({
 
   return (
     <div className="space-y-6">
+      <div className="space-y-4">
+        <h3 className="font-medium">Section header</h3>
+        <div className="space-y-2">
+          <label htmlFor="sticky-title" className="text-sm font-medium">
+            Title
+          </label>
+          <Input
+            id="sticky-title"
+            type="text"
+            value={currentGroup.title}
+            onChange={(e) => onHeaderChange("title", e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="sticky-description" className="text-sm font-medium">
+            Description
+          </label>
+          <RichTextEditor
+            value={currentGroup.description}
+            onChange={(value) => onHeaderChange("description", value)}
+          />
+        </div>
+      </div>
+
       <div>
         <label className="font-medium block mb-2">Group Photo:</label>
         {currentImageUrl ? (
@@ -129,13 +155,34 @@ export const StickyGroupFormContent = ({
         selectedMembers={currentGroup.members}
         editingYear={editingYear}
         onAddParticipant={onAddParticipant}
-        onAddResolvedUser={onAddResolvedUser}
-        onAddDisplayName={onAddDisplayName}
         onRemoveMember={onRemoveMember}
       />
 
+      <div>
+        <label htmlFor="additional-members-text" className="font-medium block">
+          Additional members (no profile)
+        </label>
+        <p className="text-xs text-gray-500 mt-1 mb-2">
+          Names without an active profile. Shown as plain text at the end of the
+          participant list (comma-separated).
+        </p>
+        <Textarea
+          id="additional-members-text"
+          value={currentGroup.additional_members_text}
+          onChange={(e) => onAdditionalMembersTextChange(e.target.value)}
+          placeholder="Ana López, Pedro Ruiz, Studio X"
+          rows={4}
+          aria-label="Additional members without profile"
+        />
+      </div>
+
       <div className="flex gap-2 pt-4">
-        <Button onClick={onSaveGroup} disabled={isBusy} className="flex-1">
+        <Button
+          type="button"
+          onClick={onSaveGroup}
+          disabled={isBusy}
+          className="flex-1"
+        >
           {isSavingGroup ? "Saving..." : "Save Group"}
         </Button>
         {groupExists ? (

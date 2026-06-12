@@ -1,17 +1,11 @@
 import { getAdminSupabaseOrRedirect } from "@/lib/admin/get-admin-supabase";
-import {
-  fetchAboutCitizensHeader,
-  fetchAboutCuratedSection,
-  fetchAboutParticipantsSection,
-} from "@/lib/about/fetch-about-admin";
+import { fetchAboutParticipantsSection } from "@/lib/about/fetch-about-admin";
 import { fetchHomeHero } from "@/lib/home/fetch-home-hero";
 import { fetchHomeTexts } from "@/lib/main/fetch-home-text-admin";
 import { fetchTextSectionsByGroup } from "@/lib/text-sections/fetch-text-sections-by-group";
 import { createClient } from "@/utils/supabase/server";
 
 import AboutParticipantsForm from "@/components/admin/about/participants/AboutParticipantsForm";
-import AboutCuratedHeaderForm from "@/components/admin/about/curated-sticky/AboutCuratedHeaderForm";
-import AboutCitizensHeaderForm from "@/components/admin/about/citizens-of-honour/AboutCitizensHeaderForm";
 import HomeHeroAdminForm from "@/components/admin/about/home/home-hero-admin-form";
 import HomeTextsForm from "@/components/admin/home/home-texts-form";
 import TextSectionAdminForm from "@/components/admin/text-sections/text-section-admin-form";
@@ -45,21 +39,13 @@ export default async function HomeSectionPage() {
   await getAdminSupabaseOrRedirect();
   const supabase = await createClient();
 
-  const [
-    exhibitorsData,
-    curatedData,
-    citizensHeaderData,
-    heroData,
-    homeTextSections,
-    homeTextsData,
-  ] = await Promise.all([
-    fetchAboutParticipantsSection(supabase),
-    fetchAboutCuratedSection(supabase),
-    fetchAboutCitizensHeader(supabase),
-    fetchHomeHero(supabase),
-    fetchTextSectionsByGroup(supabase, "home"),
-    fetchHomeTexts(supabase),
-  ]);
+  const [exhibitorsData, heroData, homeTextSections, homeTextsData] =
+    await Promise.all([
+      fetchAboutParticipantsSection(supabase),
+      fetchHomeHero(supabase),
+      fetchTextSectionsByGroup(supabase, "home"),
+      fetchHomeTexts(supabase),
+    ]);
 
   return (
     <div className="space-y-10">
@@ -87,10 +73,6 @@ export default async function HomeSectionPage() {
         />
       </section>
       <section className="border-t pt-8">
-        <h2 className="title-text mb-4">Citizens of Honour Section</h2>
-        <AboutCitizensHeaderForm initialData={citizensHeaderData} />
-      </section>
-      <section className="border-t pt-8">
         <h2 className="title-text mb-4">Alternatives from the Unexpected</h2>
         <TextSectionAdminForm
           slug="alternatives-unexpected"
@@ -100,10 +82,6 @@ export default async function HomeSectionPage() {
             "alternatives-unexpected"
           )}
         />
-      </section>
-      <section className="border-t pt-8">
-        <h2 className="title-text mb-4">Sticky Participants Section</h2>
-        <AboutCuratedHeaderForm initialData={curatedData} />
       </section>
       <section className="border-t pt-8">
         <h2 className="title-text mb-4">Newsletter</h2>

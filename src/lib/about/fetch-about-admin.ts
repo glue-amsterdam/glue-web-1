@@ -57,6 +57,7 @@ export const upsertAboutParticipantsSection = async (
   revalidateTag("participants", "max");
   revalidatePath("/");
   revalidatePath("/about");
+  revalidatePath("/exhibitors");
 
   return data;
 };

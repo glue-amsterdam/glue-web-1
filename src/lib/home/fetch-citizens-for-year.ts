@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ClientCitizen } from "@/schemas/citizenSchema";
+import { fetchCitizensYearMeta } from "@/lib/citizens/fetch-citizens-year-meta";
 import { EMPTY_HOME_CITIZENS } from "./fetch-citizens";
 import type { HomeCitizensData } from "./types";
 
@@ -9,15 +10,6 @@ export const fetchCitizensForYear = async (
 ): Promise<HomeCitizensData> => {
   const yearStr = String(year);
 
-  const { data: section, error: headerError } = await supabase
-    .from("about_citizens_section")
-    .select("title, description, is_visible")
-    .single();
-
-  if (headerError || !section) {
-    return EMPTY_HOME_CITIZENS;
-  }
-
   const { data, error } = await supabase
     .from("about_citizens")
     .select("id, name, image_url, description, year")
@@ -25,13 +17,12 @@ export const fetchCitizensForYear = async (
 
   if (error || !data?.length) {
     return {
-      title: section.title ?? "",
-      description: section.description ?? "",
-      is_visible: section.is_visible,
+      ...EMPTY_HOME_CITIZENS,
       year: yearStr,
-      citizens: [],
     };
   }
+
+  const meta = await fetchCitizensYearMeta(supabase, yearStr);
 
   const citizens: ClientCitizen[] = data.map((citizen) => ({
     id: citizen.id,
@@ -42,9 +33,8 @@ export const fetchCitizensForYear = async (
   }));
 
   return {
-    title: section.title ?? "",
-    description: section.description ?? "",
-    is_visible: section.is_visible,
+    title: meta.title,
+    description: meta.description,
     year: yearStr,
     citizens,
   };

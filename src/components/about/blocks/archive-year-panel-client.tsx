@@ -81,10 +81,11 @@ const ArchiveYearPanelClient = ({
         />
       ) : null}
 
-      {stickyData?.participants?.length ? (
+      {stickyData &&
+      (stickyData.participants.length > 0 ||
+        stickyData.additional_members_text.trim().length > 0) ? (
         <section aria-label={`Sticky members ${section.year}`}>
           <StickyParticipantsSection
-            showCta={false}
             {...toArchiveStickySectionProps(section.year, stickyData)}
           />
         </section>

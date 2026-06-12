@@ -14,16 +14,15 @@ export type HomeStickyParticipant = {
 export type HomeStickyGroupData = {
   title: string;
   description: string;
-  is_visible: boolean;
   year: number | null;
   group_photo_url: string | null;
+  additional_members_text: string;
   participants: HomeStickyParticipant[];
 };
 
 export type HomeCitizensData = {
   title: string;
   description: string;
-  is_visible: boolean;
   year: string;
   citizens: ClientCitizen[];
 };

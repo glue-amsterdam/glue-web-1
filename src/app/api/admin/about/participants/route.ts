@@ -37,6 +37,7 @@ export async function PUT(request: Request) {
     revalidateTag("participants", "max");
     revalidatePath("/");
     revalidatePath("/about");
+    revalidatePath("/exhibitors");
 
     return NextResponse.json(participantsData);
   } catch (error) {

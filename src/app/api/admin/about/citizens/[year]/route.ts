@@ -103,6 +103,11 @@ export async function DELETE(
 
     if (deleteError) throw deleteError;
 
+    const yearInt = parseInt(year, 10);
+    if (!Number.isNaN(yearInt)) {
+      await supabase.from("citizens_year_meta").delete().eq("year", yearInt);
+    }
+
     // Delete corresponding images from the storage bucket
     const { data: images, error: fetchError } = await supabase.storage
       .from(config.bucketName)

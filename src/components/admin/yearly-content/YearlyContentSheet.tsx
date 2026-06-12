@@ -45,7 +45,7 @@ export const YearlyContentSheet = ({
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-lg overflow-y-auto text-black"
+        className="w-full sm:max-w-xl overflow-y-auto text-black"
       >
         <SheetHeader>
           <SheetTitle>{title}</SheetTitle>

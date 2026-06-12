@@ -1,41 +1,22 @@
 "use client";
 
-import { useFormContext } from "react-hook-form";
 import {
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Switch } from "@/components/ui/switch";
 import { RichTextEditor } from "@/components/editor";
-import type { CitizensSectionHeader } from "@/schemas/citizenSchema";
 import { Input } from "@/components/ui/input";
+import type { YearlySectionHeader } from "@/schemas/yearly-section-header-schema";
+import { useFormContext } from "react-hook-form";
 
-export const CitizensHeaderForm = () => {
-  const { control } = useFormContext<CitizensSectionHeader>();
+export const YearlySectionHeaderFields = () => {
+  const { control } = useFormContext<YearlySectionHeader>();
 
   return (
     <div className="space-y-4">
-      <FormField
-        name="is_visible"
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5">
-              <FormLabel className="text-base">Visible</FormLabel>
-              <FormDescription>
-                Toggle to show or hide the citizens of honour section on the
-                home page
-              </FormDescription>
-            </div>
-            <FormControl>
-              <Switch checked={field.value} onCheckedChange={field.onChange} />
-            </FormControl>
-          </FormItem>
-        )}
-      />
       <FormField
         control={control}
         name="title"

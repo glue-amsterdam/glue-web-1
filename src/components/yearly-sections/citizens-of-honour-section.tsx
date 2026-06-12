@@ -9,7 +9,6 @@ type Props = {
   description: string;
   citizens: ClientCitizen[];
   sectionId?: string;
-  isVisible?: boolean;
   headingLevel?: HeadingLevel;
   archiveYear?: number;
   hasPadding?: boolean;
@@ -20,12 +19,11 @@ const CitizensOfHonourSection = ({
   description,
   citizens,
   sectionId = "creative-citizens-of-honour",
-  isVisible = true,
   headingLevel = "h2",
   archiveYear,
   hasPadding = true,
 }: Props) => {
-  if (!isVisible || citizens.length === 0) {
+  if (citizens.length === 0) {
     return null;
   }
 

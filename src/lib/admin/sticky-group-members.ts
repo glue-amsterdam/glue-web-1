@@ -7,14 +7,11 @@ import type { StickyGroupMemberInput } from "@/types/sticky-member";
 type StickyGroupParticipantRow = {
   id?: string;
   participant_user_id: string | null;
-  display_name_only: string | null;
   is_curated: boolean;
 };
 
 export type StickyGroupMemberApiRow = {
-  kind: "user" | "display_name";
-  user_id: string | null;
-  display_name_only: string | null;
+  user_id: string;
   name: string;
   slug: string;
   image_url: string;
@@ -27,8 +24,8 @@ export const membersToInsertRows = (
 ) =>
   members.map((member) => ({
     sticky_group_id: stickyGroupId,
-    participant_user_id: member.user_id ?? null,
-    display_name_only: member.display_name_only?.trim() || null,
+    participant_user_id: member.user_id,
+    display_name_only: null,
     is_curated: member.is_curated ?? true,
   }));
 
@@ -40,55 +37,16 @@ export const validateStickyGroupMembers = async (
   | {
       valid: false;
       invalidUserIds: string[];
-      invalidDisplayNames: string[];
     }
 > => {
   if (!members?.length) {
     return { valid: true };
   }
 
-  const invalidDisplayNames: string[] = [];
-  const userIds = new Set<string>();
-
-  for (const member of members) {
-    const hasUserId = Boolean(member.user_id?.trim());
-    const displayName = member.display_name_only?.trim() ?? "";
-
-    if (hasUserId && displayName) {
-      invalidDisplayNames.push(displayName);
-      continue;
-    }
-
-    if (!hasUserId && !displayName) {
-      invalidDisplayNames.push("");
-      continue;
-    }
-
-    if (!hasUserId && displayName) {
-      continue;
-    }
-
-    if (member.user_id) {
-      userIds.add(member.user_id);
-    }
-  }
-
-  if (invalidDisplayNames.length > 0) {
-    return {
-      valid: false,
-      invalidUserIds: [],
-      invalidDisplayNames,
-    };
-  }
-
-  if (userIds.size === 0) {
-    return { valid: true };
-  }
-
-  const ids = [...userIds];
+  const userIds = [...new Set(members.map((member) => member.user_id))];
   const validIds = new Set<string>();
 
-  for (const chunk of chunkArray(ids, 200)) {
+  for (const chunk of chunkArray(userIds, 200)) {
     const { data, error } = await supabase
       .from("participant_details")
       .select("user_id")
@@ -117,7 +75,7 @@ export const validateStickyGroupMembers = async (
     }
   }
 
-  const invalidUserIds = ids.filter((userId) => !validIds.has(userId));
+  const invalidUserIds = userIds.filter((userId) => !validIds.has(userId));
 
   if (invalidUserIds.length > 0) {
     for (const userId of invalidUserIds) {
@@ -128,13 +86,12 @@ export const validateStickyGroupMembers = async (
     }
   }
 
-  const remainingInvalidUserIds = ids.filter((userId) => !validIds.has(userId));
+  const remainingInvalidUserIds = userIds.filter((userId) => !validIds.has(userId));
 
   if (remainingInvalidUserIds.length > 0) {
     return {
       valid: false,
       invalidUserIds: remainingInvalidUserIds,
-      invalidDisplayNames: [],
     };
   }
 
@@ -200,35 +157,22 @@ export const buildStickyGroupMemberApiRows = async (
     }
   }
 
-  return rows.map((row) => {
-    if (row.display_name_only?.trim()) {
-      const name = row.display_name_only.trim();
+  return rows
+    .filter((row) => Boolean(row.participant_user_id))
+    .map((row) => {
+      const userId = row.participant_user_id ?? "";
+      const participant = participantByUserId.get(userId);
+      const visitorName = visitorNameByUserId.get(userId);
+      const name = participant?.name || visitorName || "Unknown member";
+
       return {
-        kind: "display_name" as const,
-        user_id: null,
-        display_name_only: name,
+        user_id: userId,
         name,
-        slug: "",
-        image_url: "/placeholder.jpg",
+        slug: participant?.slug ?? "",
+        image_url: imageByUserId.get(userId) ?? "/placeholder.jpg",
         is_curated: row.is_curated,
       };
-    }
-
-    const userId = row.participant_user_id ?? "";
-    const participant = participantByUserId.get(userId);
-    const visitorName = visitorNameByUserId.get(userId);
-    const name = participant?.name || visitorName || "Unknown member";
-
-    return {
-      kind: "user" as const,
-      user_id: userId,
-      display_name_only: null,
-      name,
-      slug: participant?.slug ?? "",
-      image_url: imageByUserId.get(userId) ?? "/placeholder.jpg",
-      is_curated: row.is_curated,
-    };
-  });
+    });
 };
 
 export type HomeStickyMemberDisplay = {
@@ -242,7 +186,7 @@ export const buildHomeStickyMemberDisplays = (
   apiRows: StickyGroupMemberApiRow[]
 ): HomeStickyMemberDisplay[] =>
   apiRows.map((row) => ({
-    userId: row.user_id ?? `display:${row.name}`,
+    userId: row.user_id,
     slug: row.slug || null,
     userName: row.name,
     image: {

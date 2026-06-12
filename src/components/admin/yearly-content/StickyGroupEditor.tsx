@@ -11,15 +11,18 @@ import {
 } from "@/components/image-upload-overlay";
 import {
   getStickyMemberKey,
-  normalizeStickyDisplayNameKey,
   stickyMemberFromApi,
   stickyMembersToPayload,
 } from "@/types/sticky-member";
+import { yearlySectionHeaderSchema } from "@/schemas/yearly-section-header-schema";
 import { StickyGroupFormContent } from "./StickyGroupFormContent";
 
 type YearGroup = {
   year: number;
   group_photo_url?: string;
+  title: string;
+  description: string;
+  additional_members_text: string;
   members: StickyMember[];
 };
 
@@ -94,6 +97,9 @@ export const StickyGroupEditor = ({
         setCurrentGroup({
           year: groupData.year,
           group_photo_url: groupData.group_photo_url,
+          title: groupData.title ?? "",
+          description: groupData.description ?? "",
+          additional_members_text: groupData.additional_members_text ?? "",
           members: (groupData.members ?? groupData.participants ?? []).map(
             stickyMemberFromApi
           ),
@@ -103,6 +109,9 @@ export const StickyGroupEditor = ({
         setCurrentGroup({
           year,
           group_photo_url: "",
+          title: "",
+          description: "",
+          additional_members_text: "",
           members: [],
         });
       }
@@ -132,12 +141,7 @@ export const StickyGroupEditor = ({
     setCurrentGroup((prev) => {
       if (!prev) return prev;
 
-      if (
-        prev.members.some(
-          (member) =>
-            member.kind === "user" && member.user_id === participant.user_id
-        )
-      ) {
+      if (prev.members.some((member) => member.user_id === participant.user_id)) {
         return prev;
       }
 
@@ -146,74 +150,9 @@ export const StickyGroupEditor = ({
         members: [
           ...prev.members,
           {
-            kind: "user",
             user_id: participant.user_id,
             name: participant.name,
             slug: participant.slug,
-            is_curated: true,
-          },
-        ],
-      };
-    });
-  };
-
-  const handleAddResolvedUser = (member: {
-    user_id: string;
-    name: string;
-    slug: string;
-  }) => {
-    setCurrentGroup((prev) => {
-      if (!prev) return prev;
-
-      if (
-        prev.members.some(
-          (entry) => entry.kind === "user" && entry.user_id === member.user_id
-        )
-      ) {
-        return prev;
-      }
-
-      return {
-        ...prev,
-        members: [
-          ...prev.members,
-          {
-            kind: "user",
-            user_id: member.user_id,
-            name: member.name,
-            slug: member.slug,
-            is_curated: true,
-          },
-        ],
-      };
-    });
-  };
-
-  const handleAddDisplayName = (name: string) => {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-
-    const key = normalizeStickyDisplayNameKey(trimmed);
-
-    setCurrentGroup((prev) => {
-      if (!prev) return prev;
-
-      if (
-        prev.members.some(
-          (member) => member.kind === "display_name" && member.key === key
-        )
-      ) {
-        return prev;
-      }
-
-      return {
-        ...prev,
-        members: [
-          ...prev.members,
-          {
-            kind: "display_name",
-            key,
-            name: trimmed,
             is_curated: true,
           },
         ],
@@ -234,8 +173,36 @@ export const StickyGroupEditor = ({
     });
   };
 
+  const handleHeaderChange = (field: "title" | "description", value: string) => {
+    setCurrentGroup((prev) => {
+      if (!prev) return prev;
+      return { ...prev, [field]: value };
+    });
+  };
+
+  const handleAdditionalMembersTextChange = (value: string) => {
+    setCurrentGroup((prev) => {
+      if (!prev) return prev;
+      return { ...prev, additional_members_text: value };
+    });
+  };
+
   const handleSaveGroup = async () => {
     if (!currentGroup) return;
+
+    const headerValidation = yearlySectionHeaderSchema.safeParse({
+      title: currentGroup.title,
+      description: currentGroup.description,
+    });
+
+    if (!headerValidation.success) {
+      toast({
+        title: "Validation error",
+        description: headerValidation.error.issues[0]?.message ?? "Invalid header fields.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsSavingGroup(true);
     try {
@@ -277,16 +244,21 @@ export const StickyGroupEditor = ({
       const membersPayload = stickyMembersToPayload(currentGroup.members);
       const localMemberCount = membersPayload.length;
 
+      const payload = {
+        group_photo_url: photoUrl,
+        title: currentGroup.title,
+        description: currentGroup.description,
+        additional_members_text: currentGroup.additional_members_text,
+        members: membersPayload,
+      };
+
       let res: Response;
 
       if (groupExistsInDb) {
         res = await fetch(`/api/admin/sticky-groups/${currentGroup.year}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            group_photo_url: photoUrl,
-            members: membersPayload,
-          }),
+          body: JSON.stringify(payload),
         });
       } else {
         res = await fetch("/api/admin/sticky-groups", {
@@ -294,8 +266,7 @@ export const StickyGroupEditor = ({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             year: currentGroup.year,
-            group_photo_url: photoUrl,
-            members: membersPayload,
+            ...payload,
           }),
         });
       }
@@ -314,22 +285,13 @@ export const StickyGroupEditor = ({
       setGroupExistsInDb(true);
       setGroupPhotoFile(null);
 
-      if (localMemberCount > 0 && savedMemberCount === 0) {
-        toast({
-          title: "Warning",
-          description:
-            "Group saved but no members were persisted. Check the server logs.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description:
-            savedMemberCount > 0
-              ? `Sticky group saved with ${savedMemberCount} member${savedMemberCount === 1 ? "" : "s"}.`
-              : "Sticky group saved!",
-        });
-      }
+      toast({
+        title: "Success",
+        description:
+          savedMemberCount > 0
+            ? `Sticky group saved with ${savedMemberCount} member${savedMemberCount === 1 ? "" : "s"}.`
+            : "Sticky group saved!",
+      });
 
       router.refresh();
       await loadGroup();
@@ -382,7 +344,14 @@ export const StickyGroupEditor = ({
 
       router.refresh();
       setGroupExistsInDb(false);
-      setCurrentGroup({ year, group_photo_url: "", members: [] });
+      setCurrentGroup({
+        year,
+        group_photo_url: "",
+        title: "",
+        description: "",
+        additional_members_text: "",
+        members: [],
+      });
       onDeleted?.();
     } catch (error) {
       toast({
@@ -413,9 +382,9 @@ export const StickyGroupEditor = ({
       groupExists={groupExistsInDb}
       onPhotoUpload={handlePhotoUpload}
       onAddParticipant={handleAddParticipant}
-      onAddResolvedUser={handleAddResolvedUser}
-      onAddDisplayName={handleAddDisplayName}
       onRemoveMember={handleRemoveMember}
+      onHeaderChange={handleHeaderChange}
+      onAdditionalMembersTextChange={handleAdditionalMembersTextChange}
       onSaveGroup={handleSaveGroup}
       onDeleteGroup={() => handleDeleteGroup()}
     />

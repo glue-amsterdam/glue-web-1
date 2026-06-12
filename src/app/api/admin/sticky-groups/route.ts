@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { requireAdminToken } from "@/lib/admin/require-admin-token";
-import { mergeMembersWithResolvedNames } from "@/lib/admin/resolve-sticky-member-by-name";
 import { revalidateHomeStickyCache } from "@/lib/home";
 import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
 import {
@@ -9,21 +8,25 @@ import {
 } from "@/lib/admin/sticky-group-members";
 import type { StickyGroupMemberInput } from "@/types/sticky-member";
 
+type StickyGroupBody = {
+  year: number;
+  group_photo_url?: string;
+  title?: string;
+  description?: string;
+  additional_members_text?: string;
+  members?: StickyGroupMemberInput[];
+  participants?: StickyGroupMemberInput[];
+};
+
 const normalizeMembers = (
   members: StickyGroupMemberInput[] | undefined,
-  legacyParticipants:
-    | Array<{ user_id?: string; display_name_only?: string; is_curated?: boolean }>
-    | undefined
+  legacyParticipants: StickyGroupMemberInput[] | undefined
 ): StickyGroupMemberInput[] => {
   if (members?.length) {
     return members;
   }
 
-  return (legacyParticipants ?? []).map((member) => ({
-    user_id: member.user_id,
-    display_name_only: member.display_name_only,
-    is_curated: member.is_curated,
-  }));
+  return (legacyParticipants ?? []).filter((member) => Boolean(member.user_id));
 };
 
 export async function POST(req: Request) {
@@ -33,37 +36,19 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = await req.json();
+    const body = (await req.json()) as StickyGroupBody;
     const {
       year,
       group_photo_url,
+      title,
+      description,
+      additional_members_text,
       members,
       participants,
-      participant_names,
-      member_names,
     } = body;
     const supabase = auth.supabase;
 
-    const baseMembers = normalizeMembers(members, participants);
-
-    const merged = await mergeMembersWithResolvedNames(
-      supabase,
-      baseMembers,
-      member_names ?? participant_names
-    );
-
-    if (!merged.ok) {
-      return NextResponse.json(
-        {
-          error: "Could not resolve member names",
-          ambiguous: merged.ambiguous,
-          suggestions: merged.suggestions,
-        },
-        { status: 400 }
-      );
-    }
-
-    const resolvedMembers = merged.members;
+    const resolvedMembers = normalizeMembers(members, participants);
 
     const validation = await validateStickyGroupMembers(
       supabase,
@@ -75,7 +60,6 @@ export async function POST(req: Request) {
         {
           error: "One or more members are invalid",
           invalidUserIds: validation.invalidUserIds,
-          invalidDisplayNames: validation.invalidDisplayNames,
         },
         { status: 400 }
       );
@@ -83,7 +67,13 @@ export async function POST(req: Request) {
 
     const { data: group, error: groupError } = await supabase
       .from("sticky_groups")
-      .insert({ year, group_photo_url })
+      .insert({
+        year,
+        group_photo_url,
+        title: title ?? "",
+        description: description ?? "",
+        additional_members_text: additional_members_text ?? "",
+      })
       .select("id, year")
       .single();
 

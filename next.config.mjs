@@ -34,6 +34,26 @@ const nextConfig = {
         destination: "/dashboard/:userId/routes",
         permanent: true,
       },
+      {
+        source: "/events",
+        destination: "/program",
+        permanent: true,
+      },
+      {
+        source: "/admin/sticky-groups",
+        destination: "/admin/yearly-content?section=sticky",
+        permanent: true,
+      },
+      {
+        source: "/admin/year-numbers",
+        destination: "/admin/yearly-content?section=year-numbers",
+        permanent: true,
+      },
+      {
+        source: "/admin/citizens-of-honour",
+        destination: "/admin/yearly-content?section=citizens",
+        permanent: true,
+      },
     ];
   },
   images: {
@@ -45,11 +65,6 @@ const nextConfig = {
           : "localhost",
         pathname: "/**",
       },
-      /* {
-        protocol: "https",
-        hostname: "bumddsksnesgvbkgmjxa.supabase.co",
-        pathname: "/storage/v1/object/public/**",
-      } */
     ],
     minimumCacheTTL: 2678400,
     formats: ["image/avif", "image/webp"],

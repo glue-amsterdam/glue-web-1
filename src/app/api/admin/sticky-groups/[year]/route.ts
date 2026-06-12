@@ -3,7 +3,6 @@ import { createClient } from "@/utils/supabase/server";
 import { requireAdminToken } from "@/lib/admin/require-admin-token";
 import { revalidateHomeStickyCache } from "@/lib/home";
 import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
-import { mergeMembersWithResolvedNames } from "@/lib/admin/resolve-sticky-member-by-name";
 import {
   buildStickyGroupMemberApiRows,
   membersToInsertRows,
@@ -13,25 +12,27 @@ import type { StickyGroupMemberInput } from "@/types/sticky-member";
 
 type GroupParticipantRow = {
   participant_user_id: string | null;
-  display_name_only: string | null;
   is_curated: boolean;
+};
+
+type StickyGroupUpdateBody = {
+  group_photo_url?: string;
+  title?: string;
+  description?: string;
+  additional_members_text?: string;
+  members?: StickyGroupMemberInput[];
+  participants?: StickyGroupMemberInput[];
 };
 
 const normalizeMembers = (
   members: StickyGroupMemberInput[] | undefined,
-  legacyParticipants:
-    | Array<{ user_id?: string; display_name_only?: string; is_curated?: boolean }>
-    | undefined
+  legacyParticipants: StickyGroupMemberInput[] | undefined
 ): StickyGroupMemberInput[] => {
   if (members?.length) {
     return members;
   }
 
-  return (legacyParticipants ?? []).map((member) => ({
-    user_id: member.user_id,
-    display_name_only: member.display_name_only,
-    is_curated: member.is_curated,
-  }));
+  return (legacyParticipants ?? []).filter((member) => Boolean(member.user_id));
 };
 
 export async function GET(
@@ -52,8 +53,9 @@ export async function GET(
 
     const { data: participants, error: partError } = await supabase
       .from("sticky_group_participants")
-      .select("participant_user_id, display_name_only, is_curated")
-      .eq("sticky_group_id", group.id);
+      .select("participant_user_id, is_curated")
+      .eq("sticky_group_id", group.id)
+      .not("participant_user_id", "is", null);
 
     if (partError) throw partError;
 
@@ -63,9 +65,7 @@ export async function GET(
     );
 
     const membersWithLegacyShape = memberRows.map((member) => ({
-      kind: member.kind,
       user_id: member.user_id,
-      display_name_only: member.display_name_only,
       is_curated: member.is_curated,
       slug: member.slug,
       name: member.name,
@@ -76,6 +76,9 @@ export async function GET(
       id: group.id,
       year: group.year,
       group_photo_url: group.group_photo_url,
+      title: group.title ?? "",
+      description: group.description ?? "",
+      additional_members_text: group.additional_members_text ?? "",
       members: membersWithLegacyShape,
       participants: membersWithLegacyShape,
     });
@@ -139,36 +142,18 @@ export async function PUT(
   try {
     const { year } = await params;
     const yearInt = parseInt(year, 10);
-    const body = await req.json();
+    const body = (await req.json()) as StickyGroupUpdateBody;
     const {
       group_photo_url,
+      title,
+      description,
+      additional_members_text,
       members,
       participants,
-      participant_names,
-      member_names,
     } = body;
     const supabase = auth.supabase;
 
-    const baseMembers = normalizeMembers(members, participants);
-
-    const merged = await mergeMembersWithResolvedNames(
-      supabase,
-      baseMembers,
-      member_names ?? participant_names
-    );
-
-    if (!merged.ok) {
-      return NextResponse.json(
-        {
-          error: "Could not resolve member names",
-          ambiguous: merged.ambiguous,
-          suggestions: merged.suggestions,
-        },
-        { status: 400 }
-      );
-    }
-
-    const resolvedMembers = merged.members;
+    const resolvedMembers = normalizeMembers(members, participants);
 
     const validation = await validateStickyGroupMembers(
       supabase,
@@ -180,7 +165,6 @@ export async function PUT(
         {
           error: "One or more members are invalid",
           invalidUserIds: validation.invalidUserIds,
-          invalidDisplayNames: validation.invalidDisplayNames,
         },
         { status: 400 }
       );
@@ -196,11 +180,16 @@ export async function PUT(
 
     const { error: updateError } = await supabase
       .from("sticky_groups")
-      .update({ group_photo_url })
+      .update({
+        group_photo_url,
+        title: title ?? "",
+        description: description ?? "",
+        additional_members_text: additional_members_text ?? "",
+      })
       .eq("id", group.id);
 
     if (updateError) {
-      console.error("Failed to update sticky group photo:", updateError);
+      console.error("Failed to update sticky group:", updateError);
       throw updateError;
     }
 
@@ -231,7 +220,7 @@ export async function PUT(
 
     const { data: updatedGroup, error: fetchError } = await supabase
       .from("sticky_groups")
-      .select("id, year, group_photo_url")
+      .select("id, year, group_photo_url, title, description, additional_members_text")
       .eq("id", group.id)
       .single();
 

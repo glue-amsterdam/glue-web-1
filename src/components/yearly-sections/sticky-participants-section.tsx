@@ -9,9 +9,9 @@ type Props = {
   description: string;
   year: number | null;
   groupPhotoUrl: string | null;
+  additionalMembersText?: string;
   participants: HomeStickyParticipant[];
   sectionId?: string;
-  isVisible?: boolean;
   showCta?: boolean;
 };
 
@@ -20,14 +20,17 @@ const StickyParticipantsSection = ({
   description,
   year,
   groupPhotoUrl,
+  additionalMembersText = "",
   participants,
   sectionId = "sticky-participants-section",
-  isVisible = true,
   showCta = true,
 }: Props) => {
   const stickyTitle = year != null ? `Sticky participants ${year}` : "Sticky participants";
+  const trimmedAdditionalText = additionalMembersText.trim();
+  const hasParticipants = participants.length > 0;
+  const hasAdditionalText = trimmedAdditionalText.length > 0;
 
-  if (!isVisible || participants.length === 0) {
+  if (!hasParticipants && !hasAdditionalText) {
     return null;
   }
 
@@ -64,9 +67,14 @@ const StickyParticipantsSection = ({
                   ) : (
                     <span>{participant.userName}</span>
                   )}
-                  {index < participants.length - 1 ? `, ${" "}` : null}
+                  {index < participants.length - 1 || hasAdditionalText ? `, ${" "}` : null}
                 </li>
               ))}
+              {hasAdditionalText ? (
+                <li className="base-text-size">
+                  <span>{trimmedAdditionalText}</span>
+                </li>
+              ) : null}
             </ul>
           </div>
         </div>
