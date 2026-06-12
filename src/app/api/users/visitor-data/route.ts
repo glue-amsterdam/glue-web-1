@@ -81,7 +81,7 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const { targetUserId, firstName, lastName, email, birthDate, areaId } =
+    const { targetUserId, firstName, lastName, birthDate, areaId } =
       parsed.data;
 
     const { authUserId, status } = await resolveVisitorDataSubjectAuthId(
@@ -92,6 +92,14 @@ export async function PATCH(request: Request) {
 
     if (status === 403) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const subjectEmail = await getAuthUserEmail(authUserId);
+    if (!subjectEmail?.trim()) {
+      return NextResponse.json(
+        { error: "Registration email not found for this account" },
+        { status: 400 }
+      );
     }
 
     const fullName = `${firstName} ${lastName}`.trim();
@@ -106,16 +114,11 @@ export async function PATCH(request: Request) {
     const payload = {
       first_name: firstName,
       last_name: lastName,
-      email: email.toLowerCase(),
+      email: subjectEmail.toLowerCase(),
       full_name: fullName,
       birth_date: birthDate?.trim() ? birthDate.trim() : null,
       area_id: areaId?.trim() ? areaId.trim() : null,
     };
-
-    const subjectEmail =
-      authUserId === user.id
-        ? user.email
-        : await getAuthUserEmail(authUserId);
 
     if (existing?.id) {
       const { data: updated, error } = await admin
@@ -142,7 +145,7 @@ export async function PATCH(request: Request) {
       authUserId,
       {
         ...hints,
-        email: email.toLowerCase(),
+        email: subjectEmail.toLowerCase(),
         displayName: fullName,
       },
       subjectEmail

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useForm, useFormState } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EVENT_TYPES } from "@/constants";
@@ -37,6 +37,7 @@ import { CoOrganizerSearch } from "@/app/dashboard/components/co-organizers-sear
 import { Button } from "@/components/ui/button";
 import { config } from "@/config";
 import { LocationSelector } from "@/app/dashboard/[userId]/events/components/location-selector";
+import type { EventLocation } from "@/lib/events/get-available-event-locations";
 import Image from "next/image";
 import {
   ImageUploadOverlay,
@@ -51,6 +52,7 @@ interface EventFormProps {
   existingEventCount: number;
   planMaxEvents: number;
   canCreateEvent: boolean;
+  hasAvailableLocations?: boolean;
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -60,10 +62,18 @@ export function EventForm({
   existingEventCount,
   planMaxEvents,
   canCreateEvent,
+  hasAvailableLocations = true,
 }: EventFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadState, setUploadState] = useState<UploadState | null>(null);
+  const [availableLocationsCount, setAvailableLocationsCount] = useState<
+    number | null
+  >(hasAvailableLocations ? null : 0);
   const { toast } = useToast();
+
+  const handleLocationsLoaded = useCallback((locations: EventLocation[]) => {
+    setAvailableLocationsCount(locations.length);
+  }, []);
 
   const { data: eventDays = [], isLoading: isLoadingEventDays } = useSWR<
     EventDay[]
@@ -228,6 +238,23 @@ export function EventForm({
     );
   }
 
+  if (
+    !hasAvailableLocations ||
+    (availableLocationsCount !== null && availableLocationsCount === 0)
+  ) {
+    return (
+      <Alert variant="destructive" className="mt-10">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>No Locations Available</AlertTitle>
+        <AlertDescription>
+          You need your own address or membership in a hub with a location
+          before you can create an event. Update your map location or contact
+          your hub host.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
     <div className="px-[30px] mini-padding">
       <h1 className="title-text">Create New Event</h1>
@@ -257,6 +284,7 @@ export function EventForm({
                     targetUserId={targetUserId}
                     onChange={field.onChange}
                     value={field.value}
+                    onLocationsLoaded={handleLocationsLoaded}
                   />
                 </FormControl>
                 <FormMessage />
@@ -341,7 +369,10 @@ export function EventForm({
             name="image_url"
             render={() => (
               <FormItem>
-                <FormLabel>Event Image</FormLabel>
+                <FormLabel>Event Image (required)</FormLabel>
+                <FormDescription>
+                  An image is required to create an event.
+                </FormDescription>
                 <div className="w-full h-80 overflow-hidden bg-gray object-cover relative mb-2">
                   {imagePreview ? (
                     <Image

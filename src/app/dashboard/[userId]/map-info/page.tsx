@@ -1,28 +1,24 @@
-"use client";
+import { MapInfoClient } from "@/app/dashboard/[userId]/map-info/map-info-client";
+import { getDashboardAuth } from "@/lib/dashboard/get-dashboard-auth";
+import { generateDashboardSectionMetadata } from "@/lib/metadata/build-dashboard-metadata";
+import type { Metadata } from "next";
 
-import LoadingSpinner from "@/app/components/LoadingSpinner";
-import { MapInfoForm } from "@/app/dashboard/[userId]/map-info/map-info-form";
-import { MapInfo } from "@/schemas/mapInfoSchemas";
-import useSWR from "swr";
-import { useParams } from "next/navigation";
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}): Promise<Metadata> {
+  const { userId } = await params;
+  return generateDashboardSectionMetadata(userId, "Map Information");
+}
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+export default async function MapInfoPage({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}) {
+  const { userId } = await params;
+  const { isMod } = await getDashboardAuth(userId);
 
-export default function MapInfoPage() {
-  const params = useParams();
-  const targetUserId = params.userId as string;
-  const {
-    data: mapInfo,
-    error,
-    isLoading,
-  } = useSWR<MapInfo | { error: string }>(
-    `/api/users/participants/${targetUserId}/map-info`,
-    fetcher
-  );
-
-  if (isLoading) return <LoadingSpinner />;
-  if (error) return <div>Failed to load map data</div>;
-  if (!targetUserId) return <div>No target user ID</div>;
-
-  return <MapInfoForm initialData={mapInfo} targetUserId={targetUserId} />;
+  return <MapInfoClient targetUserId={userId} isMod={isMod} />;
 }

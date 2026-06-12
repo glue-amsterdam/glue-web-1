@@ -24,7 +24,7 @@ export function BasicInfoFields({ readOnly = false }: { readOnly?: boolean }) {
             <FormLabel>Description</FormLabel>
             <FormControl>
               <RichTextEditor
-                maxLength={2500}
+                maxLength={3500}
                 value={field.value || ""}
                 onChange={field.onChange}
                 readOnly={readOnly}

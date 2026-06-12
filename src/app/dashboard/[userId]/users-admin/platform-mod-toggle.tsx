@@ -1,12 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import {
-  FormDescription,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
-import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useCallback, useEffect, useState } from "react";
@@ -14,11 +9,13 @@ import { useCallback, useEffect, useState } from "react";
 type PlatformModToggleProps = {
   targetUserId: string;
   isMod: boolean;
+  onModStatusChange?: (isMod: boolean) => void;
 };
 
 export const PlatformModToggle = ({
   targetUserId,
   isMod,
+  onModStatusChange,
 }: PlatformModToggleProps) => {
   const { user } = useAuth();
   const loggedInUserId = user?.id;
@@ -95,6 +92,7 @@ export const PlatformModToggle = ({
         throw new Error(data.error || "Failed to update moderator status");
       }
       setIsPlatformMod(checked);
+      onModStatusChange?.(checked);
       toast({
         title: checked ? "Moderator granted" : "Moderator revoked",
         description: "Platform permissions were updated.",
@@ -116,27 +114,23 @@ export const PlatformModToggle = ({
   }
 
   return (
-    <>
-      <Separator className="my-4" />
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Platform moderator</h3>
-        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-          <div className="space-y-0.5">
-            <FormLabel className="text-base">Moderator access</FormLabel>
-            <FormDescription>
-              {isSelfView
-                ? "Your platform moderator status. You cannot grant yourself access here; you can revoke your own access. Another moderator can restore it."
-                : "Controls dashboard-wide moderator privileges for this account (stored in user permissions, not user profile)."}
-            </FormDescription>
-          </div>
-          <Switch
-            checked={isPlatformMod}
-            disabled={isLoading || isSaving}
-            onCheckedChange={handleToggle}
-            aria-label="Toggle platform moderator access"
-          />
-        </FormItem>
+    <div className="py-2 border-b border-gray-100">
+      <div className="flex flex-row items-center justify-between rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+        <div className="space-y-0.5 pr-3">
+          <Label className="text-sm font-medium">Moderator access</Label>
+          <p className="text-xs text-muted-foreground">
+            {isSelfView
+              ? "You cannot grant yourself access here; you can revoke your own access. Another moderator can restore it."
+              : "Controls dashboard-wide moderator privileges for this account."}
+          </p>
+        </div>
+        <Switch
+          checked={isPlatformMod}
+          disabled={isLoading || isSaving}
+          onCheckedChange={handleToggle}
+          aria-label="Toggle platform moderator access"
+        />
       </div>
-    </>
+    </div>
   );
 };

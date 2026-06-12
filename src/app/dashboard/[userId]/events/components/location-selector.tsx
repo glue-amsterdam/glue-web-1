@@ -10,16 +10,13 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-
-interface Location {
-  id: string;
-  formatted_address: string;
-}
+import type { EventLocation } from "@/lib/events/get-available-event-locations";
 
 interface LocationSelectorProps {
   targetUserId?: string;
   onChange: (locationId: string) => void;
   value: string;
+  onLocationsLoaded?: (locations: EventLocation[]) => void;
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -28,29 +25,52 @@ export function LocationSelector({
   targetUserId,
   onChange,
   value,
+  onLocationsLoaded,
 }: LocationSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(
+  const [selectedLocation, setSelectedLocation] = useState<EventLocation | null>(
     null
   );
 
   const { data: userLocations, error: userLocationsError } = useQuery<
-    Location[]
+    EventLocation[]
   >(`/api/mapbox/events/participant/${targetUserId}`, fetcher);
 
-  const { data: hubLocations, error: hubLocationsError } = useQuery<Location[]>(
-    `/api/mapbox/events/hub/${targetUserId}`,
-    fetcher
-  );
+  const { data: hubLocations, error: hubLocationsError } = useQuery<
+    EventLocation[]
+  >(`/api/mapbox/events/hub/${targetUserId}`, fetcher);
+
+  const isLoading =
+    userLocations === undefined || hubLocations === undefined;
+  const allLocations = [...(userLocations || []), ...(hubLocations || [])];
+  const hasLocations = allLocations.length > 0;
 
   useEffect(() => {
-    if (value && (userLocations || hubLocations)) {
-      const location = [...(userLocations || []), ...(hubLocations || [])].find(
-        (loc) => loc.id === value
-      );
-      setSelectedLocation(location || null);
+    if (isLoading || userLocationsError || hubLocationsError) {
+      return;
     }
-  }, [value, userLocations, hubLocations]);
+
+    onLocationsLoaded?.([...(userLocations || []), ...(hubLocations || [])]);
+  }, [
+    hubLocations,
+    hubLocationsError,
+    isLoading,
+    onLocationsLoaded,
+    userLocations,
+    userLocationsError,
+  ]);
+
+  useEffect(() => {
+    if (!value || isLoading) {
+      return;
+    }
+
+    const location =
+      [...(userLocations || []), ...(hubLocations || [])].find(
+        (loc) => loc.id === value
+      ) ?? null;
+    setSelectedLocation(location);
+  }, [value, userLocations, hubLocations, isLoading]);
 
   if (userLocationsError || hubLocationsError) {
     return <div>Error loading locations</div>;
@@ -61,11 +81,19 @@ export function LocationSelector({
     setIsOpen(false);
   };
 
+  if (!isLoading && !hasLocations) {
+    return (
+      <p className="text-sm text-destructive">
+        No locations available. Add your address or join a hub with a location.
+      </p>
+    );
+  }
+
   return (
     <div>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline">
+          <Button variant="outline" disabled={isLoading || !hasLocations}>
             {selectedLocation
               ? selectedLocation.formatted_address
               : "Select Location"}

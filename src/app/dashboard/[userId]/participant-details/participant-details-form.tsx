@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Form } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +34,8 @@ import type { VisitingHoursDays } from "@/schemas/visitingHoursSchema";
 import type { InvoiceData } from "@/schemas/invoiceSchemas";
 import type { PressKitLink } from "@/schemas/mainSchema";
 import Separator from "@/components/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const PROFILE_WATCH_FIELDS = [
   "description",
@@ -84,8 +86,14 @@ export function ParticipantDetailsForm({
   const hasExistingRecord = Boolean(participantDetails);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPlanSubmitting, setIsPlanSubmitting] = useState(false);
+  const [currentProfileImages, setCurrentProfileImages] =
+    useState<ProfileImageRow[]>(profileImages);
   const { toast } = useToast();
   const router = useRouter();
+
+  const handleProfileImagesChange = useCallback((images: ProfileImageRow[]) => {
+    setCurrentProfileImages(images);
+  }, []);
 
   const form = useForm<ParticipantDetailsInput, unknown, ParticipantDetails>({
     resolver: zodResolver(participantDetailsSchema),
@@ -120,6 +128,11 @@ export function ParticipantDetailsForm({
   const isProfileReadOnly =
     !isMod && (status === "pending" || !isActive);
   const isPendingParticipant = !isMod && status === "pending";
+  const requiresProfileImage =
+    !isMod && !isProfileReadOnly && planMaxImages > 0;
+  const hasProfileImage = currentProfileImages.length > 0;
+  const isMissingRequiredProfileImage =
+    requiresProfileImage && !hasProfileImage;
 
   const onSubmit = createSubmitHandler<ParticipantDetails>(
     `/api/users/participants/${targetUserId}/details`,
@@ -163,7 +176,7 @@ export function ParticipantDetailsForm({
   );
 
   const handleProfileSubmit = async (values: ParticipantDetails) => {
-    if (isProfileReadOnly) return;
+    if (isProfileReadOnly || isMissingRequiredProfileImage) return;
 
     setIsSubmitting(true);
     await onSubmit({ ...values, user_id: targetUserId });
@@ -250,6 +263,17 @@ export function ParticipantDetailsForm({
 
           <PressKitDownloadSection pressKitLinks={pressKitLinks} />
 
+          {isMissingRequiredProfileImage && (
+            <Alert variant="destructive" role="alert">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Profile image required</AlertTitle>
+              <AlertDescription>
+                You must upload at least one profile image before saving your
+                profile.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <ParticipantSection title="Participant Profile">
             <BasicInfoFields readOnly={isProfileReadOnly} />
             <SlugField readOnly={isProfileReadOnly} />
@@ -261,7 +285,9 @@ export function ParticipantDetailsForm({
                 onClick={form.handleSubmit(handleProfileSubmit)}
                 watchFields={[...PROFILE_WATCH_FIELDS]}
                 isSubmitting={isSubmitting}
-                {...(isProfileReadOnly ? { disabled: true } : {})}
+                {...(isProfileReadOnly || isMissingRequiredProfileImage
+                  ? { disabled: true }
+                  : {})}
                 label={isSubmitting ? "Updating..." : "Update participant"}
               />
             </div>
@@ -271,12 +297,21 @@ export function ParticipantDetailsForm({
         <Separator />
 
         <div className="space-y-6 mt-6">
-          <ParticipantSection id="profile-images" title="Profile images">
+          <ParticipantSection
+            id="profile-images"
+            title={
+              requiresProfileImage
+                ? "Profile images (required)"
+                : "Profile images"
+            }
+          >
             <ProfileImageForm
               targetUserId={targetUserId}
               initialImages={profileImages}
               planMaxImages={planMaxImages}
               readOnly={isProfileReadOnly}
+              onImagesChange={handleProfileImagesChange}
+              preventDeleteLastImage={requiresProfileImage}
             />
           </ParticipantSection>
 

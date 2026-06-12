@@ -54,6 +54,7 @@ export const buildAdminUserListItem = (
     entityType,
     displayName: resolveDisplayName(authUser, enrichment),
     email: resolveEmail(authUser, enrichment),
+    createdAt: authUser.created_at ?? null,
     isMod: enrichment.modByUserId.get(authUser.id) ?? false,
   };
 

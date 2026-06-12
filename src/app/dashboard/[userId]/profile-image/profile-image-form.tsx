@@ -25,12 +25,14 @@ const ProfileImageCard = ({
   index,
   readOnly,
   isDeleting,
+  canDelete,
   onDelete,
 }: {
   image: ProfileImage;
   index: number;
   readOnly: boolean;
   isDeleting: boolean;
+  canDelete: boolean;
   onDelete: (index: number) => void;
 }) => (
   <div className="border-2 p-4">
@@ -53,15 +55,22 @@ const ProfileImageCard = ({
       )}
     </div>
     {!readOnly && (
-      <Button
-        type="button"
-        variant="destructive"
-        onClick={() => onDelete(index)}
-        className="w-full"
-        disabled={isDeleting}
-      >
-        {isDeleting ? "Deleting…" : "Delete Image"}
-      </Button>
+      <>
+        <Button
+          type="button"
+          variant="destructive"
+          onClick={() => onDelete(index)}
+          className="w-full"
+          disabled={isDeleting || !canDelete}
+        >
+          {isDeleting ? "Deleting…" : "Delete Image"}
+        </Button>
+        {!canDelete && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            At least one profile image is required.
+          </p>
+        )}
+      </>
     )}
   </div>
 );
@@ -117,6 +126,8 @@ interface ProfileImageFormProps {
   initialImages: { id: string; image_url: string }[];
   planMaxImages: number;
   readOnly?: boolean;
+  onImagesChange?: (images: ProfileImage[]) => void;
+  preventDeleteLastImage?: boolean;
 }
 
 export function ProfileImageForm({
@@ -124,6 +135,8 @@ export function ProfileImageForm({
   initialImages,
   planMaxImages,
   readOnly = false,
+  onImagesChange,
+  preventDeleteLastImage = false,
 }: ProfileImageFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadState, setUploadState] = useState<UploadState | null>(null);
@@ -144,6 +157,10 @@ export function ProfileImageForm({
       setImages(initialImages.slice(0, maxImages));
     }
   }, [initialImages, maxImages, readOnly]);
+
+  useEffect(() => {
+    onImagesChange?.(images);
+  }, [images, onImagesChange]);
 
   const handleUploadProgress = createUploadProgressHandler(setUploadState);
 
@@ -234,7 +251,10 @@ export function ProfileImageForm({
 
     try {
       const uploaded = await handleImageUpload(file);
-      setImages((prev) => [...prev, uploaded]);
+      setImages((prev) => {
+        const nextImages = [...prev, uploaded];
+        return nextImages;
+      });
     } catch (error) {
       console.error("Error handling image upload:", error);
     } finally {
@@ -246,6 +266,15 @@ export function ProfileImageForm({
 
   const handleImageDelete = async (index: number) => {
     if (readOnly) return;
+
+    if (preventDeleteLastImage && images.length <= 1) {
+      toast({
+        title: "Cannot delete image",
+        description: "At least one profile image is required.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const imageToDelete = images[index];
     if (!imageToDelete) return;
@@ -261,7 +290,8 @@ export function ProfileImageForm({
       );
 
       if (!response.ok) {
-        throw new Error("Failed to delete profile image from database");
+        const errorBody = await response.json().catch(() => null);
+        throw new Error(errorBody?.error ?? "Failed to delete profile image from database");
       }
 
       setImages((prev) => prev.filter((_, i) => i !== index));
@@ -274,7 +304,10 @@ export function ProfileImageForm({
       console.error("Error deleting image:", error);
       toast({
         title: "Error",
-        description: "Failed to delete image. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to delete image. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -296,7 +329,9 @@ export function ProfileImageForm({
       : "Your profile is inactive. Image uploads are disabled until your account is reactivated."
     : uploadLimit === 0
       ? "Your current plan does not allow image uploads."
-      : `You can upload up to ${uploadLimit} image${uploadLimit > 1 ? "s" : ""}. To replace one, delete it and add a new image.`;
+      : preventDeleteLastImage
+        ? `At least one profile image is required. You can upload up to ${uploadLimit} image${uploadLimit > 1 ? "s" : ""}.`
+        : `You can upload up to ${uploadLimit} image${uploadLimit > 1 ? "s" : ""}. To replace one, delete it and add a new image.`;
 
   return (
     <>
@@ -309,6 +344,7 @@ export function ProfileImageForm({
             index={index}
             readOnly={readOnly}
             isDeleting={deletingIndex === index}
+            canDelete={!preventDeleteLastImage || images.length > 1}
             onDelete={handleImageDelete}
           />
         ))}

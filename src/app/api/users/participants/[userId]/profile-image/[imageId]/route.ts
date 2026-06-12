@@ -1,5 +1,9 @@
 import { config } from "@/config";
 import { guardParticipantProfileWrite } from "@/lib/participants/guard-participant-profile-write";
+import {
+  requiresProfileImage,
+} from "@/lib/participants/require-profile-image";
+import { getIsPlatformMod } from "@/lib/permissions/get-is-mod";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -58,6 +62,41 @@ export async function DELETE(
   const supabase = await createClient();
 
   try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const isMod = await getIsPlatformMod(supabase, user.id);
+    const mustHaveProfileImage = await requiresProfileImage(
+      supabase,
+      userId,
+      isMod
+    );
+
+    if (mustHaveProfileImage) {
+      const { count, error: countError } = await supabase
+        .from("participant_image")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId);
+
+      if (countError) {
+        throw countError;
+      }
+
+      if ((count ?? 0) <= 1) {
+        return NextResponse.json(
+          {
+            error: "At least one profile image is required.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // Delete the image record from the database
     const { data, error } = await supabase
       .from("participant_image")

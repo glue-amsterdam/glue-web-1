@@ -1,3 +1,4 @@
+import { guardMapInfoWrite } from "@/lib/participants/guard-map-info-write";
 import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
 import { mapInfoSchema } from "@/schemas/mapInfoSchemas";
 import { createClient } from "@/utils/supabase/server";
@@ -72,6 +73,9 @@ async function handleRequest(
   if (!userId) {
     return NextResponse.json({ error: "User ID is required" }, { status: 400 });
   }
+
+  const denied = await guardMapInfoWrite();
+  if (denied) return denied;
 
   try {
     const supabase = await createClient();

@@ -1,12 +1,15 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { format } from "date-fns";
 import type { AdminUserDetail } from "@/types/admin-user";
+import { PlatformModToggle } from "@/app/dashboard/[userId]/users-admin/platform-mod-toggle";
 import { useEventsDays } from "@/context/MainContext";
 import { useSanitizedHTML } from "@/hooks/useSanitizedHTML";
 
 type Props = {
   detail: AdminUserDetail;
+  onModStatusChange?: (isMod: boolean) => void;
 };
 
 const DetailRow = ({
@@ -22,6 +25,13 @@ const DetailRow = ({
   </div>
 );
 
+const formatCreatedAt = (createdAt: string | null): string => {
+  if (!createdAt) return "—";
+  const date = new Date(createdAt);
+  if (Number.isNaN(date.getTime())) return "—";
+  return format(date, "dd MMM yyyy, HH:mm");
+};
+
 const ParticipantDescription = ({ html }: { html: string }) => {
   const sanitized = useSanitizedHTML(html);
   return (
@@ -32,7 +42,10 @@ const ParticipantDescription = ({ html }: { html: string }) => {
   );
 };
 
-export default function UserDetailAccordion({ detail }: Props) {
+export default function UserDetailAccordion({
+  detail,
+  onModStatusChange,
+}: Props) {
   const eventDays = useEventsDays();
   const participant = detail.participantDetails;
 
@@ -46,8 +59,13 @@ export default function UserDetailAccordion({ detail }: Props) {
       <dl className="space-y-0">
         <DetailRow label="User ID" value={detail.userId} />
         <DetailRow label="Type" value={detail.entityType} />
-        <DetailRow label="Moderator" value={detail.isMod ? "Yes" : "No"} />
+        <PlatformModToggle
+          targetUserId={detail.userId}
+          isMod
+          onModStatusChange={onModStatusChange}
+        />
         {detail.email && <DetailRow label="Email" value={detail.email} />}
+        <DetailRow label="Created" value={formatCreatedAt(detail.createdAt)} />
 
         {participant && (
           <>

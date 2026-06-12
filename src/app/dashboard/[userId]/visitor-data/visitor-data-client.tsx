@@ -77,7 +77,6 @@ export const VisitorDataClient = ({
       initialProfile={formValues}
       workAreas={parsedAreas.data.areas}
       targetUserId={apiTargetUserId}
-      permissionsTargetUserId={targetUserId}
       isMod={isMod}
       subjectDisplayName={subjectDisplayName}
       onSaved={() => void mutate()}

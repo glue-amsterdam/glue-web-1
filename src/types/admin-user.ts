@@ -7,6 +7,7 @@ export type AdminUserListItem = {
   entityType: AdminEntityType;
   displayName: string;
   email: string | null;
+  createdAt: string | null;
   isMod: boolean;
   participantSlug?: string;
   participantStatus?: string;

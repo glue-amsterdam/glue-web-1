@@ -19,9 +19,14 @@ import { MapInfoFields } from "@/components/participate/map-info-fields";
 interface MapInfoFormProps {
   initialData: MapInfo | { error: string } | undefined;
   targetUserId: string;
+  readOnly?: boolean;
 }
 
-export function MapInfoForm({ initialData, targetUserId }: MapInfoFormProps) {
+export function MapInfoForm({
+  initialData,
+  targetUserId,
+  readOnly = false,
+}: MapInfoFormProps) {
   const isError = initialData && "error" in initialData;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -90,33 +95,43 @@ export function MapInfoForm({ initialData, targetUserId }: MapInfoFormProps) {
           className="space-y-6"
         >
           <ParticipantSection title="Location & exhibition space">
+            {readOnly ? (
+              <div className="flex gap-3 mini-padding" role="alert">
+                <p className="base-text-size">
+                  Map information can only be updated by the GLUE team.
+                </p>
+              </div>
+            ) : null}
             <input type="hidden" {...form.register("user_id")} />
             <MapInfoFields
               control={control}
               setValue={setValue}
               errors={errors}
               className="mini-padding"
+              readOnly={readOnly}
             />
             {errors.user_id && (
               <p className="text-red-500">{errors.user_id.message}</p>
             )}
-            <div className="flex justify-center mini-padding">
-              <SaveChangesButton
-                watchFields={[
-                  "formatted_address",
-                  "latitude",
-                  "longitude",
-                  "no_address",
-                  "exhibition_space_preference",
-                ]}
-                isSubmitting={isSubmitting}
-                label={
-                  !isError && initialData
-                    ? "Update map information"
-                    : "Save map information"
-                }
-              />
-            </div>
+            {!readOnly ? (
+              <div className="flex justify-center mini-padding">
+                <SaveChangesButton
+                  watchFields={[
+                    "formatted_address",
+                    "latitude",
+                    "longitude",
+                    "no_address",
+                    "exhibition_space_preference",
+                  ]}
+                  isSubmitting={isSubmitting}
+                  label={
+                    !isError && initialData
+                      ? "Update map information"
+                      : "Save map information"
+                  }
+                />
+              </div>
+            ) : null}
           </ParticipantSection>
         </form>
       </FormProvider>

@@ -1,4 +1,5 @@
 import { config } from "@/config";
+import { validateEventWrite } from "@/lib/events/validate-event-write";
 import {
   loadOrganizerProfiles,
   type OrganizerProfile,
@@ -188,11 +189,39 @@ export async function PUT(
     const supabase = await createClient();
     const eventData = await request.json();
     const { eventId } = await params;
+
+    const { data: existingEvent, error: existingEventError } = await supabase
+      .from("events")
+      .select("organizer_id")
+      .eq("id", eventId)
+      .maybeSingle();
+
+    if (existingEventError) {
+      console.error("Error fetching event:", existingEventError);
+      return NextResponse.json(
+        { error: existingEventError.message },
+        { status: 500 }
+      );
+    }
+
+    if (!existingEvent) {
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    }
+
+    const validation = await validateEventWrite(supabase, eventData, {
+      expectedOrganizerId: existingEvent.organizer_id,
+    });
+
+    if (!validation.ok) {
+      return validation.response;
+    }
+
     const { data, error } = await supabase
       .from("events")
-      .update(eventData)
+      .update(validation.payload)
       .eq("id", eventId)
       .select();
+
     if (error) {
       console.error("Error updating event:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });

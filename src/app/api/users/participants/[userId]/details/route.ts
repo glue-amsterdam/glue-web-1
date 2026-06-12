@@ -1,6 +1,10 @@
 import { filterParticipantDetailsPayload } from "@/lib/participants/filter-participant-details-payload";
 import { guardParticipantProfileWrite } from "@/lib/participants/guard-participant-profile-write";
 import {
+  hasProfileImage,
+  requiresProfileImage,
+} from "@/lib/participants/require-profile-image";
+import {
   hasParticipantVisibilityChanged,
   revalidateExhibitorSlugPaths,
   revalidateParticipantVisibilityCaches,
@@ -137,6 +141,29 @@ async function handleRequest(
 
     if (action === "update") {
       applyReactivationSideEffects(validatedData);
+
+      const mustHaveProfileImage = await requiresProfileImage(
+        supabase,
+        userId,
+        isMod
+      );
+
+      if (mustHaveProfileImage) {
+        const participantHasProfileImage = await hasProfileImage(
+          supabase,
+          userId
+        );
+
+        if (!participantHasProfileImage) {
+          return NextResponse.json(
+            {
+              error:
+                "At least one profile image is required before saving your profile.",
+            },
+            { status: 400 }
+          );
+        }
+      }
 
       const { data, error } = await supabase
         .from("participant_details")

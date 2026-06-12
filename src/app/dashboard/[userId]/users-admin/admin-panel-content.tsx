@@ -10,6 +10,27 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
 type Category = "all" | "participant" | "visitor" | "moderator";
+type SortBy = "name" | "status" | "createdAt";
+type CreatedAtFilter = "all" | "7d" | "30d" | "90d";
+
+const CREATED_AT_FILTER_DAYS: Record<Exclude<CreatedAtFilter, "all">, number> = {
+  "7d": 7,
+  "30d": 30,
+  "90d": 90,
+};
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const getCreatedAtCutoff = (filter: CreatedAtFilter): number | null => {
+  if (filter === "all") return null;
+  return Date.now() - CREATED_AT_FILTER_DAYS[filter] * MS_PER_DAY;
+};
+
+const getCreatedAtTimestamp = (createdAt: string | null): number | null => {
+  if (!createdAt) return null;
+  const timestamp = new Date(createdAt).getTime();
+  return Number.isNaN(timestamp) ? null : timestamp;
+};
 
 const CATEGORIES: { value: Category; label: string }[] = [
   { value: "all", label: "All" },
@@ -39,7 +60,8 @@ interface UsersAdminPanelProps {
   users: AdminUserListItem[];
 }
 
-export default function UsersAdminPanel({ users }: UsersAdminPanelProps) {
+export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanelProps) {
+  const [users, setUsers] = useState(initialUsers);
   const [searchTerm, setSearchTerm] = useState("");
   const [category, setCategory] = useState<Category>("all");
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
@@ -59,12 +81,34 @@ export default function UsersAdminPanel({ users }: UsersAdminPanelProps) {
   const [specialProgramFilter, setSpecialProgramFilter] = useState("all");
   const [reactivationStatusFilter, setReactivationStatusFilter] =
     useState("all");
+  const [createdAtFilter, setCreatedAtFilter] = useState<CreatedAtFilter>("all");
 
-  const [sortBy, setSortBy] = useState<"name" | "status">("name");
+  const [sortBy, setSortBy] = useState<SortBy>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    setUsers(initialUsers);
+  }, [initialUsers]);
+
+  const handleModStatusChange = (userId: string, isMod: boolean) => {
+    setUsers((current) =>
+      current.map((user) =>
+        user.userId === userId ? { ...user, isMod } : user
+      )
+    );
+    setDetailCache((current) => {
+      const detail = current.get(userId);
+      if (!detail) return current;
+
+      const next = new Map(current);
+      next.set(userId, { ...detail, isMod });
+      return next;
+    });
+    router.refresh();
+  };
 
   const hasParticipantFilterActive =
     participantStatus !== "all" ||
@@ -72,6 +116,11 @@ export default function UsersAdminPanel({ users }: UsersAdminPanelProps) {
     activeFilter !== "all" ||
     specialProgramFilter !== "all" ||
     reactivationStatusFilter !== "all";
+
+  const hasAnyFilterActive =
+    hasParticipantFilterActive ||
+    createdAtFilter !== "all" ||
+    searchTerm !== "";
 
   useEffect(() => {
     if (
@@ -83,6 +132,8 @@ export default function UsersAdminPanel({ users }: UsersAdminPanelProps) {
   }, [users, expandedUserId]);
 
   const filteredAndSortedUsers = useMemo(() => {
+    const createdAtCutoff = getCreatedAtCutoff(createdAtFilter);
+
     const filtered = users.filter((user) => {
       if (category === "participant" && user.entityType !== "participant") {
         return false;
@@ -96,6 +147,13 @@ export default function UsersAdminPanel({ users }: UsersAdminPanelProps) {
 
       if (hasParticipantFilterActive && user.entityType !== "participant") {
         return false;
+      }
+
+      if (createdAtCutoff !== null) {
+        const createdAtTimestamp = getCreatedAtTimestamp(user.createdAt);
+        if (createdAtTimestamp === null || createdAtTimestamp < createdAtCutoff) {
+          return false;
+        }
       }
 
       if (searchTerm) {
@@ -162,6 +220,25 @@ export default function UsersAdminPanel({ users }: UsersAdminPanelProps) {
             sensitivity: "base",
           });
         }
+      } else if (sortBy === "createdAt") {
+        const aTimestamp = getCreatedAtTimestamp(a.createdAt);
+        const bTimestamp = getCreatedAtTimestamp(b.createdAt);
+
+        if (aTimestamp === null && bTimestamp === null) {
+          cmp = 0;
+        } else if (aTimestamp === null) {
+          cmp = 1;
+        } else if (bTimestamp === null) {
+          cmp = -1;
+        } else {
+          cmp = aTimestamp - bTimestamp;
+        }
+
+        if (cmp === 0) {
+          cmp = a.displayName.localeCompare(b.displayName, undefined, {
+            sensitivity: "base",
+          });
+        }
       } else {
         cmp = a.displayName.localeCompare(b.displayName, undefined, {
           sensitivity: "base",
@@ -181,6 +258,7 @@ export default function UsersAdminPanel({ users }: UsersAdminPanelProps) {
     activeFilter,
     specialProgramFilter,
     reactivationStatusFilter,
+    createdAtFilter,
     sortBy,
     sortOrder,
     hasParticipantFilterActive,
@@ -296,8 +374,16 @@ export default function UsersAdminPanel({ users }: UsersAdminPanelProps) {
     setActiveFilter("all");
     setSpecialProgramFilter("all");
     setReactivationStatusFilter("all");
+    setCreatedAtFilter("all");
     setSortBy("name");
     setSortOrder("asc");
+  };
+
+  const handleSortByChange = (value: SortBy) => {
+    setSortBy(value);
+    if (value === "createdAt") {
+      setSortOrder("desc");
+    }
   };
 
   const showParticipantFilters = category === "participant";
@@ -360,8 +446,19 @@ export default function UsersAdminPanel({ users }: UsersAdminPanelProps) {
           </button>
         ))}
         <select
+          value={createdAtFilter}
+          onChange={(e) => setCreatedAtFilter(e.target.value as CreatedAtFilter)}
+          className={selectClass}
+          aria-label="Filter by registration date"
+        >
+          <option value="all">All time</option>
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="90d">Last 90 days</option>
+        </select>
+        <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as "name" | "status")}
+          onChange={(e) => handleSortByChange(e.target.value as SortBy)}
           className={selectClass}
           aria-label="Sort by"
         >
@@ -369,6 +466,7 @@ export default function UsersAdminPanel({ users }: UsersAdminPanelProps) {
           {category === "participant" && (
             <option value="status">Sort by status</option>
           )}
+          <option value="createdAt">Sort by created date</option>
         </select>
         <button
           type="button"
@@ -378,7 +476,7 @@ export default function UsersAdminPanel({ users }: UsersAdminPanelProps) {
         >
           {sortOrder === "asc" ? "↑ ASC" : "↓ DESC"}
         </button>
-        {hasParticipantFilterActive && (
+        {hasAnyFilterActive && (
           <button
             type="button"
             onClick={handleClearFilters}
@@ -479,6 +577,7 @@ export default function UsersAdminPanel({ users }: UsersAdminPanelProps) {
                 detailError={detailErrors.get(user.userId)}
                 onToggleExpand={handleToggleExpand}
                 onToggleSelect={handleToggleSelect}
+                onModStatusChange={handleModStatusChange}
               />
             ))}
           </div>
@@ -494,6 +593,7 @@ export default function UsersAdminPanel({ users }: UsersAdminPanelProps) {
                   <th className="px-3 py-2 font-medium">Type</th>
                   <th className="px-3 py-2 font-medium">Status</th>
                   <th className="px-3 py-2 font-medium">Email</th>
+                  <th className="px-3 py-2 font-medium">Created</th>
                   <th className="px-3 py-2 font-medium min-w-[8rem] text-right">
                     Actions
                   </th>
@@ -511,6 +611,7 @@ export default function UsersAdminPanel({ users }: UsersAdminPanelProps) {
                     detailError={detailErrors.get(user.userId)}
                     onToggleExpand={handleToggleExpand}
                     onToggleSelect={handleToggleSelect}
+                    onModStatusChange={handleModStatusChange}
                   />
                 ))}
               </tbody>

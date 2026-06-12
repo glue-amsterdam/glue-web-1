@@ -17,6 +17,7 @@ type MapInfoFieldsProps = {
   setValue: UseFormSetValue<MapInfoInput>;
   errors?: FieldErrors<MapInfo>;
   className?: string;
+  readOnly?: boolean;
 };
 
 export const MapInfoFields = ({
@@ -24,6 +25,7 @@ export const MapInfoFields = ({
   setValue,
   errors,
   className = "",
+  readOnly = false,
 }: MapInfoFieldsProps) => {
   const noAddress = useWatch({ control, name: "no_address" });
 
@@ -49,11 +51,12 @@ export const MapInfoFields = ({
               id="no_address"
               checked={field.value || false}
               onChange={(event) => field.onChange(event.target.checked)}
-              className="size-[12px] shrink-0 border border-(--black-color) accent-(--primary-color)"
+              disabled={readOnly}
+              className="size-[12px] shrink-0 border border-(--black-color) accent-(--primary-color) disabled:opacity-60"
             />
             <label
               htmlFor="no_address"
-              className="cursor-pointer"
+              className={readOnly ? "cursor-default" : "cursor-pointer"}
             >
               {`I don't have a location to present during GLUE, please provide me one`}
             </label>
@@ -67,6 +70,7 @@ export const MapInfoFields = ({
           setValue={setValue}
           error={errors?.formatted_address?.message}
           wrapperClassName="lg:col-span-2"
+          disabled={readOnly}
         />
       ) : null}
 
@@ -83,6 +87,7 @@ export const MapInfoFields = ({
             error={errors?.exhibition_space_preference?.message}
             placeholder="Describe your preferred exhibition space (optional)"
             wrapperClassName="lg:col-span-2"
+            disabled={readOnly}
           />
         )}
       />

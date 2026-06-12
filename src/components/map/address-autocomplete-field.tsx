@@ -32,6 +32,7 @@ type AddressAutocompleteFieldProps<T extends FieldValues & AddressFormFields> =
     error?: string;
     className?: string;
     wrapperClassName?: string;
+    disabled?: boolean;
   };
 
 export const AddressAutocompleteField = <
@@ -45,6 +46,7 @@ export const AddressAutocompleteField = <
   error,
   className,
   wrapperClassName,
+  disabled = false,
 }: AddressAutocompleteFieldProps<T>) => {
   const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
 
@@ -56,6 +58,8 @@ export const AddressAutocompleteField = <
   const centerLat = strToNumber(config.cityCenterLat);
 
   const handleAddressChange = async (input: string) => {
+    if (disabled) return;
+
     if (input.length > 2) {
       const features = await forwardGeocode({
         query: input,
@@ -124,6 +128,7 @@ export const AddressAutocompleteField = <
               name={field.name}
               ref={field.ref}
               placeholder={placeholder}
+              disabled={disabled}
               aria-autocomplete="list"
               aria-controls={
                 suggestions.length > 0 ? `${id}-suggestions` : undefined
@@ -131,7 +136,7 @@ export const AddressAutocompleteField = <
               aria-expanded={suggestions.length > 0}
               aria-invalid={Boolean(error)}
               aria-describedby={error ? `${id}-error` : undefined}
-              className={`${participateFieldClassName} h-[42px]`}
+              className={`${participateFieldClassName} h-[42px] disabled:opacity-60`}
             />
           )}
         />

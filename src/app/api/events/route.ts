@@ -1,4 +1,5 @@
 import { config } from "@/config";
+import { validateEventWrite } from "@/lib/events/validate-event-write";
 import { revalidateProgramCache } from "@/lib/program/revalidate-program-cache";
 import { EventType } from "@/schemas/eventSchemas";
 import {
@@ -229,10 +230,15 @@ export async function POST(request: Request) {
   try {
     const supabase = await createClient();
     const eventData = await request.json();
+    const validation = await validateEventWrite(supabase, eventData);
+
+    if (!validation.ok) {
+      return validation.response;
+    }
 
     const { data, error } = await supabase
       .from("events")
-      .insert([eventData])
+      .insert([validation.payload])
       .select();
 
     if (error) {

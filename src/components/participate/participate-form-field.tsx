@@ -13,6 +13,7 @@ type ParticipateFormFieldProps = {
   placeholder?: string;
   description?: string;
   wrapperClassName?: string;
+  disabled?: boolean;
 };
 
 const fieldClassName =
@@ -33,6 +34,7 @@ export const ParticipateFormField = ({
   placeholder,
   description,
   wrapperClassName,
+  disabled = false,
 }: ParticipateFormFieldProps) => {
   const describedBy = [
     error ? `${name}-error` : null,
@@ -65,9 +67,10 @@ export const ParticipateFormField = ({
             value={value}
             onChange={(e) => onChange?.(e.target.value)}
             placeholder={placeholder}
+            disabled={disabled}
             aria-invalid={Boolean(error)}
             aria-describedby={describedBy}
-            className={`${fieldClassName} min-h-[120px] resize-y py-[5px] md:py-[15px]`}
+            className={`${fieldClassName} min-h-[120px] resize-y py-[5px] md:py-[15px] disabled:opacity-60`}
           />
         ) : (
           <input
@@ -79,9 +82,10 @@ export const ParticipateFormField = ({
             onChange={(e) => onChange?.(e.target.value)}
             autoComplete={autoComplete}
             placeholder={placeholder}
+            disabled={disabled}
             aria-invalid={Boolean(error)}
             aria-describedby={describedBy}
-            className={`${fieldClassName} h-[42px]`}
+            className={`${fieldClassName} h-[42px] disabled:opacity-60`}
           />
         )}
       </div>

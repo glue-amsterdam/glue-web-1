@@ -2,6 +2,7 @@
 
 import type React from "react";
 import Link from "next/link";
+import { format } from "date-fns";
 import type { AdminUserDetail, AdminUserListItem } from "@/types/admin-user";
 import UserDetailAccordion from "@/app/dashboard/[userId]/users-admin/user-detail-accordion";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
@@ -19,6 +20,7 @@ export type UserRowProps = {
   detailError?: string;
   onToggleExpand: (userId: string) => void;
   onToggleSelect: (userId: string, checked: boolean) => void;
+  onModStatusChange?: (userId: string, isMod: boolean) => void;
 };
 
 const statusTextClass = (status?: string): string => {
@@ -26,6 +28,13 @@ const statusTextClass = (status?: string): string => {
   if (status === "declined") return "text-red-700";
   if (status === "pending") return "text-yellow-700";
   return "text-gray-600";
+};
+
+const formatCreatedAt = (createdAt: string | null): string => {
+  if (!createdAt) return "—";
+  const date = new Date(createdAt);
+  if (Number.isNaN(date.getTime())) return "—";
+  return format(date, "dd MMM yyyy, HH:mm");
 };
 
 export const UserStatusIndicators = ({ user }: { user: AdminUserListItem }) => {
@@ -67,7 +76,11 @@ const UserRowExpandPanel = ({
   isLoadingDetail,
   detailError,
   detail,
-}: Pick<UserRowProps, "isLoadingDetail" | "detailError" | "detail">) => {
+  onModStatusChange,
+}: Pick<
+  UserRowProps,
+  "isLoadingDetail" | "detailError" | "detail" | "onModStatusChange"
+>) => {
   return (
     <div className="bg-gray-50 px-2 py-2 md:px-3">
       {isLoadingDetail && (
@@ -78,7 +91,16 @@ const UserRowExpandPanel = ({
       {detailError && !isLoadingDetail && (
         <p className="text-sm text-red-600">{detailError}</p>
       )}
-      {detail && !isLoadingDetail && <UserDetailAccordion detail={detail} />}
+      {detail && !isLoadingDetail && (
+        <UserDetailAccordion
+          detail={detail}
+          onModStatusChange={
+            onModStatusChange
+              ? (isMod) => onModStatusChange(detail.userId, isMod)
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 };
@@ -136,6 +158,7 @@ export const UserRowMobile = ({
   detailError,
   onToggleExpand,
   onToggleSelect,
+  onModStatusChange,
 }: UserRowProps) => {
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,6 +183,9 @@ export const UserRowMobile = ({
               <span className="ml-2 text-xs text-yellow-700">mod</span>
             )}
           </p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {formatCreatedAt(user.createdAt)}
+          </p>
         </div>
         <UserRowActions
           user={user}
@@ -173,6 +199,7 @@ export const UserRowMobile = ({
           isLoadingDetail={isLoadingDetail}
           detailError={detailError}
           detail={detail}
+          onModStatusChange={onModStatusChange}
         />
       )}
     </div>
@@ -188,6 +215,7 @@ export const UserRowDesktop = ({
   detailError,
   onToggleExpand,
   onToggleSelect,
+  onModStatusChange,
 }: UserRowProps) => {
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
@@ -211,6 +239,9 @@ export const UserRowDesktop = ({
           <UserStatusIndicators user={user} />
         </td>
         <td className="px-3 py-2 text-gray-600">{user.email ?? "—"}</td>
+        <td className="px-3 py-2 text-gray-600 whitespace-nowrap">
+          {formatCreatedAt(user.createdAt)}
+        </td>
         <td className="px-3 py-2">
           <div className="flex justify-end">
             <UserRowActions
@@ -224,7 +255,7 @@ export const UserRowDesktop = ({
 
       {isExpanded && (
         <tr className="border-b border-gray-100">
-          <td colSpan={6} className="p-0">
+          <td colSpan={7} className="p-0">
             <UserRowExpandPanel
               isLoadingDetail={isLoadingDetail}
               detailError={detailError}

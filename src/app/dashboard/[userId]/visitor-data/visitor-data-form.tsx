@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -23,7 +24,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { CheckInQrButton } from "@/app/dashboard/[userId]/visitor-data/check-in-qr-button";
-import { PlatformModToggle } from "@/app/dashboard/[userId]/visitor-data/platform-mod-toggle";
 import {
   visitorProfileSchema,
   type VisitorProfileInput,
@@ -32,7 +32,6 @@ import {
 const VISITOR_PROFILE_WATCH_FIELDS = [
   "firstName",
   "lastName",
-  "email",
   "birthDate",
   "areaId",
 ] as const;
@@ -48,7 +47,6 @@ type VisitorDataFormProps = {
   initialProfile: VisitorProfileInput;
   workAreas: VisitorWorkAreaOption[];
   targetUserId?: string;
-  permissionsTargetUserId?: string;
   isMod?: boolean;
   subjectDisplayName?: string | null;
   onSaved?: () => void;
@@ -58,7 +56,6 @@ export const VisitorDataForm = ({
   initialProfile,
   workAreas,
   targetUserId,
-  permissionsTargetUserId,
   isMod = false,
   subjectDisplayName,
   onSaved,
@@ -152,8 +149,19 @@ export const VisitorDataForm = ({
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input {...field} type="email" autoComplete="email" />
+                  <Input
+                    {...field}
+                    type="email"
+                    autoComplete="email"
+                    readOnly
+                    disabled
+                    className="disabled:opacity-60"
+                  />
                 </FormControl>
+                <FormDescription>
+                  Registration email — this is the address you signed up with and
+                  cannot be changed here.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -213,12 +221,6 @@ export const VisitorDataForm = ({
               subjectDisplayName={subjectDisplayName}
             />
           </div>
-          {isMod && permissionsTargetUserId ? (
-            <PlatformModToggle
-              targetUserId={permissionsTargetUserId}
-              isMod={isMod}
-            />
-          ) : null}
         </form>
       </Form>
     </div>
