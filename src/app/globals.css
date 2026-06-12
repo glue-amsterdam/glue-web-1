@@ -7,6 +7,9 @@
 }
 
 @layer components {
+  .hover-link {
+    @apply hover:text-(--primary-color) hover:underline transition-all duration-100 ease-in-out;
+  }
   .mini-padding {
     @apply pt-[15px] lg:pt-[30px];
   }

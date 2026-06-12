@@ -50,9 +50,8 @@ const ExhibitorDetailInfo = ({ contactInfo }: ExhibitorDetailInfoProps) => {
               <li key={map.id}>
                 <Link
                   href={`/map?place=${map.id}`}
-                  target="_blank"
                   rel="noopener noreferrer"
-                  className="base-text-size"
+                  className="base-text-size hover-link"
                 >
                   {map.formatted_address}
                 </Link>
@@ -197,6 +196,7 @@ const ExhibitorDetailInfo = ({ contactInfo }: ExhibitorDetailInfoProps) => {
                 <Link
                   href={`/program/${event.id}`}
                   target="_blank"
+                  className="hover-link"
                   rel="noopener noreferrer"
                 >
                   {event.title}

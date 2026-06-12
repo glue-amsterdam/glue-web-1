@@ -17,20 +17,20 @@ const ProgramDetailView = ({ event }: Props) => {
     >
       <HeadlineWCross title={event.name.toUpperCase()} />
       <div className="max-w-[1045px] w-full mx-auto">
-        <div className="pt-[30px] w-full mx-auto max-w-[1045px]">
+        <div className="mini-padding w-full mx-auto max-w-[1045px]">
           <ProgramFullImage src={event.eventImg} alt={event.name} />
         </div>
 
         <div className="lg:grid grid-cols-2 lg:gap-[30px] lg:pt-[60px]">
           {event.description ? (
-            <article className="pt-[30px] pb-[30px] lg:pt-0">
+            <article className="mini-padding pb-[30px] lg:pt-0">
               <p className="whitespace-pre-wrap">{event.description}</p>
             </article>
-          ) : (<div className="pt-[30px]" aria-label="No description available"></div>)}
+          ) : (<div className="mini-padding" aria-label="No description available"></div>)}
 
           <article
             id="program-detail-info-section"
-            className="border-t border-(--black-color) pt-[30px] lg:border-t-2"
+            className="border-t border-(--black-color) mini-padding lg:border-t-2"
           >
             <div className="flex items-start gap-[20px]">
               <RoundedNumber
@@ -44,18 +44,18 @@ const ProgramDetailView = ({ event }: Props) => {
                   ? `${event.startTime} – ${event.endTime}`
                   : ""}</p>
                 <p>{event.type}</p>
-                <h2 className="pt-[30px]">ORGANISER</h2>
-                <p className="truncate pt-[30px]">
+                <h2 className="mini-padding">ORGANISER</h2>
+                <p className="truncate">
                   {event.organizer.userName}
                   {event.coOrganizers.length > 0 &&
                     ` x ${event.coOrganizers.map((c) => c.userName).join("x ")}`}
                 </p>
                 {event.location?.formattedAddress ? (
-                  <p className="pt-[30px] flex flex-col">
+                  <p className="mini-padding flex flex-col">
                     <span>ADDRESS </span>
                     <Link
                       href={`/map?place=${event.location.id}`}
-                      target="_blank"
+                      className="hover-link"
                       rel="noopener noreferrer"
                     >
                       {event.location.formattedAddress}
@@ -64,7 +64,7 @@ const ProgramDetailView = ({ event }: Props) => {
                 ) : null}
 
                 {event.rsvp && event.rsvpLink && (
-                  <div className="pt-[15px] lg:pt-[30px]">
+                  <div className="mini-padding">
                     <BigButton
                       as="link"
                       href={event.rsvpLink}
