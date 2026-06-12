@@ -1,3 +1,4 @@
+import { revalidateAboutArchiveYearCache } from "@/lib/about/revalidate-about-cache";
 import { revalidatePath, revalidateTag } from "next/cache";
 import {
   HOME_CITIZENS_CACHE_TAG,
@@ -11,6 +12,7 @@ export const revalidateHomeStickyCache = (year?: number): void => {
   revalidatePath("/about");
   if (year != null) {
     revalidateTag(`about-sticky-${year}`, "max");
+    revalidateAboutArchiveYearCache(year);
   }
 };
 

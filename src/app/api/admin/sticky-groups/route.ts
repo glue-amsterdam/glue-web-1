@@ -97,7 +97,7 @@ export async function POST(req: Request) {
       }
     }
 
-    revalidateHomeStickyCache();
+    revalidateHomeStickyCache(group.year);
     await revalidateMapDataCacheIfLiveTour(supabase);
 
     return NextResponse.json({

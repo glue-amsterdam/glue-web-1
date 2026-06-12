@@ -19,7 +19,7 @@ type StickyGroupParticipantRow = {
   is_curated: boolean;
 };
 
-const hasStickyContent = (
+export const hasStickyContent = (
   participants: HomeStickyGroupData["participants"],
   additionalMembersText: string
 ) => participants.length > 0 || additionalMembersText.trim().length > 0;

@@ -170,7 +170,7 @@ export const StickyGroupFormContent = ({
           id="additional-members-text"
           value={currentGroup.additional_members_text}
           onChange={(e) => onAdditionalMembersTextChange(e.target.value)}
-          placeholder="Ana López, Pedro Ruiz, Studio X"
+          placeholder="Studio X, Studio Y, Studio Z"
           rows={4}
           aria-label="Additional members without profile"
         />

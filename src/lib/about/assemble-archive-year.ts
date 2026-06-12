@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchCitizensForYear } from "@/lib/home/fetch-citizens-for-year";
+import { hasStickyContent } from "@/lib/home/fetch-sticky-group";
 import { fetchStickyGroupForYear } from "@/lib/home/fetch-sticky-group-for-year";
 import { fetchYearNumbersForYear } from "@/lib/year-numbers/fetch-year-numbers-for-year";
 import type { ArchiveYearSection } from "@/schemas/aboutPageSchema";
@@ -77,10 +78,9 @@ const buildSectionFromRow = async (
           : undefined,
     },
     sticky_members: {
-      data:
-        sticky.participants.length > 0
-          ? sticky
-          : undefined,
+      data: hasStickyContent(sticky.participants, sticky.additional_members_text)
+        ? sticky
+        : undefined,
     },
   };
 };
@@ -124,10 +124,9 @@ export const assembleArchiveYear = async (
           : fixtureSection.citizens_of_honour.data,
     },
     sticky_members: {
-      data:
-        sticky.participants.length > 0
-          ? sticky
-          : fixtureSection.sticky_members.data,
+      data: hasStickyContent(sticky.participants, sticky.additional_members_text)
+        ? sticky
+        : fixtureSection.sticky_members.data,
     },
   };
 };
