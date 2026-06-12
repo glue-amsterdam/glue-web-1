@@ -101,6 +101,7 @@ const ExhibitorsNavbar = () => {
                     openFilter={openFilter}
                     panelId={categoryPanelId}
                     label="Category"
+                    isActive={filters.type !== "all"}
                     onToggle={handleFilterToggle}
                     onKeyDown={handleFilterKeyDown}
                 />
@@ -121,6 +122,14 @@ const ExhibitorsNavbar = () => {
                 ariaLabel="Category options"
                 className="py-[30px] lg:py-[25px] gap-[15px] lg:gap-[40px] min-h-[80px] lg:h-[81px]"
             >
+                <button
+                    type="button"
+                    aria-pressed={filters.type === "all"}
+                    onClick={() => handleTypeSelect("all")}
+                    className="text-left base-text-size cursor-pointer"
+                >
+                    All
+                </button>
                 {EXHIBITOR_TYPE_OPTIONS.map((option) => {
                     const isActive = filters.type === option.value;
 
@@ -130,7 +139,7 @@ const ExhibitorsNavbar = () => {
                             type="button"
                             aria-pressed={isActive}
                             onClick={() => handleTypeSelect(option.value)}
-                            className="text-left flex items-center gap-[15px] base-text-size"
+                            className="text-left flex items-center gap-[15px] base-text-size cursor-pointer"
                         >
                             <RoundedNumber
                                 type={

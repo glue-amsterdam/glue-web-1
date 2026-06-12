@@ -12,6 +12,13 @@ export const getAddressLine = (
   return formattedAddress.split(",")[0]?.trim() ?? formattedAddress;
 };
 
+export const normalizeMapAddressLine = (
+  addressLine: string | null | undefined
+): string => {
+  if (!addressLine) return "";
+  return addressLine.toLowerCase().replace(/\s+/g, " ").trim();
+};
+
 export const getUserName = (
   userInfo: { user_name: string } | { user_name: string }[]
 ): string => {

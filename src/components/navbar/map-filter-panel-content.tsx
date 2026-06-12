@@ -106,6 +106,14 @@ export const MapFilterPanelContent = ({
         className
       )}
     >
+      <button
+        type="button"
+        aria-pressed={filters.type === "all"}
+        onClick={() => onTypeSelect("all")}
+        className="text-left base-text-size max-w-[289px] lg:max-w-[237px]"
+      >
+        All categories
+      </button>
       {MAP_CATEGORY_FILTER_OPTIONS.map((option) => {
         const isActive = filters.type === option.value;
 

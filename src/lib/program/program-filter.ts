@@ -30,6 +30,9 @@ export const filterProgramBySearch = (
     if (item.organizer.userName.toLowerCase().includes(normalizedQuery)) {
       return true;
     }
+    if (item.locationAddress?.toLowerCase().includes(normalizedQuery)) {
+      return true;
+    }
     return item.coOrganizers.some((co) =>
       co.userName.toLowerCase().includes(normalizedQuery)
     );

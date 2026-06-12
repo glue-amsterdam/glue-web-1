@@ -29,6 +29,7 @@ export type ProgramListItem = {
   type: EventType;
   organizer: ProgramOrganizer;
   coOrganizers: ProgramOrganizerRef[];
+  locationAddress?: string;
 };
 
 export type ProgramLocation = {

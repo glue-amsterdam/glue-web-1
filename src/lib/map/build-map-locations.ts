@@ -10,8 +10,13 @@ import {
   getOrderedEligibleMemberIds,
 } from "./hub-members";
 import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
+import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
 import type { MapLocation, MapLocationDetailMember } from "./types";
-import { ensureArray, getAddressLine } from "./utils";
+import {
+  ensureArray,
+  getAddressLine,
+  normalizeMapAddressLine,
+} from "./utils";
 
 type ParticipantRow = {
   user_id: string;
@@ -46,10 +51,42 @@ type LocationDraft = MapLocation & {
   hubRowId?: string;
 };
 
+type HubMembershipContext = {
+  hubMapInfoId: string;
+  hubAddressLine: string;
+};
+
+const getParticipantType = (specialProgram: boolean): ExhibitorType =>
+  specialProgram ? "special-program" : "up-to-three-participants";
+
+const resolveMemberMapLocationId = (
+  userId: string,
+  hubMapInfoId: string,
+  hubAddressLine: string,
+  mapInfoByUserId: Map<string, MapInfoRow>
+): string => {
+  const ownMapInfo = mapInfoByUserId.get(userId);
+  if (!ownMapInfo) {
+    return hubMapInfoId;
+  }
+
+  const ownAddressLine = normalizeMapAddressLine(
+    getAddressLine(ownMapInfo.formatted_address)
+  );
+  if (!ownAddressLine || ownAddressLine === hubAddressLine) {
+    return hubMapInfoId;
+  }
+
+  return ownMapInfo.id;
+};
+
 const buildHubMembers = (
   hub: HubRow,
   memberIds: Set<string>,
-  participantByUserId: Map<string, ParticipantRow>
+  participantByUserId: Map<string, ParticipantRow>,
+  hubMapInfoId: string,
+  hubAddressLine: string,
+  mapInfoByUserId: Map<string, MapInfoRow>
 ): MapLocationDetailMember[] => {
   const members: MapLocationDetailMember[] = [];
 
@@ -58,13 +95,60 @@ const buildHubMembers = (
     if (!participant) continue;
 
     const slug = participant.slug?.trim();
+    const ownMapInfo = mapInfoByUserId.get(userId);
+    const locationId = resolveMemberMapLocationId(
+      userId,
+      hubMapInfoId,
+      hubAddressLine,
+      mapInfoByUserId
+    );
+
     members.push({
+      userId,
       name: getParticipantDisplayName(participant),
+      type: getParticipantType(participant.special_program),
+      displayNumber: participant.display_number,
+      locationId,
       ...(slug ? { slug } : {}),
+      ...(ownMapInfo?.id &&
+      locationId === hubMapInfoId &&
+      ownMapInfo.id !== hubMapInfoId
+        ? { ownMapInfoId: ownMapInfo.id }
+        : {}),
     });
   }
 
   return members;
+};
+
+const shouldSkipSoloLocationForHubMember = (
+  participantUserId: string,
+  mapInfo: MapInfoRow,
+  hubRows: HubRow[],
+  eligibleParticipantIds: Set<string>,
+  mapInfoByUserId: Map<string, MapInfoRow>
+): boolean => {
+  const ownAddressLine = normalizeMapAddressLine(
+    getAddressLine(mapInfo.formatted_address)
+  );
+
+  for (const hub of hubRows) {
+    const memberIds = getEligibleHubMemberIds(hub, eligibleParticipantIds);
+    if (!memberIds.has(participantUserId)) continue;
+
+    const hostMapInfo = mapInfoByUserId.get(hub.hub_host_id);
+    if (!hostMapInfo) continue;
+
+    const hubAddressLine = normalizeMapAddressLine(
+      getAddressLine(hostMapInfo.formatted_address)
+    );
+
+    if (!ownAddressLine || ownAddressLine === hubAddressLine) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 export const buildMapLocations = async (
@@ -136,6 +220,7 @@ export const buildMapLocations = async (
   const locationByMapInfoId = new Map<string, LocationDraft>();
   const hubRows = (hubsResult.data as HubRow[]) ?? [];
   const processedHubHostIds = new Set<string>();
+  const hubMembershipByUserId = new Map<string, HubMembershipContext>();
 
   for (const hub of hubRows) {
     if (!eligibleParticipantIds.has(hub.hub_host_id)) continue;
@@ -152,12 +237,37 @@ export const buildMapLocations = async (
 
     processedHubHostIds.add(hub.hub_host_id);
 
+    const hubAddressLine = normalizeMapAddressLine(
+      getAddressLine(hostMapInfo.formatted_address)
+    );
+    const hubMembership: HubMembershipContext = {
+      hubMapInfoId: hostMapInfo.id,
+      hubAddressLine,
+    };
+
+    if (!hubMembershipByUserId.has(hub.hub_host_id)) {
+      hubMembershipByUserId.set(hub.hub_host_id, hubMembership);
+    }
+
+    for (const userId of memberIds) {
+      if (!hubMembershipByUserId.has(userId)) {
+        hubMembershipByUserId.set(userId, hubMembership);
+      }
+    }
+
     const type = classifyLocationType(
       memberCount,
       hostParticipant.special_program
     );
 
-    const members = buildHubMembers(hub, memberIds, participantByUserId);
+    const members = buildHubMembers(
+      hub,
+      memberIds,
+      participantByUserId,
+      hostMapInfo.id,
+      hubAddressLine,
+      mapInfoByUserId
+    );
 
     locationByMapInfoId.set(hostMapInfo.id, {
       id: hostMapInfo.id,
@@ -166,10 +276,11 @@ export const buildMapLocations = async (
       type,
       name: hub.name,
       displayNumber: hub.display_number,
-      addressLine: getAddressLine(hostMapInfo.formatted_address),
+      addressLine: hubAddressLine,
       hubId: hub.id,
+      hubHostUserId: hub.hub_host_id,
       memberCount,
-      ...(members && members.length > 0 ? { members } : {}),
+      ...(members.length > 0 ? { members } : {}),
       hostUserId: hub.hub_host_id,
       hostSpecialProgram: hostParticipant.special_program,
       hubRowId: hub.id,
@@ -181,6 +292,18 @@ export const buildMapLocations = async (
 
     const mapInfo = mapInfoByUserId.get(participant.user_id);
     if (!mapInfo) continue;
+
+    if (
+      shouldSkipSoloLocationForHubMember(
+        participant.user_id,
+        mapInfo,
+        hubRows,
+        eligibleParticipantIds,
+        mapInfoByUserId
+      )
+    ) {
+      continue;
+    }
 
     locationByMapInfoId.set(mapInfo.id, {
       id: mapInfo.id,

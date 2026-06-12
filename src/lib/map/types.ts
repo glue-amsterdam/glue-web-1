@@ -12,8 +12,14 @@ export type MapLocation = {
   addressLine: string;
   slug?: string;
   hubId?: string;
+  /** user_id of the hub host; used to resolve multi-hub member selection. */
+  hubHostUserId?: string;
   memberCount: number;
   members?: MapLocationDetailMember[];
+  /** map_info id to focus when this list row is selected (if different from `id`). */
+  mapSelectionId?: string;
+  /** user_id of hub member when this row represents a flat member entry. */
+  hubMemberUserId?: string;
 };
 
 export type MapRouteDot = {
@@ -51,6 +57,12 @@ export type MapLocationDetailMember = {
   slug?: string;
   imageUrl?: string;
   userId?: string;
+  type?: ExhibitorType;
+  displayNumber?: string | null;
+  /** map_info id to focus on the map when selecting this member. */
+  locationId?: string;
+  /** Member's own map_info id when selection should resolve to the hub pin. */
+  ownMapInfoId?: string;
 };
 
 export type MapLocationDetail = {

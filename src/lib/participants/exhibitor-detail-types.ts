@@ -22,6 +22,8 @@ export type ExhibitorEventSummary = {
 
 export type ExhibitorContactInfo = {
   mapInfo: ExhibitorMapInfo[];
+  /** Hub host street address when the participant belongs to a hub. */
+  hubHostAddress?: string | null;
   phoneNumbers: string[] | null;
   visibleEmails: string[] | null;
   visibleWebsites: string[] | null;

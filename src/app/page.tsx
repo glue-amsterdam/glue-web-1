@@ -11,6 +11,7 @@ import ExhibitorsHome from "@/components/home/exhibitors-section/exhibitors-home
 import CreativeCitizensOfHonour from "@/components/home/citizens-of-honour-section/creative-citizens-of-honour";
 import CmsTextSection from "@/components/cms/cms-text-section";
 import StickyParticipantsSection from "@/components/home/sticky-participants-section/sticky-participants-section";
+import HomePostsSection from "@/components/home/posts-section/home-posts-section";
 import BottomBlock from "@/components/bottom-block";
 import Separator from "@/components/separator";
 
@@ -70,6 +71,8 @@ export default async function Page() {
         <StickyParticipantsSection data={stickyGroupData} />
         <Separator />
         <CmsTextSection slug="newsletter" />
+        <Separator />
+        <HomePostsSection />
 
         <BottomBlock />
       </MainContainer>

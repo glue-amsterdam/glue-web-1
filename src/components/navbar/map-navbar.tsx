@@ -35,6 +35,7 @@ import { buildMapPageUrl } from "@/lib/map/map-url";
 import type { MapRoute } from "@/lib/map/types";
 import {
   type MapFilterId,
+  type MapLocationSelectOptions,
   useMapNavigation,
   useMapPage,
   useMapStore,
@@ -182,11 +183,14 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
   };
 
   const handleExhibitorListSelect = useCallback(
-    (locationId: string) => {
+    (locationId: string, options?: MapLocationSelectOptions) => {
       if (!navigation) return;
 
       if (!isLargeScreen) closeFilter();
-      navigation.selectLocationLocal(locationId);
+      navigation.selectLocationLocal(
+        locationId,
+        options?.memberUserId ?? null
+      );
       navigation.navigateMap({
         filterPatch: isLargeScreen ? { view: "exhibitors" } : { view: "none" },
         selection: { place: locationId },
@@ -437,6 +441,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
           openFilter={openFilter}
           panelId={categoryPanelId}
           label="Category"
+          isActive={filters.type !== "all"}
           onToggle={handleCategoryToggle}
           onKeyDown={handleCategoryKeyDown}
         />

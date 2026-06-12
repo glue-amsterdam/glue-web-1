@@ -21,7 +21,11 @@ const ExhibitorDetailView = ({
   contactInfo,
 }: ExhibitorDisplayProps) => {
   const mapHref = getExhibitorMapHref(contactInfo?.mapInfo[0]?.id);
-  const programHref = getExhibitorProgramHref(name);
+  const programHref = getExhibitorProgramHref({
+    ownAddress: contactInfo?.mapInfo[0]?.formatted_address,
+    hubHostAddress: contactInfo?.hubHostAddress,
+    fallbackName: name,
+  });
 
   return (
     <section id="exhibitor-detail-section" className="text-(--black-color) pt-[122px] lg:pt-[113px]">

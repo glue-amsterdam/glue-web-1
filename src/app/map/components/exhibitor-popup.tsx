@@ -11,13 +11,14 @@ import { useMapLocationDetail } from "../hooks/use-map-location-detail";
 import RoundedNumber from "@/components/rounded-number";
 import CrossRotatedDesktop from "@/components/icons/cross-rotated-desktop";
 import { useCyclicIndex } from "@/hooks/useCyclicIndex";
-import { buildExhibitorFooterSlides } from "@/lib/map/exhibitor-footer-slides";
+import { buildExhibitorFooterSlides, findExhibitorSlideIndex } from "@/lib/map/exhibitor-footer-slides";
 import { buildGoogleMapsSearchUrl } from "@/lib/map/utils";
 import BigButton from "@/components/big-button";
 
 type ExhibitorPopUpProps = {
   location: MapLocation;
   tourMode: MapTourMode;
+  selectedHubMemberId?: string | null;
   anchor: ExhibitorPopupAnchor;
   offset: [number, number];
   onClose: () => void;
@@ -26,6 +27,7 @@ type ExhibitorPopUpProps = {
 const ExhibitorPopUp = ({
   location,
   tourMode,
+  selectedHubMemberId = null,
   anchor,
   offset,
   onClose,
@@ -40,6 +42,11 @@ const ExhibitorPopUp = ({
     [location, detail]
   );
 
+  const initialSlideIndex = useMemo(
+    () => findExhibitorSlideIndex(slides, selectedHubMemberId),
+    [slides, selectedHubMemberId]
+  );
+
   const {
     currentIndex,
     handleMouseEnter,
@@ -48,6 +55,7 @@ const ExhibitorPopUp = ({
     itemCount: slides.length,
     delayMs: 3000,
     enabled: slides.length > 1,
+    initialIndex: initialSlideIndex,
   });
 
   const currentSlide = slides[currentIndex] ?? slides[0];

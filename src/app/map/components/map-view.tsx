@@ -22,6 +22,7 @@ import { config } from "@/config";
 import { usePathname } from "next/navigation";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
 import type { MapLocation, MapRoute, MapTourMode } from "@/lib/map/types";
+import { resolveMapLocationSelectionId } from "@/lib/map/map-selection";
 import { MAP_CITY_BOUNDS, MAP_CITY_CENTER } from "@/lib/map/map-bounds";
 import {
   focusMapOnPoint,
@@ -117,9 +118,12 @@ export type MapViewHandle = {
 
 type MapViewProps = {
   locations: MapLocation[];
+  /** Full location set for resolving hub fallback selection (defaults to `locations`). */
+  selectionLocations?: MapLocation[];
   routes: MapRoute[];
   tourMode: MapTourMode;
   selectedLocation: string | null;
+  selectedHubMemberId?: string | null;
   selectedRoute: string | null;
   activeRouteStopId: string | null;
   detailPanelDismissed: boolean;
@@ -132,9 +136,11 @@ type MapViewProps = {
 const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
   {
     locations,
+    selectionLocations: selectionLocationsProp,
     routes,
     tourMode,
     selectedLocation,
+    selectedHubMemberId = null,
     selectedRoute,
     activeRouteStopId,
     detailPanelDismissed,
@@ -147,6 +153,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
 ) {
   const mapRef = useRef<MapRef>(null);
   const pathname = usePathname();
+  const selectionLocations = selectionLocationsProp ?? locations;
   const initialPlaceIdRef = useRef(selectedLocation);
   const initialViewStateRef = useRef<MapInitialViewState | null>(null);
   const resizeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -158,7 +165,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
 
   if (!initialViewStateRef.current) {
     initialViewStateRef.current = buildInitialViewState(
-      locations,
+      selectionLocations,
       initialPlaceIdRef.current
     );
   }
@@ -181,10 +188,19 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     [locations, themeColors]
   );
 
-  const selectedLocationData = useMemo(
-    () => locations.find((loc) => loc.id === selectedLocation) ?? null,
-    [selectedLocation, locations]
-  );
+  const selectedLocationData = useMemo(() => {
+    if (!selectedLocation) return null;
+
+    const resolvedId = resolveMapLocationSelectionId(
+      selectionLocations,
+      selectedLocation
+    );
+    return (
+      selectionLocations.find((location) => location.id === resolvedId) ??
+      locations.find((location) => location.id === resolvedId) ??
+      null
+    );
+  }, [selectedLocation, selectionLocations, locations]);
 
   const selectedRouteObject = useMemo(
     () => routes.find((route) => route.id === selectedRoute) ?? null,
@@ -661,9 +677,10 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
         isLargeScreen &&
         exhibitorPopupLayout && (
           <ExhibitorPopup
-            key={selectedLocation}
+            key={`${selectedLocation}:${selectedHubMemberId ?? ""}`}
             location={selectedLocationData}
             tourMode={tourMode}
+            selectedHubMemberId={selectedHubMemberId}
             anchor={exhibitorPopupLayout.anchor}
             offset={exhibitorPopupLayout.offset}
             onClose={handleLocationPopupClose}

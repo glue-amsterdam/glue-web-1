@@ -9,6 +9,7 @@ type UseCyclicIndexOptions = {
   delayMs?: number;
   enabled?: boolean;
   pauseOnHover?: boolean;
+  initialIndex?: number;
 };
 
 export const useCyclicIndex = ({
@@ -16,8 +17,11 @@ export const useCyclicIndex = ({
   delayMs = DEFAULT_DELAY_MS,
   enabled = itemCount > 1,
   pauseOnHover = true,
+  initialIndex = 0,
 }: UseCyclicIndexOptions) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const safeInitialIndex =
+    initialIndex >= 0 && initialIndex < itemCount ? initialIndex : 0;
+  const [currentIndex, setCurrentIndex] = useState(safeInitialIndex);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isPausedRef = useRef(false);
 
@@ -47,6 +51,12 @@ export const useCyclicIndex = ({
       setCurrentIndex(0);
     }
   }, [currentIndex, itemCount]);
+
+  useEffect(() => {
+    const nextIndex =
+      initialIndex >= 0 && initialIndex < itemCount ? initialIndex : 0;
+    setCurrentIndex(nextIndex);
+  }, [initialIndex, itemCount]);
 
   useEffect(() => {
     startAutoplay();

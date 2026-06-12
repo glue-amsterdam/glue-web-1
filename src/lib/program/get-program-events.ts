@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildMapLocations } from "@/lib/map/build-map-locations";
+import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
 import {
   collectOrganizerUserIds,
   loadOrganizerProfiles,
@@ -20,6 +21,18 @@ import {
   slugFromEmbed,
 } from "./program-utils";
 
+type LocationEmbed = {
+  formatted_address: string | null;
+};
+
+const normalizeLocationEmbed = (
+  location: LocationEmbed | LocationEmbed[] | null | undefined
+): LocationEmbed | null => {
+  if (!location) return null;
+  if (Array.isArray(location)) return location[0] ?? null;
+  return location;
+};
+
 type RawEventRow = {
   id: string;
   title: string;
@@ -31,6 +44,7 @@ type RawEventRow = {
   location_id: string | null;
   co_organizers: string[] | null;
   organizer_id: string | null;
+  location: LocationEmbed | LocationEmbed[] | null;
 };
 
 const toOrganizerEmbed = (
@@ -69,7 +83,10 @@ export const loadProgramListItems = async (
     end_time,
     location_id,
     co_organizers,
-    organizer_id
+    organizer_id,
+    location:map_info!location_id (
+      formatted_address
+    )
   `);
 
   if (options.type) {
@@ -126,6 +143,10 @@ export const loadProgramListItems = async (
   const badgeByLocationId = buildLocationBadgeIndex(locations);
 
   return validEvents.map((event) => {
+    const locationEmbed = normalizeLocationEmbed(event.location);
+    const locationAddress = toBaseFormattedAddress(
+      locationEmbed?.formatted_address ?? ""
+    );
     const dayMeta = eventDaysMap.get(event.dayId!)!;
     const coIds = event.co_organizers ?? [];
     const organizer = toOrganizerEmbed(
@@ -179,6 +200,7 @@ export const loadProgramListItems = async (
             co.participant_details as Parameters<typeof slugFromEmbed>[0]
           ),
         })),
+      locationAddress,
     };
   });
 };

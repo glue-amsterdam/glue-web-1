@@ -19,8 +19,13 @@ export type MapNavigateParams = {
 export type MapNavigationHandlers = {
   navigateMap: (params: MapNavigateParams) => void;
   clearSelectionLocal: () => void;
-  selectLocationLocal: (locationId: string) => void;
+  selectLocationLocal: (locationId: string, memberUserId?: string | null) => void;
   selectRouteLocal: (routeId: string) => void;
+};
+
+export type MapLocationSelectOptions = {
+  clearSearch?: boolean;
+  memberUserId?: string;
 };
 
 export type MapPageSlice = {
@@ -32,7 +37,7 @@ export type MapPageSlice = {
   selectedRoute: string | null;
   onLocationSelect: (
     locationId: string,
-    options?: { clearSearch?: boolean }
+    options?: MapLocationSelectOptions
   ) => void;
   onRouteSelect: (routeId: string) => void;
 };
@@ -40,7 +45,10 @@ export type MapPageSlice = {
 export type MapFilterPanelSlice = {
   openFilter: MapFilterId | null;
   openPanelId: string | null;
-  onExhibitorListSelect: (locationId: string) => void;
+  onExhibitorListSelect: (
+    locationId: string,
+    options?: MapLocationSelectOptions
+  ) => void;
   onRouteListSelect: (routeId: string) => void;
   onTypeSelect: (value: ExhibitorsFilterType) => void;
   onRouteSelected: () => void;

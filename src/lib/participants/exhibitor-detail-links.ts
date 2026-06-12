@@ -11,15 +11,44 @@ export const getExhibitorMapHref = (
   return `/map?place=${encodeURIComponent(mapInfoId)}`;
 };
 
-export const getExhibitorProgramHref = (entityName: string): string => {
-  const trimmedName = entityName.trim();
+export type ResolveExhibitorProgramSearchTermInput = {
+  ownAddress?: string | null;
+  hubHostAddress?: string | null;
+  fallbackName?: string;
+};
 
-  if (!trimmedName) {
+export const resolveExhibitorProgramSearchTerm = ({
+  ownAddress,
+  hubHostAddress,
+  fallbackName,
+}: ResolveExhibitorProgramSearchTermInput): string => {
+  const normalizedOwnAddress = ownAddress?.trim();
+  if (normalizedOwnAddress) {
+    return normalizedOwnAddress;
+  }
+
+  const normalizedHubHostAddress = hubHostAddress?.trim();
+  if (normalizedHubHostAddress) {
+    return normalizedHubHostAddress;
+  }
+
+  return fallbackName?.trim() ?? "";
+};
+
+export const getExhibitorProgramHref = (
+  searchTermOrOptions: string | ResolveExhibitorProgramSearchTermInput
+): string => {
+  const trimmedSearchTerm =
+    typeof searchTermOrOptions === "string"
+      ? searchTermOrOptions.trim()
+      : resolveExhibitorProgramSearchTerm(searchTermOrOptions);
+
+  if (!trimmedSearchTerm) {
     return "/program";
   }
 
   return buildProgramPageUrl("/program", {
     ...DEFAULT_PROGRAM_FILTERS,
-    q: trimmedName,
+    q: trimmedSearchTerm,
   });
 };

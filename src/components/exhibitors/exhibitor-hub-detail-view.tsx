@@ -23,7 +23,10 @@ type Props = {
 const ExhibitorHubDetailView = ({ hub }: Props) => {
   const displayLabel = hub.hubDisplayNumber ?? " ";
   const mapHref = getExhibitorMapHref(hub.mapInfoId);
-  const programHref = getExhibitorProgramHref(hub.name);
+  const programHref = getExhibitorProgramHref({
+    ownAddress: hub.formattedAddress,
+    fallbackName: hub.name,
+  });
 
   return (
     <section
@@ -56,7 +59,7 @@ const ExhibitorHubDetailView = ({ hub }: Props) => {
                 className="shrink-0"
               />
               <div className="min-w-0 flex-1">
-                <h2 className="base-text-size h-[26px] pt-1">{hub.name.toUpperCase()}</h2>
+                <h2 className="base-text-size h-[26px] pt-1">{hub.name.toUpperCase()} - MEMBERS</h2>
                 <ul
                   className="grid grid-cols-1 lg:grid-cols-3 gap-y-[60px] lg:gap-x-[30px] pt-[30px] list-none justify-self-center"
                   aria-label={`Exhibitors in ${hub.name}`}

@@ -12,24 +12,22 @@ export type ExhibitorFooterSlide = {
 const buildSlideId = (member: { slug?: string; userId?: string; name: string }, index: number) =>
   member.userId ?? member.slug ?? `${member.name}-${index}`;
 
+export const getHubMemberSelectionKey = (member: {
+  userId?: string;
+  slug?: string;
+}): string | undefined => member.userId ?? member.slug;
+
 export const buildExhibitorFooterSlides = (
   location: MapLocation,
   detail: MapLocationDetail | null
 ): ExhibitorFooterSlide[] => {
   const detailMembers = detail?.members ?? [];
   const locationMembers = location.members ?? [];
+  const hubMembers =
+    detailMembers.length > 1 ? detailMembers : locationMembers;
 
-  if (detailMembers.length > 1) {
-    return detailMembers.map((member, index) => ({
-      id: buildSlideId(member, index),
-      name: member.name,
-      imageUrl: member.imageUrl ?? null,
-      profileHref: getExhibitorLink({ slug: member.slug }),
-    }));
-  }
-
-  if (locationMembers.length > 1 && !detail) {
-    return locationMembers.map((member, index) => ({
+  if (hubMembers.length > 1) {
+    return hubMembers.map((member, index) => ({
       id: buildSlideId(member, index),
       name: member.name,
       imageUrl: member.imageUrl ?? null,
@@ -48,4 +46,16 @@ export const buildExhibitorFooterSlides = (
       profileHref,
     },
   ];
+};
+
+export const findExhibitorSlideIndex = (
+  slides: ExhibitorFooterSlide[],
+  memberKey: string | null | undefined
+): number => {
+  if (!memberKey || slides.length === 0) {
+    return 0;
+  }
+
+  const index = slides.findIndex((slide) => slide.id === memberKey);
+  return index >= 0 ? index : 0;
 };

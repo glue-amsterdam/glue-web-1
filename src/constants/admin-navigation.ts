@@ -31,7 +31,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
           { name: "FAQ", href: "/admin/about?section=about-faq" },
         ],
       },
-      { name: "Posts", href: "/admin/posts" },
+      { name: "Blog", href: "/admin/posts" },
       { name: "Program", href: "/admin/events" },
       { name: "Terms and Conditions", href: "/admin/terms" },
       { name: "Sign Up", href: "/admin/sign-up" },
@@ -68,7 +68,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
 
 export const ADMIN_QUICK_LINKS: AdminNavLink[] = [
   { name: "Home", href: "/admin/home" },
-  { name: "Posts", href: "/admin/posts" },
+  { name: "Blog", href: "/admin/posts" },
   { name: "Yearly Content", href: "/admin/yearly-content" },
   { name: "Base Data", href: "/admin/main" },
 ];

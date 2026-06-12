@@ -57,12 +57,89 @@ const normalizeSocialMedia = (
   return media;
 };
 
+const resolveHubHostUserId = async (
+  supabase: SupabaseClient,
+  userId: string
+): Promise<string | null> => {
+  const { data: hostedHub, error: hostedHubError } = await supabase
+    .from("hubs")
+    .select("hub_host_id")
+    .eq("hub_host_id", userId)
+    .limit(1)
+    .maybeSingle();
+
+  if (hostedHubError) {
+    console.error("Error fetching hosted hub:", hostedHubError);
+  }
+
+  if (hostedHub?.hub_host_id) {
+    return hostedHub.hub_host_id;
+  }
+
+  const { data: membership, error: membershipError } = await supabase
+    .from("hub_participants")
+    .select("hub_id")
+    .eq("user_id", userId)
+    .limit(1)
+    .maybeSingle();
+
+  if (membershipError) {
+    console.error("Error fetching hub membership:", membershipError);
+    return null;
+  }
+
+  if (!membership?.hub_id) {
+    return null;
+  }
+
+  const { data: hub, error: hubError } = await supabase
+    .from("hubs")
+    .select("hub_host_id")
+    .eq("id", membership.hub_id)
+    .maybeSingle();
+
+  if (hubError) {
+    console.error("Error fetching hub host for member:", hubError);
+    return null;
+  }
+
+  return hub?.hub_host_id ?? null;
+};
+
+const resolveHubHostAddress = async (
+  supabase: SupabaseClient,
+  userId: string
+): Promise<string | null> => {
+  const hubHostUserId = await resolveHubHostUserId(supabase, userId);
+  if (!hubHostUserId) {
+    return null;
+  }
+
+  const { data: hostMapInfo, error: hostMapInfoError } = await supabase
+    .from("map_info")
+    .select("formatted_address")
+    .eq("user_id", hubHostUserId)
+    .maybeSingle();
+
+  if (hostMapInfoError) {
+    console.error("Error fetching hub host map info:", hostMapInfoError);
+    return null;
+  }
+
+  if (!hostMapInfo?.formatted_address) {
+    return null;
+  }
+
+  return toBaseFormattedAddress(hostMapInfo.formatted_address) || null;
+};
+
 const buildContactInfo = async (
   supabase: SupabaseClient,
   userId: string,
   participant: ParticipantRow
 ): Promise<ExhibitorContactInfo> => {
-  const [mapInfoResult, visitingHoursResult, eventsResult] = await Promise.all([
+  const [mapInfoResult, visitingHoursResult, eventsResult, hubHostAddress] =
+    await Promise.all([
     supabase
       .from("map_info")
       .select("formatted_address, id, no_address")
@@ -75,6 +152,7 @@ const buildContactInfo = async (
       .from("events")
       .select("id, image_url, title")
       .eq("organizer_id", userId),
+    resolveHubHostAddress(supabase, userId),
   ]);
 
   const visitingHours =
@@ -96,6 +174,7 @@ const buildContactInfo = async (
 
   return {
     mapInfo,
+    hubHostAddress,
     phoneNumbers: participant.phone_numbers,
     visibleEmails: participant.visible_emails,
     visibleWebsites: participant.visible_websites,

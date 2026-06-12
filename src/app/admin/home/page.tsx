@@ -91,6 +91,14 @@ export default async function HomeSectionPage() {
           initialData={getTextSectionBySlug(homeTextSections, "newsletter")}
         />
       </section>
+      <section className="border-t pt-8">
+        <h2 className="title-text mb-4">Posts</h2>
+        <TextSectionAdminForm
+          slug="home-posts"
+          sectionTitle="Blog"
+          initialData={getTextSectionBySlug(homeTextSections, "home-posts")}
+        />
+      </section>
     </div>
   );
 }

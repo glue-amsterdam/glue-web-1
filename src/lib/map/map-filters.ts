@@ -1,6 +1,6 @@
 import type { ExhibitorsFilterType } from "@/lib/participants/exhibitors-filters";
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
-import type { MapLocation, MapRoute } from "@/lib/map/types";
+import type { MapLocation, MapLocationDetailMember, MapRoute } from "@/lib/map/types";
 import { getMapLocationMarkerStackTier } from "./map-location-display";
 
 /** Lower = behind; higher = on top (Mapbox circle/symbol sort-key). */
@@ -99,6 +99,117 @@ export const filterMapLocationsForSearch = (
   return sortMapLocationsForDisplayList(result);
 };
 
+/** In "All" view, keep hub rows and add flat member rows (solo entries unchanged). */
+export const flattenHubMembersForAllList = (
+  locations: MapLocation[],
+  query?: string
+): MapLocation[] => {
+  const normalizedQuery = query?.trim().toLowerCase();
+  const result: MapLocation[] = [];
+  const seenMemberUserIds = new Set<string>();
+  const hubMemberSlugs = new Set<string>();
+
+  for (const location of locations) {
+    if (!location.hubId) continue;
+
+    for (const member of location.members ?? []) {
+      const memberSlug = member.slug?.trim();
+      if (memberSlug) {
+        hubMemberSlugs.add(memberSlug);
+      }
+    }
+  }
+
+  const isRedundantSoloListEntry = (location: MapLocation): boolean => {
+    const slug = location.slug?.trim();
+    if (slug && hubMemberSlugs.has(slug)) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const getMatchingMembers = (location: MapLocation) => {
+    const hubNameMatches = normalizedQuery
+      ? location.name.toLowerCase().includes(normalizedQuery)
+      : false;
+
+    return (location.members ?? []).filter((member) => {
+      if (!normalizedQuery || hubNameMatches) {
+        return true;
+      }
+
+      return member.name.toLowerCase().includes(normalizedQuery);
+    });
+  };
+
+  const addMemberFlatRow = (
+    location: MapLocation,
+    member: MapLocationDetailMember
+  ) => {
+    const memberUserId = member.userId ?? member.slug ?? member.name;
+    if (seenMemberUserIds.has(memberUserId)) {
+      return;
+    }
+
+    seenMemberUserIds.add(memberUserId);
+
+    result.push({
+      id: `list:hub-member:${location.hubId}:${memberUserId}`,
+      mapSelectionId: location.id,
+      hubMemberUserId: member.userId ?? member.slug,
+      latitude: location.latitude,
+      longitude: location.longitude,
+      type: member.type ?? location.type,
+      name: member.name,
+      displayNumber: member.displayNumber ?? null,
+      addressLine: location.addressLine,
+      slug: member.slug,
+      hubId: location.hubId,
+      memberCount: 1,
+    });
+  };
+
+  for (const location of locations) {
+    if (!location.hubId) {
+      if (!isRedundantSoloListEntry(location)) {
+        result.push(location);
+      }
+      continue;
+    }
+
+    const matchingMembers = getMatchingMembers(location);
+    const hubNameMatches = normalizedQuery
+      ? location.name.toLowerCase().includes(normalizedQuery)
+      : false;
+    const includeHubRow =
+      !normalizedQuery || hubNameMatches || matchingMembers.length > 0;
+
+    if (includeHubRow) {
+      result.push(location);
+    }
+  }
+
+  for (const location of locations) {
+    if (!location.hubId) continue;
+
+    for (const member of getMatchingMembers(location)) {
+      if (location.hubHostUserId !== member.userId) continue;
+      addMemberFlatRow(location, member);
+    }
+  }
+
+  for (const location of locations) {
+    if (!location.hubId) continue;
+
+    for (const member of getMatchingMembers(location)) {
+      addMemberFlatRow(location, member);
+    }
+  }
+
+  return sortMapLocationsForDisplayList(result);
+};
+
 export const filterMapLocations = (
   locations: MapLocation[],
   filters: Pick<MapFilters, "type" | "q">
@@ -125,13 +236,21 @@ export const filterMapLocationsForList = (
   filters: MapFilters
 ): MapLocation[] => {
   const query = filters.q.trim();
+
+  let result: MapLocation[];
   if (query) {
-    return filterMapLocationsForSearch(locations, query);
+    result = filterMapLocationsForSearch(locations, query);
+  } else {
+    result = sortMapLocationsForDisplayList(
+      filterMapLocations(locations, { type: filters.type, q: "" })
+    );
   }
 
-  return sortMapLocationsForDisplayList(
-    filterMapLocations(locations, { type: filters.type, q: "" })
-  );
+  if (filters.type === "all") {
+    return flattenHubMembersForAllList(result, query || undefined);
+  }
+
+  return result;
 };
 
 /** Map markers ignore category (`type`); only search (`q`) narrows visible dots. */

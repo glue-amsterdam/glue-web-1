@@ -5,16 +5,37 @@ import {
 } from "./map-post-row";
 import type { PublicPostSummaryData, PostWithMediaData } from "./types";
 
+export const HOME_POSTS_LIMIT = 6;
+
+const POST_SUMMARY_SELECT =
+  "id, title, slug, status, author, keywords, content_html, created_at, updated_at";
+
 export const fetchPublishedPostSummaries = async (
   supabase: SupabaseClient
 ): Promise<PublicPostSummaryData[]> => {
   const { data, error } = await supabase
     .from("posts")
-    .select(
-      "id, title, slug, status, author, keywords, content_html, created_at, updated_at"
-    )
+    .select(POST_SUMMARY_SELECT)
     .eq("status", "published")
     .order("created_at", { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map(mapPublicPostSummaryFromRow);
+};
+
+export const fetchPublishedPostSummariesForHome = async (
+  supabase: SupabaseClient,
+  limit = HOME_POSTS_LIMIT
+): Promise<PublicPostSummaryData[]> => {
+  const { data, error } = await supabase
+    .from("posts")
+    .select(POST_SUMMARY_SELECT)
+    .eq("status", "published")
+    .order("title", { ascending: true })
+    .limit(limit);
 
   if (error) {
     throw error;

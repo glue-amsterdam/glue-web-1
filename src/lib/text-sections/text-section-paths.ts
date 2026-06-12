@@ -4,6 +4,7 @@ export const TEXT_SECTION_REVALIDATE_PATHS: Record<TextSectionSlug, string[]> = 
   "become-an-exhibitor": ["/"],
   "alternatives-unexpected": ["/", "/visit"],
   newsletter: ["/", "/visit", "/about"],
+  "home-posts": ["/"],
   "visit-intro": ["/visit"],
   "visit-sign-up": ["/visit"],
   "visit-discover": ["/visit"],

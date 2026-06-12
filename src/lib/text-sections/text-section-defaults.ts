@@ -71,6 +71,18 @@ export const TEXT_SECTION_DEFAULTS: Record<TextSectionSlug, TextSectionData> = {
     buttonLink: "/newsletter",
     sectionId: "newsletter-section",
   },
+  "home-posts": {
+    slug: "home-posts",
+    adminGroup: "home",
+    variant: "block",
+    title: "POSTS",
+    description:
+      "Read the latest news and stories from the GLUE design route.",
+    showButton: false,
+    buttonLabel: null,
+    buttonLink: null,
+    sectionId: "home-posts-section",
+  },
   "visit-intro": {
     slug: "visit-intro",
     adminGroup: "visit",

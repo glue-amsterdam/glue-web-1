@@ -4,6 +4,7 @@ import {
   fetchPublishedPostBySlug,
   fetchPublishedPostSlugs,
   fetchPublishedPostSummaries,
+  fetchPublishedPostSummariesForHome,
 } from "./fetch-public-post";
 import {
   mapPublicPostSummaryToApiResponse,
@@ -30,6 +31,24 @@ const getCachedPublishedPostSummariesData = (): Promise<
 
 export const getCachedPublishedPosts = async (): Promise<PublicPostSummary[]> => {
   const summaries = await getCachedPublishedPostSummariesData();
+  return summaries.map(mapPublicPostSummaryToApiResponse);
+};
+
+const getCachedHomePostsData = (): Promise<PublicPostSummaryData[]> =>
+  unstable_cache(
+    async (): Promise<PublicPostSummaryData[]> => {
+      const supabase = createPublicSupabaseClient();
+      return fetchPublishedPostSummariesForHome(supabase);
+    },
+    [POSTS_CACHE_TAG, "home-posts"],
+    {
+      tags: [POSTS_CACHE_TAG],
+      revalidate: false,
+    }
+  )();
+
+export const getCachedHomePosts = async (): Promise<PublicPostSummary[]> => {
+  const summaries = await getCachedHomePostsData();
   return summaries.map(mapPublicPostSummaryToApiResponse);
 };
 

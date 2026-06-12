@@ -19,7 +19,7 @@ export default async function PostsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <MainContainer className="cta-padding">
+      <MainContainer className="pt-(--nav-primary-h)">
         <nav className="sr-only" aria-label="Breadcrumb">
           <ol>
             <li>
@@ -29,10 +29,6 @@ export default async function PostsPage() {
           </ol>
         </nav>
         <section id="posts-section">
-          <h1 className="title-text">POSTS</h1>
-          <p className="sr-only">
-            Read the latest news and stories from GLUE {config.cityName}.
-          </p>
           <PostsList posts={posts} />
         </section>
         <BottomBlock />

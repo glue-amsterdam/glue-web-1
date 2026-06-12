@@ -4,7 +4,7 @@ import { memo, useCallback, useMemo } from "react";
 import Image from "next/image";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useCyclicIndex } from "@/hooks/useCyclicIndex";
-import { buildExhibitorFooterSlides } from "@/lib/map/exhibitor-footer-slides";
+import { buildExhibitorFooterSlides, findExhibitorSlideIndex } from "@/lib/map/exhibitor-footer-slides";
 import { isMapHubEntity } from "@/lib/map/map-location-display";
 import { buildGoogleMapsSearchUrl } from "@/lib/map/utils";
 import type { MapLocation, MapTourMode } from "@/lib/map/types";
@@ -19,6 +19,7 @@ const DEFAULT_AUTOPLAY_DELAY_MS = 3000;
 type ExhibitorFooterProps = {
     location: MapLocation;
     tourMode: MapTourMode;
+    selectedHubMemberId?: string | null;
     delayMs?: number;
     onClose: () => void;
 };
@@ -26,6 +27,7 @@ type ExhibitorFooterProps = {
 const ExhibitorFooter = ({
     location,
     tourMode,
+    selectedHubMemberId = null,
     delayMs = DEFAULT_AUTOPLAY_DELAY_MS,
     onClose,
 }: ExhibitorFooterProps) => {
@@ -37,6 +39,11 @@ const ExhibitorFooter = ({
         [location, detail]
     );
 
+    const initialSlideIndex = useMemo(
+        () => findExhibitorSlideIndex(slides, selectedHubMemberId),
+        [slides, selectedHubMemberId]
+    );
+
     const {
         currentIndex,
         handleMouseEnter,
@@ -45,6 +52,7 @@ const ExhibitorFooter = ({
         itemCount: slides.length,
         delayMs,
         enabled: slides.length > 1,
+        initialIndex: initialSlideIndex,
     });
 
     const currentSlide = slides[currentIndex] ?? slides[0];

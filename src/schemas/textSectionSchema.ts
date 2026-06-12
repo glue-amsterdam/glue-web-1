@@ -4,6 +4,7 @@ export const TEXT_SECTION_SLUGS = [
   "become-an-exhibitor",
   "alternatives-unexpected",
   "newsletter",
+  "home-posts",
   "visit-intro",
   "visit-sign-up",
   "visit-discover",

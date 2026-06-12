@@ -11,17 +11,23 @@ import { mergeMapFilters, shouldClearMapSelectionForBrowseView } from "@/lib/map
 import { MAP_CITY_BOUNDS } from "@/lib/map/map-bounds";
 import type { MapFilters } from "@/lib/map/map-filters";
 import type { MapLocation, MapPageData, MapRoute } from "@/lib/map/types";
+import { resolveMapLocationSelectionId } from "@/lib/map/map-selection";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
 import {
   useMapStore,
   type MapNavigateParams,
 } from "@/app/map/stores/use-map-store";
 
+const URL_UPDATE_GUARD_MS = 100;
+
 export const useMapPageState = (initialData: MapPageData) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const isUpdatingUrl = useRef(false);
+  const isActiveRef = useRef(true);
+  const urlUpdateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didNormalizePlaceRef = useRef(false);
   const pendingPlaceIdRef = useRef<string | null>(null);
   const pendingRouteIdRef = useRef<string | null>(null);
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
@@ -31,16 +37,35 @@ export const useMapPageState = (initialData: MapPageData) => {
   const initialLocationId = searchParams.get("place");
   const initialRouteId = searchParams.get("route");
 
-  const [selectedLocation, setSelectedLocation] = useState<string | null>(
-    initialLocationId
-  );
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(() => {
+    if (!initialLocationId) return null;
+    return resolveMapLocationSelectionId(
+      initialData.locations,
+      initialLocationId
+    );
+  });
   const [selectedRoute, setSelectedRoute] = useState<string | null>(
     initialRouteId
+  );
+  const [selectedHubMemberId, setSelectedHubMemberId] = useState<string | null>(
+    null
   );
   const [detailPanelDismissed, setDetailPanelDismissed] = useState(false);
   const [activeRouteStopId, setActiveRouteStopId] = useState<string | null>(
     null
   );
+
+  useEffect(() => {
+    isActiveRef.current = true;
+    return () => {
+      isActiveRef.current = false;
+      if (urlUpdateTimeoutRef.current) {
+        clearTimeout(urlUpdateTimeoutRef.current);
+        urlUpdateTimeoutRef.current = null;
+      }
+      isUpdatingUrl.current = false;
+    };
+  }, []);
 
   const dismissRoutePanel = useCallback(() => {
     setDetailPanelDismissed(true);
@@ -54,73 +79,34 @@ export const useMapPageState = (initialData: MapPageData) => {
     pendingPlaceIdRef.current = null;
     pendingRouteIdRef.current = null;
     setSelectedLocation(null);
+    setSelectedHubMemberId(null);
     setSelectedRoute(null);
     setActiveRouteStopId(null);
     setDetailPanelDismissed(false);
   }, []);
 
-  const selectLocationLocal = useCallback((locationId: string) => {
-    pendingPlaceIdRef.current = locationId;
-    pendingRouteIdRef.current = null;
-    setSelectedLocation(locationId);
-    setSelectedRoute(null);
-    setActiveRouteStopId(null);
-    setDetailPanelDismissed(false);
-  }, []);
+  const selectLocationLocal = useCallback(
+    (locationId: string, memberUserId?: string | null) => {
+      pendingPlaceIdRef.current = locationId;
+      pendingRouteIdRef.current = null;
+      setSelectedLocation(locationId);
+      setSelectedHubMemberId(memberUserId ?? null);
+      setSelectedRoute(null);
+      setActiveRouteStopId(null);
+      setDetailPanelDismissed(false);
+    },
+    []
+  );
 
   const selectRouteLocal = useCallback((routeId: string) => {
     pendingPlaceIdRef.current = null;
     pendingRouteIdRef.current = routeId;
     setSelectedRoute(routeId);
     setSelectedLocation(null);
+    setSelectedHubMemberId(null);
     setActiveRouteStopId(null);
     setDetailPanelDismissed(false);
   }, []);
-
-  useEffect(() => {
-    if (isUpdatingUrl.current) return;
-    if (pathname !== "/map") return;
-
-    const placeId = searchParams.get("place");
-    const routeId = searchParams.get("route");
-
-    if (!searchParams.toString()) {
-      if (selectedLocation !== null) setSelectedLocation(null);
-      if (selectedRoute !== null) setSelectedRoute(null);
-      setActiveRouteStopId(null);
-      setDetailPanelDismissed(false);
-      return;
-    }
-
-    if (placeId) {
-      if (pendingRouteIdRef.current) return;
-
-      pendingPlaceIdRef.current = null;
-      if (selectedLocation !== placeId) setSelectedLocation(placeId);
-      if (selectedRoute !== null) setSelectedRoute(null);
-      setActiveRouteStopId(null);
-      setDetailPanelDismissed(false);
-      return;
-    }
-
-    if (routeId) {
-      pendingRouteIdRef.current = null;
-
-      if (selectedLocation && !placeId) return;
-
-      if (selectedRoute !== routeId) setSelectedRoute(routeId);
-      if (selectedLocation !== null) setSelectedLocation(null);
-      setActiveRouteStopId(null);
-      setDetailPanelDismissed(false);
-      return;
-    }
-
-    if (pendingPlaceIdRef.current || pendingRouteIdRef.current) return;
-    if (selectedLocation !== null) setSelectedLocation(null);
-    if (selectedRoute !== null) setSelectedRoute(null);
-    setActiveRouteStopId(null);
-    setDetailPanelDismissed(false);
-  }, [searchParams, pathname, selectedLocation, selectedRoute]);
 
   const isWithinBounds = useCallback((lng: number, lat: number) => {
     return (
@@ -149,7 +135,9 @@ export const useMapPageState = (initialData: MapPageData) => {
 
   const navigateMap = useCallback(
     (params: MapNavigateParams) => {
-      if (pathname !== "/map") return;
+      if (!isActiveRef.current || pathname !== "/map") return;
+
+      isUpdatingUrl.current = true;
 
       const currentFilters = searchParamsToMapFilters(searchParams);
       let mergedFilters: MapFilters = params.filters
@@ -170,29 +158,41 @@ export const useMapPageState = (initialData: MapPageData) => {
         setOptimisticFilters(mergedFilters);
       }
 
-      isUpdatingUrl.current = true;
-      try {
-        const mobile = !isLargeScreen;
-        if (mobile && (selection?.place || selection?.route)) {
-          setOptimisticFilters(null);
-        }
-
-        const newURL = buildMapPageUrl(
-          pathname,
-          mergedFilters,
-          searchParams,
-          selection,
-          {
-            mobile,
-            clearSearch: params.clearSearch,
-          }
-        );
-        router.replace(newURL, { scroll: false });
-      } finally {
-        setTimeout(() => {
-          isUpdatingUrl.current = false;
-        }, 100);
+      const mobile = !isLargeScreen;
+      if (mobile && (selection?.place || selection?.route)) {
+        setOptimisticFilters(null);
       }
+
+      const newURL = buildMapPageUrl(
+        pathname,
+        mergedFilters,
+        searchParams,
+        selection,
+        {
+          mobile,
+          clearSearch: params.clearSearch,
+        }
+      );
+
+      if (
+        !isActiveRef.current ||
+        (typeof window !== "undefined" && window.location.pathname !== "/map")
+      ) {
+        isUpdatingUrl.current = false;
+        return;
+      }
+
+      router.replace(newURL, { scroll: false });
+
+      if (urlUpdateTimeoutRef.current) {
+        clearTimeout(urlUpdateTimeoutRef.current);
+      }
+      urlUpdateTimeoutRef.current = setTimeout(() => {
+        urlUpdateTimeoutRef.current = null;
+        if (isActiveRef.current) {
+          isUpdatingUrl.current = false;
+        }
+      }, URL_UPDATE_GUARD_MS);
     },
     [
       pathname,
@@ -202,6 +202,72 @@ export const useMapPageState = (initialData: MapPageData) => {
       setOptimisticFilters,
     ]
   );
+
+  useEffect(() => {
+    if (isUpdatingUrl.current) return;
+    if (pathname !== "/map") return;
+
+    const placeId = searchParams.get("place");
+    const routeId = searchParams.get("route");
+
+    if (!searchParams.toString()) {
+      setSelectedLocation(null);
+      setSelectedHubMemberId(null);
+      setSelectedRoute(null);
+      setActiveRouteStopId(null);
+      setDetailPanelDismissed(false);
+      return;
+    }
+
+    if (placeId) {
+      if (pendingRouteIdRef.current) return;
+
+      pendingPlaceIdRef.current = null;
+      const resolvedPlaceId = resolveMapLocationSelectionId(locations, placeId);
+      setSelectedLocation(resolvedPlaceId);
+      setSelectedHubMemberId(null);
+      setSelectedRoute(null);
+      setActiveRouteStopId(null);
+      setDetailPanelDismissed(false);
+      return;
+    }
+
+    if (routeId) {
+      if (pendingPlaceIdRef.current) return;
+
+      pendingRouteIdRef.current = null;
+      setSelectedRoute(routeId);
+      setSelectedLocation(null);
+      setSelectedHubMemberId(null);
+      setActiveRouteStopId(null);
+      setDetailPanelDismissed(false);
+      return;
+    }
+
+    if (pendingPlaceIdRef.current || pendingRouteIdRef.current) return;
+    setSelectedLocation(null);
+    setSelectedHubMemberId(null);
+    setSelectedRoute(null);
+    setActiveRouteStopId(null);
+    setDetailPanelDismissed(false);
+  }, [searchParams, pathname, locations]);
+
+  useEffect(() => {
+    if (didNormalizePlaceRef.current) return;
+    if (pathname !== "/map") return;
+
+    const placeId = searchParams.get("place");
+    if (!placeId) {
+      didNormalizePlaceRef.current = true;
+      return;
+    }
+
+    const resolvedPlaceId = resolveMapLocationSelectionId(locations, placeId);
+    didNormalizePlaceRef.current = true;
+    if (placeId === resolvedPlaceId) return;
+
+    navigateMap({ selection: { place: resolvedPlaceId } });
+  }, [pathname, searchParams, locations, navigateMap]);
 
   useEffect(() => {
     setNavigation({
@@ -220,28 +286,48 @@ export const useMapPageState = (initialData: MapPageData) => {
     setNavigation,
   ]);
 
-  const closeExhibitorSelection = useCallback(() => {
-    if (pathname !== "/map") return;
-    clearSelectionLocal();
+  const clearMapSelection = useCallback(() => {
+    if (!isActiveRef.current || pathname !== "/map") return;
     navigateMap({ selection: { clearSelection: true } });
-  }, [pathname, clearSelectionLocal, navigateMap]);
+    clearSelectionLocal();
+  }, [pathname, navigateMap, clearSelectionLocal]);
+
+  const closeExhibitorSelection = useCallback(() => {
+    clearMapSelection();
+  }, [clearMapSelection]);
+
+  const clearSelectionIfHidden = useCallback(() => {
+    clearMapSelection();
+  }, [clearMapSelection]);
 
   const handleLocationSelect = useCallback(
-    (locationId: string, urlOptions?: { clearSearch?: boolean }) => {
-      if (pathname !== "/map") return;
+    (
+      locationId: string,
+      urlOptions?: { clearSearch?: boolean; memberUserId?: string }
+    ) => {
+      if (!isActiveRef.current || pathname !== "/map") return;
+
+      const resolvedLocationId = locationId
+        ? resolveMapLocationSelectionId(locations, locationId)
+        : locationId;
+      const memberUserId = urlOptions?.memberUserId ?? null;
 
       const urlPlaceId = searchParams.get("place");
-      if (locationId === selectedLocation && urlPlaceId === locationId) {
+      if (
+        resolvedLocationId &&
+        resolvedLocationId === selectedLocation &&
+        urlPlaceId === resolvedLocationId &&
+        memberUserId === selectedHubMemberId
+      ) {
         return;
       }
 
-      if (!locationId) {
-        clearSelectionLocal();
-        navigateMap({ selection: { clearSelection: true } });
+      if (!resolvedLocationId) {
+        clearMapSelection();
         return;
       }
 
-      selectLocationLocal(locationId);
+      selectLocationLocal(resolvedLocationId, memberUserId);
 
       const filterPatch: Partial<MapFilters> | undefined = !isLargeScreen
         ? {
@@ -252,7 +338,7 @@ export const useMapPageState = (initialData: MapPageData) => {
 
       navigateMap({
         filterPatch,
-        selection: { place: locationId },
+        selection: { place: resolvedLocationId },
         clearSearch: urlOptions?.clearSearch,
       });
     },
@@ -260,16 +346,18 @@ export const useMapPageState = (initialData: MapPageData) => {
       pathname,
       searchParams,
       selectedLocation,
-      clearSelectionLocal,
+      selectedHubMemberId,
+      clearMapSelection,
       selectLocationLocal,
       navigateMap,
       isLargeScreen,
+      locations,
     ]
   );
 
   const handleRouteSelect = useCallback(
     (routeId: string) => {
-      if (pathname !== "/map") return;
+      if (!isActiveRef.current || pathname !== "/map") return;
 
       const urlRouteId = searchParams.get("route");
       if (routeId === selectedRoute && urlRouteId === routeId) {
@@ -278,8 +366,7 @@ export const useMapPageState = (initialData: MapPageData) => {
       }
 
       if (!routeId) {
-        clearSelectionLocal();
-        navigateMap({ selection: { clearSelection: true } });
+        clearMapSelection();
         return;
       }
 
@@ -294,7 +381,7 @@ export const useMapPageState = (initialData: MapPageData) => {
       pathname,
       searchParams,
       selectedRoute,
-      clearSelectionLocal,
+      clearMapSelection,
       selectRouteLocal,
       navigateMap,
       isLargeScreen,
@@ -306,11 +393,13 @@ export const useMapPageState = (initialData: MapPageData) => {
     locations,
     routes,
     selectedLocation,
+    selectedHubMemberId,
     selectedRoute,
     detailPanelDismissed,
     activeRouteStopId,
     dismissRoutePanel,
     closeExhibitorSelection,
+    clearSelectionIfHidden,
     reopenDetailPanel,
     setActiveRouteStopId,
     setSelectedLocation: handleLocationSelect,

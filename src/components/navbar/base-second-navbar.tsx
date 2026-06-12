@@ -19,6 +19,7 @@ type FilterButtonProps<TFilterId extends string> = {
     openFilter: TFilterId | null;
     panelId: string;
     label: string;
+    isActive?: boolean;
     onToggle: (filter: TFilterId) => void;
     onKeyDown: (
         event: KeyboardEvent<HTMLButtonElement>,
@@ -48,6 +49,7 @@ export const FilterButton = <TFilterId extends string>({
     openFilter,
     panelId,
     label,
+    isActive = false,
     onToggle,
     onKeyDown,
 }: FilterButtonProps<TFilterId>) => {
@@ -60,7 +62,10 @@ export const FilterButton = <TFilterId extends string>({
             aria-controls={panelId}
             aria-label={`Filter by ${label}`}
             onClick={() => onToggle(filterId)}
-            className="cursor-pointer"
+            className={cn(
+                "cursor-pointer",
+                (isActive || isOpen) && "text-(--primary-color)"
+            )}
             onKeyDown={(event) => onKeyDown(event, filterId)}
         >
             <LabelWithPlusButton label={label} isOpen={isOpen} />

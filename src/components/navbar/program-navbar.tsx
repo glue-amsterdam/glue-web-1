@@ -69,13 +69,14 @@ const ProgramNavbar = () => {
         onSearchChange={handleSearchChange}
         onSearchKeyDown={handleSearchKeyDown}
         searchInputId="program-search-filter"
-        searchAriaLabel="Search program events by name, organiser or co-organiser"
+        searchAriaLabel="Search program events by name, organiser, co-organiser or location address"
       >
         <FilterButton<ProgramFilterId>
           filterId="date"
           openFilter={openFilter}
           panelId={datePanelId}
           label="Date"
+          isActive={filters.day !== "all"}
           onToggle={handleFilterToggle}
           onKeyDown={handleFilterKeyDown}
         />
@@ -84,6 +85,7 @@ const ProgramNavbar = () => {
           openFilter={openFilter}
           panelId={typePanelId}
           label="Event type"
+          isActive={filters.type !== "all"}
           onToggle={handleFilterToggle}
           onKeyDown={handleFilterKeyDown}
         />
@@ -100,9 +102,9 @@ const ProgramNavbar = () => {
           type="button"
           aria-pressed={filters.day === "all"}
           onClick={() => handleDaySelect("all")}
-          className="text-left base-text-size"
+          className="text-left base-text-size cursor-pointer"
         >
-          All dates
+          All
         </button>
         {eventsDays.map((day) => (
           <button
@@ -110,7 +112,7 @@ const ProgramNavbar = () => {
             type="button"
             aria-pressed={filters.day === day.dayId}
             onClick={() => handleDaySelect(day.dayId)}
-            className="text-left base-text-size"
+            className="text-left base-text-size cursor-pointer"
           >
             {day.label}
           </button>
@@ -128,9 +130,9 @@ const ProgramNavbar = () => {
           type="button"
           aria-pressed={filters.type === "all"}
           onClick={() => handleTypeSelect("all")}
-          className="text-left base-text-size"
+          className="text-left base-text-size cursor-pointer"
         >
-          All types
+          All
         </button>
         {EVENT_TYPES.map((eventType) => (
           <button
@@ -138,7 +140,7 @@ const ProgramNavbar = () => {
             type="button"
             aria-pressed={filters.type === eventType}
             onClick={() => handleTypeSelect(eventType)}
-            className="text-left base-text-size"
+            className="text-left base-text-size cursor-pointer"
           >
             {formatEventType(eventType)}
           </button>

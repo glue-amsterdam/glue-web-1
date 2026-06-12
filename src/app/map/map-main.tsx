@@ -18,6 +18,11 @@ import {
   filterMapRoutes,
   sortMapLocationsForMarkers,
 } from "@/lib/map/map-filters";
+import {
+  buildHubMapSelectionFallbackIndex,
+  excludeHubFallbackMarkerLocations,
+  resolveMapLocationSelectionId,
+} from "@/lib/map/map-selection";
 import type { MapPageData } from "@/lib/map/types";
 import type { RouteStopDisplay } from "@/lib/map/route-stop-display";
 import { config } from "@/config";
@@ -43,11 +48,13 @@ const MapMain = ({ initialData }: MapMainProps) => {
     locations,
     routes,
     selectedLocation,
+    selectedHubMemberId,
     selectedRoute,
     detailPanelDismissed,
     activeRouteStopId,
     dismissRoutePanel,
     closeExhibitorSelection,
+    clearSelectionIfHidden,
     reopenDetailPanel,
     setActiveRouteStopId,
     setSelectedLocation,
@@ -74,12 +81,21 @@ const MapMain = ({ initialData }: MapMainProps) => {
     [routes, filters.q]
   );
 
+  const hubMapSelectionFallbackIndex = useMemo(
+    () => buildHubMapSelectionFallbackIndex(locations),
+    [locations]
+  );
+
   const mapMarkerLocations = useMemo(() => {
     if (selectedRoute) {
       return sortMapLocationsForMarkers(locations);
     }
 
     let visible = filterMapLocationsForMap(locations, filters);
+    visible = excludeHubFallbackMarkerLocations(
+      visible,
+      hubMapSelectionFallbackIndex
+    );
 
     if (selectedLocation) {
       const isSelectedVisible = visible.some(
@@ -96,7 +112,13 @@ const MapMain = ({ initialData }: MapMainProps) => {
     }
 
     return sortMapLocationsForMarkers(visible);
-  }, [locations, filters, selectedRoute, selectedLocation]);
+  }, [
+    locations,
+    filters,
+    selectedRoute,
+    selectedLocation,
+    hubMapSelectionFallbackIndex,
+  ]);
 
   const setPage = useMapStore((state) => state.setPage);
   const clearPage = useMapStore((state) => state.clearPage);
@@ -138,25 +160,35 @@ const MapMain = ({ initialData }: MapMainProps) => {
       (location) => location.id === selectedLocation
     );
     if (!isVisible) {
-      setSelectedLocation("");
+      clearSelectionIfHidden();
     }
-  }, [mapMarkerLocations, selectedLocation, selectedRoute, setSelectedLocation]);
+  }, [
+    mapMarkerLocations,
+    selectedLocation,
+    selectedRoute,
+    clearSelectionIfHidden,
+  ]);
 
   useEffect(() => {
     if (!selectedRoute) return;
     const exists = routes.some((route) => route.id === selectedRoute);
     if (!exists) {
-      setSelectedRoute("");
+      clearSelectionIfHidden();
     }
-  }, [routes, selectedRoute, setSelectedRoute]);
+  }, [routes, selectedRoute, clearSelectionIfHidden]);
 
   const selectedRouteObject =
     routes.find((route) => route.id === selectedRoute) ?? null;
 
-  const selectedLocationData = useMemo(
-    () => locations.find((location) => location.id === selectedLocation) ?? null,
-    [locations, selectedLocation]
-  );
+  const selectedLocationData = useMemo(() => {
+    if (!selectedLocation) return null;
+
+    const resolvedId = resolveMapLocationSelectionId(
+      locations,
+      selectedLocation
+    );
+    return locations.find((location) => location.id === resolvedId) ?? null;
+  }, [locations, selectedLocation]);
 
   const showMobileRouteFooter =
     !isLargeScreen && selectedRouteObject && !detailPanelDismissed;
@@ -197,9 +229,11 @@ const MapMain = ({ initialData }: MapMainProps) => {
           <MapView
             ref={mapRef}
             locations={mapMarkerLocations}
+            selectionLocations={locations}
             routes={routes}
             tourMode={tourMode}
             selectedLocation={selectedLocation}
+            selectedHubMemberId={selectedHubMemberId}
             selectedRoute={selectedRoute}
             activeRouteStopId={activeRouteStopId}
             detailPanelDismissed={detailPanelDismissed}
@@ -214,9 +248,10 @@ const MapMain = ({ initialData }: MapMainProps) => {
 
       {showMobileExhibitorFooter && selectedLocationData && (
         <ExhibitorFooter
-          key={selectedLocationData.id}
+          key={`${selectedLocationData.id}:${selectedHubMemberId ?? ""}`}
           location={selectedLocationData}
           tourMode={tourMode}
+          selectedHubMemberId={selectedHubMemberId}
           onClose={closeExhibitorSelection}
         />
       )}
