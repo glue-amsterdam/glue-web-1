@@ -222,7 +222,7 @@ export const NavBarClient = ({
   const showVisitNav = pathname === "/visit" && !isAuthenticated;
 
   return (
-    <div className="fixed font-normal top-0 w-full z-50">
+    <div className="fixed font-normal top-0 w-full z-50 animate-enter-down">
       <nav className="bg-(--background-color)">
         <MainContainer>
           <Block className="h-(--nav-primary-h-mobile) lg:h-(--nav-primary-h)">

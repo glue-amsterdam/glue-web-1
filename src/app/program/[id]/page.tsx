@@ -63,7 +63,7 @@ export default async function ProgramEventPage({ params }: PageProps) {
 
     return (
       <main id="program-detail-page">
-        <MainContainer>
+        <MainContainer className="stagger-enter-fade">
           <nav className="sr-only" aria-label="Breadcrumb">
             <ol>
               <li>

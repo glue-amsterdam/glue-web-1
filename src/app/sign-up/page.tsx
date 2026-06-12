@@ -20,7 +20,7 @@ export default async function SignUpPage() {
   return (
     <main id="sign-up-page" className="first-padding pb-[65px] md:pb-[105px]">
       <MainContainer>
-        <section id="sign-up-section">
+        <section id="sign-up-section" className="stagger-enter">
           <Suspense fallback={null}>
             <AuthPageHeadline title={signUpIntro.title} />
           </Suspense>

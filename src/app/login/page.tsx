@@ -23,7 +23,7 @@ export default function LoginPage() {
   return (
     <main id="login-page" className="first-padding pb-(--site-footer-h) min-h-dvh flex flex-col">
       <MainContainer className="flex-1 flex flex-col w-full">
-        <section id="login-section" className="flex-1 flex flex-col">
+        <section id="login-section" className="flex-1 flex flex-col stagger-enter">
           <Suspense fallback={null}>
             <AuthPageHeadline title={pageTexts.title} />
           </Suspense>

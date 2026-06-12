@@ -24,7 +24,7 @@ const AboutPageView = ({ data }: Props) => {
         </div>
       ) : null}
       <main id="about" className="pt-[122px]">
-        <MainContainer>
+        <MainContainer className="stagger-enter-fade">
           <h1 className="sr-only">About GLUE {config.cityName}</h1>
           <p className="sr-only">
             Meet the GLUE {config.cityName} team, learn about the GLUE Foundation,

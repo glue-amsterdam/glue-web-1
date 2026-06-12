@@ -14,7 +14,7 @@ export const revalidate = 5_184_000;
 const Page = () => {
   return (
     <main id="visit-page">
-      <MainContainer className="cta-padding">
+      <MainContainer className="cta-padding stagger-enter">
         <CmsIntroSection slug="visit-intro" />
         <Separator />
         <CmsTextSection slug="visit-sign-up" />

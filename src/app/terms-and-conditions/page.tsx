@@ -16,7 +16,7 @@ export default async function TermsAndConditionsPage() {
       id="terms-and-conditions-page"
       className="first-padding pb-[65px] md:pb-[105px]"
     >
-      <MainContainer>
+      <MainContainer className="stagger-enter">
         <h1 className="title-text">General Terms and Conditions</h1>
         <div className="pt-[40px] lg:pt-[60px]">
           <TermsContent content={content} />

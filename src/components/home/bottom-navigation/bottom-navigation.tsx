@@ -26,7 +26,8 @@ const BottomNavigation = ({ homeTexts }: BottomNavigationProps) => {
     <aside
       id="bottom-banner"
       aria-label="Event dates and tagline"
-      className="fixed bottom-0 right-0 left-0 z-50 bg-(--background-color)"
+      className="fixed bottom-0 right-0 left-0 z-50 bg-(--background-color) animate-enter-up"
+      style={{ "--enter-delay": "500ms" } as React.CSSProperties}
     >
       <MainContainer>
         <SlidingTextArea marqueeItems={marqueeItems} />

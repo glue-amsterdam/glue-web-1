@@ -27,7 +27,7 @@ function Page({ }: Props) {
     const sanitizedDescription = imprintContent.description.map(description => sanitizeHtml(description));
     return (
         <main id="privacy-policy-page" className="first-padding">
-            <MainContainer>
+            <MainContainer className="stagger-enter">
 
                 <h1 className="title-text">{imprintContent.title.toUpperCase()}</h1>
                 <div className='grid grid-cols-1 gap-[30px] lg:gap-[60px]'>

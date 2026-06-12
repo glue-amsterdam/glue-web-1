@@ -18,7 +18,7 @@ export default function Page({ }: Props) {
     const sanitizedDescription = contactContent.description.map(description => sanitizeHtml(description));
     return (
         <main id="privacy-policy-page" className="first-padding">
-            <MainContainer>
+            <MainContainer className="stagger-enter">
                 <h1 className="title-text">{contactContent.title.toUpperCase()}</h1>
                 <div className='grid grid-cols-1 gap-[30px] pt-[30px] lg:pt-[60px]'>
                     {sanitizedDescription.map((description, index) => (

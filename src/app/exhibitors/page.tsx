@@ -42,7 +42,7 @@ export default async function Page({ searchParams }: PageProps) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         /></MainContainer>
-      <MainContainer className="pt-[40px] lg:pt-[calc(var(--nav-secondary-h)-3px)]">
+      <MainContainer className="pt-[40px] lg:pt-[calc(var(--nav-secondary-h)-3px)] stagger-enter-fade">
         <nav className="sr-only" aria-label="Breadcrumb">
           <ol>
             <li>

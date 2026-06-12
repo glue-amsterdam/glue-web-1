@@ -13,6 +13,7 @@ import MainContainer from "@/components/main-container";
 import RoundedNumber from "@/components/rounded-number";
 import CrossRotatedMobile from "@/components/icons/cross-rotated-mobile";
 import BigButton from "@/components/big-button";
+import SlideLineNav from "@/components/slide-line-nav";
 
 const DEFAULT_AUTOPLAY_DELAY_MS = 3000;
 
@@ -46,8 +47,10 @@ const ExhibitorFooter = ({
 
     const {
         currentIndex,
+        hasMultiple,
         handleMouseEnter,
         handleMouseLeave,
+        handleSelect,
     } = useCyclicIndex({
         itemCount: slides.length,
         delayMs,
@@ -122,7 +125,15 @@ const ExhibitorFooter = ({
 
                         ) : <></>}</div>
 
-                    <div className="flex justify-center pt-[15px] gap-[15px]">
+                    <SlideLineNav
+                        items={slides.map((slide) => ({ id: slide.id, label: slide.name }))}
+                        currentIndex={currentIndex}
+                        onSelect={handleSelect}
+                        ariaLabel={isHubEntity ? "Hub members" : "Exhibitor images"}
+                        size="compact"
+                    />
+
+                    <div className={`flex justify-center gap-[15px] ${hasMultiple ? "pt-[10px]" : "pt-[15px]"}`}>
                         <BigButton
                             as="button"
                             mode="footer"

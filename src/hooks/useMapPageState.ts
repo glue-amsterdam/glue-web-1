@@ -36,6 +36,12 @@ export const useMapPageState = (initialData: MapPageData) => {
 
   const initialLocationId = searchParams.get("place");
   const initialRouteId = searchParams.get("route");
+  const initialResolvedPlaceId = initialLocationId
+    ? resolveMapLocationSelectionId(initialData.locations, initialLocationId)
+    : null;
+  const lastSyncedRouteIdRef = useRef<string | null>(initialRouteId);
+  const lastSyncedPlaceIdRef = useRef<string | null>(initialResolvedPlaceId);
+  const pendingHubMemberIdRef = useRef<string | null>(null);
 
   const [selectedLocation, setSelectedLocation] = useState<string | null>(() => {
     if (!initialLocationId) return null;
@@ -78,6 +84,8 @@ export const useMapPageState = (initialData: MapPageData) => {
   const clearSelectionLocal = useCallback(() => {
     pendingPlaceIdRef.current = null;
     pendingRouteIdRef.current = null;
+    pendingHubMemberIdRef.current = null;
+    lastSyncedPlaceIdRef.current = null;
     setSelectedLocation(null);
     setSelectedHubMemberId(null);
     setSelectedRoute(null);
@@ -89,6 +97,7 @@ export const useMapPageState = (initialData: MapPageData) => {
     (locationId: string, memberUserId?: string | null) => {
       pendingPlaceIdRef.current = locationId;
       pendingRouteIdRef.current = null;
+      pendingHubMemberIdRef.current = memberUserId ?? null;
       setSelectedLocation(locationId);
       setSelectedHubMemberId(memberUserId ?? null);
       setSelectedRoute(null);
@@ -101,6 +110,8 @@ export const useMapPageState = (initialData: MapPageData) => {
   const selectRouteLocal = useCallback((routeId: string) => {
     pendingPlaceIdRef.current = null;
     pendingRouteIdRef.current = routeId;
+    pendingHubMemberIdRef.current = null;
+    lastSyncedPlaceIdRef.current = null;
     setSelectedRoute(routeId);
     setSelectedLocation(null);
     setSelectedHubMemberId(null);
@@ -211,6 +222,9 @@ export const useMapPageState = (initialData: MapPageData) => {
     const routeId = searchParams.get("route");
 
     if (!searchParams.toString()) {
+      lastSyncedRouteIdRef.current = null;
+      lastSyncedPlaceIdRef.current = null;
+      pendingHubMemberIdRef.current = null;
       setSelectedLocation(null);
       setSelectedHubMemberId(null);
       setSelectedRoute(null);
@@ -222,13 +236,22 @@ export const useMapPageState = (initialData: MapPageData) => {
     if (placeId) {
       if (pendingRouteIdRef.current) return;
 
-      pendingPlaceIdRef.current = null;
       const resolvedPlaceId = resolveMapLocationSelectionId(locations, placeId);
+      const placeChanged = lastSyncedPlaceIdRef.current !== resolvedPlaceId;
+
+      pendingPlaceIdRef.current = null;
+      lastSyncedRouteIdRef.current = null;
+
+      if (placeChanged) {
+        lastSyncedPlaceIdRef.current = resolvedPlaceId;
+        setSelectedHubMemberId(pendingHubMemberIdRef.current);
+        pendingHubMemberIdRef.current = null;
+        setDetailPanelDismissed(false);
+      }
+
       setSelectedLocation(resolvedPlaceId);
-      setSelectedHubMemberId(null);
       setSelectedRoute(null);
       setActiveRouteStopId(null);
-      setDetailPanelDismissed(false);
       return;
     }
 
@@ -236,15 +259,23 @@ export const useMapPageState = (initialData: MapPageData) => {
       if (pendingPlaceIdRef.current) return;
 
       pendingRouteIdRef.current = null;
+      if (lastSyncedRouteIdRef.current !== routeId) {
+        setDetailPanelDismissed(false);
+        lastSyncedRouteIdRef.current = routeId;
+      }
       setSelectedRoute(routeId);
       setSelectedLocation(null);
+      lastSyncedPlaceIdRef.current = null;
+      pendingHubMemberIdRef.current = null;
       setSelectedHubMemberId(null);
       setActiveRouteStopId(null);
-      setDetailPanelDismissed(false);
       return;
     }
 
     if (pendingPlaceIdRef.current || pendingRouteIdRef.current) return;
+    lastSyncedRouteIdRef.current = null;
+    lastSyncedPlaceIdRef.current = null;
+    pendingHubMemberIdRef.current = null;
     setSelectedLocation(null);
     setSelectedHubMemberId(null);
     setSelectedRoute(null);

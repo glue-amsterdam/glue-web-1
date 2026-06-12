@@ -677,7 +677,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
         isLargeScreen &&
         exhibitorPopupLayout && (
           <ExhibitorPopup
-            key={`${selectedLocation}:${selectedHubMemberId ?? ""}`}
+            key={selectedLocation}
             location={selectedLocationData}
             tourMode={tourMode}
             selectedHubMemberId={selectedHubMemberId}

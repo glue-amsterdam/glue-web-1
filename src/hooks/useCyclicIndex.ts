@@ -55,7 +55,7 @@ export const useCyclicIndex = ({
   useEffect(() => {
     const nextIndex =
       initialIndex >= 0 && initialIndex < itemCount ? initialIndex : 0;
-    setCurrentIndex(nextIndex);
+    setCurrentIndex((prev) => (prev === nextIndex ? prev : nextIndex));
   }, [initialIndex, itemCount]);
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export const useCyclicIndex = ({
     return () => {
       clearAutoplay();
     };
-  }, [clearAutoplay, startAutoplay]);
+  }, [clearAutoplay, startAutoplay, initialIndex, itemCount]);
 
   const handleMouseEnter = useCallback(() => {
     if (!pauseOnHover) return;

@@ -62,7 +62,7 @@ export default async function ExhibitorHubPage({ params }: PageProps) {
 
     return (
       <main id="exhibitor-detail-page">
-        <MainContainer>
+        <MainContainer className="stagger-enter-fade">
           <nav className="sr-only" aria-label="Breadcrumb">
             <ol>
               <li>

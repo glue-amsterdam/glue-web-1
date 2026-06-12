@@ -248,7 +248,7 @@ const MapMain = ({ initialData }: MapMainProps) => {
 
       {showMobileExhibitorFooter && selectedLocationData && (
         <ExhibitorFooter
-          key={`${selectedLocationData.id}:${selectedHubMemberId ?? ""}`}
+          key={selectedLocationData.id}
           location={selectedLocationData}
           tourMode={tourMode}
           selectedHubMemberId={selectedHubMemberId}

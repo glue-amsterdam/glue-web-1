@@ -19,7 +19,7 @@ export default async function PostsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <MainContainer className="pt-(--nav-primary-h)">
+      <MainContainer className="pt-(--nav-primary-h) stagger-enter">
         <nav className="sr-only" aria-label="Breadcrumb">
           <ol>
             <li>

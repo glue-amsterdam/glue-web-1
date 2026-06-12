@@ -99,7 +99,7 @@ export default function PrivacyPolicyPage() {
 
   return (
     <main id="privacy-policy-page" className="first-padding">
-      <MainContainer className="mini-padding">
+      <MainContainer className="mini-padding stagger-enter">
         <h1 className="title-text">{privacyPolicyContent.title.toUpperCase()}</h1>
         {sanitizedDescription ? (
           <div

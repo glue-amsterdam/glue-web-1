@@ -17,7 +17,7 @@ function Page() {
     return (
         <main id="newsletter-page" className="first-padding pb-[65px] md:pb-[105px]">
             <MainContainer>
-                <section id="newsletter-section">
+                <section id="newsletter-section" className="stagger-enter">
                     <HeadlineWCross title={pageTexts.title} />
                     <p className="sr-only">{pageTexts.description}</p>
                     <NewsletterForm />

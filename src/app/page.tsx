@@ -54,7 +54,7 @@ export default async function Page() {
 
   return (
     <main id="main-content" className="first-padding">
-      <MainContainer>
+      <MainContainer className="stagger-enter">
         <Hero
           videoUrl={homeHeroData.videoUrl}
           posterUrl={homeHeroData.posterUrl}

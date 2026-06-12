@@ -12,6 +12,7 @@ import MainContainer from "@/components/main-container";
 import RoundedNumber from "@/components/rounded-number";
 import CrossRotatedMobile from "@/components/icons/cross-rotated-mobile";
 import BigButton from "@/components/big-button";
+import SlideLineNav from "@/components/slide-line-nav";
 
 const DEFAULT_AUTOPLAY_DELAY_MS = 3000;
 
@@ -107,9 +108,11 @@ const RouteFooter = ({
 
   const {
     currentIndex,
+    hasMultiple,
     setCurrentIndex,
     handleMouseEnter,
     handleMouseLeave,
+    handleSelect,
   } = useCyclicIndex({
     itemCount: stops.length,
     delayMs,
@@ -187,7 +190,14 @@ const RouteFooter = ({
           <div className="flex w-full h-[190px] overflow-hidden mx-auto pt-[15px]">
             <RouteStopSlide stop={currentStop} tourMode={tourMode} />
           </div>
-          <div className="flex justify-center pt-[15px] gap-[15px]">
+          <SlideLineNav
+            items={stops.map((stop) => ({ id: stop.dotId, label: stop.userName }))}
+            currentIndex={currentIndex}
+            onSelect={handleSelect}
+            ariaLabel="Route stops"
+            size="compact"
+          />
+          <div className={`flex justify-center gap-[15px] ${hasMultiple ? "pt-[10px]" : "pt-[15px]"}`}>
             <BigButton
               as="button"
               mode="footer"

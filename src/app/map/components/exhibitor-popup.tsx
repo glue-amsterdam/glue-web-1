@@ -14,6 +14,7 @@ import { useCyclicIndex } from "@/hooks/useCyclicIndex";
 import { buildExhibitorFooterSlides, findExhibitorSlideIndex } from "@/lib/map/exhibitor-footer-slides";
 import { buildGoogleMapsSearchUrl } from "@/lib/map/utils";
 import BigButton from "@/components/big-button";
+import SlideLineNav from "@/components/slide-line-nav";
 
 type ExhibitorPopUpProps = {
   location: MapLocation;
@@ -49,8 +50,10 @@ const ExhibitorPopUp = ({
 
   const {
     currentIndex,
+    hasMultiple,
     handleMouseEnter,
     handleMouseLeave,
+    handleSelect,
   } = useCyclicIndex({
     itemCount: slides.length,
     delayMs: 3000,
@@ -122,11 +125,18 @@ const ExhibitorPopUp = ({
               width={300}
               height={190}
               sizes="(max-width: 768px) 100vw, 33vw"
-              className="h-full w-full object-contain object-top"
+              className="h-full w-full object-contain object-center"
             />
 
           ) : <></>}</div>
-        <div className="flex justify-center pt-[30px] gap-[15px]">
+        <SlideLineNav
+          items={slides.map((slide) => ({ id: slide.id, label: slide.name }))}
+          currentIndex={currentIndex}
+          onSelect={handleSelect}
+          ariaLabel={isHubEntity ? "Hub members" : "Exhibitor images"}
+          size="compact"
+        />
+        <div className={`flex justify-center gap-[15px] ${hasMultiple ? "pt-[15px]" : "pt-[30px]"}`}>
           <BigButton
             as="button"
             mode="footer"

@@ -121,6 +121,116 @@
 /* Home page > */
 
 
+/* Page entrance animations < */
+/* Subtle, chained on-enter reveals shared across all public routes.
+   Uses `animation-fill-mode: backwards` so no transform/opacity lingers
+   after the animation ends (keeps `position: sticky`/`fixed` descendants intact). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes enter-up {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 1rem, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes enter-down {
+    from {
+      opacity: 0;
+      transform: translate3d(0, -0.75rem, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes enter-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-enter-up {
+    animation: enter-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    animation-delay: var(--enter-delay, 0ms);
+  }
+
+  .animate-enter-down {
+    animation: enter-down 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    animation-delay: var(--enter-delay, 0ms);
+  }
+
+  .animate-enter-fade {
+    animation: enter-fade 0.7s ease-out backwards;
+    animation-delay: var(--enter-delay, 0ms);
+  }
+
+  /* Stagger the direct children of an opted-in container so they
+     reveal one after another for a coherent chained entrance. */
+  .stagger-enter > * {
+    animation: enter-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+  .stagger-enter > *:nth-child(1) {
+    animation-delay: 0.06s;
+  }
+  .stagger-enter > *:nth-child(2) {
+    animation-delay: 0.14s;
+  }
+  .stagger-enter > *:nth-child(3) {
+    animation-delay: 0.22s;
+  }
+  .stagger-enter > *:nth-child(4) {
+    animation-delay: 0.3s;
+  }
+  .stagger-enter > *:nth-child(5) {
+    animation-delay: 0.38s;
+  }
+  .stagger-enter > *:nth-child(6) {
+    animation-delay: 0.46s;
+  }
+  .stagger-enter > *:nth-child(n + 7) {
+    animation-delay: 0.54s;
+  }
+
+  /* Opacity-only stagger for containers with image grids (exhibitors,
+     program). Transform on an ancestor makes Next/Image rasterize at
+     subpixel sizes on a compositor layer; when the animation ends and
+     transform is removed, images snap ~4px to their layout size. */
+  .stagger-enter-fade > * {
+    animation: enter-fade 0.6s ease-out backwards;
+  }
+  .stagger-enter-fade > *:nth-child(1) {
+    animation-delay: 0.06s;
+  }
+  .stagger-enter-fade > *:nth-child(2) {
+    animation-delay: 0.14s;
+  }
+  .stagger-enter-fade > *:nth-child(3) {
+    animation-delay: 0.22s;
+  }
+  .stagger-enter-fade > *:nth-child(4) {
+    animation-delay: 0.3s;
+  }
+  .stagger-enter-fade > *:nth-child(5) {
+    animation-delay: 0.38s;
+  }
+  .stagger-enter-fade > *:nth-child(6) {
+    animation-delay: 0.46s;
+  }
+  .stagger-enter-fade > *:nth-child(n + 7) {
+    animation-delay: 0.54s;
+  }
+}
+/* Page entrance animations > */
+
+
 /* MAPBOX STYLES */
 .mapboxgl-popup-content {
   font-family: "Lausanne", sans-serif;

@@ -74,7 +74,7 @@ export default async function ExhibitorPage({ params }: PageProps) {
     if (participant.is_sticky || participant.status === "accepted") {
       return (
         <main id="exhibitor-detail-page">
-          <MainContainer>
+          <MainContainer className="stagger-enter-fade">
             <nav className="sr-only" aria-label="Breadcrumb">
               <ol>
                 <li>

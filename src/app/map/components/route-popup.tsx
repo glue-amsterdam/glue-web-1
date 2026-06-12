@@ -13,6 +13,7 @@ import { useMapLocationDetail } from "../hooks/use-map-location-detail";
 import RoundedNumber from "@/components/rounded-number";
 import CrossRotatedDesktop from "@/components/icons/cross-rotated-desktop";
 import BigButton from "@/components/big-button";
+import SlideLineNav from "@/components/slide-line-nav";
 
 const DEFAULT_AUTOPLAY_DELAY_MS = 3000;
 
@@ -112,9 +113,11 @@ const RoutePopup = ({
 
   const {
     currentIndex,
+    hasMultiple,
     setCurrentIndex,
     handleMouseEnter,
     handleMouseLeave,
+    handleSelect,
   } = useCyclicIndex({
     itemCount: stops.length,
     delayMs: DEFAULT_AUTOPLAY_DELAY_MS,
@@ -196,7 +199,15 @@ const RoutePopup = ({
           <RouteStopSlide stop={currentStop} tourMode={tourMode} />
         </div>
 
-        <div className="flex justify-center pt-[30px] gap-[15px]">
+        <SlideLineNav
+          items={stops.map((stop) => ({ id: stop.dotId, label: stop.userName }))}
+          currentIndex={currentIndex}
+          onSelect={handleSelect}
+          ariaLabel="Route stops"
+          size="compact"
+        />
+
+        <div className={`flex justify-center gap-[15px] ${hasMultiple ? "pt-[15px]" : "pt-[30px]"}`}>
           <BigButton
             as="button"
             mode="footer"

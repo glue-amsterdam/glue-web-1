@@ -71,7 +71,7 @@ async function Page({
 
     return (
         <main id="participate-page">
-            <MainContainer className='cta-padding'>
+            <MainContainer className='cta-padding stagger-enter'>
                 <CmsIntroSection slug="participate-intro" />
                 <Separator />
                 {latestYearNumbers.items.length > 0 ? (

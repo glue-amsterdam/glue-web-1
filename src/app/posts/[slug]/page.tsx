@@ -90,7 +90,7 @@ export default async function PostDetailPage({ params }: PageProps) {
 
   return (
     <main id="post-detail-page">
-      <MainContainer>
+      <MainContainer className="stagger-enter">
         <nav className="sr-only" aria-label="Breadcrumb">
           <ol>
             <li>
