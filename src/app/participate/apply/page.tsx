@@ -5,6 +5,7 @@ import { getParticipationEligibility } from "@/lib/participate/get-participation
 import { getParticipationFormContext } from "@/lib/participate/get-participation-form-context";
 import { getPlanByIdForApply } from "@/lib/participate/get-plan-by-id";
 import { getCachedTerms } from "@/lib/terms/get-cached-terms";
+import { fetchVisitorAreas } from "@/lib/visitors/fetch-visitor-areas";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = participateApplyMetadata;
@@ -35,9 +36,10 @@ export default async function ParticipateApplyPage({ searchParams }: PageProps) 
     redirect(eligibility.participateBackHref);
   }
 
-  const [termsContent, formContext] = await Promise.all([
+  const [termsContent, formContext, workAreas] = await Promise.all([
     getCachedTerms(),
     getParticipationFormContext(eligibility.resolvedIntent),
+    fetchVisitorAreas(),
   ]);
 
   if (
@@ -54,6 +56,7 @@ export default async function ParticipateApplyPage({ searchParams }: PageProps) 
         formContext={formContext}
         participateBackHref={eligibility.participateBackHref}
         termsContent={termsContent}
+        workAreas={workAreas.map(({ id, name }) => ({ id, name }))}
       />
     </main>
   );

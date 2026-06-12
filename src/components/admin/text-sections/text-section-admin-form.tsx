@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import type { TextSectionData } from "@/lib/text-sections/types";
 import type { TextSectionSlug, TextSectionVariant } from "@/schemas/textSectionSchema";
 import { textSectionUpdateSchema, type TextSectionUpdate } from "@/schemas/textSectionSchema";
@@ -27,9 +28,16 @@ type Props = {
   slug: TextSectionSlug;
   sectionTitle: string;
   initialData: TextSectionData;
+  plainDescription?: boolean;
 };
 
-const TextSectionFields = ({ variant }: { variant: TextSectionVariant }) => {
+const TextSectionFields = ({
+  variant,
+  plainDescription = false,
+}: {
+  variant: TextSectionVariant;
+  plainDescription?: boolean;
+}) => {
   const { control, watch } = useFormContext<TextSectionUpdate>();
   const showButton = watch("show_button");
 
@@ -55,7 +63,15 @@ const TextSectionFields = ({ variant }: { variant: TextSectionVariant }) => {
           <FormItem>
             <FormLabel>Description</FormLabel>
             <FormControl>
-              <RichTextEditor value={field.value || ""} onChange={field.onChange} />
+              {plainDescription ? (
+                <Textarea
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  rows={4}
+                />
+              ) : (
+                <RichTextEditor value={field.value || ""} onChange={field.onChange} />
+              )}
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -132,7 +148,12 @@ const toFormValues = (data: TextSectionData): TextSectionUpdate => ({
   button_link: data.buttonLink,
 });
 
-const TextSectionAdminForm = ({ slug, sectionTitle, initialData }: Props) => {
+const TextSectionAdminForm = ({
+  slug,
+  sectionTitle,
+  initialData,
+  plainDescription = false,
+}: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -159,10 +180,13 @@ const TextSectionAdminForm = ({ slug, sectionTitle, initialData }: Props) => {
       });
       router.refresh();
     },
-    () => {
+    (error) => {
+      const message =
+        error instanceof Error ? error.message : "Failed to update the section.";
+
       toast({
         title: "Error",
-        description: "Failed to update the section. Please try again.",
+        description: message,
         variant: "destructive",
       });
     }
@@ -177,7 +201,10 @@ const TextSectionAdminForm = ({ slug, sectionTitle, initialData }: Props) => {
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-        <TextSectionFields variant={initialData.variant} />
+        <TextSectionFields
+          variant={initialData.variant}
+          plainDescription={plainDescription}
+        />
         <SaveChangesButton isSubmitting={isSubmitting} />
       </form>
     </FormProvider>

@@ -1,38 +1,95 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import BigButton from "@/components/big-button";
-import { ParticipateFormField } from "@/components/participate/participate-form-field";
-import { TermsContent } from "@/components/terms-content";
-import { visitorRegisterSchema } from "@/schemas/visitorSchemas";
+import {
+  ParticipateFormField,
+  ParticipateFormSelect,
+} from "@/components/participate/participate-form-field";
+import {
+  VISITOR_AGE_RANGES,
+  VISITOR_AGE_RANGE_LABELS,
+} from "@/lib/visitor/visitor-age-ranges";
+import {
+  visitorParticipantAccountSchema,
+  visitorRegisterSchema,
+  type VisitorParticipantAccountValues,
+} from "@/schemas/visitorSchemas";
 
 export type VisitorAccountValues = z.infer<typeof visitorRegisterSchema>;
 
-const defaultAccountValues: VisitorAccountValues = {
+export type VisitorWorkAreaOption = {
+  id: string;
+  name: string;
+};
+
+type VisitorAccountFormState = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  birthDate: string;
+  areaId: string;
+  newsletterSubscribe: boolean;
+};
+
+const defaultAccountValues: VisitorAccountFormState = {
   firstName: "",
   lastName: "",
   email: "",
   password: "",
-  termsAccepted: true,
+  birthDate: "",
+  areaId: "",
   newsletterSubscribe: true,
 };
 
-type VisitorAccountStepProps = {
-  onSubmit: (data: VisitorAccountValues) => void;
+const ageRangeOptions = VISITOR_AGE_RANGES.map((range) => ({
+  value: range,
+  label: VISITOR_AGE_RANGE_LABELS[range],
+}));
+
+const mapZodFieldErrors = (
+  flat: Partial<Record<string, string[] | undefined>>
+): Partial<Record<keyof VisitorAccountFormState, string>> => {
+  const next: Partial<Record<keyof VisitorAccountFormState, string>> = {};
+  for (const key of Object.keys(flat) as (keyof VisitorAccountFormState)[]) {
+    const msg = flat[key]?.[0];
+    if (msg) next[key] = msg;
+  }
+  return next;
+};
+
+type VisitorAccountStepBaseProps = {
   onBack: () => void;
-  initialValues?: Partial<VisitorAccountValues>;
+  initialValues?: Partial<VisitorAccountFormState>;
   submitError?: string;
   submitLabel?: string;
   backLabel?: string;
   submitDisabled?: boolean;
   isSubmitting?: boolean;
   loadingMessage?: string;
-  termsContent?: string;
 };
 
+type VisitorAccountStepWithCheckInProps = VisitorAccountStepBaseProps & {
+  requireCheckInFields?: true;
+  workAreas: VisitorWorkAreaOption[];
+  onSubmit: (data: VisitorAccountValues) => void;
+};
+
+type VisitorAccountStepWithoutCheckInProps = VisitorAccountStepBaseProps & {
+  requireCheckInFields: false;
+  workAreas?: VisitorWorkAreaOption[];
+  onSubmit: (data: VisitorParticipantAccountValues) => void;
+};
+
+type VisitorAccountStepProps =
+  | VisitorAccountStepWithCheckInProps
+  | VisitorAccountStepWithoutCheckInProps;
+
 export const VisitorAccountStep = ({
+  workAreas = [],
   onSubmit,
   onBack,
   initialValues,
@@ -42,63 +99,55 @@ export const VisitorAccountStep = ({
   submitDisabled = false,
   isSubmitting = false,
   loadingMessage = "Submitting…",
-  termsContent = "",
+  ...rest
 }: VisitorAccountStepProps) => {
-  const [isTermsDialogOpen, setIsTermsDialogOpen] = useState(false);
-  const [values, setValues] = useState<VisitorAccountValues>({
+  const requireCheckInFields = rest.requireCheckInFields !== false;
+
+  const [values, setValues] = useState<VisitorAccountFormState>({
     ...defaultAccountValues,
     ...initialValues,
   });
   const [fieldErrors, setFieldErrors] = useState<
-    Partial<Record<keyof VisitorAccountValues, string>>
+    Partial<Record<keyof VisitorAccountFormState, string>>
   >({});
 
-  useEffect(() => {
-    if (!isTermsDialogOpen) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsTermsDialogOpen(false);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isTermsDialogOpen]);
+  const workAreaOptions = workAreas.map((area) => ({
+    value: area.id,
+    label: area.name,
+  }));
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    const parsed = visitorRegisterSchema.safeParse(values);
+
+    if (requireCheckInFields) {
+      const parsed = visitorRegisterSchema.safeParse(values);
+      if (!parsed.success) {
+        setFieldErrors(mapZodFieldErrors(parsed.error.flatten().fieldErrors));
+        return;
+      }
+      setFieldErrors({});
+      (onSubmit as VisitorAccountStepWithCheckInProps["onSubmit"])(parsed.data);
+      return;
+    }
+
+    const { birthDate: _birthDate, areaId: _areaId, ...participantValues } =
+      values;
+    const parsed = visitorParticipantAccountSchema.safeParse(participantValues);
     if (!parsed.success) {
-      const flat = parsed.error.flatten().fieldErrors;
-      const next: Partial<Record<keyof VisitorAccountValues, string>> = {};
-      (Object.keys(flat) as (keyof VisitorAccountValues)[]).forEach((key) => {
-        const msg = flat[key]?.[0];
-        if (msg) next[key] = msg;
-      });
-      setFieldErrors(next);
+      setFieldErrors(mapZodFieldErrors(parsed.error.flatten().fieldErrors));
       return;
     }
     setFieldErrors({});
-    onSubmit(parsed.data);
+    (onSubmit as VisitorAccountStepWithoutCheckInProps["onSubmit"])(parsed.data);
   };
 
   const setField =
-    (key: keyof VisitorAccountValues) => (value: string) => {
+    (key: keyof VisitorAccountFormState) => (value: string) => {
       setValues((prev) => ({ ...prev, [key]: value }));
     };
 
-  const setBooleanField =
-    (key: "termsAccepted" | "newsletterSubscribe") => (checked: boolean) => {
-      setValues((prev) => ({ ...prev, [key]: checked }));
-    };
-
-  const handleOpenTerms = () => {
-    setIsTermsDialogOpen(true);
-  };
-
-  const handleCloseTerms = () => {
-    setIsTermsDialogOpen(false);
+  const handleNewsletterChange = (checked: boolean) => {
+    setValues((prev) => ({ ...prev, newsletterSubscribe: checked }));
   };
 
   if (isSubmitting) {
@@ -117,7 +166,11 @@ export const VisitorAccountStep = ({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-[508px] lg:max-w-[1045px] mx-auto pt-[40px] lg:pt-[60px] pb-[15px] lg:pb-[30px]" noValidate>
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-[508px] lg:max-w-[1045px] mx-auto pt-[40px] lg:pt-[60px] pb-[15px] lg:pb-[30px]"
+      noValidate
+    >
       <h1 className="title-text pb-[30px]">Create Account</h1>
       {submitError ? (
         <p
@@ -166,59 +219,36 @@ export const VisitorAccountStep = ({
           error={fieldErrors.password}
           autoComplete="new-password"
         />
-
-
+        {requireCheckInFields ? (
+          <>
+            <ParticipateFormSelect
+              label="Age range"
+              name="birthDate"
+              required
+              value={values.birthDate}
+              onChange={setField("birthDate")}
+              error={fieldErrors.birthDate}
+              options={ageRangeOptions}
+            />
+            <ParticipateFormSelect
+              label="Work area"
+              name="areaId"
+              required
+              value={values.areaId}
+              onChange={setField("areaId")}
+              error={fieldErrors.areaId}
+              options={workAreaOptions}
+            />
+          </>
+        ) : null}
 
         <div className="flex flex-col gap-4">
           <div className="flex items-start gap-2">
             <input
               type="checkbox"
-              id="termsAccepted"
-              checked={values.termsAccepted}
-              onChange={(event) =>
-                setBooleanField("termsAccepted")(event.target.checked)
-              }
-              className="size-[12px] shrink-0 border border-(--black-color) accent-(--primary-color)"
-              aria-invalid={Boolean(fieldErrors.termsAccepted)}
-              aria-describedby={
-                fieldErrors.termsAccepted ? "termsAccepted-error" : undefined
-              }
-            />
-            <label
-              htmlFor="termsAccepted"
-              className="cursor-pointer mini-text-size"
-            >
-              I accept the{" "}
-              <button
-                type="button"
-                onClick={handleOpenTerms}
-                className="text-(--primary-color) underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded"
-                tabIndex={0}
-                aria-label="Open General terms and conditions"
-              >
-                General terms and conditions
-              </button>
-            </label>
-          </div>
-
-
-          {fieldErrors.termsAccepted ? (
-            <p
-              id="termsAccepted-error"
-              role="alert"
-              className="text-[12px] text-(--primary-color)"
-            >
-              {fieldErrors.termsAccepted}
-            </p>
-          ) : null}
-          <div className="flex items-start gap-2">
-            <input
-              type="checkbox"
               id="newsletterSubscribe"
               checked={values.newsletterSubscribe}
-              onChange={(event) =>
-                setBooleanField("newsletterSubscribe")(event.target.checked)
-              }
+              onChange={(event) => handleNewsletterChange(event.target.checked)}
               className="size-[12px] shrink-0 border border-(--black-color) accent-(--primary-color)"
             />
             <label
@@ -230,54 +260,6 @@ export const VisitorAccountStep = ({
           </div>
         </div>
       </div>
-
-
-      {isTermsDialogOpen ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="terms-dialog-title"
-          aria-describedby="terms-dialog-description"
-        >
-          <button
-            type="button"
-            className="absolute inset-0 cursor-default"
-            onClick={handleCloseTerms}
-            aria-label="Close terms and conditions"
-            tabIndex={-1}
-          />
-          <div className="relative z-10 w-full max-w-2xl max-h-[80vh] overflow-y-auto bg-(--white-color) border border-(--black-color) p-4">
-            <div className="flex justify-end mb-2">
-              <button
-                type="button"
-                onClick={handleCloseTerms}
-                className="cursor-pointer p-1 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded"
-                aria-label="Close"
-              >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path d="M2.00007 0.999993L11.1925 10.1924" stroke="black" />
-                  <path d="M2 10.1914L11.1924 0.999019" stroke="black" />
-                </svg>
-              </button>
-            </div>
-            <h2 id="terms-dialog-title" className="sr-only">
-              General Terms and Conditions
-            </h2>
-            <p id="terms-dialog-description" className="sr-only">
-              Please read the following terms and conditions carefully.
-            </p>
-            <TermsContent content={termsContent} />
-          </div>
-        </div>
-      ) : null}
 
       <div className="flex justify-between pt-[30px] gap-4">
         <button

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import {
   Form,
   FormControl,
@@ -25,8 +25,13 @@ import { useToast } from "@/hooks/use-toast";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { CheckInQrButton } from "@/app/dashboard/[userId]/visitor-data/check-in-qr-button";
 import {
+  isVisitorAgeRange,
+  VISITOR_AGE_RANGES,
+  VISITOR_AGE_RANGE_LABELS,
+} from "@/lib/visitor/visitor-age-ranges";
+import {
   visitorProfileSchema,
-  type VisitorProfileInput,
+  type VisitorProfileFormState,
 } from "@/schemas/visitorSchemas";
 
 const VISITOR_PROFILE_WATCH_FIELDS = [
@@ -36,16 +41,15 @@ const VISITOR_PROFILE_WATCH_FIELDS = [
   "areaId",
 ] as const;
 
-const WORK_AREA_NONE = "__none__";
-
 export type VisitorWorkAreaOption = {
   id: string;
   name: string;
 };
 
 type VisitorDataFormProps = {
-  initialProfile: VisitorProfileInput;
+  initialProfile: VisitorProfileFormState;
   workAreas: VisitorWorkAreaOption[];
+  isProfileComplete: boolean;
   targetUserId?: string;
   isMod?: boolean;
   subjectDisplayName?: string | null;
@@ -55,6 +59,7 @@ type VisitorDataFormProps = {
 export const VisitorDataForm = ({
   initialProfile,
   workAreas,
+  isProfileComplete,
   targetUserId,
   isMod = false,
   subjectDisplayName,
@@ -64,8 +69,10 @@ export const VisitorDataForm = ({
   const router = useRouter();
   const { toast } = useToast();
 
-  const form = useForm<VisitorProfileInput>({
-    resolver: zodResolver(visitorProfileSchema),
+  const form = useForm<VisitorProfileFormState>({
+    resolver: zodResolver(
+      visitorProfileSchema
+    ) as Resolver<VisitorProfileFormState>,
     defaultValues: initialProfile,
   });
 
@@ -73,13 +80,15 @@ export const VisitorDataForm = ({
     form.reset(initialProfile);
   }, [initialProfile, form]);
 
-  const handleSubmit = async (values: VisitorProfileInput) => {
+  const handleSubmit = async (values: VisitorProfileFormState) => {
+    const parsed = visitorProfileSchema.parse(values);
+
     try {
       const response = await fetch("/api/users/visitor-data", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          targetUserId ? { ...values, targetUserId } : values
+          targetUserId ? { ...parsed, targetUserId } : parsed
         ),
       });
 
@@ -109,6 +118,23 @@ export const VisitorDataForm = ({
       <h1 className="title-text">
         {subjectDisplayName ?? "Check-in profile"}
       </h1>
+
+      <CheckInQrButton
+        targetUserId={targetUserId}
+        isModeratorView={isModeratorView}
+        subjectDisplayName={subjectDisplayName}
+        isProfileComplete={isProfileComplete}
+      />
+
+      {!isProfileComplete ? (
+        <p
+          role="status"
+          className="mb-6 base-text-size text-(--primary-color) max-w-prose"
+        >
+          Your check-in profile is incomplete. Select Age range and Work area
+          below, then save to generate your QR code.
+        </p>
+      ) : null}
 
       <Form {...form}>
         <form
@@ -171,10 +197,28 @@ export const VisitorDataForm = ({
             name="birthDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Birth date (optional)</FormLabel>
-                <FormControl>
-                  <Input {...field} type="date" />
-                </FormControl>
+                <FormLabel>
+                  Age range <span aria-hidden="true">*</span>
+                </FormLabel>
+                <Select
+                  value={
+                    isVisitorAgeRange(field.value) ? field.value : undefined
+                  }
+                  onValueChange={field.onChange}
+                >
+                  <FormControl>
+                    <SelectTrigger aria-label="Age range" aria-required="true">
+                      <SelectValue placeholder="Select…" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {VISITOR_AGE_RANGES.map((range) => (
+                      <SelectItem key={range} value={range}>
+                        {VISITOR_AGE_RANGE_LABELS[range]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -184,20 +228,19 @@ export const VisitorDataForm = ({
             name="areaId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Work area (optional)</FormLabel>
+                <FormLabel>
+                  Work area <span aria-hidden="true">*</span>
+                </FormLabel>
                 <Select
-                  value={field.value?.trim() ? field.value : WORK_AREA_NONE}
-                  onValueChange={(value) =>
-                    field.onChange(value === WORK_AREA_NONE ? "" : value)
-                  }
+                  value={field.value?.trim() ? field.value : undefined}
+                  onValueChange={field.onChange}
                 >
                   <FormControl>
-                    <SelectTrigger aria-label="Work area">
+                    <SelectTrigger aria-label="Work area" aria-required="true">
                       <SelectValue placeholder="Select…" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={WORK_AREA_NONE}>None</SelectItem>
                     {workAreas.map((area) => (
                       <SelectItem key={area.id} value={area.id}>
                         {area.name}
@@ -209,16 +252,11 @@ export const VisitorDataForm = ({
               </FormItem>
             )}
           />
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mini-padding">
+          <div className="mini-padding">
             <SaveChangesButton
               isSubmitting={form.formState.isSubmitting}
               watchFields={[...VISITOR_PROFILE_WATCH_FIELDS]}
               isDirty={false}
-            />
-            <CheckInQrButton
-              targetUserId={targetUserId}
-              isModeratorView={isModeratorView}
-              subjectDisplayName={subjectDisplayName}
             />
           </div>
         </form>

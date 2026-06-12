@@ -20,7 +20,8 @@ export async function POST(request: Request) {
     );
   }
 
-  const { firstName, lastName, email, password } = parsed.data;
+  const { firstName, lastName, email, password, birthDate, areaId } =
+    parsed.data;
   const normalizedEmail = email.toLowerCase();
 
   try {
@@ -60,6 +61,8 @@ export async function POST(request: Request) {
           last_name: lastName,
           email: normalizedEmail,
           full_name: `${firstName} ${lastName}`.trim(),
+          birth_date: birthDate,
+          area_id: areaId,
         })
         .eq("id", existingVisitor.id);
 
@@ -80,6 +83,8 @@ export async function POST(request: Request) {
         last_name: lastName,
         email: normalizedEmail,
         full_name: `${firstName} ${lastName}`.trim(),
+        birth_date: birthDate,
+        area_id: areaId,
         visitor_token: createVisitorToken(),
       })
       .select("id")

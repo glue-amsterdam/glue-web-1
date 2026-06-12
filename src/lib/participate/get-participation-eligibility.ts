@@ -95,7 +95,10 @@ const evaluateEligibility = ({
 > => {
   const dashboardHref =
     isAuthenticated && userId
-      ? getDashboardHomePath(userId, { isParticipant })
+      ? getDashboardHomePath(userId, {
+          isParticipant,
+          isPendingParticipant: status === "pending",
+        })
       : null;
 
   if (!isAuthenticated) {

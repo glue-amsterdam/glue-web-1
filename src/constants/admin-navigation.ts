@@ -34,6 +34,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { name: "Posts", href: "/admin/posts" },
       { name: "Program", href: "/admin/events" },
       { name: "Terms and Conditions", href: "/admin/terms" },
+      { name: "Sign Up", href: "/admin/sign-up" },
       { name: "Sponsors", href: "/admin/sponsors" },
     ],
   },

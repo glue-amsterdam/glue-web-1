@@ -1,3 +1,5 @@
+import { isVisitorAgeRange } from "@/lib/visitor/visitor-age-ranges";
+
 type VisitorNameRow = {
   first_name?: string | null;
   last_name?: string | null;
@@ -53,7 +55,11 @@ export const mapVisitorRowToProfileResponse = (
     firstName,
     lastName,
     email,
-    birthDate: row.birth_date ? String(row.birth_date).slice(0, 10) : "",
+    birthDate: (() => {
+      if (!row.birth_date) return "";
+      const value = String(row.birth_date).trim();
+      return isVisitorAgeRange(value) ? value : "";
+    })(),
     areaId: row.area_id ?? "",
     displayName:
       row.display_name?.trim() ||

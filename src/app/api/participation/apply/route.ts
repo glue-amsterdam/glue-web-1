@@ -229,6 +229,8 @@ export async function POST(request: Request) {
           last_name: accountData.lastName,
           email: normalizedEmail,
           full_name: fullName,
+          birth_date: null,
+          area_id: null,
         })
         .eq("id", existingVisitor.id);
 
@@ -242,6 +244,8 @@ export async function POST(request: Request) {
         last_name: accountData.lastName,
         email: normalizedEmail,
         full_name: fullName,
+        birth_date: null,
+        area_id: null,
         visitor_token: createVisitorToken(),
       });
 

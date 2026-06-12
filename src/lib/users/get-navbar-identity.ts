@@ -23,7 +23,7 @@ export const getNavbarIdentity = async (
         .maybeSingle(),
       supabase
         .from("participant_details")
-        .select("user_id")
+        .select("user_id, status")
         .eq("user_id", userId)
         .maybeSingle(),
       supabase
@@ -43,9 +43,13 @@ export const getNavbarIdentity = async (
   const isVisitorOnly =
     Boolean(visitorRow) && !hasParticipantRow && !isLegacyParticipant;
 
+  const participantStatus = participantDetails?.status ?? null;
+  const isPendingParticipant =
+    isParticipant && participantStatus === "pending";
+
   const hasDashboardAccess = isParticipant || Boolean(visitorRow);
   const dashboardHref = hasDashboardAccess
-    ? getDashboardHomePath(userId, { isParticipant })
+    ? getDashboardHomePath(userId, { isParticipant, isPendingParticipant })
     : null;
 
   return {

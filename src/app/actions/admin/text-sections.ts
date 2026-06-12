@@ -51,7 +51,10 @@ export async function saveTextSection(
     );
 
   if (error) {
-    throw error;
+    throw new Error(
+      error.message ||
+        "Failed to save text section. If this is a new section, run the latest Supabase migration."
+    );
   }
 
   revalidateTextSectionCache(slug);

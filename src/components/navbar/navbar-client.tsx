@@ -65,6 +65,7 @@ type NavbarAuthProps = {
 };
 
 const Buttons = ({ identity, isAuthenticated, userId }: NavbarAuthProps) => {
+  const pathname = usePathname();
   const { logout } = useAuth();
 
   const handleLogout = async () => {
@@ -95,6 +96,7 @@ const Buttons = ({ identity, isAuthenticated, userId }: NavbarAuthProps) => {
   const dashboardHref =
     identity?.dashboardHref ??
     (userId ? getVisitorDataDashboardPath(userId) : null);
+  const isDashboardActive = pathname.startsWith("/dashboard/");
 
   return (
     <Container className="sm:gap-[30px] gap-[15px]">
@@ -105,6 +107,7 @@ const Buttons = ({ identity, isAuthenticated, userId }: NavbarAuthProps) => {
           href={dashboardHref}
           mode="navbar"
           fontSize="base"
+          isActive={isDashboardActive}
         />
       )}
       <BigButton

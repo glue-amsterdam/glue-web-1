@@ -140,6 +140,18 @@ export const TEXT_SECTION_DEFAULTS: Record<TextSectionSlug, TextSectionData> = {
     buttonLink: null,
     sectionId: "plans-selection-section",
   },
+  "sign-up-intro": {
+    slug: "sign-up-intro",
+    adminGroup: "sign-up",
+    variant: "intro",
+    title: "Sign Up",
+    description:
+      "You must register to access this information. Registering does not commit you to anything. GLUE is free, so there is no charge. ",
+    showButton: false,
+    buttonLabel: null,
+    buttonLink: null,
+    sectionId: "sign-up-section",
+  },
 };
 
 export const getTextSectionDefault = (slug: TextSectionSlug): TextSectionData =>

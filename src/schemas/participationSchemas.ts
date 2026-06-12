@@ -2,7 +2,7 @@ import { z } from "zod";
 import { invoiceDataTypeSchema } from "@/schemas/invoiceSchemas";
 import { mapInfoSchema } from "@/schemas/mapInfoSchemas";
 import { participantExtraDataSchema } from "@/schemas/participantExtraDataSchema";
-import { visitorRegisterSchema } from "@/schemas/visitorSchemas";
+import { visitorParticipantAccountSchema } from "@/schemas/visitorSchemas";
 import { reactivationRequestSubmissionSchema } from "@/schemas/participantDetailsSchemas";
 
 export const participationIntentSchema = z.enum([
@@ -10,6 +10,12 @@ export const participationIntentSchema = z.enum([
   "upgrade",
   "reactivation",
 ]);
+
+const termsAcceptedSchema = z.object({
+  termsAccepted: z.boolean().refine((val) => val === true, {
+    message: "You must accept the General terms and conditions",
+  }),
+});
 
 export const participantApplicationSchema = z
   .object({
@@ -20,10 +26,11 @@ export const participantApplicationSchema = z
   })
   .merge(invoiceDataTypeSchema)
   .merge(participantExtraDataSchema)
-  .merge(mapInfoSchema);
+  .merge(mapInfoSchema)
+  .merge(termsAcceptedSchema);
 
 export const participantApplicationWithAccountSchema =
-  participantApplicationSchema.merge(visitorRegisterSchema);
+  participantApplicationSchema.merge(visitorParticipantAccountSchema);
 
 export const reactivationFullSubmissionSchema =
   reactivationRequestSubmissionSchema

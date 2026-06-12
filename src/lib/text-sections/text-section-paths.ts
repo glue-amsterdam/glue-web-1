@@ -10,4 +10,5 @@ export const TEXT_SECTION_REVALIDATE_PATHS: Record<TextSectionSlug, string[]> = 
   "participate-intro": ["/participate"],
   "participate-how-it-works": ["/participate"],
   "participate-select-plan": ["/participate"],
+  "sign-up-intro": ["/sign-up"],
 };

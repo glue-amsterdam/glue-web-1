@@ -123,7 +123,7 @@ export default function UserDetailAccordion({
               value={detail.visitorData.last_name ?? "—"}
             />
             <DetailRow
-              label="Birth date"
+              label="Age range"
               value={detail.visitorData.birth_date ?? "—"}
             />
           </>

@@ -8,6 +8,7 @@ import { submitNewsletter } from "@/app/actions/newsletter";
 import {
   VisitorAccountStep,
   type VisitorAccountValues,
+  type VisitorWorkAreaOption,
 } from "@/components/participate/visitor-account-step";
 import {
   buildLoginFromSignUpHref,
@@ -16,10 +17,12 @@ import {
 } from "@/lib/auth/post-auth-redirect";
 
 type SignUpVisitorFormProps = {
-  termsContent: string;
+  workAreas: VisitorWorkAreaOption[];
 };
 
-export const SignUpVisitorForm = ({ termsContent }: SignUpVisitorFormProps) => {
+export const SignUpVisitorForm = ({
+  workAreas,
+}: SignUpVisitorFormProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
@@ -103,6 +106,7 @@ export const SignUpVisitorForm = ({ termsContent }: SignUpVisitorFormProps) => {
   return (
     <>
       <VisitorAccountStep
+        workAreas={workAreas}
         submitError={submitError ?? undefined}
         onSubmit={(data) => void handleSubmit(data)}
         onBack={handleBack}
@@ -110,7 +114,6 @@ export const SignUpVisitorForm = ({ termsContent }: SignUpVisitorFormProps) => {
         submitDisabled={isSubmitting || isRedirecting}
         isSubmitting={isSubmitting || isRedirecting}
         loadingMessage="Creating your account…"
-        termsContent={termsContent}
       />
     </>
   );

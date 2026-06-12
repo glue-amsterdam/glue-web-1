@@ -64,7 +64,7 @@ export default async function DashboardLayout({
 
   return (
     <section className="flex h-full min-h-0 flex-1 overflow-hidden">
-      <MainContainer className="flex h-full min-h-0 w-full lg:flex-row">
+      <MainContainer className="flex h-full min-h-0 w-full flex-col lg:flex-row">
         <DashboardMenu
           isMod={auth.isMod}
           isParticipant={auth.isParticipant}
@@ -80,6 +80,7 @@ export default async function DashboardLayout({
           <DashboardPendingGate
             isPendingLimitedAccess={auth.isPendingLimitedAccess}
             displayName={auth.displayName}
+            targetUserId={targetUserId}
           >
             {showParticipateInvite ? (
               <DashboardParticipateInvite

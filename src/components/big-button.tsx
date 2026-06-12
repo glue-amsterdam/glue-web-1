@@ -6,13 +6,18 @@ import { cn } from "@/lib/utils";
 type BigButtonMode = "navbar" | "big" | "footer";
 type BigButtonFontSize = "small" | "base";
 
+const activeClassName =
+  "bg-[var(--primary-color)] text-[var(--white-color)] border-[var(--primary-color)]";
+
 export const getBigButtonClassName = ({
   mode,
   fontSize = "base",
+  isActive = false,
   className,
 }: {
   mode: BigButtonMode;
   fontSize?: BigButtonFontSize;
+  isActive?: boolean;
   className?: string;
 }) => {
   const fontSizeClass =
@@ -34,6 +39,7 @@ export const getBigButtonClassName = ({
   return cn(
     "cursor-pointer rounded-[40px] bg-[var(--white-color)] border lg:border-2 border-[var(--black-color)] text-[var(--black-color)]",
     "hover:bg-[var(--primary-color)] hover:text-[var(--white-color)] hover:border-[var(--primary-color)] transition-all duration-100",
+    isActive && activeClassName,
     "disabled:opacity-50 disabled:pointer-events-none",
     fontSizeClass,
     modeClass,
@@ -46,6 +52,7 @@ type BigButtonBase = {
   mode: BigButtonMode;
   fontSize?: BigButtonFontSize;
   disabled?: boolean;
+  isActive?: boolean;
   target?: "_blank" | "_self" | "_parent" | "_top";
 };
 
@@ -60,15 +67,21 @@ function BigButton(props: BigButtonProps) {
     mode,
     fontSize = "base",
     disabled = false,
+    isActive = false,
     target = "_self",
   } = props;
 
-  const buttonClassName = getBigButtonClassName({ mode, fontSize });
+  const buttonClassName = getBigButtonClassName({ mode, fontSize, isActive });
 
   if (props.as === "link") {
     return (
       <Link href={props.href} target={target}>
-        <button type="button" disabled={disabled} className={buttonClassName}>
+        <button
+          type="button"
+          disabled={disabled}
+          className={buttonClassName}
+          aria-current={isActive ? "page" : undefined}
+        >
           {label}
         </button>
       </Link>
@@ -81,6 +94,7 @@ function BigButton(props: BigButtonProps) {
         type="submit"
         disabled={disabled}
         className={buttonClassName}
+        aria-current={isActive ? "page" : undefined}
       >
         {label}
       </button>
@@ -93,6 +107,7 @@ function BigButton(props: BigButtonProps) {
       disabled={disabled}
       onClick={props.onClick}
       className={buttonClassName}
+      aria-current={isActive ? "page" : undefined}
     >
       {label}
     </button>

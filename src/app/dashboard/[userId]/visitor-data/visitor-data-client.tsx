@@ -2,6 +2,7 @@
 
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { VisitorDataForm } from "@/app/dashboard/[userId]/visitor-data/visitor-data-form";
+import { isCheckInProfileComplete } from "@/lib/visitor/is-check-in-profile-complete";
 import {
   toVisitorProfileFormValues,
   visitorProfileResponseSchema,
@@ -66,6 +67,7 @@ export const VisitorDataClient = ({
 
   const { profile } = parsed.data;
   const formValues = toVisitorProfileFormValues(profile);
+  const isProfileComplete = isCheckInProfileComplete(profile);
   const subjectDisplayName =
     apiTargetUserId && profile.displayName?.trim()
       ? profile.displayName.trim()
@@ -75,6 +77,7 @@ export const VisitorDataClient = ({
     <VisitorDataForm
       key={`${profile.id}-${apiTargetUserId ?? "self"}`}
       initialProfile={formValues}
+      isProfileComplete={isProfileComplete}
       workAreas={parsedAreas.data.areas}
       targetUserId={apiTargetUserId}
       isMod={isMod}

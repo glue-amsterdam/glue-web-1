@@ -17,15 +17,14 @@ type NumbersClientProps = DisplayNumbersPanelData & {
   targetUserId: string;
 };
 
-type FilterMode = "all" | "unassigned";
+type FilterMode = "all" | "unassigned" | "assigned";
 type Category = "all" | "participants" | "hubs";
 
 const inputClass =
   "w-full text-sm border border-gray-300 rounded px-2 py-1.5 bg-white text-black md:max-w-sm";
 
 const filterButtonClass = (active: boolean) =>
-  `text-xs border rounded px-2 py-1 ${
-    active ? "bg-black text-white border-black" : "border-gray-300"
+  `text-xs border rounded px-2 py-1 ${active ? "bg-black text-white border-black" : "border-gray-300"
   }`;
 
 const getRowHref = (row: DisplayNumberRow, targetUserId: string): string => {
@@ -96,6 +95,10 @@ export const NumbersClient = ({
       }
 
       if (category === "hubs" && row.entityType !== "hub") {
+        return false;
+      }
+
+      if (filterMode === "assigned" && !row.displayNumber?.trim()) {
         return false;
       }
 
@@ -187,9 +190,12 @@ export const NumbersClient = ({
       <div className="mb-3 flex flex-wrap gap-2">
         <button
           type="button"
-          onClick={() => setCategory("all")}
-          className={filterButtonClass(category === "all")}
-          aria-pressed={category === "all"}
+          onClick={() => {
+            setCategory("all");
+            setFilterMode("all");
+          }}
+          className={filterButtonClass(category === "all" && filterMode === "all")}
+          aria-pressed={category === "all" && filterMode === "all"}
         >
           All
         </button>
@@ -211,11 +217,11 @@ export const NumbersClient = ({
         </button>
         <button
           type="button"
-          onClick={() => setFilterMode("all")}
-          className={filterButtonClass(filterMode === "all")}
-          aria-pressed={filterMode === "all"}
+          onClick={() => setFilterMode("assigned")}
+          className={filterButtonClass(filterMode === "assigned")}
+          aria-pressed={filterMode === "assigned"}
         >
-          All numbers
+          With
         </button>
         <button
           type="button"
@@ -223,7 +229,7 @@ export const NumbersClient = ({
           className={filterButtonClass(filterMode === "unassigned")}
           aria-pressed={filterMode === "unassigned"}
         >
-          Without number
+          Without
         </button>
       </div>
 

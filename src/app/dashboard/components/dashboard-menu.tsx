@@ -8,13 +8,14 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { MenuIcon } from "lucide-react";
 import {
   ADMIN_DASHBOARD_SECTIONS,
   USER_DASHBOARD_SECTIONS,
   VISITOR_ONLY_DASHBOARD_HREFS,
 } from "@/constants";
 import CrossRotatedMobile from "@/components/icons/cross-rotated-mobile";
+import { cn } from "@/lib/utils";
 
 const ACTIVE_ONLY_SECTIONS = [
   "map-info",
@@ -47,7 +48,7 @@ const ModifyingProfileSection = ({
   if (!hasNameOrSlug && !targetUserId) return null;
 
   return (
-    <div className="py-[12px] border border-white p-1 text-(--white-color) base-text-size mt-[15px]">
+    <div className="mt-[15px] min-w-0 wrap-break-word border border-white p-1 py-[12px] text-(--white-color) base-text-size">
       <p className="font-medium">Modifying profile of:</p>
       {hasNameOrSlug ? (
         <>
@@ -96,90 +97,94 @@ export default function DashboardMenu({
   const adminBaseUserId = loggedInUserId ?? targetUserId ?? "";
 
   const SidebarContent = () => (
-    <nav className="flex flex-col text-(--white-color) base-text-size pt-[30px] gap-[15px] pb-[30px]">
-
+    <nav className="flex flex-col gap-[15px] pb-[30px] pt-[30px] text-(--white-color) base-text-size">
       {filteredDashboardSections.map((item, index) => (
         <Link key={index} href={`/dashboard/${targetUserId}/${item.href}`}>
           <button
-            className="flex items-center gap-[15px] cursor-pointer"
+            className="flex cursor-pointer items-center gap-[15px]"
             onClick={() => setIsSidebarOpen(false)}
           >
-            <item.icon className="size-6" />
+            <item.icon className="size-6 shrink-0" />
             <span>{item.label}</span>
           </button>
         </Link>
       ))}
 
       {isMod && (
-        <div
-
-          className="border-t border-white flex flex-col text-(--white-color) base-text-size pt-[30px] gap-[15px]"
-        >
-          <h3 className=" font-bold text-center pb-4 tracking-wider text-sm">
+        <div className="flex flex-col gap-[15px] border-t border-white pt-[30px] text-(--white-color) base-text-size">
+          <h3 className="pb-4 text-center text-sm font-bold tracking-wider">
             mod section
           </h3>
 
           {ADMIN_DASHBOARD_SECTIONS.map((item, index) => (
-
             <Link key={index} href={`/dashboard/${adminBaseUserId}/${item.href}`}>
               <button
-                className="flex items-center gap-[15px] cursor-pointer base-text-size"
+                className="flex cursor-pointer items-center gap-[15px] base-text-size"
                 onClick={() => setIsSidebarOpen(false)}
               >
-                <item.icon className="size-6" />
+                <item.icon className="size-6 shrink-0" />
                 <span>{item.label}</span>
               </button>
             </Link>
-
           ))}
-
         </div>
       )}
     </nav>
   );
 
   return (
-
     <>
       <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-        <SheetTrigger className="lg:hidden" asChild>
-          <button
-            className="m-4"
-            aria-label="Toggle menu"
-          >
-            {">"}
-          </button>
-        </SheetTrigger>
+        <div className="flex w-full shrink-0 items-center gap-3 border-b-2 border-(--black-color) py-3 lg:hidden">
+          <SheetTrigger asChild>
+            <button
+              type="button"
+              className="inline-flex shrink-0 items-center justify-center rounded-md border border-white p-2"
+              aria-label="Toggle menu"
+            >
+              <MenuIcon className="size-5" aria-hidden="true" />
+            </button>
+          </SheetTrigger>
+          <h1 className="truncate base-text-size">{identityName.toUpperCase()}</h1>
+        </div>
         <SheetContent
           side="left"
-          className="lg:hidden w-80 p-0 overflow-y-auto bg-(--primary-color) text-(--white-color) px-[12px] pb-[15px]"
+          className={cn(
+            "lg:hidden p-0 px-[12px] pb-[15px]",
+            "bg-(--primary-color) text-(--white-color)",
+            "w-[min(100vw-2rem,280px)] max-w-[calc(100vw-2rem)]",
+            "top-(--nav-total-h-mobile) bottom-(--site-footer-h) h-auto",
+            "overflow-y-auto overflow-x-hidden"
+          )}
         >
           <SheetTitle className="sr-only">Dashboard Menu</SheetTitle>
           <button
-            className="absolute right-4 top-4 z-10 invert"
+            type="button"
+            className="absolute right-4 top-4 z-10"
             onClick={() => setIsSidebarOpen(false)}
             aria-label="Close menu"
           >
             <CrossRotatedMobile />
           </button>
-          <div className="pt-[15px]">
-            <h1 className="text-3xl text-(--white-color) pt-[15px]">
-              {identityName}
-            </h1>
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-[15px]">
             {isMod && (
-              <ModifyingProfileSection
-                targetParticipantName={targetParticipantName}
-                targetParticipantSlug={targetParticipantSlug}
-                targetUserId={targetUserId}
-              />
+              <div className="shrink-0">
+                <ModifyingProfileSection
+                  targetParticipantName={targetParticipantName}
+                  targetParticipantSlug={targetParticipantSlug}
+                  targetUserId={targetUserId}
+                />
+              </div>
             )}
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+              <SidebarContent />
+            </div>
           </div>
-          <SidebarContent />
         </SheetContent>
       </Sheet>
 
       <aside className="hidden bg-(--primary-color) lg:flex lg:h-full lg:min-h-0 lg:max-h-full lg:w-[300px] lg:shrink-0 lg:flex-col lg:overflow-y-auto lg:border-r-2 lg:border-(--black-color) scrollbar scrollbar-thumb-white scrollbar-track-white/10 px-[12px]">
-        <h1 className="text-3xl text-(--white-color) pt-[15px]">
+        <h1 className="pt-[15px] text-3xl text-(--white-color)">
           {identityName}
         </h1>
         {isMod && (

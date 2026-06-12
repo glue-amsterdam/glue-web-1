@@ -10,11 +10,17 @@ export const TEXT_SECTION_SLUGS = [
   "participate-intro",
   "participate-how-it-works",
   "participate-select-plan",
+  "sign-up-intro",
 ] as const;
 
 export type TextSectionSlug = (typeof TEXT_SECTION_SLUGS)[number];
 
-export const TEXT_SECTION_ADMIN_GROUPS = ["home", "visit", "participate"] as const;
+export const TEXT_SECTION_ADMIN_GROUPS = [
+  "home",
+  "visit",
+  "participate",
+  "sign-up",
+] as const;
 
 export type TextSectionAdminGroup = (typeof TEXT_SECTION_ADMIN_GROUPS)[number];
 
