@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  allowedDevOrigins: ["favored-selenitic-vincenzo.ngrok-free.dev"],
   async redirects() {
     return [
       {

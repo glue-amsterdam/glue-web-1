@@ -52,8 +52,7 @@ const inputClass =
   "w-full text-sm border border-gray-300 rounded px-2 py-1.5 bg-white text-black md:max-w-sm";
 
 const filterButtonClass = (active: boolean) =>
-  `text-xs border rounded px-2 py-1 ${
-    active ? "bg-black text-white border-black" : "border-gray-300"
+  `text-xs border rounded px-2 py-1 ${active ? "bg-black text-white border-black" : "border-gray-300"
   }`;
 
 interface UsersAdminPanelProps {
@@ -594,7 +593,7 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
                   <th className="px-3 py-2 font-medium">Status</th>
                   <th className="px-3 py-2 font-medium">Email</th>
                   <th className="px-3 py-2 font-medium">Created</th>
-                  <th className="px-3 py-2 font-medium min-w-[8rem] text-right">
+                  <th className="px-3 py-2 font-medium min-w-32 text-right">
                     Actions
                   </th>
                 </tr>

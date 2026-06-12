@@ -83,6 +83,9 @@
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["core-js", "sharp", "unrs-resolver"]
+  },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^25.9.1",
