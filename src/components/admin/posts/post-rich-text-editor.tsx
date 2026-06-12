@@ -1,10 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
+import Underline from "@tiptap/extension-underline";
+import Color from "@tiptap/extension-color";
+import { TextStyle } from "@tiptap/extension-text-style";
 import {
   PostImage,
   type PostImageAlign,
@@ -24,8 +27,10 @@ import {
   LinkIcon,
   List,
   ListOrdered,
+  Palette,
   Redo,
   Settings2,
+  Underline as UnderlineIcon,
   Undo,
   VideoIcon,
 } from "lucide-react";
@@ -54,6 +59,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ColorPicker } from "@/components/ui/color-picker";
+import { normalizeEmailHtmlForEditor } from "@/lib/email/normalize-email-html-for-editor";
+
+export const POST_IMAGE_UPLOAD_FOLDER = "posts/images";
+export const EMAIL_IMAGE_UPLOAD_FOLDER = "assets/mail";
 
 export const IMAGE_SIZE_PRESETS = [
   { label: "Small", value: "400px" },
@@ -74,10 +89,27 @@ type ImageDialogState = {
   align: PostImageAlign;
 };
 
+type EditorVariant = "post" | "email";
+
 type PostRichTextEditorProps = {
   value: string;
   onChange: (content: string) => void;
   readOnly?: boolean;
+  variant?: EditorVariant;
+};
+
+const getCurrentColor = (editor: Editor | null) => {
+  if (!editor) return null;
+  const attrs = editor.getAttributes("textStyle");
+  return attrs.color || null;
+};
+
+const setTextColor = (editor: Editor, color: string) => {
+  editor.chain().focus().setColor(color).run();
+};
+
+const unsetTextColor = (editor: Editor) => {
+  editor.chain().focus().unsetColor().run();
 };
 
 const getActiveAlign = (editor: Editor): PostImageAlign => {
@@ -91,17 +123,20 @@ const getActiveAlign = (editor: Editor): PostImageAlign => {
 
 const MenuBar = ({
   editor,
+  variant,
   onImageClick,
   onVideoClick,
   onOpenImageSettings,
   disabled,
 }: {
   editor: Editor | null;
+  variant: EditorVariant;
   onImageClick: () => void;
   onVideoClick: () => void;
   onOpenImageSettings: () => void;
   disabled?: boolean;
 }) => {
+  const isEmailVariant = variant === "email";
   if (!editor) {
     return null;
   }
@@ -238,6 +273,66 @@ const MenuBar = ({
       >
         <Italic className="h-4 w-4" />
       </Button>
+      {isEmailVariant ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          disabled={disabled}
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          className={cn(
+            "text-black hover:bg-uiblack/30",
+            editor.isActive("underline") && "bg-uiblack/20"
+          )}
+          aria-label="Underline"
+        >
+          <UnderlineIcon className="h-4 w-4" />
+        </Button>
+      ) : null}
+      {isEmailVariant ? (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              disabled={disabled}
+              className={cn(
+                "text-black hover:bg-uiblack/30",
+                getCurrentColor(editor) && "bg-uiblack/20"
+              )}
+              aria-label="Text color"
+              title="Text Color"
+            >
+              <Palette className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-3" align="start">
+            <div className="space-y-2">
+              <ColorPicker
+                value={getCurrentColor(editor) || "#000000"}
+                onChange={(color) => {
+                  if (color) {
+                    setTextColor(editor, color);
+                    return;
+                  }
+                  unsetTextColor(editor);
+                }}
+                label="Text Color"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => unsetTextColor(editor)}
+                className="w-full text-black"
+              >
+                Remove Color
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+      ) : null}
       <Button
         type="button"
         variant="ghost"
@@ -356,17 +451,19 @@ const MenuBar = ({
           <Settings2 className="h-4 w-4" />
         </Button>
       ) : null}
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        disabled={disabled}
-        onClick={onVideoClick}
-        aria-label="Insert video"
-        className="text-black hover:bg-uiblack/30"
-      >
-        <VideoIcon className="h-4 w-4" />
-      </Button>
+      {!isEmailVariant ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          disabled={disabled}
+          onClick={onVideoClick}
+          aria-label="Insert video"
+          className="text-black hover:bg-uiblack/30"
+        >
+          <VideoIcon className="h-4 w-4" />
+        </Button>
+      ) : null}
 
       <Separator orientation="vertical" className="mx-1 h-6 bg-uiblack/30" />
 
@@ -400,7 +497,9 @@ export const PostRichTextEditor = ({
   value,
   onChange,
   readOnly = false,
+  variant = "post",
 }: PostRichTextEditorProps) => {
+  const isEmailVariant = variant === "email";
   const [isMounted, setIsMounted] = useState(false);
   const [uploadState, setUploadState] = useState<UploadState | null>(null);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
@@ -430,10 +529,8 @@ export const PostRichTextEditor = ({
   const editImageRef = useRef(openEditImageDialog);
   editImageRef.current = openEditImageDialog;
 
-  const editor = useEditor({
-    immediatelyRender: false,
-    editable: !readOnly,
-    extensions: [
+  const extensions = useMemo(() => {
+    const baseExtensions = [
       StarterKit,
       Link.configure({
         openOnClick: false,
@@ -450,16 +547,30 @@ export const PostRichTextEditor = ({
         allowBase64: false,
         onEditImage: (attrs) => editImageRef.current(attrs),
       }),
-      Video,
-    ],
-    content: value,
+    ];
+
+    if (isEmailVariant) {
+      return [...baseExtensions, Underline, TextStyle, Color];
+    }
+
+    return [...baseExtensions, Video];
+  }, [isEmailVariant]);
+
+  const editorContentClass = isEmailVariant
+    ? "min-h-[200px] max-h-[40dvh] overflow-y-auto bg-white font-overpass text-black w-full p-2 focus:outline-none prose prose-sm max-w-none [&_a]:text-blue-500 [&_a]:underline [&_a]:cursor-pointer"
+    : "min-h-[300px] max-h-[60dvh] overflow-y-auto bg-white text-black w-full p-4 focus:outline-none prose prose-sm max-w-none [&_a]:text-blue-500 [&_a]:underline [&_a]:cursor-pointer [&_video]:h-auto";
+
+  const editor = useEditor({
+    immediatelyRender: false,
+    editable: !readOnly,
+    extensions,
+    content: isEmailVariant ? normalizeEmailHtmlForEditor(value) : value,
     onUpdate: ({ editor: currentEditor }) => {
       onChange(currentEditor.getHTML());
     },
     editorProps: {
       attributes: {
-        class:
-          "min-h-[300px] max-h-[60dvh] overflow-y-auto bg-white text-black w-full p-4 focus:outline-none prose prose-sm max-w-none [&_a]:text-blue-500 [&_a]:underline [&_a]:cursor-pointer [&_video]:h-auto",
+        class: editorContentClass,
       },
     },
   });
@@ -469,10 +580,16 @@ export const PostRichTextEditor = ({
   }, []);
 
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value);
+    if (!editor) return;
+
+    const nextContent = isEmailVariant
+      ? normalizeEmailHtmlForEditor(value)
+      : value;
+
+    if (nextContent !== editor.getHTML()) {
+      editor.commands.setContent(nextContent);
     }
-  }, [editor, value]);
+  }, [editor, value, isEmailVariant]);
 
   useEffect(() => {
     if (editor) {
@@ -533,7 +650,9 @@ export const PostRichTextEditor = ({
       const { imageUrl, error } = await uploadImage({
         file,
         bucket: config.bucketName,
-        folder: "posts/images",
+        folder: isEmailVariant
+          ? EMAIL_IMAGE_UPLOAD_FOLDER
+          : POST_IMAGE_UPLOAD_FOLDER,
         maxSizeMB: 3,
         maxWidthOrHeight: 1920,
         onProgress: createUploadProgressHandler(setUploadState),
@@ -558,7 +677,7 @@ export const PostRichTextEditor = ({
         align: "left",
       });
     },
-    [editor, toast, openImageDialog]
+    [editor, toast, openImageDialog, isEmailVariant]
   );
 
   const handleVideoFile = useCallback(
@@ -718,6 +837,7 @@ export const PostRichTextEditor = ({
         {editor && !readOnly ? (
           <MenuBar
             editor={editor}
+            variant={variant}
             onImageClick={handleImageClick}
             onVideoClick={handleVideoClick}
             onOpenImageSettings={handleOpenImageSettings}
@@ -736,15 +856,17 @@ export const PostRichTextEditor = ({
           tabIndex={-1}
           onChange={handleImageInputChange}
         />
-        <input
-          ref={videoInputRef}
-          type="file"
-          accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
-          className="hidden"
-          aria-hidden="true"
-          tabIndex={-1}
-          onChange={handleVideoInputChange}
-        />
+        {!isEmailVariant ? (
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+            className="hidden"
+            aria-hidden="true"
+            tabIndex={-1}
+            onChange={handleVideoInputChange}
+          />
+        ) : null}
       </div>
 
       <Dialog open={isImageDialogOpen} onOpenChange={handleImageDialogClose}>
