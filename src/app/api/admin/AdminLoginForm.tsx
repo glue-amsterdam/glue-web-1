@@ -109,10 +109,9 @@ const AdminLoginForm = () => {
         <div className="flex justify-start">
           <BigButton
             mode="big"
-            as="button"
-            onClick={form.handleSubmit(handleSubmit)}
+            as="submit"
             disabled={isLoading}
-            label={isLoading ? "logging in..." : "enter"}
+            label={isLoading ? "loggin..." : "enter"}
           />
 
         </div>
