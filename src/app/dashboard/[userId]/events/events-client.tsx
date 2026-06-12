@@ -34,6 +34,41 @@ type EventsClientProps = {
   canCreateEvent: boolean;
 };
 
+type EventRowActionsProps = {
+  event: EventSummary;
+  targetUserId: string;
+  onDelete: (event: EventSummary) => void;
+  compact?: boolean;
+};
+
+const EventRowActions = ({
+  event,
+  targetUserId,
+  onDelete,
+  compact = false,
+}: EventRowActionsProps) => (
+  <div className="flex shrink-0 flex-wrap justify-end gap-1 md:gap-2">
+    <Button asChild variant="secondary" size={compact ? "icon" : "sm"}>
+      <Link
+        href={`/dashboard/${targetUserId}/events/${event.id}`}
+        aria-label={`Edit ${event.title}`}
+      >
+        <PencilIcon className={compact ? "h-4 w-4" : "mr-1 h-4 w-4"} />
+        {!compact && "Edit"}
+      </Link>
+    </Button>
+    <Button
+      variant="destructive"
+      size={compact ? "icon" : "sm"}
+      onClick={() => onDelete(event)}
+      aria-label={`Delete ${event.title}`}
+    >
+      <TrashIcon className={compact ? "h-4 w-4" : "mr-1 h-4 w-4"} />
+      {!compact && "Delete"}
+    </Button>
+  </div>
+);
+
 export const EventsClient = ({
   targetUserId,
   events,
@@ -117,62 +152,65 @@ export const EventsClient = ({
           )}
         </div>
       ) : (
-        <div className="overflow-x-auto border p-4">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Day</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {events.map((event) => (
-                <TableRow key={event.id}>
-                  <TableCell className="font-medium">{event.title}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{event.type}</Badge>
-                  </TableCell>
-                  <TableCell>{event.dayLabel ?? event.dayId}</TableCell>
-                  <TableCell>
-                    {event.start_time} – {event.end_time}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap justify-end gap-2">
-                      <Button asChild variant="secondary" size="sm">
-                        <Link
-                          href={`/dashboard/${targetUserId}/events/${event.id}`}
-                          aria-label={`Edit ${event.title}`}
-                        >
-                          <PencilIcon className="mr-1 h-4 w-4" />
-                          Edit
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => setDeleteTarget(event)}
-                        aria-label={`Delete ${event.title}`}
-                      >
-                        <TrashIcon className="mr-1 h-4 w-4" />
-                        Delete
-                      </Button>
-                      <Button asChild variant="outline" size="sm">
-                        <Link
-                          href={`/dashboard/${targetUserId}/events/${event.id}/scan`}
-                        >
-                          Scan Check-In
-                        </Link>
-                      </Button>
-                    </div>
-                  </TableCell>
+        <>
+          <div className="md:hidden border min-w-0">
+            <div className="flex items-center gap-2 border-b bg-muted/50 px-2 py-2 text-sm font-medium">
+              <span className="min-w-0 flex-1">Title</span>
+              <span className="shrink-0">Actions</span>
+            </div>
+            {events.map((event) => (
+              <div
+                key={event.id}
+                className="flex items-center gap-2 border-b px-2 py-2 last:border-b-0"
+              >
+                <p className="min-w-0 flex-1 text-sm font-medium wrap-break-word">
+                  {event.title}
+                </p>
+                <EventRowActions
+                  event={event}
+                  targetUserId={targetUserId}
+                  onDelete={setDeleteTarget}
+                  compact
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden md:block overflow-x-auto border p-4">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Day</TableHead>
+                  <TableHead>Time</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {events.map((event) => (
+                  <TableRow key={event.id}>
+                    <TableCell className="font-medium">{event.title}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{event.type}</Badge>
+                    </TableCell>
+                    <TableCell>{event.dayLabel ?? event.dayId}</TableCell>
+                    <TableCell>
+                      {event.start_time} – {event.end_time}
+                    </TableCell>
+                    <TableCell>
+                      <EventRowActions
+                        event={event}
+                        targetUserId={targetUserId}
+                        onDelete={setDeleteTarget}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       )}
 
       <Dialog

@@ -2,6 +2,7 @@
 
 
 import type { Sponsor } from "@/schemas/sponsorsSchema";
+import Image from "next/image";
 import Link from "next/link";
 
 export type PartnersDisplay = {
@@ -31,11 +32,13 @@ const PartnersGroup = ({ group }: PartnersSectionProps) => (
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        <div className="h-[32px]">
-                            <img
+                        <div className="lg:h-[32px] h-[50px]">
+                            <Image
+                                width={128}
+                                height={32}
                                 src={sponsor.image_url}
-                                alt={sponsor.name + " logo"}
-                                className=" mix-blend-difference h-full w-full"
+                                alt={sponsor.name + "logo"}
+                                className="object-contain mix-blend-difference h-full w-full"
                             />
                         </div>
                     </Link>

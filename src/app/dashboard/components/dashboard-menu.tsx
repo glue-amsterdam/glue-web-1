@@ -1,12 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { MenuIcon } from "lucide-react";
 import {
@@ -17,9 +12,17 @@ import {
 import CrossRotatedMobile from "@/components/icons/cross-rotated-mobile";
 import { cn } from "@/lib/utils";
 
+const MOBILE_DRAWER_STYLE = {
+  top: "var(--nav-total-h-mobile)",
+  height: "calc(100dvh - var(--nav-total-h-mobile) - var(--site-footer-h))",
+  maxHeight: "calc(100dvh - var(--nav-total-h-mobile) - var(--site-footer-h))",
+  WebkitOverflowScrolling: "touch",
+} as const;
+
 const ACTIVE_ONLY_SECTIONS = [
   "map-info",
   "events",
+  "qr-scan",
 ];
 
 type DashboardMenuProps = {
@@ -96,8 +99,23 @@ export default function DashboardMenu({
   const identityName = userName ?? "User";
   const adminBaseUserId = loggedInUserId ?? targetUserId ?? "";
 
+  useEffect(() => {
+    if (!isSidebarOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSidebarOpen]);
+
+  const handleCloseSidebar = () => setIsSidebarOpen(false);
+
   const SidebarContent = () => (
-    <nav className="flex flex-col gap-[15px] pb-[30px] pt-[30px] text-(--white-color) base-text-size">
+    <nav className="flex flex-col gap-[15px] pt-[30px] text-(--white-color) base-text-size pb-[60px] lg:pb-[30px]">
       {filteredDashboardSections.map((item, index) => (
         <Link key={index} href={`/dashboard/${targetUserId}/${item.href}`}>
           <button
@@ -134,54 +152,61 @@ export default function DashboardMenu({
 
   return (
     <>
-      <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-        <div className="flex w-full shrink-0 items-center gap-3 border-b-2 border-(--black-color) py-3 lg:hidden">
-          <SheetTrigger asChild>
+      <div className="flex w-full shrink-0 items-center gap-3 border-b-2 border-(--black-color) py-3 lg:hidden">
+        <button
+          type="button"
+          className="inline-flex shrink-0 items-center justify-center rounded-md border border-white p-2"
+          aria-label="Toggle menu"
+          aria-expanded={isSidebarOpen}
+          onClick={() => setIsSidebarOpen(true)}
+        >
+          <MenuIcon className="size-5" aria-hidden="true" />
+        </button>
+        <h1 className="truncate base-text-size">{identityName.toUpperCase()}</h1>
+      </div>
+
+      {isSidebarOpen &&
+        createPortal(
+          <>
             <button
               type="button"
-              className="inline-flex shrink-0 items-center justify-center rounded-md border border-white p-2"
-              aria-label="Toggle menu"
+              className="fixed inset-0 z-50 bg-black/80 lg:hidden"
+              aria-label="Close menu overlay"
+              onClick={handleCloseSidebar}
+            />
+            <aside
+              role="dialog"
+              aria-modal="true"
+              aria-label="Dashboard Menu"
+              style={MOBILE_DRAWER_STYLE}
+              className={cn(
+                "fixed left-0 z-50 overflow-y-auto overscroll-contain touch-pan-y px-[12px] pb-[15px] lg:hidden",
+                "bg-(--primary-color) text-(--white-color)",
+                "w-[min(100vw-2rem,280px)] max-w-[calc(100vw-2rem)]"
+              )}
             >
-              <MenuIcon className="size-5" aria-hidden="true" />
-            </button>
-          </SheetTrigger>
-          <h1 className="truncate base-text-size">{identityName.toUpperCase()}</h1>
-        </div>
-        <SheetContent
-          side="left"
-          className={cn(
-            "lg:hidden p-0 px-[12px] pb-[15px]",
-            "bg-(--primary-color) text-(--white-color)",
-            "w-[min(100vw-2rem,280px)] max-w-[calc(100vw-2rem)]",
-            "top-(--nav-total-h-mobile) bottom-(--site-footer-h) h-auto",
-            "overflow-y-auto overflow-x-hidden"
-          )}
-        >
-          <SheetTitle className="sr-only">Dashboard Menu</SheetTitle>
-          <button
-            type="button"
-            className="absolute right-4 top-4 z-10"
-            onClick={() => setIsSidebarOpen(false)}
-            aria-label="Close menu"
-          >
-            <CrossRotatedMobile />
-          </button>
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-[15px]">
-            {isMod && (
-              <div className="shrink-0">
-                <ModifyingProfileSection
-                  targetParticipantName={targetParticipantName}
-                  targetParticipantSlug={targetParticipantSlug}
-                  targetUserId={targetUserId}
-                />
+              <button
+                type="button"
+                className="absolute right-4 top-4 z-10"
+                onClick={handleCloseSidebar}
+                aria-label="Close menu"
+              >
+                <CrossRotatedMobile />
+              </button>
+              <div className="pt-[15px]">
+                {isMod && (
+                  <ModifyingProfileSection
+                    targetParticipantName={targetParticipantName}
+                    targetParticipantSlug={targetParticipantSlug}
+                    targetUserId={targetUserId}
+                  />
+                )}
+                <SidebarContent />
               </div>
-            )}
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-              <SidebarContent />
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
+            </aside>
+          </>,
+          document.body
+        )}
 
       <aside className="hidden bg-(--primary-color) lg:flex lg:h-full lg:min-h-0 lg:max-h-full lg:w-[300px] lg:shrink-0 lg:flex-col lg:overflow-y-auto lg:border-r-2 lg:border-(--black-color) scrollbar scrollbar-thumb-white scrollbar-track-white/10 px-[12px]">
         <h1 className="pt-[15px] text-3xl text-(--white-color)">

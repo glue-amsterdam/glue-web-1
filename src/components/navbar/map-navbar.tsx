@@ -112,11 +112,12 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     mapPageStore?.filteredRoutesForList ??
     filterMapRoutes(initialRoutes, filters.q);
   const searchQuery = filters.q.trim();
+  const canShowRoutesInSearch = Boolean(user);
   const showSearchResults =
     !isLargeScreen &&
     searchQuery.length > 0 &&
     ((mapPageStore?.searchFilteredLocations?.length ?? 0) > 0 ||
-      filteredRoutesForList.length > 0);
+      (canShowRoutesInSearch && filteredRoutesForList.length > 0));
 
   const handleSearchChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -409,7 +410,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
           showSearchResults ? (
             <MapSearchResults
               locations={mapPageStore?.searchFilteredLocations ?? []}
-              routes={filteredRoutesForList}
+              routes={canShowRoutesInSearch ? filteredRoutesForList : []}
               onExhibitorSelect={handleSearchExhibitorSelect}
               onRouteSelect={handleSearchRouteSelect}
             />

@@ -28,7 +28,7 @@ const resetPasswordSchema = z.object({
 type LoginFieldName = keyof z.infer<typeof loginSchema>;
 type ResetFieldName = keyof z.infer<typeof resetPasswordSchema>;
 
-const formWrapperClassName = "pt-[160px] lg:pt-[100px] w-full lg:max-w-[508px] lg:mx-auto";
+const formWrapperClassName = "pt-[100px] w-full lg:max-w-[508px] lg:mx-auto";
 
 const PageLoginForm = () => {
   const router = useRouter();

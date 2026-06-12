@@ -1,6 +1,7 @@
 "use client";
 
 import { MAP_CATEGORY_FILTER_OPTIONS } from "@/lib/map/map-category-filter-options";
+import { useAuth } from "@/context/AuthContext";
 import { useMapFiltersFromUrl } from "@/hooks/useMapFiltersFromUrl";
 import {
   type MapFilterId,
@@ -31,6 +32,7 @@ export const MapFilterPanelContent = ({
 }: MapFilterPanelContentProps) => {
   const mapPageStore = useMapPage();
   const filterPanelStore = useMapFilterPanel();
+  const { user } = useAuth();
   const { filters } = useMapFiltersFromUrl();
 
   if (!filterPanelStore) return null;
@@ -47,6 +49,7 @@ export const MapFilterPanelContent = ({
 
     const searchQuery = filters.q.trim();
     const showRoutesInSearch =
+      Boolean(user) &&
       variant === "sidebar" &&
       searchQuery.length > 0 &&
       mapPageStore.filteredRoutesForList.length > 0;
@@ -94,6 +97,7 @@ export const MapFilterPanelContent = ({
         variant={variant}
         className={className}
         onRouteSelected={onRouteSelected}
+        groupByZone
       />
     );
   }

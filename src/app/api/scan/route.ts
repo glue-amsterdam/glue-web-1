@@ -1,4 +1,8 @@
-import { normalizeScannedJwt, verifyCheckInJwt } from "@/lib/checkin-jwt";
+import { getHubHostContext } from "@/lib/hubs/get-hub-host-context";
+import { enforceScanDayGuard } from "@/lib/scan/enforce-scan-day-guard";
+import { isEventScanAllowed } from "@/lib/scan/is-event-scan-allowed";
+import { resolveVisitorFromToken } from "@/lib/scan/resolve-visitor-from-token";
+import { scanDebug } from "@/lib/scan/scan-debug";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
@@ -7,21 +11,10 @@ import { z } from "zod";
 /** `jsonwebtoken` requires Node; Edge can fail verification silently or throw oddly. */
 export const runtime = "nodejs";
 
-/** Set `DATA_DEBUG=true` in `.env.local` to log scan flow (no JWT body / secrets). */
-const isScanDebug =
-  process.env.DATA_DEBUG === "true" || process.env.DATA_DEBUG === "1";
-
-const scanDebug = (step: string, meta?: Record<string, unknown>) => {
-  if (!isScanDebug) return;
-  console.log(
-    `[api/scan] ${step}`,
-    meta && Object.keys(meta).length > 0 ? JSON.stringify(meta) : "",
-  );
-};
-
 const scanSchema = z.object({
   token: z.string().min(1),
   event_id: z.string().uuid(),
+  time_zone: z.string().optional(),
 });
 
 const json400 = (
@@ -29,12 +22,12 @@ const json400 = (
   code: string,
   debugMeta?: Record<string, unknown>,
 ) => {
-  scanDebug(`400:${code}`, debugMeta);
+  scanDebug("api/scan", `400:${code}`, debugMeta);
   return NextResponse.json({ error, code }, { status: 400 });
 };
 
 export async function POST(request: Request) {
-  scanDebug("request_received");
+  scanDebug("api/scan", "request_received");
 
   let json: unknown;
   try {
@@ -50,43 +43,22 @@ export async function POST(request: Request) {
     });
   }
 
-  const rawToken = parsedBody.data.token;
-  const normalizedToken = normalizeScannedJwt(rawToken);
-  const tokenParts = normalizedToken.split(".");
-
-  scanDebug("token_normalized", {
-    rawLen: rawToken.length,
-    normalizedLen: normalizedToken.length,
-    partCount: tokenParts.length,
-    partLengths: tokenParts.slice(0, 3).map((p) => p.length),
-  });
-
-  if (!normalizedToken.includes(".") || tokenParts.length < 3) {
-    return json400(
-      "Could not read QR token. Try again closer to the code.",
-      "invalid_qr_shape",
-      {
-        partCount: tokenParts.length,
-      },
-    );
-  }
-
-  const { event_id } = parsedBody.data;
+  const { token: rawToken, event_id, time_zone } = parsedBody.data;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    scanDebug("401:unauthorized", { event_id });
+    scanDebug("api/scan", "401:unauthorized", { event_id });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  scanDebug("auth_ok", { userId: user.id, event_id });
+  scanDebug("api/scan", "auth_ok", { userId: user.id, event_id });
 
   const { data: eventData, error: eventError } = await supabase
     .from("events")
-    .select("id, organizer_id, co_organizers")
+    .select("id, organizer_id, co_organizers, location_id, dayId")
     .eq("id", event_id)
     .maybeSingle();
 
@@ -97,86 +69,54 @@ export async function POST(request: Request) {
     });
   }
 
-  const coOrganizers = Array.isArray(eventData.co_organizers)
-    ? eventData.co_organizers
-    : [];
-  const isAllowedOrganizer =
-    eventData.organizer_id === user.id || coOrganizers.includes(user.id);
+  const hubHost = await getHubHostContext(supabase, user.id);
+  const allowed = isEventScanAllowed(
+    user.id,
+    {
+      organizer_id: eventData.organizer_id as string,
+      co_organizers: eventData.co_organizers as string[] | null,
+      location_id: eventData.location_id as string,
+    },
+    hubHost.hostedLocationIds,
+  );
 
-  scanDebug("event_permissions", {
+  scanDebug("api/scan", "event_permissions", {
     organizer_id: eventData.organizer_id,
-    co_organizers_count: coOrganizers.length,
-    isAllowedOrganizer,
+    isAllowed: allowed,
+    isHubHost: hubHost.isHubHost,
   });
 
-  if (!isAllowedOrganizer) {
-    scanDebug("403:forbidden", { userId: user.id, event_id });
+  if (!allowed) {
+    scanDebug("api/scan", "403:forbidden", { userId: user.id, event_id });
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  let claim;
-  try {
-    claim = verifyCheckInJwt(normalizedToken);
-    scanDebug("jwt_ok", { claimKind: claim.kind });
-  } catch (jwtErr) {
-    const name = jwtErr instanceof Error ? jwtErr.name : "unknown";
-    const message = jwtErr instanceof Error ? jwtErr.message : String(jwtErr);
-    scanDebug("jwt_verify_throw", { name, message });
-    return json400(
-      "QR expired or invalid. Ask the visitor to refresh their QR page and try again.",
-      "invalid_jwt",
-      { jwtErrorName: name },
-    );
+  const dayGuardResponse = await enforceScanDayGuard(
+    supabase,
+    eventData.dayId as string,
+    time_zone,
+  );
+  if (dayGuardResponse) {
+    return dayGuardResponse;
   }
 
   const adminClient = await createAdminClient();
+  const visitorResult = await resolveVisitorFromToken(adminClient, rawToken);
 
-  const visitorQuery =
-    claim.kind === "visitor_id"
-      ? adminClient
-          .from("visitor_data")
-          .select("id")
-          .eq("id", claim.visitorId)
-          .maybeSingle()
-      : adminClient
-          .from("visitor_data")
-          .select("id")
-          .eq("visitor_token", claim.visitorToken)
-          .maybeSingle();
-
-  const { data: visitorData, error: visitorError } = await visitorQuery;
-
-  if (visitorError) {
-    console.error("POST /api/scan visitor lookup:", visitorError);
-    return json400("Could not verify visitor.", "visitor_lookup_error", {
-      supabaseCode: visitorError.code,
-      supabaseMessage: visitorError.message,
-    });
+  if ("status" in visitorResult) {
+    return json400(visitorResult.error, visitorResult.code, visitorResult.debugMeta);
   }
 
-  if (!visitorData) {
-    return json400(
-      "Visitor not found. They may need a new QR (e.g. after logging in again).",
-      "visitor_not_found",
-      {
-        claimKind: claim.kind,
-        visitorId: claim.kind === "visitor_id" ? claim.visitorId : undefined,
-      },
-    );
-  }
+  scanDebug("api/scan", "visitor_found", { visitor_id: visitorResult.visitorId });
 
-  scanDebug("visitor_found", { visitor_id: visitorData.id });
-
-  const { error: insertError } = await adminClient
-    .from("event_attendance")
-    .insert({
-      visitor_id: visitorData.id,
-      event_id,
-    });
+  const { error: insertError } = await adminClient.from("event_attendance").insert({
+    visitor_id: visitorResult.visitorId,
+    event_id,
+  });
 
   if (insertError) {
     if (insertError.code === "23505") {
-      scanDebug("409:duplicate_attendance");
+      scanDebug("api/scan", "409:duplicate_attendance");
       return NextResponse.json(
         { error: "Visitor already checked in" },
         { status: 409 },
@@ -184,7 +124,7 @@ export async function POST(request: Request) {
     }
 
     console.error("Error inserting event attendance:", insertError);
-    scanDebug("500:insert_error", {
+    scanDebug("api/scan", "500:insert_error", {
       code: insertError.code,
       message: insertError.message,
     });
@@ -194,6 +134,9 @@ export async function POST(request: Request) {
     );
   }
 
-  scanDebug("200:success", { visitor_id: visitorData.id, event_id });
+  scanDebug("api/scan", "200:success", {
+    visitor_id: visitorResult.visitorId,
+    event_id,
+  });
   return NextResponse.json({ success: true }, { status: 200 });
 }

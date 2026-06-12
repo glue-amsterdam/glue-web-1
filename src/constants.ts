@@ -26,6 +26,7 @@ import {
   Speech,
   Coffee,
   Hash,
+  QrCode,
 } from "lucide-react";
 
 export const USER_DASHBOARD_SECTIONS = [
@@ -48,6 +49,11 @@ export const USER_DASHBOARD_SECTIONS = [
     href: `events`,
     label: "Events",
     icon: Calendar,
+  },
+  {
+    href: `qr-scan`,
+    label: "QR Scan",
+    icon: QrCode,
   },
 ];
 
