@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -8,7 +8,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import AccordionPlusCrossIcon from "@/components/icons/accordion-plus-cross-icon";
-import { useMediaQuery } from "@/hooks/userMediaQuery";
 import { cn } from "@/lib/utils";
 import { ABOUT_ANCHORS, type TeamBlock, type TeamMember } from "@/schemas/aboutPageSchema";
 import AboutBlockImage from "./about-block-image";
@@ -101,12 +100,7 @@ const TeamMemberTrigger = ({ member, memberId, iconAlign }: TeamMemberTriggerPro
 };
 
 const TeamBlockClient = ({ block, sanitized }: Props) => {
-  const isLg = useMediaQuery("(min-width: 1024px)");
-  const [mobileOpenIds, setMobileOpenIds] = useState<string[]>([]);
-  const allMemberIds = useMemo(
-    () => block.members.map((member, index) => getMemberId(member, index)),
-    [block.members]
-  );
+  const [openIds, setOpenIds] = useState<string[]>([]);
 
   if (!block.is_visible) {
     return null;
@@ -134,8 +128,8 @@ const TeamBlockClient = ({ block, sanitized }: Props) => {
           type="multiple"
           className="w-full pt-[40px] lg:pt-[60px] lg:grid lg:grid-cols-2 lg:gap-x-[30px] lg:gap-y-[100px]"
           aria-label={block.title}
-          value={isLg ? allMemberIds : mobileOpenIds}
-          onValueChange={isLg ? undefined : setMobileOpenIds}
+          value={openIds}
+          onValueChange={setOpenIds}
         >
           {block.members.map((member, index) => {
             const memberId = getMemberId(member, index);

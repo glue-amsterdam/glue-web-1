@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -52,7 +53,7 @@ const FaqItemTrigger = ({
     <div className="flex w-full flex-1 flex-col">
       <div className="flex w-full items-start justify-between gap-3">
         <span
-          id={`${itemId}-mobile-question`}
+          id={`${itemId}-question`}
           className="base-text-size text-left"
           role="heading"
           aria-level={3}
@@ -65,26 +66,9 @@ const FaqItemTrigger = ({
   </AccordionTrigger>
 );
 
-const FaqGridItem = ({
-  item,
-  itemId,
-  sanitizedAnswer,
-}: {
-  item: FaqItem;
-  itemId: string;
-  sanitizedAnswer: string;
-}) => (
-  <article className="base-text-size">
-    <h3 id={`${itemId}-desktop-question`} className="base-text-size">
-      {item.question.toUpperCase()}
-    </h3>
-    <div className="pt-[30px]" aria-labelledby={`${itemId}-desktop-question`}>
-      <FaqItemContent sanitizedAnswer={sanitizedAnswer} />
-    </div>
-  </article>
-);
-
 const FaqBlockClient = ({ block, sanitized }: Props) => {
+  const [openIds, setOpenIds] = useState<string[]>([]);
+
   if (!block.is_visible) {
     return null;
   }
@@ -102,8 +86,10 @@ const FaqBlockClient = ({ block, sanitized }: Props) => {
       ) : null}
       <Accordion
         type="multiple"
-        className="w-full pt-[40px] lg:hidden"
+        className="w-full pt-[40px] lg:grid lg:grid-cols-2 lg:gap-x-[30px] lg:gap-y-[60px]"
         aria-label={block.title}
+        value={openIds}
+        onValueChange={setOpenIds}
       >
         {block.items.map((item, index) => {
           const itemId = getFaqItemId(item, index);
@@ -113,26 +99,14 @@ const FaqBlockClient = ({ block, sanitized }: Props) => {
               <FaqItemTrigger item={item} itemId={itemId} />
               <AccordionContent
                 className="pt-[30px]"
-                aria-labelledby={`${itemId}-mobile-question`}>
+                aria-labelledby={`${itemId}-question`}
+              >
                 <FaqItemContent sanitizedAnswer={sanitized.answers[index] ?? ""} />
               </AccordionContent>
             </AccordionItem>
           );
         })}
       </Accordion>
-      <div className="hidden w-full pt-[40px] lg:grid lg:grid-cols-2 lg:gap-x-[30px] lg:gap-y-[60px]">
-        {block.items.map((item, index) => {
-          const itemId = getFaqItemId(item, index);
-          return (
-            <FaqGridItem
-              key={itemId}
-              item={item}
-              itemId={itemId}
-              sanitizedAnswer={sanitized.answers[index] ?? ""}
-            />
-          );
-        })}
-      </div>
     </section>
   );
 };
