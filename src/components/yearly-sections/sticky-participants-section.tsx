@@ -36,7 +36,7 @@ const StickyParticipantsSection = ({
 
   return (
     <section id={sectionId} className="main-padding">
-      <h2 className="title-text border-t md:border-t-2 border-[var(--black-color)] pt-[15px] md:pt-[30px]">
+      <h2 className="title-text border-t md:border-t-2 border-(--black-color) pt-[15px] md:pt-[30px]">
         {title.toUpperCase()}
       </h2>
       <article className="pt-[40px] md:pt-[60px] w-full max-w-[1045px] mx-auto">

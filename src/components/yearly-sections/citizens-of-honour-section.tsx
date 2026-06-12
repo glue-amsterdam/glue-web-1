@@ -31,7 +31,7 @@ const CitizensOfHonourSection = ({
 
   return (
     <section id={sectionId} className={cn(hasPadding ? "main-padding" : "mini-padding")}>
-      <HeadingTag className="title-text border-t lg:border-t-2 border-[var(--black-color)] pt-[15px] lg:pt-[30px]">
+      <HeadingTag className="title-text border-t lg:border-t-2 border-(--black-color) pt-[15px] lg:pt-[30px]">
         {title.toUpperCase()}
       </HeadingTag>
       <CreativeCitizensDisplay
