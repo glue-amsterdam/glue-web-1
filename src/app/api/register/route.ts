@@ -42,7 +42,6 @@ export async function POST(request: Request) {
       social_media: validatedData.social_media,
       visible_emails: validatedData.visible_emails,
       visible_websites: validatedData.visible_websites,
-      is_mod: false,
     };
 
     // Add glue_communication_email if it exists in validatedData (safe access)

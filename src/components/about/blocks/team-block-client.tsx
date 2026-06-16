@@ -41,7 +41,7 @@ const TeamMemberContent = ({
 }) => (
   <div className="base-text-size space-y-3">
     {(member.email || member.phone) && (
-      <address className="not-italic space-y-1">
+      <address className="not-italic space-y-1 flex flex-col">
         {member.email ? (
           <a
             href={`mailto:${member.email.trim()}`}

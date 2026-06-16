@@ -71,11 +71,9 @@ export async function PUT(
       );
     }
 
-    const { is_mod: _isMod, ...userInfoPayload } = validatedData;
-
     const { data, error } = await supabase
       .from("user_info")
-      .update(userInfoPayload)
+      .update(validatedData)
       .eq("user_id", userId)
       .select()
       .single();

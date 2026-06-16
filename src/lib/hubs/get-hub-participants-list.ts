@@ -16,7 +16,6 @@ const mapParticipantToUserInfo = (row: ParticipantDetailsRow): UserInfo => ({
   visible_emails: row.visible_emails,
   plan_type: row.plan_type ?? "participant",
   plan_id: row.plan_id ?? "",
-  is_mod: false,
 });
 
 export const getHubParticipantsList = async (): Promise<UserInfo[]> => {
