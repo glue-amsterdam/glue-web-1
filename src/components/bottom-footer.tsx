@@ -26,7 +26,7 @@ const navLinks: FooterLink[] = [
 ];
 const fixedHelpLinks: FooterLink[] = [
   { title: "Contact", link: "/contact" },
-  { title: "Terms & Conditions", link: "/terms-conditions" },
+  { title: "Terms & Conditions", link: "/terms-and-conditions" },
   { title: "Privacy Policy", link: "/privacy-policy" },
   { title: "Imprint", link: "/imprint" },
 ];
