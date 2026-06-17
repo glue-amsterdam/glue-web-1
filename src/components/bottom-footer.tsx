@@ -3,6 +3,7 @@
 import Link from "next/link";
 import BigButton from "./big-button";
 import { usePathname } from "next/navigation";
+import type { FooterAboutLink } from "@/lib/about/build-navbar";
 import type { LinkItem } from "@/schemas/mainSchema";
 
 type FooterLink = {
@@ -12,6 +13,7 @@ type FooterLink = {
 
 type BottomFooterProps = {
   mainLinks: LinkItem[];
+  aboutLinks: FooterAboutLink[];
 };
 
 const navLinks: FooterLink[] = [
@@ -22,10 +24,7 @@ const navLinks: FooterLink[] = [
   { title: "Map", link: "/map" },
   { title: "Program", link: "/program" },
 ];
-const helpLinks: FooterLink[] = [
-  { title: "FAQ", link: "/faq" },
-  { title: "Press & Media", link: "/press-media" },
-  { title: "Archive", link: "/archive" },
+const fixedHelpLinks: FooterLink[] = [
   { title: "Contact", link: "/contact" },
   { title: "Terms & Conditions", link: "/terms-conditions" },
   { title: "Privacy Policy", link: "/privacy-policy" },
@@ -55,9 +54,10 @@ const buildSocialLinks = (mainLinks: LinkItem[]): FooterLink[] =>
       link,
     }));
 
-function BottomFooter({ mainLinks }: BottomFooterProps) {
+function BottomFooter({ mainLinks, aboutLinks }: BottomFooterProps) {
   const pathname = usePathname();
   const socialLinks = buildSocialLinks(mainLinks);
+  const helpLinks = [...aboutLinks, ...fixedHelpLinks];
   const isHome = pathname === "/";
 
   const mobileColumns = [

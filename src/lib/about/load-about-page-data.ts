@@ -8,7 +8,8 @@ import {
   getCachedAboutTeamBlock,
   getCachedArchiveYear,
 } from "./cached-about-data";
-import { buildNavbar } from "./build-navbar";
+import { buildFooterAboutLinks, buildNavbar } from "./build-navbar";
+import type { FooterAboutLink } from "./build-navbar";
 import { ABOUT_BLOCK_IDS } from "@/schemas/aboutPageSchema";
 import {
   type AboutBlock,
@@ -129,4 +130,26 @@ export const loadAboutPageData = async (): Promise<AboutPageData> => {
   };
 
   return aboutPageSchema.parse(pageData);
+};
+
+export const loadFooterAboutLinks = async (): Promise<FooterAboutLink[]> => {
+  const [faqBlock, pressBlock, archiveBlock] = await Promise.all([
+    loadAboutSection(
+      ABOUT_BLOCK_IDS.FAQ,
+      getCachedAboutFaqBlock,
+      getFixtureBlock(ABOUT_BLOCK_IDS.FAQ)
+    ),
+    loadAboutSection(
+      ABOUT_BLOCK_IDS.PRESS,
+      getCachedAboutPressBlock,
+      getFixtureBlock(ABOUT_BLOCK_IDS.PRESS)
+    ),
+    loadAboutSection(
+      ABOUT_BLOCK_IDS.ARCHIVE,
+      getCachedAboutArchiveBlock,
+      getFixtureBlock(ABOUT_BLOCK_IDS.ARCHIVE)
+    ),
+  ]);
+
+  return buildFooterAboutLinks([faqBlock, pressBlock, archiveBlock]);
 };

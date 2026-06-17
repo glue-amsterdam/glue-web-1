@@ -72,3 +72,38 @@ export const buildNavbar = (blocks: AboutBlock[]): AboutNavLink[] => {
     };
   }).filter((link) => link.is_visible);
 };
+
+const FOOTER_ABOUT_BLOCK_IDS = [
+  ABOUT_BLOCK_IDS.FAQ,
+  ABOUT_BLOCK_IDS.PRESS,
+  ABOUT_BLOCK_IDS.ARCHIVE,
+] as const;
+
+export type FooterAboutLink = {
+  title: string;
+  link: string;
+};
+
+export const buildFooterAboutLinks = (
+  blocks: AboutBlock[]
+): FooterAboutLink[] => {
+  const configByBlockId = new Map(
+    BLOCK_NAV_CONFIG.map((config) => [config.blockId, config])
+  );
+
+  return FOOTER_ABOUT_BLOCK_IDS.flatMap((blockId) => {
+    const config = configByBlockId.get(blockId);
+    if (!config || !config.isVisible(blocks)) {
+      return [];
+    }
+
+    const block = blocks.find((b) => b.id === blockId);
+
+    return [
+      {
+        title: block ? config.label(block) : blockId,
+        link: `/about${config.href}`,
+      },
+    ];
+  });
+};

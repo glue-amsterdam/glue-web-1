@@ -4,10 +4,13 @@ import type {
   ExhibitorsGroupedResponse,
   ExhibitorType,
 } from "./exhibitor-types";
+import {
+  getStickyParticipantIds,
+  getTourStatus,
+  isParticipantEligibleForExhibitorsList,
+} from "./exhibitor-visibility";
 import { getParticipantDisplayName } from "./get-participant-display-name";
 import { getParticipantPlaceholderUrl } from "./get-participant-placeholder-url";
-
-type TourStatus = "new" | "older";
 
 type ParticipantRow = {
   user_id: string;
@@ -58,21 +61,6 @@ const getImageUrl = (
   placeholderUrl: string
 ): string => {
   return imageMap.get(userId) ?? placeholderUrl;
-};
-
-const isParticipantEligible = (
-  participant: ParticipantRow,
-  stickyIds: Set<string>,
-  tourStatus: TourStatus
-): boolean => {
-  if (participant.status !== "accepted") return false;
-
-  if (stickyIds.has(participant.user_id)) return true;
-
-  if (tourStatus === "new") return participant.is_active;
-  if (tourStatus === "older") return participant.was_active_last_year;
-
-  return false;
 };
 
 const getEligibleHubMemberIds = (
@@ -133,24 +121,15 @@ const buildHubItem = (
 export const getExhibitors = async (
   supabase: SupabaseClient
 ): Promise<ExhibitorsGroupedResponse> => {
-  const { data: tourStatus, error: tourStatusError } = await supabase
-    .from("tour_status")
-    .select("current_tour_status")
-    .single();
-
-  if (tourStatusError) {
-    console.error("Error fetching tour status:", tourStatusError);
-  }
-
-  const currentTourStatus: TourStatus =
-    tourStatus?.current_tour_status === "older" ? "older" : "new";
-
   const [
+    currentTourStatus,
+    stickyIds,
     participantsResult,
-    stickyResult,
     hubsResult,
     imagesResult,
   ] = await Promise.all([
+    getTourStatus(supabase),
+    getStickyParticipantIds(supabase),
     supabase
       .from("participant_details")
       .select(
@@ -166,9 +145,6 @@ export const getExhibitors = async (
       `
       )
       .eq("status", "accepted"),
-    supabase
-      .from("sticky_group_participants")
-      .select("participant_user_id"),
     supabase.from("hubs").select(
       `
         id,
@@ -187,24 +163,21 @@ export const getExhibitors = async (
   ]);
 
   if (participantsResult.error) throw participantsResult.error;
-  if (stickyResult.error) {
-    console.error("Error fetching sticky participants:", stickyResult.error);
-  }
   if (hubsResult.error) throw hubsResult.error;
   if (imagesResult.error) {
     console.error("Error fetching participant images:", imagesResult.error);
   }
-
-  const stickyIds = new Set<string>(
-    (stickyResult.data ?? []).map((row) => row.participant_user_id)
-  );
 
   const imageMap = buildImageMap((imagesResult.data as ImageRow[]) ?? []);
   const placeholderUrl = getParticipantPlaceholderUrl(supabase);
 
   const participants = (participantsResult.data as ParticipantRow[]) ?? [];
   const eligibleParticipants = participants.filter((participant) =>
-    isParticipantEligible(participant, stickyIds, currentTourStatus)
+    isParticipantEligibleForExhibitorsList(
+      participant,
+      stickyIds,
+      currentTourStatus
+    )
   );
 
   const eligibleParticipantIds = new Set(

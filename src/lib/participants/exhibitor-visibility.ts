@@ -75,12 +75,10 @@ type ParticipantEligibilityRow = ParticipantVisibilityRow & {
 /** Eligibility for exhibitors list and hub detail (get-exhibitors rules). */
 export const isParticipantEligibleForExhibitorsList = (
   participant: ParticipantEligibilityRow,
-  stickyIds: Set<string>,
+  _stickyIds: Set<string>,
   tourStatus: TourStatus
 ): boolean => {
   if (participant.status !== "accepted") return false;
-
-  if (stickyIds.has(participant.user_id)) return true;
 
   if (tourStatus === "new") return participant.is_active;
   if (tourStatus === "older") return participant.was_active_last_year;
