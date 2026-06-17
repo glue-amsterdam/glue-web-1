@@ -54,7 +54,6 @@
     "exceljs": "^4.4.0",
     "framer-motion": "^12.40.0",
     "html5-qrcode": "^2.3.8",
-    "isomorphic-dompurify": "^3.16.0",
     "jsonwebtoken": "^9.0.3",
     "jspdf": "^4.2.1",
     "keyv": "^5.6.0",
@@ -73,6 +72,7 @@
     "react-map-gl": "^8.1.1",
     "react-responsive": "^10.0.1",
     "resend": "^6.12.4",
+    "sanitize-html": "^2.17.1",
     "standardwebhooks": "^1.0.0",
     "swr": "^2.4.1",
     "tailwind-merge": "^3.6.0",
@@ -84,7 +84,11 @@
     "zustand": "^5.0.14"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["core-js", "sharp", "unrs-resolver"]
+    "onlyBuiltDependencies": [
+      "core-js",
+      "sharp",
+      "unrs-resolver"
+    ]
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
@@ -92,6 +96,7 @@
     "@types/react": "^19.2.15",
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-dom": "^19.2.3",
+    "@types/sanitize-html": "^2.16.1",
     "eslint": "^10.4.1",
     "eslint-config-next": "^16.2.6",
     "postcss": "^8.5.15",
