@@ -113,16 +113,20 @@ const optionalHrefSchema = z
     { message: "Must be a valid URL or internal path" }
   );
 
-export const homeTextItemSchema = z.object({
-  id: z.string().uuid(),
-  label: z.string().min(1, "Text is required"),
+const homeTextItemFieldsSchema = z.object({
+  label: z.string(),
   color: z.string().nullable().optional(),
   href: optionalHrefSchema,
   placement: homeTextPlacementSchema,
   sort_order: z.number().int().nonnegative(),
 });
 
-export const homeTextItemFormSchema = homeTextItemSchema.omit({ id: true }).extend({
+export const homeTextItemSchema = homeTextItemFieldsSchema.extend({
+  id: z.string().uuid(),
+  label: z.string().min(1, "Text is required"),
+});
+
+export const homeTextItemFormSchema = homeTextItemFieldsSchema.extend({
   id: z.string().uuid().optional(),
 });
 
@@ -132,6 +136,14 @@ export const homeTextsSchema = z.object({
 
 export const homeTextsFormSchema = z.object({
   homeTexts: z.array(homeTextItemFormSchema),
+});
+
+export const homeTextsSaveSchema = z.object({
+  homeTexts: z.array(
+    homeTextItemFormSchema.extend({
+      label: z.string().trim().min(1, "Text is required"),
+    })
+  ),
 });
 
 export type HomeTextPlacement = z.infer<typeof homeTextPlacementSchema>;

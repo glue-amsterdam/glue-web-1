@@ -92,13 +92,13 @@ export default function AboutTeamBlockForm({ initialData }: Props) {
     defaultValues: initialData
       ? mapInitialDataToForm(initialData)
       : {
-          title: "Team",
-          description: "",
-          is_visible: false,
-          image_src: "",
-          image_alt: "",
-          members: [],
-        },
+        title: "Team",
+        description: "",
+        is_visible: false,
+        image_src: "",
+        image_alt: "",
+        members: [],
+      },
   });
 
   const { fields, append, remove } = useFieldArray({
