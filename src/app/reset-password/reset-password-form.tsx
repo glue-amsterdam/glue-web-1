@@ -1,26 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
+import BigButton from "@/components/big-button";
+import { ParticipateFormField } from "@/components/participate/participate-form-field";
+import { getResetPasswordErrorMessage } from "@/lib/auth/reset-password-error-message";
 import { createClient } from "@/utils/supabase/client";
 
 const resetPasswordSchema = z
   .object({
-    email: z.string().email({ message: "Invalid email address" }),
-    token: z.string().length(6, { message: "Token must be 6 digits" }),
+    email: z.string().trim().email({ message: "Invalid email address" }),
+    token: z.string(),
     password: z
       .string()
       .min(8, { message: "Password must be at least 8 characters" }),
@@ -32,140 +24,214 @@ const resetPasswordSchema = z
   });
 
 type FormData = z.infer<typeof resetPasswordSchema>;
+type FieldName = keyof FormData;
+
+const defaultValues: FormData = {
+  email: "",
+  token: "",
+  password: "",
+  confirmPassword: "",
+};
+
+const formWrapperClassName = "pt-[100px] w-full lg:max-w-[508px] lg:mx-auto";
+
+const mapZodFieldErrors = (
+  flat: Partial<Record<string, string[] | undefined>>,
+): Partial<Record<FieldName, string>> => {
+  const next: Partial<Record<FieldName, string>> = {};
+  for (const key of Object.keys(flat) as FieldName[]) {
+    const message = flat[key]?.[0];
+    if (message) next[key] = message;
+  }
+  return next;
+};
 
 export default function ResetPasswordForm() {
+  const [values, setValues] = useState<FormData>(defaultValues);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<FieldName, string>>
+  >({});
+  const [isInitializing, setIsInitializing] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecoveryVerified, setIsRecoveryVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(resetPasswordSchema),
-    defaultValues: {
-      email: "",
-      token: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
-
   useEffect(() => {
-    const token = searchParams.get("token");
-    if (token) {
-      form.setValue("token", token);
-    }
-  }, [searchParams, form]);
+    let cancelled = false;
 
-  const onSubmit = async (data: FormData) => {
+    const init = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (cancelled) return;
+
+      if (session?.user?.email) {
+        setIsRecoveryVerified(true);
+        setValues((prev) => ({ ...prev, email: session.user.email ?? "" }));
+        setIsInitializing(false);
+        return;
+      }
+
+      const token = searchParams.get("token");
+      if (token) {
+        setValues((prev) => ({ ...prev, token }));
+      }
+
+      setIsInitializing(false);
+    };
+
+    void init();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, supabase.auth]);
+
+  const setField = (key: FieldName) => (value: string) => {
+    setValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setIsLoading(true);
     setError(null);
+    setSuccessMessage(null);
+    setFieldErrors({});
+
+    let recoveryVerified = isRecoveryVerified;
 
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        email: data.email,
-        token: data.token,
-        type: "recovery",
-      });
+      if (!recoveryVerified) {
+        if (values.token.trim().length !== 6) {
+          setFieldErrors({ token: "Token must be 6 digits" });
+          return;
+        }
 
-      if (error) throw error;
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          email: values.email,
+          token: values.token.trim(),
+          type: "recovery",
+        });
+
+        if (verifyError) throw verifyError;
+
+        recoveryVerified = true;
+        setIsRecoveryVerified(true);
+      }
+
+      const parsed = resetPasswordSchema.safeParse(values);
+      if (!parsed.success) {
+        setFieldErrors(mapZodFieldErrors(parsed.error.flatten().fieldErrors));
+        return;
+      }
 
       const { error: updateError } = await supabase.auth.updateUser({
-        password: data.password,
+        password: parsed.data.password,
       });
 
       if (updateError) throw updateError;
 
-      alert("Password updated successfully");
+      setSuccessMessage("Password updated successfully. Redirecting…");
       router.push("/");
-    } catch (error) {
-      console.error("Error resetting password:", error);
+    } catch (submitError) {
+      console.error("Error resetting password:", submitError);
       setError(
-        "Failed to reset password. Please check your email and token, then try again.",
+        getResetPasswordErrorMessage(submitError, {
+          isRecoveryVerified: recoveryVerified,
+        }),
       );
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-xl">
-      {error && (
-        <div className="text-red-500 text-sm bg-red-100 p-2 rounded">
-          {error}
+  if (isInitializing) {
+    return (
+      <div
+        className={formWrapperClassName}
+        aria-busy="true"
+        aria-live="polite"
+      >
+        <div className="flex justify-center items-center min-h-[200px] w-full">
+          <LoadingSpinner />
         </div>
-      )}
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="Enter your email"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+        <p className="sr-only">Loading reset password form…</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={formWrapperClassName}>
+      {successMessage ? (
+        <p role="status" className="base-text-size">
+          {successMessage}
+        </p>
+      ) : error ? (
+        <p role="alert" className="base-text-size text-(--primary-color)">
+          {error}
+        </p>
+      ) : null}
+
+      {isRecoveryVerified && !successMessage ? (
+        <p className="base-text-size lg:max-w-(--paragraph-max-width) pt-[40px]">
+          Reset link verified. Enter a new password below.
+        </p>
+      ) : null}
+
+      <form
+        id="reset-password-form"
+        onSubmit={handleSubmit}
+        className="pt-[40px] flex flex-col gap-[15px] md:gap-[30px]"
+        noValidate
+      >
+        <ParticipateFormField
+          label="Email Address"
+          name="email"
+          type="email"
+          required
+          value={values.email}
+          onChange={setField("email")}
+          error={fieldErrors.email}
+          autoComplete="email"
+          disabled={isRecoveryVerified}
+        />
+
+        <ParticipateFormField
+          label="New Password"
+          name="password"
+          type="password"
+          required
+          value={values.password}
+          onChange={setField("password")}
+          error={fieldErrors.password}
+          autoComplete="new-password"
+        />
+
+        <ParticipateFormField
+          label="Confirm New Password"
+          name="confirmPassword"
+          type="password"
+          required
+          value={values.confirmPassword}
+          onChange={setField("confirmPassword")}
+          error={fieldErrors.confirmPassword}
+          autoComplete="new-password"
+        />
+
+        <div className="flex justify-end pt-[15px] pb-[5px]">
+          <BigButton
+            as="submit"
+            label={isLoading ? "resetting…" : "reset password"}
+            mode="navbar"
+            disabled={isLoading}
           />
-          <FormField
-            control={form.control}
-            name="token"
-            render={({ field }) => (
-              <FormItem className="hidden">
-                <FormLabel>Reset Token</FormLabel>
-                <FormControl>
-                  <Input type="text" {...field} readOnly />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>New Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Enter new password"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm New Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Confirm new password"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Resetting..." : "Reset Password"}
-          </Button>
-        </form>
-      </Form>
+        </div>
+      </form>
     </div>
   );
 }

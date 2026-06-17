@@ -1,5 +1,6 @@
-import { createClient } from "@/utils/supabase/server";
-import { NextResponse } from "next/server";
+import { guardParticipantProfileWrite } from "@/lib/participants/guard-participant-profile-write";
+import { getPlanMaxImagesForUser } from "@/lib/plans/get-plan-max-images-for-user";
+import { createClient } from "@/utils/supabase/server";import { NextResponse } from "next/server";
 import { z } from "zod";
 import crypto from "crypto";
 
@@ -38,14 +39,36 @@ export async function POST(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   const { userId } = await params;
+
+  const denied = await guardParticipantProfileWrite(userId);
+  if (denied) return denied;
+
   const supabase = await createClient();
 
   try {
     const body = await request.json();
     const { image_url } = imageSchema.parse(body);
 
-    const newImage = {
-      id: crypto.randomUUID(),
+    const [planMaxImages, { count, error: countError }] = await Promise.all([
+      getPlanMaxImagesForUser(userId),
+      supabase
+        .from("participant_image")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId),
+    ]);
+
+    if (countError) throw countError;
+
+    if ((count ?? 0) >= planMaxImages) {
+      return NextResponse.json(
+        {
+          error: `Your plan allows up to ${planMaxImages} profile image${planMaxImages === 1 ? "" : "s"}.`,
+        },
+        { status: 403 }
+      );
+    }
+
+    const newImage = {      id: crypto.randomUUID(),
       user_id: userId,
       image_url: image_url,
     };

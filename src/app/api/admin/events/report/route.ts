@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import {
+  collectOrganizerUserIds,
+  loadOrganizerProfiles,
+} from "@/lib/participants/load-organizer-profiles";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 
@@ -32,10 +36,7 @@ export async function GET() {
         event_day_time,
         is_last_year_event,
         event_day_out,
-        organizer:user_info!organizer_id (
-          user_id,
-          user_name
-        ),
+        organizer_id,
         location:map_info!location_id (
           id,
           formatted_address
@@ -63,37 +64,23 @@ export async function GET() {
       (eventDays || []).map((day) => [day.dayId, { label: day.label, date: day.date }])
     );
 
-    // Fetch co-organizers for all events
-    const coOrganizerPromises = (events || []).map((event) => {
-      if (!event.co_organizers || event.co_organizers.length === 0) {
-        return Promise.resolve({ data: [] });
-      }
-      return supabase
-        .from("user_info")
-        .select("user_id, user_name")
-        .in("user_id", event.co_organizers);
-    });
+    const organizerProfiles = await loadOrganizerProfiles(
+      supabase,
+      collectOrganizerUserIds(events || [])
+    );
 
-    const coOrganizerResults = await Promise.all(coOrganizerPromises);
-
-    // Utility function to handle both single item and array
-    const ensureSingle = <T,>(data: T | T[]): T | null => {
-      if (Array.isArray(data)) {
-        return data[0] || null;
-      }
-      return data || null;
-    };
-
-    // Format events for report
-    const reportData = (events || []).map((event, index) => {
+    const reportData = (events || []).map((event) => {
       // Get day information - use event_day_time if dayId doesn't exist in current days
       const dayInfo = eventDaysMap.get(event.dayId);
       const dayDate = dayInfo?.date || event.event_day_time || null;
       const dayLabel = dayInfo?.label || event.dayId || "N/A";
 
-      // Handle organizer (can be array or single object)
-      const organizer = ensureSingle(event.organizer);
-      const location = ensureSingle(event.location);
+      const organizerProfile = event.organizer_id
+        ? organizerProfiles.get(event.organizer_id)
+        : undefined;
+      const location = Array.isArray(event.location)
+        ? event.location[0] || null
+        : event.location || null;
 
       return {
         id: event.id,
@@ -106,11 +93,12 @@ export async function GET() {
           : "N/A",
         startTime: event.start_time || "N/A",
         endTime: event.end_time || "N/A",
-        organizer: organizer?.user_name || "Unknown",
+        organizer: organizerProfile?.user_name || "Unknown",
         location: location?.formatted_address || "N/A",
         coOrganizers:
-          coOrganizerResults[index]?.data
-            ?.map((co) => co.user_name)
+          (event.co_organizers ?? [])
+            .map((userId: string) => organizerProfiles.get(userId)?.user_name)
+            .filter(Boolean)
             .join(", ") || "None",
         rsvp: event.rsvp ? "Yes" : "No",
         rsvpMessage: event.rsvp_message || "",

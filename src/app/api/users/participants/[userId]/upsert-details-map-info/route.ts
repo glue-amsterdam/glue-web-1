@@ -1,3 +1,9 @@
+import { guardParticipantProfileWrite } from "@/lib/participants/guard-participant-profile-write";
+import {
+  revalidateExhibitorSlugPaths,
+  revalidateParticipantVisibilityCaches,
+} from "@/lib/participants/revalidate-participant-visibility-caches";
+import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -18,6 +24,9 @@ export async function PUT(
     return NextResponse.json({ error: "User ID is required" }, { status: 400 });
   }
 
+  const denied = await guardParticipantProfileWrite(userId);
+  if (denied) return denied;
+
   try {
     const supabase = await createClient();
     const body = await request.json();
@@ -30,7 +39,7 @@ export async function PUT(
     } catch (err) {
       if (err instanceof ZodError) {
         return NextResponse.json(
-          { error: "Invalid participantDetails", details: err.errors },
+          { error: "Invalid participantDetails", details: err.issues },
           { status: 400 }
         );
       }
@@ -41,12 +50,18 @@ export async function PUT(
     } catch (err) {
       if (err instanceof ZodError) {
         return NextResponse.json(
-          { error: "Invalid mapInfo", details: err.errors },
+          { error: "Invalid mapInfo", details: err.issues },
           { status: 400 }
         );
       }
       throw err;
     }
+
+    const { data: existingDetails } = await supabase
+      .from("participant_details")
+      .select("slug")
+      .eq("user_id", userId)
+      .maybeSingle();
 
     const { data: participantData, error: participantError } = await supabase
       .from("participant_details")
@@ -122,6 +137,12 @@ export async function PUT(
       }
     }
 
+    await revalidateParticipantVisibilityCaches(supabase);
+    revalidateExhibitorSlugPaths(
+      existingDetails?.slug,
+      (participantData as ParticipantDetails).slug
+    );
+
     return NextResponse.json({
       participantDetails: participantData,
       mapInfo: mapInfoData,
@@ -129,7 +150,7 @@ export async function PUT(
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Invalid data", details: error.errors },
+        { error: "Invalid data", details: error.issues },
         { status: 400 }
       );
     }

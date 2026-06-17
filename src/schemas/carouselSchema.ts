@@ -12,7 +12,8 @@ export const carouselSectionSchema = z.object({
   slides: z.array(imageDataSchema).max(15, "Maximum 15 slides allowed"),
 });
 
-export type CarouselSection = z.infer<typeof carouselSectionSchema>;
+export type CarouselSectionInput = z.input<typeof carouselSectionSchema>;
+export type CarouselSection = z.output<typeof carouselSectionSchema>;
 export type CarouselClientType = {
   title: string;
   description: string;

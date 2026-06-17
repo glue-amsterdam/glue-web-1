@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { useForm, useFieldArray, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PlanSchema, type PlanType } from "@/schemas/plansSchema";
+import {
+  PlanAdminInputSchema,
+  type PlanAdminInput,
+} from "@/schemas/plansSchema";
 import {
   Dialog,
   DialogContent,
@@ -17,16 +20,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Minus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface PlanAddDialogProps {
-  onSave: (newPlan: Omit<PlanType, "plan_id" | "order_by">) => void;
+  onSave: (newPlan: PlanAdminInput) => void;
   onClose: () => void;
 }
 
@@ -34,16 +30,18 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const methods = useForm<Omit<PlanType, "plan_id" | "order_by">>({
-    resolver: zodResolver(PlanSchema.omit({ plan_id: true, order_by: true })),
+  const methods = useForm<PlanAdminInput>({
+    resolver: zodResolver(PlanAdminInputSchema),
     defaultValues: {
       plan_label: "",
-      plan_currency: "",
-      currency_logo: "",
+      plan_price: 0,
+      plan_currency: "EUR",
+      currency_logo: "€",
       plan_description: "",
-      plan_items: [],
+      plan_items: [{ label: "" }],
       is_participant_enabled: true,
-      plan_type: "participant",
+      plan_max_images: 3,
+      max_events: 6,
     },
   });
 
@@ -52,20 +50,14 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
     handleSubmit,
     formState: { errors },
     control,
-    setValue,
-    watch,
   } = methods;
-
-  console.log(errors);
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "plan_items",
   });
 
-  const planType = watch("plan_type");
-
-  const onSubmit = async (data: Omit<PlanType, "plan_id" | "order_by">) => {
+  const onSubmit = async (data: PlanAdminInput) => {
     setIsSubmitting(true);
     try {
       await onSave(data);
@@ -88,34 +80,10 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-[90%] max-h-[90%] overflow-y-scroll text-black">
         <DialogHeader>
-          <DialogTitle>Add New Plan</DialogTitle>
+          <DialogTitle>Add New Participant Plan</DialogTitle>
         </DialogHeader>
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <Label htmlFor="plan_type">Plan Type</Label>
-              <Select
-                value={planType}
-                onValueChange={(value) =>
-                  setValue(
-                    "plan_type",
-                    value as "free" | "member" | "participant"
-                  )
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select plan type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="free">Free</SelectItem>
-                  <SelectItem value="member">Member</SelectItem>
-                  <SelectItem value="participant">Participant</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.plan_type && (
-                <p className="text-red-500">{errors.plan_type.message}</p>
-              )}
-            </div>
             <div>
               <Label htmlFor="plan_label">Plan Label</Label>
               <Input id="plan_label" {...register("plan_label")} />
@@ -125,7 +93,13 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
             </div>
             <div>
               <Label htmlFor="plan_price">Plan Price</Label>
-              <Input id="plan_price" {...register("plan_price")} />
+              <Input
+                id="plan_price"
+                type="number"
+                min={0}
+                step="any"
+                {...register("plan_price", { valueAsNumber: true })}
+              />
               {errors.plan_price && (
                 <p className="text-red-500">{errors.plan_price.message}</p>
               )}
@@ -157,6 +131,32 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
               )}
             </div>
             <div>
+              <Label htmlFor="plan_max_images">Max profile images</Label>
+              <Input
+                id="plan_max_images"
+                type="number"
+                min={0}
+                {...register("plan_max_images", { valueAsNumber: true })}
+              />
+              {errors.plan_max_images && (
+                <p className="text-red-500">
+                  {errors.plan_max_images.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="max_events">Max events</Label>
+              <Input
+                id="max_events"
+                type="number"
+                min={0}
+                {...register("max_events", { valueAsNumber: true })}
+              />
+              {errors.max_events && (
+                <p className="text-red-500">{errors.max_events.message}</p>
+              )}
+            </div>
+            <div>
               <Label>Plan Items</Label>
               {fields.map((field, index) => (
                 <div
@@ -173,6 +173,7 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
                     variant="outline"
                     size="icon"
                     onClick={() => remove(index)}
+                    aria-label="Remove item"
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
@@ -201,7 +202,8 @@ export default function PlanAddDialog({ onSave, onClose }: PlanAddDialogProps) {
                 "currency_logo",
                 "plan_description",
                 "plan_items",
-                "plan_type",
+                "plan_max_images",
+                "max_events",
               ]}
               className="w-full"
             />

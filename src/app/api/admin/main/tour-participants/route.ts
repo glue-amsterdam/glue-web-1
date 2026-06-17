@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/utils/supabase/adminClient";
+import { revalidateParticipantVisibilityCaches } from "@/lib/participants/revalidate-participant-visibility-caches";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -30,10 +31,7 @@ export async function GET(request: Request) {
         status,
         is_active,
         was_active_last_year,
-        user_info!participant_details_user_id_fkey (
-          user_id,
-          user_name
-        )
+        display_name
       `
       )
       .eq("status", "accepted");
@@ -134,6 +132,8 @@ export async function PUT(request: Request) {
       .select("*", { count: "exact", head: true })
       .eq("was_active_last_year", true)
       .eq("is_active", true);
+
+    await revalidateParticipantVisibilityCaches(supabase);
 
     return NextResponse.json({
       message: "Participant carryover updated successfully",

@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { config } from "@/env";
+import { config } from "@/config";
 
 type EmailTemplateVariables = {
   email?: string;
@@ -17,29 +17,29 @@ type EmailTemplateVariables = {
 export const processImageTags = (html: string): string => {
   // Process all clickable images in one pass
   const imgClickableRegex = /<img\s+([^>]*?)clickable\s*=\s*["']true["']([^>]*?)\/?>/gi;
-  
+
   let processed = html.replace(imgClickableRegex, (match, before, after) => {
     // Extract link and src attributes
     const linkMatch = before.match(/link\s*=\s*["']([^"']+)["']/) || after.match(/link\s*=\s*["']([^"']+)["']/);
     const srcMatch = before.match(/src\s*=\s*["']([^"']+)["']/) || after.match(/src\s*=\s*["']([^"']+)["']/);
-    
+
     const linkUrl = linkMatch ? linkMatch[1] : null;
     const src = srcMatch ? srcMatch[1] : linkUrl; // Fallback to linkUrl if no src
-    
+
     if (!src) {
       // No src or link found, return as-is (shouldn't happen)
       return match;
     }
-    
+
     // If link equals src, it means redirect is unchecked (image links to itself)
     // Use src as href in this case
     const isRedirect = linkUrl && linkUrl !== src;
     const href = isRedirect ? linkUrl : src;
-    
+
     // Remove clickable and link attributes
     const cleanedBefore = before.replace(/\s+/g, " ").trim();
     const cleanedAfter = after.replace(/\s+/g, " ").trim();
-    
+
     const beforeWithoutAttrs = cleanedBefore
       .replace(/clickable\s*=\s*["'][^"']*["']/gi, "")
       .replace(/link\s*=\s*["'][^"']*["']/gi, "")
@@ -48,7 +48,7 @@ export const processImageTags = (html: string): string => {
       .replace(/clickable\s*=\s*["'][^"']*["']/gi, "")
       .replace(/link\s*=\s*["'][^"']*["']/gi, "")
       .trim();
-    
+
     // Build the img tag
     let imgTag = "<img";
     if (beforeWithoutAttrs) {
@@ -62,24 +62,24 @@ export const processImageTags = (html: string): string => {
       imgTag += ` ${afterWithoutAttrs}`;
     }
     imgTag += ">";
-    
+
     // Use href (linkUrl if redirect, src if links to itself)
     return `<a href="${href}" target="_blank" rel="noopener noreferrer">${imgTag}</a>`;
   });
-  
+
   // Handle images with link but no clickable (for backward compatibility, treat as non-clickable)
   // Match <img link="..." /> without clickable="true"
   const imgLinkRegex = /<img\s+([^>]*?)(?!clickable\s*=\s*["']true["'])link\s*=\s*["']([^"']+)["']([^>]*?)\/?>/gi;
-  
+
   processed = processed.replace(imgLinkRegex, (match, before, linkUrl, after) => {
     // Remove the link attribute and add src attribute
     const cleanedBefore = before.replace(/\s+/g, " ").trim();
     const cleanedAfter = after.replace(/\s+/g, " ").trim();
-    
+
     // Remove link attribute from the attributes string
     const beforeWithoutLink = cleanedBefore.replace(/link\s*=\s*["'][^"']*["']/gi, "").trim();
     const afterWithoutLink = cleanedAfter.replace(/link\s*=\s*["'][^"']*["']/gi, "").trim();
-    
+
     // Build the img tag with src instead of link (NOT wrapped in anchor)
     let imgTag = "<img";
     if (beforeWithoutLink) {
@@ -90,10 +90,10 @@ export const processImageTags = (html: string): string => {
       imgTag += ` ${afterWithoutLink}`;
     }
     imgTag += ">";
-    
+
     return imgTag;
   });
-  
+
   return processed;
 };
 
@@ -253,7 +253,7 @@ export const getDefaultEmailTemplate = (
   const allTemplates = getAllDefaultEmailTemplates();
   const template = allTemplates[slug];
   if (!template) return null;
-  
+
   return {
     subject: template.subject,
     html_content: template.html_content,

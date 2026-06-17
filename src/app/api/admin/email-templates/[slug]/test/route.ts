@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { config } from "@/env";
+import { config } from "@/config";
 import { z } from "zod";
 import {
   getEmailTemplateWithFallback,
@@ -88,7 +88,7 @@ export async function POST(
     console.error("Error in POST /api/admin/email-templates/[slug]/test:", error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Validation error", details: error.errors },
+        { error: "Validation error", details: error.issues },
         { status: 400 }
       );
     }

@@ -71,7 +71,6 @@ export async function PUT(
       );
     }
 
-    // Update the user info in the database
     const { data, error } = await supabase
       .from("user_info")
       .update(validatedData)
@@ -98,7 +97,7 @@ export async function PUT(
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Invalid user data", details: error.errors },
+        { error: "Invalid user data", details: error.issues },
         { status: 400 }
       );
     }

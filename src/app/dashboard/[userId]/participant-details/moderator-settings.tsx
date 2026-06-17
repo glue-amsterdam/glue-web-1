@@ -11,45 +11,43 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useFormContext } from "react-hook-form";
-import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
-import { CalendarHeart } from "lucide-react";
+import type { ParticipantDetailsInput } from "@/schemas/participantDetailsSchemas";
+import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
+import { ModeratorActiveStatus } from "./active-status-section";
+import { DisplayNumberField } from "./display-number-field";
+import { MODERATOR_WATCH_FIELDS } from "./use-moderator-actions";
 
-export function ModeratorSettings() {
-  const {
-    control,
-    formState: { errors },
-  } = useFormContext<ParticipantDetails>();
+export function ModeratorSettings({
+  onApproveReactivation,
+  onDeclineReactivation,
+  onReconsiderRequest,
+  renderReactivationDetails,
+  targetUserId,
+  onSave,
+  isSubmitting,
+}: {
+  onApproveReactivation: () => void;
+  onDeclineReactivation: () => void;
+  onReconsiderRequest: () => void;
+  renderReactivationDetails: () => React.ReactNode;
+  targetUserId: string;
+  onSave: () => void;
+  isSubmitting: boolean;
+}) {
+  const { control, setValue } = useFormContext<ParticipantDetailsInput>();
 
-  console.log(errors);
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Moderator Settings</h3>
-      <FormField
-        name="special_program"
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5">
-              <FormLabel className="text-base flex gap-2 flex-wrap">
-                <span>Special Program</span> <CalendarHeart />
-              </FormLabel>
-              <FormDescription>
-                Enable the special program to display a special icon on the map.
-              </FormDescription>
-            </div>
-            <FormControl>
-              <Switch checked={field.value} onCheckedChange={field.onChange} />
-            </FormControl>
-          </FormItem>
-        )}
-      />
-
+    <div className="base-text-size mini-padding lg:grid lg:grid-cols-3 space-y-[50px] lg:space-y-0 lg:gap-[15px]">
       <FormField
         control={control}
         name="status"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel>Status</FormLabel>
-            <div className="flex space-x-4">
+          <FormItem className="max-w-[300px] mx-auto">
+            <FormLabel>Application status</FormLabel>
+            <FormDescription>
+              Whether this person is approved as a GLUE participant.
+            </FormDescription>
+            <div className="flex gap-[15px] flex-wrap">
               <Button
                 type="button"
                 variant={field.value === "accepted" ? "default" : "outline"}
@@ -79,6 +77,73 @@ export function ModeratorSettings() {
           </FormItem>
         )}
       />
+      <div className="px-4 flex flex-col gap-[30px]">
+        <FormField
+          name="special_program"
+          render={({ field }) => (
+            <FormItem className="flex gap-[15px]">
+              <FormControl>
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
+              </FormControl>
+              <FormLabel className="flex-wrap translate-y-1">
+                <span>Special Program</span>
+              </FormLabel>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name="is_active"
+          render={({ field }) => (
+            <FormItem className="col-start-3 flex gap-[15px]">
+              <FormControl>
+                <Switch
+                  checked={field.value || false}
+                  onCheckedChange={(checked) => {
+                    field.onChange(checked);
+                    if (checked) {
+                      setValue("reactivation_requested", false, {
+                        shouldDirty: true,
+                      });
+                      setValue("reactivation_notes", null, { shouldDirty: true });
+                      setValue("reactivation_status", null, { shouldDirty: true });
+                    }
+                  }}
+                />
+              </FormControl>
+              <div className="space-y-0.5">
+                <FormLabel className="flex-wrap translate-y-1">
+                  <span>Active in current tour</span>
+                </FormLabel>
+                <FormDescription>
+                  {field.value
+                    ? "This participant is included in this year's Design Route."
+                    : "Activating will make this participant part of this year's Design Route."}
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
+        /></div>
+      <DisplayNumberField isMod targetUserId={targetUserId} />
+      <div className="col-span-3">
+        <ModeratorActiveStatus
+          onApproveReactivation={onApproveReactivation}
+          onDeclineReactivation={onDeclineReactivation}
+          onReconsiderRequest={onReconsiderRequest}
+          renderReactivationDetails={renderReactivationDetails}
+        />
+      </div>
+
+      <div className="col-span-3 flex justify-center mini-padding">
+        <SaveChangesButton
+          type="button"
+          onClick={onSave}
+          watchFields={[...MODERATOR_WATCH_FIELDS]}
+          isSubmitting={isSubmitting}
+          label={isSubmitting ? "Updating..." : "Update"}
+        />
+      </div>
     </div>
   );
 }
+

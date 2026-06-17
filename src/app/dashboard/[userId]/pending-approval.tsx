@@ -1,22 +1,23 @@
-import React from "react";
+type ParticipantRequestPendingBannerProps = {
+  userName?: string;
+};
 
-interface PendingApprovalProps {
-  userName: string;
-}
-
-const PendingApproval: React.FC<PendingApprovalProps> = ({ userName }) => {
+const ParticipantRequestPendingBanner = ({
+  userName,
+}: ParticipantRequestPendingBannerProps) => {
   return (
-    <div className="flex flex-col items-center justify-center h-full">
-      <h1 className="text-2xl font-bold mb-4">Pending Approval</h1>
-      <p className="text-lg text-center mb-2">
-        Hello {userName}, your account is currently pending approval.
-      </p>
-      <p className="text-md text-center">
-        A moderator will review your application and grant you access to the
-        dashboard soon.
+    <div
+      className="rounded-md border border-yellow-300 bg-yellow-50 p-4 text-yellow-800 mini-padding mb-4"
+      role="alert"
+    >
+      <p className="font-bold">Your participant request is pending</p>
+      <p className="text-sm">
+        {userName ? `Hello ${userName}, ` : ""}
+        We&apos;re reviewing your application. A moderator will approve it
+        soon. You can complete your visitor profile below in the meantime.
       </p>
     </div>
   );
 };
 
-export default PendingApproval;
+export default ParticipantRequestPendingBanner;

@@ -1,3 +1,4 @@
+import { guardParticipantProfileWrite } from "@/lib/participants/guard-participant-profile-write";
 import { visitingHoursDaysSchema } from "@/schemas/visitingHoursSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
@@ -72,6 +73,9 @@ async function handleRequest(
     return NextResponse.json({ error: "User ID is required" }, { status: 400 });
   }
 
+  const denied = await guardParticipantProfileWrite(userId);
+  if (denied) return denied;
+
   try {
     const supabase = await createClient();
 
@@ -121,7 +125,7 @@ async function handleRequest(
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Invalid visiting hours data", details: error.errors },
+        { error: "Invalid visiting hours data", details: error.issues },
         { status: 400 }
       );
     }

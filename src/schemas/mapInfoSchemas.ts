@@ -9,4 +9,5 @@ export const mapInfoSchema = z.object({
   exhibition_space_preference: z.string().nullable().optional(),
 });
 
-export type MapInfo = z.infer<typeof mapInfoSchema>;
+export type MapInfoInput = z.input<typeof mapInfoSchema>;
+export type MapInfo = z.output<typeof mapInfoSchema>;

@@ -1,4 +1,4 @@
-import { config } from "@/env";
+import { config } from "@/config";
 import { ImageData } from "@/schemas/baseSchema";
 import {
   Event,
@@ -16,43 +16,29 @@ import {
 import {
   UserCircle,
   Calendar,
-  CalendarArrowUp,
-  UserRoundPen,
   Route,
-  PencilOff,
   ChevronsLeftRightEllipsis,
-  LucidePencilRuler,
   Compass,
   CircleEllipsis,
   ClipboardPen,
-  PanelTopDashed,
   Map,
-  Clock8,
   NotebookPen,
   Speech,
   Coffee,
+  Hash,
+  QrCode,
 } from "lucide-react";
 
 export const USER_DASHBOARD_SECTIONS = [
   {
-    href: `user-data`,
-    label: "User Data",
-    icon: UserRoundPen,
+    href: `visitor-data`,
+    label: "Visitor Profile",
+    icon: UserCircle,
   },
   {
     href: `participant-details`,
-    label: "Participant Details",
+    label: "Participant Profile",
     icon: ClipboardPen,
-  },
-  {
-    href: `profile-image`,
-    label: "Profile Image/s",
-    icon: ClipboardPen,
-  },
-  {
-    href: `visiting-hours`,
-    label: "Visiting Hours",
-    icon: Clock8,
   },
   {
     href: `map-info`,
@@ -60,21 +46,19 @@ export const USER_DASHBOARD_SECTIONS = [
     icon: Map,
   },
   {
-    href: `invoice-data`,
-    label: "Invoice Data",
-    icon: PanelTopDashed,
-  },
-  {
-    href: `create-events`,
-    label: "Create Events",
-    icon: CalendarArrowUp,
-  },
-  {
-    href: `your-events`,
-    label: "Your Events",
+    href: `events`,
+    label: "Events",
     icon: Calendar,
   },
+  {
+    href: `qr-scan`,
+    label: "QR Scan",
+    icon: QrCode,
+  },
 ];
+
+/** Shown for authenticated users who are not participants (visitor-only). */
+export const VISITOR_ONLY_DASHBOARD_HREFS = ["visitor-data"] as const;
 
 export const ADMIN_DASHBOARD_SECTIONS = [
   {
@@ -83,24 +67,19 @@ export const ADMIN_DASHBOARD_SECTIONS = [
     icon: UserCircle,
   },
   {
-    href: `create-route`,
-    label: "Create Route",
+    href: `routes`,
+    label: "Routes",
     icon: Route,
   },
   {
-    href: `edit-routes`,
-    label: "Edit Routes",
-    icon: PencilOff,
-  },
-  {
-    href: `hub-create`,
-    label: "HUB Create",
+    href: `hubs`,
+    label: "Hubs",
     icon: ChevronsLeftRightEllipsis,
   },
   {
-    href: `hub-edit`,
-    label: "HUB Edit",
-    icon: LucidePencilRuler,
+    href: `numbers`,
+    label: "Numbers",
+    icon: Hash,
   },
 ];
 

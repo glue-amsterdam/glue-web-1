@@ -1,35 +1,12 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { mainColorsSchema } from "@/schemas/mainSchema";
-
-export async function GET() {
-  try {
-    const supabase = await createClient();
-    const { data: mainColors, error } = await supabase
-      .from("main_colors")
-      .select("*")
-      .single();
-
-    if (error) {
-      console.error("Error fetching main colors:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch main colors" },
-        { status: 500 }
-      );
-    }
-
-    const validatedLinks = mainColorsSchema.parse(mainColors);
-
-    return NextResponse.json(validatedLinks);
-  } catch (error) {
-    console.error("Error in GET /api/admin/main/colors:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch main colors" },
-      { status: 500 }
-    );
-  }
-}
+import { revalidateSiteThemeCache } from "@/lib/main/revalidate-site-theme-cache";
+import { mainColorsFormSchema } from "@/schemas/mainSchema";
+import {
+  dbRowToMainColorsForm,
+  mainColorsFormToDbRow,
+} from "@/lib/main/map-main-colors-row";
 
 export async function PUT(request: Request) {
   const cookieStore = await cookies();
@@ -44,13 +21,16 @@ export async function PUT(request: Request) {
 
   try {
     const supabase = await createClient();
-    const updatedColors = await request.json();
+    const body = await request.json();
+    const validated = mainColorsFormSchema.parse(body);
+    const dbRow = mainColorsFormToDbRow(validated);
 
     const { data, error } = await supabase
       .from("main_colors")
-      .update(updatedColors)
+      .update(dbRow)
       .eq("id", 1)
-      .select();
+      .select()
+      .single();
 
     if (error) {
       console.error("Error updating main colors:", error);
@@ -60,7 +40,9 @@ export async function PUT(request: Request) {
       );
     }
 
-    return NextResponse.json(data[0]);
+    revalidateSiteThemeCache();
+
+    return NextResponse.json(dbRowToMainColorsForm(data));
   } catch (error) {
     console.error("Unexpected error:", error);
     return NextResponse.json(

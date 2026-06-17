@@ -10,7 +10,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { createSubmitHandler } from "@/utils/form-helpers";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
+import { saveEventDays } from "@/app/actions/admin/events";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { CalendarIcon, PlusCircle, MinusCircle } from "lucide-react";
@@ -64,8 +65,8 @@ export default function MainDaysForm({ initialData, onDataUpdated }: EventDaysFo
 
   const watchEventDays = watch("eventDays");
 
-  const onSubmit = createSubmitHandler<{ eventDays: EventDay[] }>(
-    "/api/admin/main/days",
+  const onSubmit = createActionSubmitHandler<{ eventDays: EventDay[] }>(
+    (data) => saveEventDays(data.eventDays),
     async (responseData) => {
       toast({
         title: "Event days updated",
@@ -73,15 +74,11 @@ export default function MainDaysForm({ initialData, onDataUpdated }: EventDaysFo
           "The event day labels and dates have been successfully updated.",
       });
 
-      // Notify parent component to reload data first
       if (onDataUpdated) {
         onDataUpdated();
       }
-      
-      // Reset the form with the server response to clear dirty state
-      // This ensures the form is in sync with what the server returned
+
       reset(responseData);
-      
       router.refresh();
     },
     (error) => {
@@ -249,7 +246,6 @@ export default function MainDaysForm({ initialData, onDataUpdated }: EventDaysFo
                             new Date(watchEventDays[index]?.date || "")
                           )
                         }
-                        initialFocus
                       />
                     </PopoverContent>
                   </Popover>

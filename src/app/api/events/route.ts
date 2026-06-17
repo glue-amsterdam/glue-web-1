@@ -1,5 +1,12 @@
-import { config } from "@/env";
+import { config } from "@/config";
+import { validateEventWrite } from "@/lib/events/validate-event-write";
+import { revalidateProgramCache } from "@/lib/program/revalidate-program-cache";
 import { EventType } from "@/schemas/eventSchemas";
+import {
+  collectOrganizerUserIds,
+  loadOrganizerProfiles,
+  type OrganizerProfile,
+} from "@/lib/participants/load-organizer-profiles";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -40,13 +47,6 @@ export async function GET(request: Request) {
 
   let query = supabase.from("events").select(`
     *,
-    organizer:user_info!organizer_id (
-      user_id,
-      user_name,
-      participant_details (
-        slug
-      )
-    ),
     location:map_info!location_id (
       id,
       formatted_address
@@ -99,7 +99,7 @@ export async function GET(request: Request) {
     // If "new": fetch from events_days table
     // If "older": use snapshot from tour_status
     let eventDays: Array<{ dayId: string; label: string; date: string | null }> = [];
-    
+
     if (uniqueDayIds.length > 0) {
       if (currentTourStatus === "new") {
         // Fetch current event days from events_days table
@@ -146,25 +146,17 @@ export async function GET(request: Request) {
       return event.dayId && event.dayId !== "day-off" && eventDaysMap.has(event.dayId);
     });
 
-    // Fetch co-organizers for valid events only
-    const coOrganizerPromises = validEvents.map((event) =>
-      supabase
-        .from("user_info")
-        .select(
-          `
-          user_id, 
-          user_name,
-          participant_details (
-            slug
-          )
-        `
-        )
-        .in("user_id", event.co_organizers || [])
+    const organizerProfiles = await loadOrganizerProfiles(
+      supabase,
+      collectOrganizerUserIds(validEvents)
     );
 
-    const coOrganizerResults = await Promise.all(coOrganizerPromises);
+    let enhancedEvents = validEvents.map((event) => {
+      const organizerProfile = event.organizer_id
+        ? organizerProfiles.get(event.organizer_id)
+        : undefined;
 
-    let enhancedEvents = validEvents.map((event, index) => ({
+      return {
       eventId: event.id,
       name: event.title,
       description: event.description || "",
@@ -181,25 +173,28 @@ export async function GET(request: Request) {
         alt: `${event.title} - event from GLUE design routes in ${config.cityName}`,
       },
       organizer: {
-        user_id: event.organizer?.user_id || "",
-        user_name: event.organizer?.user_name || "Unknown",
-        slug: slugFromEmbed(event.organizer?.participant_details),
+        user_id: organizerProfile?.user_id || "",
+        user_name: organizerProfile?.user_name || "Unknown",
+        slug: slugFromEmbed(organizerProfile?.participant_details),
       },
       location: {
         id: event.location?.id || "",
         formatted_address: event.location?.formatted_address || "",
       },
-      coOrganizers:
-        coOrganizerResults[index].data?.map((co) => ({
-          user_id: co.user_id || "",
-          user_name: co.user_name || "Unknown",
+      coOrganizers: ((event.co_organizers ?? []) as string[])
+        .map((userId) => organizerProfiles.get(userId))
+        .filter((co): co is OrganizerProfile => Boolean(co))
+        .map((co) => ({
+          user_id: co.user_id,
+          user_name: co.user_name,
           slug: slugFromEmbed(co.participant_details),
-        })) || [],
+        })),
       rsvp: event.rsvp ?? false,
       rsvpMessage: event.rsvp_message || "",
       rsvpLink: event.rsvp_link || "",
       createdAt: event.created_at || "",
-    }));
+    };
+    });
 
     // If there's a search term, also filter by co-organizers
     if (search) {
@@ -235,16 +230,23 @@ export async function POST(request: Request) {
   try {
     const supabase = await createClient();
     const eventData = await request.json();
+    const validation = await validateEventWrite(supabase, eventData);
+
+    if (!validation.ok) {
+      return validation.response;
+    }
 
     const { data, error } = await supabase
       .from("events")
-      .insert([eventData])
+      .insert([validation.payload])
       .select();
 
     if (error) {
       console.error("Error inserting event:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    revalidateProgramCache();
 
     return NextResponse.json({
       message: "Event created successfully",

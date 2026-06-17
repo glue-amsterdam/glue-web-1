@@ -2,37 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-
-export async function GET() {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("event_settings")
-      .select("*")
-      .single();
-
-    if (error) {
-      console.error("Error fetching event settings:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch event settings" },
-        { status: 500 }
-      );
-    }
-
-    // Return default if no data exists
-    if (!data) {
-      return NextResponse.json({ header_title: "Events" });
-    }
-
-    return NextResponse.json({ header_title: data.header_title || "Events" });
-  } catch (error) {
-    console.error("Error in GET /api/admin/events/header-title:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch event settings" },
-      { status: 500 }
-    );
-  }
-}
+import { revalidateProgramCache } from "@/lib/program/revalidate-program-cache";
 
 async function updateHeaderTitle(req: Request) {
   try {
@@ -81,8 +51,8 @@ async function updateHeaderTitle(req: Request) {
         );
       }
 
-      // Revalidate the events page to show the updated title immediately
-      revalidatePath("/events");
+      revalidatePath("/program");
+      revalidateProgramCache();
 
       return NextResponse.json({ header_title: insertData.header_title });
     }
@@ -104,8 +74,8 @@ async function updateHeaderTitle(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Revalidate the events page to show the updated title immediately
-    revalidatePath("/events");
+    revalidatePath("/program");
+    revalidateProgramCache();
 
     return NextResponse.json({ header_title: data.header_title });
   } catch (error) {

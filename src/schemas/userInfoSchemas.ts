@@ -4,7 +4,6 @@ export const userInfoSchema = z.object({
   id: z.string().uuid(),
   user_id: z.string().uuid(),
   user_name: z.string().nullable(),
-  is_mod: z.boolean().nullable().default(false),
   plan_id: z.string(),
   plan_type: z.string(),
   phone_numbers: z

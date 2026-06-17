@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import {
   Form,
@@ -16,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { EmailRichTextEditor } from "./EmailRichTextEditor";
+import { PostRichTextEditor } from "@/components/admin/posts/post-rich-text-editor";
 
 const emailTemplateSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
@@ -56,6 +57,7 @@ export default function EmailTemplateForm({
   const [testEmail, setTestEmail] = useState("");
   const [isSendingTest, setIsSendingTest] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<EmailTemplateFormValues>({
     resolver: zodResolver(emailTemplateSchema),
@@ -90,6 +92,7 @@ export default function EmailTemplateForm({
         title: "Email template updated",
         description: "The email template has been successfully updated.",
       });
+      router.refresh();
       onSave();
     } catch (error) {
       toast({
@@ -187,7 +190,8 @@ export default function EmailTemplateForm({
               <FormLabel className="text-black">Email Content</FormLabel>
               <FormControl>
                 <div className="w-full max-w-full">
-                  <EmailRichTextEditor
+                  <PostRichTextEditor
+                    variant="email"
                     value={field.value || ""}
                     onChange={field.onChange}
                   />

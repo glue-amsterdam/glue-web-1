@@ -1,30 +1,9 @@
+import { HOME_EXHIBITORS_HEADER_CACHE_TAG } from "@/lib/participants/fetch-home-exhibitors-header";
 import { participantsSectionSchema } from "@/schemas/participantsAdminSchema";
 import { createClient } from "@/utils/supabase/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-
-export async function GET() {
-  try {
-    const supabase = await createClient();
-
-    const { data: participantsData } = await supabase
-      .from("about_participants")
-      .select("title,description,is_visible,text_color,background_color")
-      .single();
-
-    if (!participantsData) {
-      throw new Error("Failed to fetch participants about data");
-    }
-
-    return NextResponse.json(participantsData);
-  } catch (error) {
-    console.error("Error in GET /api/admin/about/participants", error);
-    return NextResponse.json(
-      { error: "An error occurred while fetching participants about data" },
-      { status: 500 }
-    );
-  }
-}
 
 export async function PUT(request: Request) {
   const cookieStore = await cookies();
@@ -49,12 +28,16 @@ export async function PUT(request: Request) {
         title: validatedData.title,
         description: validatedData.description,
         is_visible: validatedData.is_visible,
-        text_color: validatedData.text_color,
-        background_color: validatedData.background_color,
       })
       .eq("id", "about-participants");
 
     if (participantsError) throw participantsError;
+
+    revalidateTag(HOME_EXHIBITORS_HEADER_CACHE_TAG, "max");
+    revalidateTag("participants", "max");
+    revalidatePath("/");
+    revalidatePath("/about");
+    revalidatePath("/exhibitors");
 
     return NextResponse.json(participantsData);
   } catch (error) {

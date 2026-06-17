@@ -1,34 +1,37 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useAuth } from "@/app/context/AuthContext";
-import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu } from "lucide-react";
-import { ADMIN_DASHBOARD_SECTIONS, USER_DASHBOARD_SECTIONS } from "@/constants";
-import { useColors } from "@/app/context/MainContext";
+import { MenuIcon } from "lucide-react";
+import {
+  ADMIN_DASHBOARD_SECTIONS,
+  USER_DASHBOARD_SECTIONS,
+  VISITOR_ONLY_DASHBOARD_HREFS,
+} from "@/constants";
+import CrossRotatedMobile from "@/components/icons/cross-rotated-mobile";
+import { cn } from "@/lib/utils";
 
-// List of sections that should only be visible when is_active is true
+const MOBILE_DRAWER_STYLE = {
+  top: "var(--nav-total-h-mobile)",
+  height: "calc(100dvh - var(--nav-total-h-mobile) - var(--site-footer-h))",
+  maxHeight: "calc(100dvh - var(--nav-total-h-mobile) - var(--site-footer-h))",
+  WebkitOverflowScrolling: "touch",
+} as const;
+
 const ACTIVE_ONLY_SECTIONS = [
-  "profile-image",
-  "visiting-hours",
   "map-info",
-  "invoice-data",
-  "create-events",
-  "your-events",
+  "events",
+  "qr-scan",
 ];
 
 type DashboardMenuProps = {
   isMod?: boolean;
+  isParticipant?: boolean;
+  isPendingLimitedAccess?: boolean;
   userName?: string;
   targetUserId?: string;
+  loggedInUserId?: string;
   targetParticipantName?: string | null;
   targetParticipantSlug?: string | null;
   is_active: boolean;
@@ -48,8 +51,8 @@ const ModifyingProfileSection = ({
   if (!hasNameOrSlug && !targetUserId) return null;
 
   return (
-    <div className="text-xs text-white space-y-1 border border-white p-1">
-      <p className="font-medium mb-1">Modifying profile of:</p>
+    <div className="mt-[15px] min-w-0 wrap-break-word border border-white p-1 py-[12px] text-(--white-color) base-text-size">
+      <p className="font-medium">Modifying profile of:</p>
       {hasNameOrSlug ? (
         <>
           {targetParticipantName && <p>User Name: {targetParticipantName}</p>}
@@ -64,161 +67,160 @@ const ModifyingProfileSection = ({
 
 export default function DashboardMenu({
   isMod,
+  isParticipant = false,
+  isPendingLimitedAccess = false,
   userName,
   targetUserId,
+  loggedInUserId,
   targetParticipantName,
   targetParticipantSlug,
   is_active,
 }: DashboardMenuProps) {
-  const { box1, box2 } = useColors();
   const filteredDashboardSections = useMemo(() => {
+    const visitorOnlySections = USER_DASHBOARD_SECTIONS.filter((section) =>
+      VISITOR_ONLY_DASHBOARD_HREFS.includes(
+        section.href as (typeof VISITOR_ONLY_DASHBOARD_HREFS)[number]
+      )
+    );
+
+    const baseSections = USER_DASHBOARD_SECTIONS.filter(
+      (section) => !ACTIVE_ONLY_SECTIONS.includes(section.href)
+    );
+
     if (isMod) return USER_DASHBOARD_SECTIONS;
 
-    return is_active
-      ? USER_DASHBOARD_SECTIONS
-      : USER_DASHBOARD_SECTIONS.filter(
-          (section) => !ACTIVE_ONLY_SECTIONS.includes(section.href)
-        );
-  }, [is_active, isMod]);
+    if (!isParticipant || isPendingLimitedAccess) return visitorOnlySections;
+
+    if (!is_active) return baseSections;
+
+    return USER_DASHBOARD_SECTIONS;
+  }, [isParticipant, isPendingLimitedAccess, is_active, isMod]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { user } = useAuth();
+  const identityName = userName ?? "User";
+  const adminBaseUserId = loggedInUserId ?? targetUserId ?? "";
 
-  if (!user) return null;
+  useEffect(() => {
+    if (!isSidebarOpen) return;
 
-  // Filter dashboard sections based on is_active status
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSidebarOpen]);
+
+  const handleCloseSidebar = () => setIsSidebarOpen(false);
 
   const SidebarContent = () => (
-    <nav className="flex flex-col gap-2 p-6">
-      <AnimatePresence>
-        {filteredDashboardSections.map((item, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ delay: index * 0.1 }}
+    <nav className="flex flex-col gap-[15px] pt-[30px] text-(--white-color) base-text-size pb-[60px] lg:pb-[30px]">
+      {filteredDashboardSections.map((item, index) => (
+        <Link key={index} href={`/dashboard/${targetUserId}/${item.href}`}>
+          <button
+            className="flex cursor-pointer items-center gap-[15px]"
+            onClick={() => setIsSidebarOpen(false)}
           >
-            <Link href={`/dashboard/${targetUserId}/${item.href}`}>
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 text-white transition-all duration-200"
+            <item.icon className="size-6 shrink-0" />
+            <span>{item.label}</span>
+          </button>
+        </Link>
+      ))}
+
+      {isMod && (
+        <div className="flex flex-col gap-[15px] border-t border-white pt-[30px] text-(--white-color) base-text-size">
+          <h3 className="pb-4 text-center text-sm font-bold tracking-wider">
+            mod section
+          </h3>
+
+          {ADMIN_DASHBOARD_SECTIONS.map((item, index) => (
+            <Link key={index} href={`/dashboard/${adminBaseUserId}/${item.href}`}>
+              <button
+                className="flex cursor-pointer items-center gap-[15px] base-text-size"
                 onClick={() => setIsSidebarOpen(false)}
               >
-                <item.icon className="size-5" />
+                <item.icon className="size-6 shrink-0" />
                 <span>{item.label}</span>
-              </Button>
+              </button>
             </Link>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-      {isMod && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-8 pt-6 border-t border-white"
-        >
-          <h3 className="text-white font-bold text-center pb-4 tracking-wider text-sm uppercase">
-            Mod Section
-          </h3>
-          <AnimatePresence>
-            {ADMIN_DASHBOARD_SECTIONS.map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Link href={`/dashboard/${user.id}/${item.href}`}>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-3 text-white ransition-all duration-200"
-                    onClick={() => setIsSidebarOpen(false)}
-                  >
-                    <item.icon className="size-5" />
-                    <span>{item.label}</span>
-                  </Button>
-                </Link>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+          ))}
+        </div>
       )}
     </nav>
   );
 
   return (
-    <div className="max-md:w-0 max-md:min-w-0 max-md:overflow-visible md:flex md:h-full md:min-h-0 md:w-80 md:flex-shrink-0 md:flex-col">
-      <motion.div
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="fixed top-0 left-0 right-0 z-50 md:hidden w-fit"
-      >
-        <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              style={{ backgroundColor: box2 }}
-              className="m-4  text-white hover:bg-[var(--color-box3)]"
-              aria-label="Toggle menu"
-            >
-              <Menu className="size-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent
-            style={{ backgroundColor: box1 }}
-            side="left"
-            className="w-80 p-0 overflow-y-auto"
-          >
-            <SheetTitle className="sr-only">Dashboard Menu</SheetTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-4 top-4 text-white z-10"
-              onClick={() => setIsSidebarOpen(false)}
-              aria-label="Close menu"
-            ></Button>
-            <div className="p-6 pt-16">
-              <h2 className="text-white text-xl font-bold mb-2">
-                Hello, {userName || user.email}
-              </h2>
-              {isMod && (
-                <ModifyingProfileSection
-                  targetParticipantName={targetParticipantName}
-                  targetParticipantSlug={targetParticipantSlug}
-                  targetUserId={targetUserId}
-                />
-              )}
-            </div>
-            <SidebarContent />
-          </SheetContent>
-        </Sheet>
-      </motion.div>
+    <>
+      <div className="flex w-full shrink-0 items-center gap-3 border-b-2 border-(--black-color) py-3 lg:hidden">
+        <button
+          type="button"
+          className="inline-flex shrink-0 items-center justify-center rounded-md border border-white p-2"
+          aria-label="Toggle menu"
+          aria-expanded={isSidebarOpen}
+          onClick={() => setIsSidebarOpen(true)}
+        >
+          <MenuIcon className="size-5" aria-hidden="true" />
+        </button>
+        <h1 className="truncate base-text-size">{identityName.toUpperCase()}</h1>
+      </div>
 
-      <motion.aside
-        initial={{ opacity: 0, x: -100 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
-        style={{ backgroundColor: box1 }}
-        className="hidden h-full min-h-0 w-full overflow-y-auto border-r-2 border-white shadow-xl scrollbar scrollbar-thumb-white scrollbar-track-white/10 md:block md:flex-shrink-0"
-      >
-        <div className="p-6">
-          <h2 className="text-white text-xl font-bold mb-2">
-            Hello, {userName || user.email}
-          </h2>
-          {isMod && (
-            <ModifyingProfileSection
-              targetParticipantName={targetParticipantName}
-              targetParticipantSlug={targetParticipantSlug}
-              targetUserId={targetUserId}
+      {isSidebarOpen &&
+        createPortal(
+          <>
+            <button
+              type="button"
+              className="fixed inset-0 z-50 bg-black/80 lg:hidden"
+              aria-label="Close menu overlay"
+              onClick={handleCloseSidebar}
             />
-          )}
-        </div>
+            <aside
+              role="dialog"
+              aria-modal="true"
+              aria-label="Dashboard Menu"
+              style={MOBILE_DRAWER_STYLE}
+              className={cn(
+                "fixed left-0 z-50 overflow-y-auto overscroll-contain touch-pan-y px-[12px] pb-[15px] lg:hidden",
+                "bg-(--primary-color) text-(--white-color)",
+                "w-[min(100vw-2rem,280px)] max-w-[calc(100vw-2rem)]"
+              )}
+            >
+              <button
+                type="button"
+                className="absolute right-4 top-4 z-10"
+                onClick={handleCloseSidebar}
+                aria-label="Close menu"
+              >
+                <CrossRotatedMobile />
+              </button>
+              <div className="pt-[15px]">
+                {isMod && (
+                  <ModifyingProfileSection
+                    targetParticipantName={targetParticipantName}
+                    targetParticipantSlug={targetParticipantSlug}
+                    targetUserId={targetUserId}
+                  />
+                )}
+                <SidebarContent />
+              </div>
+            </aside>
+          </>,
+          document.body
+        )}
+
+      <aside className="hidden bg-(--primary-color) lg:flex lg:h-full lg:min-h-0 lg:max-h-full lg:w-[300px] lg:shrink-0 lg:flex-col lg:overflow-y-auto lg:border-r-2 lg:border-(--black-color) scrollbar scrollbar-thumb-white scrollbar-track-white/10 px-[12px]">
+        <h1 className="pt-[15px] text-3xl text-(--white-color)">
+          {identityName}
+        </h1>
+        {isMod && (
+          <ModifyingProfileSection
+            targetParticipantName={targetParticipantName}
+            targetParticipantSlug={targetParticipantSlug}
+            targetUserId={targetUserId}
+          />
+        )}
         <SidebarContent />
-      </motion.aside>
-    </div>
+      </aside>
+    </>
   );
 }

@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { userSchema } from "@/schemas/authSchemas";
+import { createAdminClient } from "@/utils/supabase/adminClient";
 import { createClient } from "@/utils/supabase/server";
 import { z } from "zod";
+import { ensureVisitorDataForAuthUser } from "@/lib/visitor/ensure-visitor-data";
 import { generateUniqueSlug } from "@/utils/slugUtils";
 import {
   sendModeratorFreeUserNotification,
@@ -40,7 +42,6 @@ export async function POST(request: Request) {
       social_media: validatedData.social_media,
       visible_emails: validatedData.visible_emails,
       visible_websites: validatedData.visible_websites,
-      is_mod: false,
     };
 
     // Add glue_communication_email if it exists in validatedData (safe access)
@@ -52,6 +53,14 @@ export async function POST(request: Request) {
 
     const { error: profileError } = await supabase.from("user_info").insert(userInfoData);
     if (profileError) throw new Error(`Profile Error: ${profileError.message}`);
+
+    const supabaseAdmin = await createAdminClient();
+    const { error: permissionsError } = await supabaseAdmin
+      .from("user_permissions")
+      .insert({ user_id: realUserId, is_mod: false });
+    if (permissionsError) {
+      throw new Error(`Permissions Error: ${permissionsError.message}`);
+    }
 
     // Handle invoice data
     if (
@@ -79,9 +88,9 @@ export async function POST(request: Request) {
         validatedData.slug ||
         (validatedData.user_name
           ? validatedData.user_name
-              .toLowerCase()
-              .replace(/[^a-z0-9]+/g, "-")
-              .replace(/(^-|-$)/g, "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, "")
           : realUserId); // Use user ID as fallback for slug
       const slug = await generateUniqueSlug(baseSlug);
 
@@ -89,11 +98,9 @@ export async function POST(request: Request) {
         .from("participant_details")
         .insert({
           user_id: realUserId,
-          short_description: validatedData.short_description,
+          short_description: validatedData.short_description ?? null,
           description: validatedData.description,
           slug: slug,
-          is_sticky: validatedData.is_sticky,
-          year: validatedData.year,
           status: validatedData.status || "pending",
         });
       if (participantError)
@@ -155,6 +162,15 @@ export async function POST(request: Request) {
         });
         break;
     }
+
+    await ensureVisitorDataForAuthUser(
+      realUserId,
+      {
+        email: validatedData.email,
+        userName: validatedData.user_name,
+      },
+      validatedData.email
+    );
 
     return NextResponse.json(
       { success: true, user: authData.user },

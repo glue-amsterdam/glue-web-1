@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -46,6 +47,7 @@ export default function TourManagementForm({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingParticipantSelection, setPendingParticipantSelection] = useState<string[] | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   const fetchTourStatus = useCallback(async () => {
     try {
@@ -112,6 +114,7 @@ export default function TourManagementForm({
 
       const data = await response.json();
       const participantCountResult = data.participantCount || 0;
+      const mapLocationsCount = data.mapLocationsCount ?? 0;
       
       console.log("Tour closed successfully, participantCount:", participantCountResult);
       console.log("Selected participants to keep active:", pendingParticipantSelection);
@@ -157,8 +160,10 @@ export default function TourManagementForm({
 
       toast({
         title: "Tour Closed Successfully",
-        description: `Tour has been closed. ${participantCountResult} participants and their events have been marked for the previous tour.${pendingParticipantSelection && pendingParticipantSelection.length > 0 ? ` ${pendingParticipantSelection.length} participants will remain active for the next tour.` : ""}`,
+        description: `Tour has been closed. ${participantCountResult} participants marked for the previous tour. Map snapshot saved (${mapLocationsCount} locations).${pendingParticipantSelection && pendingParticipantSelection.length > 0 ? ` ${pendingParticipantSelection.length} participants will remain active for the next tour.` : ""}`,
       });
+
+      router.refresh();
 
       // Clear pending selection
       setPendingParticipantSelection(null);
@@ -216,6 +221,8 @@ export default function TourManagementForm({
         title: "New Tour Opened",
         description: data.message || "New tour has been opened successfully.",
       });
+
+      router.refresh();
 
       // Notify parent component
       if (onTourStatusChanged) {

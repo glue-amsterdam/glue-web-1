@@ -1,3 +1,6 @@
+import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
+import { requirePlatformMod } from "@/lib/permissions/require-platform-mod";
+import { resolveRouteZoneName } from "@/lib/routes/resolve-route-zone-name";
 import { routeSchema } from "@/schemas/mapSchema";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
@@ -7,22 +10,20 @@ export async function GET() {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("routes")
-      .select(
-        `
-        id,
-        name,
-        description,
-        zone,
-        user_info:user_id (
-          user_name
-        )
-      `
-      )
+      .select("id, name, description, route_zone_id, route_zones(name)")
       .order("name");
 
     if (error) throw error;
 
-    return NextResponse.json(data);
+    const routes = (data ?? []).map((route) => ({
+      id: route.id,
+      name: route.name,
+      description: route.description,
+      route_zone_id: route.route_zone_id,
+      zone: resolveRouteZoneName(route.route_zones),
+    }));
+
+    return NextResponse.json(routes);
   } catch (error) {
     console.error("Error fetching routes:", error);
     return NextResponse.json(
@@ -34,25 +35,32 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient();
-    const body = await req.json();
-    const { name, description, zone, dots } = routeSchema.parse(body);
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const modCheck = await requirePlatformMod();
+    if (!modCheck.ok) {
+      return modCheck.response;
     }
 
-    // Insert the route
+    const supabase = await createClient();
+    const body = await req.json();
+    const { name, description, route_zone_id, dots } = routeSchema.parse(body);
+
+    const { data: zoneRow, error: zoneError } = await supabase
+      .from("route_zones")
+      .select("id")
+      .eq("id", route_zone_id)
+      .maybeSingle();
+
+    if (zoneError || !zoneRow) {
+      return NextResponse.json({ error: "Invalid route zone" }, { status: 400 });
+    }
+
     const { data: routeData, error: routeError } = await supabase
       .from("routes")
       .insert({
-        user_id: user.id,
+        user_id: modCheck.userId,
         name,
         description,
-        zone,
+        route_zone_id,
       })
       .select()
       .single();
@@ -65,7 +73,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Fetch hub data to determine if a user is a hub host
     const { data: hubsData, error: hubsError } = await supabase
       .from("hubs")
       .select("hub_host_id, id");
@@ -78,10 +85,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create a map for quick lookup
     const hubMap = new Map(hubsData.map((hub) => [hub.hub_host_id, hub.id]));
 
-    // Prepare the route dots
     const routeDots = dots.map((dot) => {
       const hubId = hubMap.get(dot.user_id);
       return {
@@ -89,24 +94,24 @@ export async function POST(req: Request) {
         map_info_id: dot.id,
         route_step: dot.route_step,
         user_id: dot.user_id,
-        hub_id: hubId || null, // Use hub_id if the user is a hub host, otherwise null
+        hub_id: hubId || null,
       };
     });
 
-    // Insert the route dots
     const { error: dotsError } = await supabase
       .from("route_dots")
       .insert(routeDots);
 
     if (dotsError) {
       console.error("Error creating route dots:", dotsError);
-      // If dots insertion fails, we should delete the route we just created
       await supabase.from("routes").delete().eq("id", routeData.id);
       return NextResponse.json(
         { error: "Failed to create route dots" },
         { status: 500 }
       );
     }
+
+    await revalidateMapDataCacheIfLiveTour(supabase);
 
     return NextResponse.json({ success: true, route: routeData });
   } catch (error) {

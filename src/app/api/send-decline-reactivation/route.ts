@@ -1,7 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { config } from "@/env";
+import { config } from "@/config";
+import { revalidateParticipantVisibilityCaches } from "@/lib/participants/revalidate-participant-visibility-caches";
 import { sendDeclineReactivationEmail } from "@/components/emails/participant-details-emails";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -84,6 +85,8 @@ export async function POST(request: Request) {
       console.error("Error sending reactivation declined email:", emailError);
       // We don't return an error here because the main action (declining) was successful
     }
+
+    await revalidateParticipantVisibilityCaches(supabase);
 
     return NextResponse.json({ success: true });
   } catch (error) {

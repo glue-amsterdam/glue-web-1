@@ -118,7 +118,7 @@ async function handleRequest(
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Invalid invoice data", details: error.errors },
+        { error: "Invalid invoice data", details: error.issues },
         { status: 400 }
       );
     }

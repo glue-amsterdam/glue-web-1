@@ -1,3 +1,5 @@
+import { guardMapInfoWrite } from "@/lib/participants/guard-map-info-write";
+import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
 import { mapInfoSchema } from "@/schemas/mapInfoSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
@@ -72,6 +74,9 @@ async function handleRequest(
     return NextResponse.json({ error: "User ID is required" }, { status: 400 });
   }
 
+  const denied = await guardMapInfoWrite();
+  if (denied) return denied;
+
   try {
     const supabase = await createClient();
 
@@ -114,11 +119,13 @@ async function handleRequest(
       );
     }
 
+    await revalidateMapDataCacheIfLiveTour(supabase);
+
     return NextResponse.json(data);
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Invalid map info", details: error.errors },
+        { error: "Invalid map info", details: error.issues },
         { status: 400 }
       );
     }

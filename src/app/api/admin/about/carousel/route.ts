@@ -1,49 +1,8 @@
-import { config } from "@/env";
-import {
-  CarouselSection,
-  carouselSectionSchema,
-} from "@/schemas/carouselSchema";
+import { config } from "@/config";
+import { carouselSectionSchema } from "@/schemas/carouselSchema";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-
-export async function GET() {
-  try {
-    const supabase = await createClient();
-
-    const [{ data: carouselData }, { data: slidesData }] = await Promise.all([
-      supabase.from("about_carousel").select("*").single(),
-      supabase.from("about_carousel_slides").select("*").order("created_at"),
-    ]);
-
-    if (!carouselData || !slidesData) {
-      throw new Error("Failed to fetch carousel data or slides");
-    }
-
-    const carouselSection: Pick<
-      CarouselSection,
-      "title" | "description" | "slides" | "is_visible" | "text_color"
-    > = {
-      title: carouselData.title,
-      description: carouselData.description,
-      is_visible: carouselData.is_visible,
-      text_color: carouselData.text_color,
-      slides: slidesData.map(({ id, image_url, image_name }) => ({
-        id,
-        image_url,
-        image_name,
-      })),
-    };
-
-    return NextResponse.json(carouselSection);
-  } catch (error) {
-    console.error("Error in GET /admin/about/carousel:", error);
-    return NextResponse.json(
-      { error: "An error occurred while fetching carousel data" },
-      { status: 500 }
-    );
-  }
-}
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();

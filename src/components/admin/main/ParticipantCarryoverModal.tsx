@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 
 interface Participant {
   user_id: string;
@@ -21,10 +22,7 @@ interface Participant {
   status: string;
   is_active: boolean;
   was_active_last_year: boolean;
-  user_info: {
-    user_id: string;
-    user_name: string;
-  } | null;
+  display_name: string | null;
 }
 
 interface ParticipantCarryoverModalProps {
@@ -230,10 +228,7 @@ export default function ParticipantCarryoverModal({
               </div>
             ) : (
               participants.map((participant) => {
-                const userInfo = Array.isArray(participant.user_info)
-                  ? participant.user_info[0]
-                  : participant.user_info;
-                const userName = userInfo?.user_name || "Unknown User";
+                const userName = getParticipantDisplayName(participant);
                 const isSelected = selectedIds.has(participant.user_id);
 
                 return (

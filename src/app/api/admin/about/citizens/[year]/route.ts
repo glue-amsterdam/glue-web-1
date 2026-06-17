@@ -1,7 +1,8 @@
+import { revalidateHomeCitizensCache } from "@/lib/home";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { citizenSchema } from "@/schemas/citizenSchema";
-import { config } from "@/env";
+import { config } from "@/config";
 
 export async function GET(
   request: Request,
@@ -69,6 +70,8 @@ export async function POST(
 
     if (insertError) throw insertError;
 
+    revalidateHomeCitizensCache(Number(year));
+
     return NextResponse.json({
       message: `Citizen created successfully for year ${year}`,
       citizen: insertedCitizen,
@@ -100,6 +103,11 @@ export async function DELETE(
 
     if (deleteError) throw deleteError;
 
+    const yearInt = parseInt(year, 10);
+    if (!Number.isNaN(yearInt)) {
+      await supabase.from("citizens_year_meta").delete().eq("year", yearInt);
+    }
+
     // Delete corresponding images from the storage bucket
     const { data: images, error: fetchError } = await supabase.storage
       .from(config.bucketName)
@@ -114,6 +122,8 @@ export async function DELETE(
 
       if (storageError) throw storageError;
     }
+
+    revalidateHomeCitizensCache(Number(year));
 
     return NextResponse.json({
       message: `Citizens and images for year ${year} deleted successfully`,

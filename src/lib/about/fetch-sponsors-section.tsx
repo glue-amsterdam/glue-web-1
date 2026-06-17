@@ -1,4 +1,5 @@
 import { BASE_URL } from "@/constants";
+import { SPONSORS_CACHE_TAG } from "@/lib/about/sponsors-cache-tags";
 import {
   SponsorsSection,
   sponsorsSectionSchema,
@@ -6,8 +7,6 @@ import {
 
 const SPONSORS_FALLBACK_DATA: SponsorsSection = {
   sponsorsHeaderSchema: {
-    text_color: "#ffffff",
-    background_color: "#000000",
     id: "sponsors-section",
     title: "Sponsors",
     is_visible: false,
@@ -49,7 +48,7 @@ export async function fetchSponsorsData(): Promise<SponsorsSection> {
     const res = await fetch(`${BASE_URL}/about/sponsors`, {
       next: {
         revalidate: 3600,
-        tags: ["sponsors"],
+        tags: [SPONSORS_CACHE_TAG],
       },
     });
 

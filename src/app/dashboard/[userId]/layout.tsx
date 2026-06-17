@@ -1,13 +1,25 @@
-import { DashboardProvider } from "@/app/context/DashboardContext";
-import PendingApproval from "@/app/dashboard/[userId]/pending-approval";
 import RejectedAccess from "@/app/dashboard/[userId]/rejected-access";
 import DashboardMenu from "@/app/dashboard/components/dashboard-menu";
-import InsufficientAccess from "@/app/dashboard/insufficient-access";
-import WrongCredentials from "@/app/dashboard/wrong-credentials-access";
+import DashboardPendingGate from "@/app/dashboard/components/dashboard-pending-gate";
+import { DashboardParticipateInvite } from "@/components/dashboard/dashboard-participate-invite";
+import MainContainer from "@/components/main-container";
 import { NAVBAR_HEIGHT } from "@/constants";
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+import { getDashboardAuth } from "@/lib/dashboard/get-dashboard-auth";
+import {
+  generateDashboardBaseMetadata,
+  getDashboardSubjectProfile,
+} from "@/lib/metadata/build-dashboard-metadata";
+import type { Metadata } from "next";
 import React from "react";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}): Promise<Metadata> {
+  const { userId: targetUserId } = await params;
+  return generateDashboardBaseMetadata(targetUserId);
+}
 
 export default async function DashboardLayout({
   params,
@@ -16,120 +28,70 @@ export default async function DashboardLayout({
   children: React.ReactNode;
   params: Promise<{ userId: string }>;
 }) {
-  const supabase = await createClient();
-  const paramsData = await params;
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { userId: targetUserId } = await params;
+  const auth = await getDashboardAuth(targetUserId);
 
-  if (!user) redirect("/");
-
-  const targetUserId = paramsData.userId;
-  const loggedInUserId = user.id;
-
-  const { data: loggedUserInfo } = await supabase
-    .from("user_info")
-    .select("is_mod, plan_type, user_name")
-    .eq("user_id", loggedInUserId)
-    .single();
-
-  const isModerator = loggedUserInfo?.is_mod || false;
-  const isParticipant = loggedUserInfo?.plan_type === "participant";
-  const isTargetUserSameAsLoggedInUser = loggedInUserId === targetUserId;
-
-  const { data: participantDetails } = await supabase
-    .from("participant_details")
-    .select("status, is_active")
-    .eq("user_id", loggedInUserId)
-    .single();
-
-  const participantStatus = participantDetails?.status;
-
-  // When mod is viewing a profile, fetch target's user_name and slug for display (including own profile)
-  let targetParticipantName: string | null = null;
-  let targetParticipantSlug: string | null = null;
-  if (isModerator) {
-    const [targetUserInfoRes, targetParticipantDetailsRes] = await Promise.all([
-      supabase
-        .from("user_info")
-        .select("user_name")
-        .eq("user_id", targetUserId)
-        .single(),
-      supabase
-        .from("participant_details")
-        .select("slug")
-        .eq("user_id", targetUserId)
-        .single(),
-    ]);
-
-    targetParticipantName = targetUserInfoRes.data?.user_name ?? null;
-    targetParticipantSlug = targetParticipantDetailsRes.data?.slug ?? null;
-  }
-
-  // If user is not a moderator and not a participant, show insufficient access
-  if (!isModerator && !isParticipant) {
+  if (
+    auth.isParticipant &&
+    auth.participantStatus === "declined" &&
+    !auth.isMod
+  ) {
     return (
       <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
-        <InsufficientAccess
-          userId={loggedInUserId}
-          userName={user.email || loggedUserInfo?.user_name || ""}
-        />
+        <RejectedAccess userName={auth.displayName} />
       </section>
     );
   }
 
-  // If user is a participant but status is pending
-  if (isParticipant && participantStatus === "pending" && !isModerator) {
-    return (
-      <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
-        <PendingApproval
-          userName={user.email || loggedUserInfo?.user_name || ""}
-        />
-      </section>
-    );
-  }
+  const subjectProfile = auth.isMod
+    ? await getDashboardSubjectProfile(targetUserId)
+    : null;
 
-  // If user is a participant but status is rejected
-  if (isParticipant && participantStatus === "declined" && !isModerator) {
-    return (
-      <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
-        <RejectedAccess
-          userName={user.email || loggedUserInfo?.user_name || ""}
-        />
-      </section>
-    );
-  }
+  const isOwnProfile = auth.loggedInUserId === targetUserId;
+  const showParticipateInvite =
+    isOwnProfile &&
+    !auth.isMod &&
+    (auth.isVisitorOnly ||
+      (auth.isParticipant && !auth.is_active && !auth.isPendingLimitedAccess));
 
-  // If user is a participant but trying to access someone else's dashboard and is not a moderator
-  if (isParticipant && !isTargetUserSameAsLoggedInUser && !isModerator) {
-    return (
-      <section style={{ paddingTop: `${NAVBAR_HEIGHT * 2}rem` }}>
-        <WrongCredentials
-          userId={loggedInUserId}
-          userName={user.email || loggedUserInfo?.user_name || ""}
-        />
-      </section>
-    );
-  }
+  const participateInviteHref = auth.isVisitorOnly
+    ? "/participate"
+    : "/participate?intent=reactivation#plans-selection-section";
 
-  const propData = {
-    isMod: isModerator,
-    loggedInUserId: loggedInUserId,
-    targetUserId,
-    loggedPlanType: loggedUserInfo?.plan_type,
-  };
+  const participateInviteLabel = auth.isVisitorOnly
+    ? "Apply to participate"
+    : "Apply for the new Design Route";
 
   return (
     <section className="flex h-full min-h-0 flex-1 overflow-hidden">
-      <DashboardMenu
-        isMod={isModerator}
-        userName={loggedUserInfo?.user_name}
-        is_active={participantDetails?.is_active}
-        targetUserId={targetUserId}
-        targetParticipantName={targetParticipantName}
-        targetParticipantSlug={targetParticipantSlug}
-      />
-      <DashboardProvider {...propData}>{children}</DashboardProvider>
+      <MainContainer className="flex h-full min-h-0 w-full flex-col lg:flex-row">
+        <DashboardMenu
+          isMod={auth.isMod}
+          isParticipant={auth.isParticipant}
+          isPendingLimitedAccess={auth.isPendingLimitedAccess}
+          userName={auth.displayName}
+          is_active={auth.is_active}
+          targetUserId={targetUserId}
+          loggedInUserId={auth.loggedInUserId}
+          targetParticipantName={subjectProfile?.name ?? null}
+          targetParticipantSlug={subjectProfile?.slug ?? null}
+        />
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain py-4">
+          <DashboardPendingGate
+            isPendingLimitedAccess={auth.isPendingLimitedAccess}
+            displayName={auth.displayName}
+            targetUserId={targetUserId}
+          >
+            {showParticipateInvite ? (
+              <DashboardParticipateInvite
+                ctaHref={participateInviteHref}
+                ctaLabel={participateInviteLabel}
+              />
+            ) : null}
+            {children}
+          </DashboardPendingGate>
+        </div>
+      </MainContainer>
     </section>
   );
 }

@@ -1,28 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import MainDaysForm from "@/components/admin/main/MainDaysForm";
 import TourManagementForm from "@/components/admin/main/TourManagementForm";
-import AdminHeader from "../AdminHeader";
-import AdminBackHeader from "../AdminBackHeader";
+import { EventDay } from "@/schemas/eventSchemas";
 
-export default function TourManagementPage() {
-  const [dataKey, setDataKey] = useState(0);
+type TourManagementPageProps = {
+  initialEventDays: EventDay[];
+};
+
+export default function TourManagementPage({
+  initialEventDays,
+}: TourManagementPageProps) {
+  const router = useRouter();
+
+  const handleEventDaysUpdate = () => {
+    router.refresh();
+  };
 
   const handleTourStatusChanged = () => {
-    // Increment key to force refresh if needed
-    setDataKey((prev) => prev + 1);
+    router.refresh();
   };
 
   return (
-    <div className="container mx-auto text-black min-h-dvh h-full pt-[6rem] pb-4">
-      <div className="bg-white p-4 rounded-lg shadow-md flex flex-col gap-4">
-        <AdminHeader />
-        <AdminBackHeader backLink="/admin" sectionTitle="Tour Management" />
-        <TourManagementForm
-          key={`tour-${dataKey}`}
-          onTourStatusChanged={handleTourStatusChanged}
-        />
-      </div>
+    <div className="flex flex-col gap-4 rounded-lg bg-white p-4 shadow-md">
+      <MainDaysForm
+        initialData={{ eventDays: initialEventDays }}
+        onDataUpdated={handleEventDaysUpdate}
+      />
+      <TourManagementForm onTourStatusChanged={handleTourStatusChanged} />
     </div>
   );
 }

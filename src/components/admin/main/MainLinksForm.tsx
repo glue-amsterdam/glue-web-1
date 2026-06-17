@@ -5,22 +5,27 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { Instagram, Linkedin, Globe, Youtube } from "lucide-react";
+import { Globe } from "lucide-react";
+import {
+  FaInstagram,
+  FaLinkedinIn,
+  FaYoutube,
+} from "react-icons/fa6";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
 import { useRouter } from "next/navigation";
-import { LinkItem, mainLinksSchema } from "@/schemas/mainSchema";
-import { mutate } from "swr";
-import { createSubmitHandler } from "@/utils/form-helpers";
+import { LinkItemAdmin, mainLinksAdminSchema } from "@/schemas/mainSchema";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
+import { saveMainLinks } from "@/app/actions/admin/main";
 
 interface MainLinksFormProps {
-  initialData: { mainLinks: LinkItem[] };
+  initialData: { mainLinks: LinkItemAdmin[] };
 }
 
 const platformIcons: { [key: string]: React.ReactNode } = {
-  instagram: <Instagram className="h-5 w-5" />,
-  linkedin: <Linkedin className="h-5 w-5" />,
-  newsletter: <Globe className="h-5 w-5" />,
-  youtube: <Youtube className="h-5 w-5" />,
+  instagram: <FaInstagram className="h-5 w-5" aria-hidden />,
+  linkedin: <FaLinkedinIn className="h-5 w-5" aria-hidden />,
+  newsletter: <Globe className="h-5 w-5" aria-hidden />,
+  youtube: <FaYoutube className="h-5 w-5" aria-hidden />,
 };
 
 export default function MainLinksForm({ initialData }: MainLinksFormProps) {
@@ -28,8 +33,8 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
   const { toast } = useToast();
   const router = useRouter();
 
-  const methods = useForm<{ mainLinks: LinkItem[] }>({
-    resolver: zodResolver(mainLinksSchema),
+  const methods = useForm<{ mainLinks: LinkItemAdmin[] }>({
+    resolver: zodResolver(mainLinksAdminSchema),
     defaultValues: initialData,
   });
 
@@ -44,16 +49,14 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
     name: "mainLinks",
   });
 
-  const onSubmit = createSubmitHandler<{ mainLinks: LinkItem[] }>(
-    "/api/admin/main/links",
+  const onSubmit = createActionSubmitHandler<{ mainLinks: LinkItemAdmin[] }>(
+    saveMainLinks,
     async (data) => {
-      console.log("Form submitted successfully", data);
       toast({
         title: "Links updated",
         description: "The main links have been successfully updated.",
       });
       methods.reset(data);
-      await mutate("/api/admin/main/links");
       router.refresh();
     },
     (error) => {
@@ -66,7 +69,7 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
     }
   );
 
-  const handleFormSubmit = async (data: { mainLinks: LinkItem[] }) => {
+  const handleFormSubmit = async (data: { mainLinks: LinkItemAdmin[] }) => {
     console.log("handleFormSubmit called with data:", data);
     setIsSubmitting(true);
     try {
@@ -88,10 +91,10 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
                 platformIcons.default}
               <span className="font-medium">{field.platform}</span>
             </div>
-            <div className="flex-grow space-y-2">
+            <div className="grow space-y-2">
               <Input
                 {...methods.register(`mainLinks.${index}.link`)}
-                defaultValue={field.link}
+                defaultValue={field.link ?? ""}
                 placeholder="Link URL"
                 className="dashboard-input"
               />
@@ -108,11 +111,11 @@ export default function MainLinksForm({ initialData }: MainLinksFormProps) {
             </div>
           </div>
         ))}
-        <SaveChangesButton
-          isSubmitting={isSubmitting}
-          className="w-full"
-          watchFields={["mainLinks"]}
-        />
+        <div className="flex justify-start">
+          <SaveChangesButton
+            watchFields={["mainLinks"]}
+            isSubmitting={isSubmitting}
+          /></div>
       </form>
     </FormProvider>
   );

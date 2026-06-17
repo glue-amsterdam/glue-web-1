@@ -30,7 +30,7 @@ const invoiceSchema = z.object({
 });
 
 const participantSchema = z.object({
-  short_description: z.string().min(1).max(500),
+  short_description: z.string().max(500).optional(),
   description: z.string().optional(),
   slug: z.string().optional(),
   is_sticky: z.boolean().optional(),

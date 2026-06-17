@@ -1,3 +1,4 @@
+import { getAvailableEventLocations } from "@/lib/events/get-available-event-locations";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -6,27 +7,16 @@ export async function GET(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   const { userId } = await params;
+
   try {
     const supabase = await createClient();
+    const { userLocations } = await getAvailableEventLocations(supabase, userId);
 
-    const { data, error } = await supabase
-      .from("map_info")
-      .select("id, formatted_address")
-      .eq("user_id", userId);
-
-    if (error) {
-      console.error("Error fetching locations:", error);
-      return NextResponse.json(
-        {
-          error: "Failed to fetch locations",
-        },
-        { status: 500 }
-      );
-    }
-    return NextResponse.json(data);
-  } catch {
+    return NextResponse.json(userLocations);
+  } catch (error) {
+    console.error("Error fetching participant locations:", error);
     return NextResponse.json(
-      { error: "An Error occured fetching participant map" },
+      { error: "Failed to fetch locations" },
       { status: 500 }
     );
   }

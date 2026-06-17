@@ -1,7 +1,7 @@
 export interface ParticipantClientResponse {
   user_id: string;
   slug: string;
-  short_description: string;
+  short_description: string | null;
   description: string | null;
   is_sticky: boolean;
   year: number | null;

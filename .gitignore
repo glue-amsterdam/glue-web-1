@@ -1,6 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
+.pnpm-store
 /node_modules
 /.pnp
 .pnp.js
@@ -8,6 +9,7 @@
 
 # testing
 /coverage
+/scripts
 
 # next.js
 /.next/
@@ -15,6 +17,7 @@
 
 # production
 /build
+
 
 # misc
 .DS_Store
@@ -38,8 +41,18 @@ next-env.d.ts
 #cursor
 .cursor/
 .agents/
+migrations/
+
 
 skills-lock.json
 
 #snippets sql
 *.sql
+
+TODO.md
+AGENTS.md
+# next-agents-md
+.next-docs/
+supabase/
+snippets/
+scripts/

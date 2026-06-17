@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { PlanType } from "@/schemas/plansSchema";
+import type { PlanAdminInput, PlanType } from "@/schemas/plansSchema";
 
 import {
   deletePlan,
@@ -21,11 +21,9 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import PlanEditDialog from "./PlanEditDialog";
 import PlanAddDialog from "./PlanAddDialog";
-import ApplicationStatusManager from "./ApplicationStatusManager";
 
 interface PlansListProps {
   initialPlans: PlanType[];
@@ -49,7 +47,7 @@ export default function PlansList({ initialPlans }: PlansListProps) {
       (direction === "up" && planIndex === 0) ||
       (direction === "down" && planIndex === plans.length - 1)
     ) {
-      return; // Can't move further
+      return;
     }
 
     const newPlans = [...plans];
@@ -58,11 +56,9 @@ export default function PlansList({ initialPlans }: PlansListProps) {
     const oldOrder = newPlans[planIndex].order_by;
     const newOrder = newPlans[swapIndex].order_by;
 
-    // Swap order_by values
     newPlans[planIndex].order_by = newOrder;
     newPlans[swapIndex].order_by = oldOrder;
 
-    // Swap positions in array
     [newPlans[planIndex], newPlans[swapIndex]] = [
       newPlans[swapIndex],
       newPlans[planIndex],
@@ -70,7 +66,6 @@ export default function PlansList({ initialPlans }: PlansListProps) {
 
     setPlans(newPlans);
 
-    // Update order in database
     try {
       await updatePlanOrder(planId, newOrder, oldOrder);
     } catch (error) {
@@ -80,7 +75,6 @@ export default function PlansList({ initialPlans }: PlansListProps) {
         description: "Failed to update plan order. Please try again.",
         variant: "destructive",
       });
-      // Revert the changes in the local state if the database update fails
       setPlans(plans);
     }
   };
@@ -96,7 +90,6 @@ export default function PlansList({ initialPlans }: PlansListProps) {
 
         await deletePlan(planId);
 
-        // Update local state with correct order_by values
         const updatedPlans = plans
           .filter((p) => p.plan_id !== planId)
           .map((p) => {
@@ -133,8 +126,9 @@ export default function PlansList({ initialPlans }: PlansListProps) {
     try {
       const planToUpdate = plans.find((p) => p.plan_id === planId);
       if (planToUpdate) {
+        const { plan_type: _planType, ...planWithoutType } = planToUpdate;
         const updatedPlan = await updatePlan({
-          ...planToUpdate,
+          ...planWithoutType,
           is_participant_enabled: newValue,
         });
         setPlans(plans.map((p) => (p.plan_id === planId ? updatedPlan : p)));
@@ -154,9 +148,7 @@ export default function PlansList({ initialPlans }: PlansListProps) {
     }
   };
 
-  const handleAddPlan = async (
-    newPlan: Omit<PlanType, "plan_id" | "order_by">
-  ) => {
+  const handleAddPlan = async (newPlan: PlanAdminInput) => {
     try {
       const createdPlan = await createPlan(newPlan);
       setPlans([...plans, createdPlan]);
@@ -174,22 +166,8 @@ export default function PlansList({ initialPlans }: PlansListProps) {
     }
   };
 
-  const getPlanTypeColor = (planType: string) => {
-    switch (planType) {
-      case "free":
-        return "bg-blue-100 text-blue-800";
-      case "member":
-        return "bg-purple-500/10 text-purple-500";
-      case "participant":
-        return "bg-orange-500/10 text-orange-500";
-      default:
-        return "bg-gray/10 text-gray";
-    }
-  };
-
   return (
     <div className="text-black">
-      <ApplicationStatusManager />
       <Button onClick={() => setIsAddingPlan(true)} className="mb-4">
         Add New Plan
       </Button>
@@ -198,7 +176,8 @@ export default function PlansList({ initialPlans }: PlansListProps) {
           <TableRow>
             <TableHead>Order</TableHead>
             <TableHead>Label</TableHead>
-            <TableHead>Type</TableHead>
+            <TableHead>Max images</TableHead>
+            <TableHead>Max events</TableHead>
             <TableHead>Allowed</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -213,6 +192,7 @@ export default function PlansList({ initialPlans }: PlansListProps) {
                   size="icon"
                   onClick={() => movePlan(plan.plan_id, "up")}
                   disabled={plan.order_by === 1}
+                  aria-label="Move plan up"
                 >
                   <ChevronUp className="h-4 w-4" />
                 </Button>
@@ -221,16 +201,14 @@ export default function PlansList({ initialPlans }: PlansListProps) {
                   size="icon"
                   onClick={() => movePlan(plan.plan_id, "down")}
                   disabled={plan.order_by === plans.length}
+                  aria-label="Move plan down"
                 >
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </TableCell>
               <TableCell>{plan.plan_label}</TableCell>
-              <TableCell>
-                <Badge className={getPlanTypeColor(plan.plan_type)}>
-                  {plan.plan_type}
-                </Badge>
-              </TableCell>
+              <TableCell>{plan.plan_max_images}</TableCell>
+              <TableCell>{plan.max_events ?? 0}</TableCell>
               <TableCell>
                 <div className="flex items-center space-x-2">
                   <Switch

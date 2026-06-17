@@ -1,3 +1,5 @@
+import { getHubHostProfiles } from "@/lib/hubs/get-hub-host-profiles";
+import { revalidateParticipantVisibilityCaches } from "@/lib/participants/revalidate-participant-visibility-caches";
 import { NextResponse } from "next/server";
 import { hubSchema } from "@/schemas/hubSchemas";
 import { createClient } from "@/utils/supabase/server";
@@ -36,35 +38,25 @@ export async function GET() {
       );
     }
 
-    // Fetch user info for hub hosts
     const hostIds = hubs.map((hub) => hub.hub_host_id);
-    const { data: hostUsers, error: hostError } = await supabase
-      .from("user_info")
-      .select("user_id, user_name, visible_emails")
-      .in("user_id", hostIds);
+    const hostUserMap = await getHubHostProfiles(hostIds);
 
-    if (hostError) {
-      console.error("Error fetching host users:", hostError);
-      return NextResponse.json(
-        { error: "Failed to fetch host users" },
-        { status: 500 }
-      );
-    }
-
-    const hostUserMap = new Map(hostUsers.map((user) => [user.user_id, user]));
-
-    const transformedHubs = hubs.map((hub) => ({
-      id: hub.id,
-      name: hub.name,
-      description: hub.description,
-      display_number: hub.display_number,
-      hub_host: hostUserMap.get(hub.hub_host_id) || {
+    const transformedHubs = hubs.map((hub) => {
+      const host = hostUserMap.get(hub.hub_host_id) ?? {
         user_id: hub.hub_host_id,
         user_name: null,
         visible_emails: [],
-      },
-      participants: hub.participants,
-    }));
+      };
+
+      return {
+        id: hub.id,
+        name: hub.name,
+        description: hub.description,
+        display_number: hub.display_number,
+        hub_host: host,
+        participants: hub.participants,
+      };
+    });
 
     return NextResponse.json(transformedHubs);
   } catch (error) {
@@ -133,6 +125,8 @@ export async function POST(req: Request) {
       );
     }
 
+    await revalidateParticipantVisibilityCaches(supabase);
+
     return NextResponse.json({ success: true, hub: hubData });
   } catch (error) {
     console.error("Error in hub creation:", error);
@@ -195,6 +189,8 @@ export async function PUT(request: Request) {
         .insert({ hub_id: hubData.id, user_id: participant.user_id });
     }
 
+    await revalidateParticipantVisibilityCaches(supabase);
+
     return NextResponse.json(data[0]);
   } catch (error) {
     console.error("Unexpected error:", error);
@@ -254,6 +250,8 @@ export async function DELETE(request: Request) {
         { status: 500 }
       );
     }
+
+    await revalidateParticipantVisibilityCaches(supabase);
 
     return NextResponse.json({ message: "Hub deleted successfully" });
   } catch (error) {

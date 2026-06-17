@@ -16,6 +16,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
+import BigButton from "@/components/big-button";
 
 const AdminLoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -59,14 +60,14 @@ const AdminLoginForm = () => {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="space-y-6 text-black"
+        className="space-y-6 text-black mini-padding"
       >
         <FormField
           control={form.control}
           name="userName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-primary">User Name</FormLabel>
+              <FormLabel className="text-xs">username</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
@@ -86,7 +87,7 @@ const AdminLoginForm = () => {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-primary">Password</FormLabel>
+              <FormLabel className="text-xs">password</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
@@ -105,17 +106,14 @@ const AdminLoginForm = () => {
         {form.formState.errors.root && (
           <p className="text-red-500">{form.formState.errors.root.message}</p>
         )}
-        <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Logging in...
-              </>
-            ) : (
-              "Log In"
-            )}
-          </Button>
+        <div className="flex justify-start">
+          <BigButton
+            mode="big"
+            as="submit"
+            disabled={isLoading}
+            label={isLoading ? "loggin..." : "enter"}
+          />
+
         </div>
       </form>
     </Form>

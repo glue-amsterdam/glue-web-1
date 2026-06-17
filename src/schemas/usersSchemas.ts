@@ -130,7 +130,7 @@ export type ParticipantUserBase = {
   plan_id: "planId-2" | "planId-3" | "planId-4" | "planId-5";
   type: "participant";
   invoice_data: InvoiceDataCall;
-  short_description: string;
+  short_description?: string | null;
   images?: ImageData[];
   events?: Pick<Event, "eventId">[];
   description?: string;

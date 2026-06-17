@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { reactivationRequestSubmissionSchema } from "@/schemas/participantDetailsSchemas";
 import { Resend } from "resend";
-import { config } from "@/env";
+import { config } from "@/config";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -127,20 +127,17 @@ export async function POST(request: Request) {
       await resend.emails.send({
         from: `GLUE <${config.baseEmail}>`,
         to: adminEmails,
-        subject: `Reactivation Request from ${
-          userData.user_name || user.email
-        }`,
+        subject: `Reactivation Request from ${userData.user_name || user.email
+          }`,
         html: `
           <h1>Participant Reactivation Request</h1>
-          <p><strong>Participant:</strong> ${
-            userData.user_name || user.email
+          <p><strong>Participant:</strong> ${userData.user_name || user.email
           }</p>
           <p><strong>User ID:</strong> ${userId}</p>
           <p><strong>Plan:</strong> ${planInfo}</p>
           <p><strong>Address:</strong> ${addressInfo}</p>
           <p><strong>Exhibition Space Preference:</strong> ${exhibitionSpaceInfo}</p>
-          <p><strong>Notes:</strong> ${
-            reactivationData.notes || "No notes provided"
+          <p><strong>Notes:</strong> ${reactivationData.notes || "No notes provided"
           }</p>
           <p>Please review this request in the admin dashboard.</p>
         `,

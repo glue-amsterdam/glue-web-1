@@ -1,14 +1,12 @@
 import { createClient } from "@/utils/supabase/server";
+import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 import { PostgrestError } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
-// Define types for our data structures
 interface ParticipantDetails {
   slug: string;
   user_id: string;
-  user_info: {
-    user_name: string;
-  };
+  display_name: string | null;
 }
 
 interface ParticipantImage {
@@ -23,21 +21,19 @@ interface ParticipantWithImage {
   image_url: string | null;
 }
 
-// Fisher-Yates shuffle algorithm
-function shuffleArray<T>(array: T[]): T[] {
+const shuffleArray = <T>(array: T[]): T[] => {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
-}
+};
 
 export async function GET() {
   try {
     const supabase = await createClient();
 
-    // Fetch tour status to determine filtering logic
     const { data: tourStatus, error: tourStatusError } = await supabase
       .from("tour_status")
       .select("current_tour_status")
@@ -45,25 +41,19 @@ export async function GET() {
 
     if (tourStatusError) {
       console.error("Error fetching tour status:", tourStatusError);
-      // Default to "new" if tour status fetch fails
     }
 
     const currentTourStatus = tourStatus?.current_tour_status || "new";
 
-    // Build query based on tour status
-    // If "new": filter by is_active = true
-    // If "older": filter by was_active_last_year = true
     let participantQuery = supabase
       .from("participant_details")
       .select(
         `
-          slug, 
+          slug,
           user_id,
           status,
           is_active,
-          user_info!inner (
-            user_name
-          )
+          display_name
         `
       )
       .eq("status", "accepted");
@@ -74,7 +64,6 @@ export async function GET() {
       participantQuery = participantQuery.eq("was_active_last_year", true);
     }
 
-    // Fetch all participants with user_name from user_info
     const { data: participantData, error: participantError } =
       (await participantQuery) as {
         data: ParticipantDetails[] | null;
@@ -92,7 +81,6 @@ export async function GET() {
       );
     }
 
-    // Fetch images for all participants
     const { data: imageData, error: imageError } = (await supabase
       .from("participant_image")
       .select("user_id, image_url")
@@ -105,7 +93,6 @@ export async function GET() {
       throw imageError;
     }
 
-    // Combine participant data with their images
     const participantsWithImages: ParticipantWithImage[] = participantData.map(
       (participant) => {
         const image = imageData?.find(
@@ -114,13 +101,12 @@ export async function GET() {
         return {
           slug: participant.slug,
           user_id: participant.user_id,
-          user_name: participant.user_info.user_name,
+          user_name: getParticipantDisplayName(participant),
           image_url: image ? image.image_url : null,
         };
       }
     );
 
-    // Shuffle the participants on the server side
     const shuffledParticipants = shuffleArray(participantsWithImages);
 
     return NextResponse.json({

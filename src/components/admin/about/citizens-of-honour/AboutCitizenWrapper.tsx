@@ -14,13 +14,17 @@ import LoadingSpinner from "@/app/components/LoadingSpinner";
 interface AboutCitizenWrapperProps {
   selectedYear: string;
   isNewYear: boolean;
+  onChanged?: () => void;
   onYearDeleted?: () => void;
+  compact?: boolean;
 }
 
 export function AboutCitizenWrapper({
   selectedYear,
-  isNewYear,
+  isNewYear: _isNewYear,
+  onChanged,
   onYearDeleted,
+  compact = false,
 }: AboutCitizenWrapperProps) {
   const [citizens, setCitizens] = useState<Citizen[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,11 +33,6 @@ export function AboutCitizenWrapper({
   const { toast } = useToast();
 
   const fetchCitizens = useCallback(async () => {
-    if (isNewYear) {
-      setCitizens([]);
-      return;
-    }
-
     setIsLoading(true);
     try {
       const response = await fetch(`/api/admin/about/citizens/${selectedYear}`);
@@ -52,7 +51,7 @@ export function AboutCitizenWrapper({
     } finally {
       setIsLoading(false);
     }
-  }, [selectedYear, isNewYear, toast]);
+  }, [selectedYear, toast]);
 
   useEffect(() => {
     fetchCitizens();
@@ -68,8 +67,9 @@ export function AboutCitizenWrapper({
     setIsModalOpen(true);
   };
 
-  const handleCitizenSaved = () => {
-    fetchCitizens();
+  const handleCitizenSaved = async () => {
+    await fetchCitizens();
+    onChanged?.();
   };
 
   const handleDeleteYear = async () => {
@@ -117,9 +117,19 @@ export function AboutCitizenWrapper({
   }
 
   return (
-    <div className="mt-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Citizens for {selectedYear}</h2>
+    <div className={compact ? "space-y-6" : "mt-8 space-y-6"}>
+      <div
+        className={
+          compact
+            ? "flex items-center justify-end"
+            : "flex items-center justify-between"
+        }
+      >
+        {!compact ? (
+          <h2 className="text-2xl font-bold">Citizens for {selectedYear}</h2>
+        ) : (
+          <span className="sr-only">Citizens for {selectedYear}</span>
+        )}
         <div className="flex gap-2">
           <Button
             onClick={handleAddCitizen}
@@ -128,7 +138,7 @@ export function AboutCitizenWrapper({
             <Plus className="w-4 h-4" />
             Add Citizen
           </Button>
-          {!isNewYear && citizens.length > 0 && (
+          {citizens.length > 0 ? (
             <Button
               variant="destructive"
               onClick={handleDeleteYear}
@@ -137,7 +147,7 @@ export function AboutCitizenWrapper({
               <Trash2 className="w-4 h-4" />
               Delete Year
             </Button>
-          )}
+          ) : null}
         </div>
       </div>
 

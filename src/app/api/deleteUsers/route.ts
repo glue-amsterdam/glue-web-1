@@ -1,9 +1,103 @@
-import { NextResponse } from "next/server";
+import { getIsPlatformMod } from "@/lib/permissions/get-is-mod";
+import { config } from "@/config";
 import { createAdminClient } from "@/utils/supabase/adminClient";
+import { createClient } from "@/utils/supabase/server";
 import { SupabaseClient } from "@supabase/supabase-js";
-import { config } from "@/env";
+import { NextResponse } from "next/server";
+
+const deleteUserStorage = async (
+  supabase: SupabaseClient,
+  userId: string
+): Promise<string[]> => {
+  const bucketName = config.bucketName;
+  const folders = ["profile-images", "events"];
+  const errors: string[] = [];
+
+  for (const folder of folders) {
+    const path = `${folder}/${userId}`;
+
+    const { data: files, error: listError } = await supabase.storage
+      .from(bucketName)
+      .list(path);
+
+    if (listError) {
+      errors.push(`Error listing files in ${path}: ${listError.message}`);
+      continue;
+    }
+
+    if (files && files.length > 0) {
+      const filesToDelete = files.map(
+        (file: { name: string }) => `${path}/${file.name}`
+      );
+      const { error: deleteError } = await supabase.storage
+        .from(bucketName)
+        .remove(filesToDelete);
+
+      if (deleteError) {
+        errors.push(`Error deleting files in ${path}: ${deleteError.message}`);
+      }
+    }
+
+    const { error: folderDeleteError } = await supabase.storage
+      .from(bucketName)
+      .remove([path]);
+
+    if (folderDeleteError) {
+      errors.push(
+        `Error deleting folder ${path}: ${folderDeleteError.message}`
+      );
+    }
+  }
+
+  return errors;
+};
+
+const deleteUserRelatedRows = async (
+  supabase: SupabaseClient,
+  userId: string
+) => {
+  const tables = [
+    "sticky_group_participants",
+    "visiting_hours",
+    "map_info",
+    "invoice_data",
+    "participant_details",
+    "visitor_data",
+    "user_permissions",
+    "user_info",
+  ] as const;
+
+  for (const table of tables) {
+    if (table === "sticky_group_participants") {
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq("participant_user_id", userId);
+      if (error) throw error;
+      continue;
+    }
+
+    const column = table === "visitor_data" ? "auth_user_id" : "user_id";
+    const { error } = await supabase.from(table).delete().eq(column, userId);
+    if (error) throw error;
+  }
+};
 
 export async function POST(request: Request) {
+  const supabaseSession = await createClient();
+  const {
+    data: { user },
+  } = await supabaseSession.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const isModerator = await getIsPlatformMod(supabaseSession, user.id);
+  if (!isModerator) {
+    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+  }
+
   const supabase = await createAdminClient();
   const { userIds } = await request.json();
 
@@ -11,77 +105,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Invalid userIds" }, { status: 400 });
   }
 
-  const deletedUsers = [];
-  const failedDeletions = [];
-  const errors = [];
+  const deletedUsers: string[] = [];
+  const failedDeletions: Array<{ userId: string; error: string }> = [];
+  const errors: string[] = [];
 
   try {
-    // Delete storage items
-    async function deleteUserStorage(supabase: SupabaseClient, userId: string) {
-      const bucketName = config.bucketName;
-      const folders = ["profile-images", "events"];
-      const errors = [];
-
-      for (const folder of folders) {
-        const path = `${folder}/${userId}`;
-
-        const { data: files, error: listError } = await supabase.storage
-          .from(bucketName)
-          .list(path);
-
-        if (listError) {
-          errors.push(`Error listing files in ${path}: ${listError.message}`);
-          continue;
-        }
-
-        if (files && files.length > 0) {
-          const filesToDelete = files.map(
-            (file: { name: string }) => `${path}/${file.name}`
-          );
-          const { error: deleteError } = await supabase.storage
-            .from(bucketName)
-            .remove(filesToDelete);
-
-          if (deleteError) {
-            errors.push(
-              `Error deleting files in ${path}: ${deleteError.message}`
-            );
-          }
-        }
-
-        const { error: folderDeleteError } = await supabase.storage
-          .from(bucketName)
-          .remove([path]);
-
-        if (folderDeleteError) {
-          errors.push(
-            `Error deleting folder ${path}: ${folderDeleteError.message}`
-          );
-        }
-      }
-
-      return errors;
-    }
-
     for (const userId of userIds) {
       try {
-        // Delete user's storage items
         const storageErrors = await deleteUserStorage(
           supabase as SupabaseClient,
           userId
         );
         errors.push(...storageErrors);
 
-        // Delete user from user_info table
-        // This will trigger cascading deletes for all related tables
-        const { error: userInfoError } = await supabase
-          .from("user_info")
-          .delete()
-          .eq("user_id", userId);
+        await deleteUserRelatedRows(supabase as SupabaseClient, userId);
 
-        if (userInfoError) throw userInfoError;
-
-        // Delete auth user
         const { error: authError } = await supabase.auth.admin.deleteUser(
           userId
         );
@@ -96,7 +134,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Determine response based on results
     if (failedDeletions.length > 0 || errors.length > 0) {
       return NextResponse.json(
         {
@@ -107,15 +144,15 @@ export async function POST(request: Request) {
         },
         { status: 207 }
       );
-    } else {
-      return NextResponse.json(
-        {
-          message: "All users and associated data deleted successfully",
-          deletedUsers,
-        },
-        { status: 200 }
-      );
     }
+
+    return NextResponse.json(
+      {
+        message: "All users and associated data deleted successfully",
+        deletedUsers,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Unexpected error during user deletion:", error);
     return NextResponse.json(

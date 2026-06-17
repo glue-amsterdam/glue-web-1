@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 import { UserData } from "@/schemas/authSchemas";
-import { config } from "@/env";
+import { config } from "@/config";
 import {
   getEmailTemplateWithFallback,
   processEmailTemplate,
@@ -117,17 +117,15 @@ export async function sendModeratorParticipantNotification(
       <li>Email: ${userData.email}</li>
       <li>Email for Practical GLUE Communication: ${userData.glue_communication_email || "N/A"}</li>
       <li>Phone Numbers: ${userData.phone_numbers?.join(", ") || "N/A"}</li>
-      <li>Social Media: ${
-        userData.social_media
-          ? Object.entries(userData.social_media)
-              .map(([platform, link]) => `${platform}: ${link}`)
-              .join(", ")
-          : "N/A"
-      }</li>
+      <li>Social Media: ${userData.social_media
+      ? Object.entries(userData.social_media)
+        .map(([platform, link]) => `${platform}: ${link}`)
+        .join(", ")
+      : "N/A"
+    }</li>
       <li>Visible Emails: ${userData.visible_emails?.join(", ") || "N/A"}</li>
-      <li>Visible Websites: ${
-        userData.visible_websites?.join(", ") || "N/A"
-      }</li>
+      <li>Visible Websites: ${userData.visible_websites?.join(", ") || "N/A"
+    }</li>
     </ul>
     
     <h2>Plan Information</h2>

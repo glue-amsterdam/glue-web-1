@@ -1,102 +1,73 @@
-import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import "@/app/globals.css";
+import { LayoutMetadata } from "@/lib/metadata";
 
-import { Analytics } from '@vercel/analytics/next'
-
-import { AuthProvider } from "@/app/context/AuthContext";
-import { Toaster } from "@/components/ui/toaster";
-import { CookieBanner } from "@/components/cookies/cookies-banner";
-import { config } from "@/env";
-import { MainContextProvider } from "./context/MainContext";
 import { fetchMain } from "@/lib/main/fetch-main";
-import { ViewTransitions } from "next-view-transitions";
+import { getTheme } from "@/lib/theme";
+import { buildNavbarLinks } from "@/lib/nav/build-navbar-links"; 1450
 
-export const metadata: Metadata = {
-  title: `GLUE ${config.cityName} | Connected by Design`,
-  description: `Discover GLUE ${config.cityName}, where innovation meets creativity. Explore our events, design routes, and join a community connected by design.`,
-  openGraph: {
-    title: `GLUE ${config.cityName} | Connected by Design`,
-    url: config.baseUrl,
-    description: `Join GLUE ${config.cityName} and experience a world of design-driven innovation. Connect with us today!`,
-    images: [
-      {
-        url: `${config.baseUrl}/${config.cityName}/og-image.jpg`,
-        width: 1200,
-        height: 630,
-        alt: `GLUE ${config.cityName} - Connected by Design`,
-      },
-    ],
-    type: "website",
-    siteName: `GLUE ${config.cityName}`,
-  },
-  twitter: {
-    title: `GLUE ${config.cityName} | Connected by Design`,
-    card: "summary_large_image",
-    description: `Discover GLUE ${config.cityName}, where innovation meets creativity. Explore our events, design routes, and join a community connected by design.`,
-    images: `${config.baseUrl}/${config.cityName}/tw-image.jpg`,
-    site: config.cityName,
-  },
-  icons: [
-    {
-      url: `${config.baseUrl}/${config.cityName}/favicon.ico`,
-      media: "(prefers-color-scheme: light)",
-    },
-    {
-      url: `${config.baseUrl}/${config.cityName}/favicon.ico`,
-      media: "(prefers-color-scheme: dark)",
-    },
-  ],
+import { AppProviders } from "@/components/app-providers";
+import { MainContextProvider } from "../context/MainContext";
+import { getNavbarInitialIdentity } from "@/lib/users/get-navbar-initial-identity";
+import { AdminSiteChrome } from "@/components/admin/admin-site-chrome";
 
-  keywords: [
-    "GLUE",
-    config.cityName,
-    "design",
-    "design routes",
-    "design community",
-    "innovation",
-    "connected by design",
-    "creative events",
-    "urban design",
-  ],
-  robots: {
-    index: true,
-    follow: true,
-    nocache: false,
-    googleBot: {
-      index: true,
-      follow: true,
-      noimageindex: false,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-  metadataBase: new URL(config.baseUrl),
-  alternates: {
-    canonical: config.baseUrl,
-  },
-};
+import { Toaster } from "@/components/ui/toaster";
+
+import { CookieBanner } from "@/components/cookies/cookies-banner";
+import InternalNavigationTracker from "@/components/internal-navigation-tracker";
+
+export const metadata = LayoutMetadata;
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const initialData = await fetchMain();
+  const [initialData, theme, navbarInitialIdentity] = await Promise.all([
+    fetchMain(),
+    getTheme(),
+    getNavbarInitialIdentity(),
+  ]);
+  const navLinks = buildNavbarLinks(theme.navMenu);
+
   return (
-    <ViewTransitions>
-      <html lang="en">
-        <body className="font-lausanne text-uiwhite">
-          <MainContextProvider initialData={initialData}>
-            <AuthProvider>
+    <html
+      lang="en"
+      style={
+        {
+          "--primary-color": theme.primaryColor,
+          "--background-color": theme.backgroundColor,
+          "--black-color": theme.blackColor,
+          "--gray-color": "#DADADA",
+          "--white-color": theme.whiteColor,
+          "--up-to-three-participants-color": theme.upToThreeParticipantsColor,
+          "--hub-color": theme.hubColor,
+          "--special-program-color": theme.specialProgramColor,
+          "--hub-font-color": theme.hubFontColor,
+          "--up-to-three-participants-font-color":
+            theme.upToThreeParticipantsFontColor,
+          "--special-program-font-color": theme.specialProgramFontColor,
+
+        } as React.CSSProperties
+      }
+    >
+      <body className="font-lausanne bg-(--background-color)">
+        <MainContextProvider initialData={initialData}>
+          <AppProviders>
+            <AdminSiteChrome
+              navbarInitialIdentity={navbarInitialIdentity}
+              navLinks={navLinks}
+              homeTexts={theme.homeTexts}
+            >
+              <InternalNavigationTracker />
               {children}
-              <Analytics />
-              <Toaster />
-              <CookieBanner />
-            </AuthProvider>
-          </MainContextProvider>
-        </body>
-      </html>
-    </ViewTransitions>
+            </AdminSiteChrome>
+            <Analytics />
+            <Toaster />
+            <CookieBanner />
+          </AppProviders>
+        </MainContextProvider>
+      </body>
+    </html>
   );
 }

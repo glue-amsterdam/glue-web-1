@@ -1,7 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { config } from "@/env";
+import { config } from "@/config";
+import { revalidateParticipantVisibilityCaches } from "@/lib/participants/revalidate-participant-visibility-caches";
 import {
   getEmailTemplateWithFallback,
   processEmailTemplate,
@@ -81,16 +82,131 @@ export async function POST(request: Request) {
       );
     }
 
+    // Update participant_details extra fields and plan from reactivation notes
+    if (participantData.reactivation_notes) {
+      const notes = participantData.reactivation_notes as Record<string, unknown>;
+
+      const participantUpdate: Record<string, unknown> = {
+        plan_id: notes.plan_id ?? participantData.plan_id,
+        plan_type: notes.plan_type ?? participantData.plan_type,
+      };
+
+      if (typeof notes.short_description === "string") {
+        participantUpdate.short_description = notes.short_description;
+      }
+      if (Array.isArray(notes.phone_numbers)) {
+        participantUpdate.phone_numbers = notes.phone_numbers;
+      }
+      if (Array.isArray(notes.visible_emails)) {
+        participantUpdate.visible_emails = notes.visible_emails;
+      }
+      if (Array.isArray(notes.visible_websites)) {
+        participantUpdate.visible_websites = notes.visible_websites;
+      }
+      if (typeof notes.glue_communication_email === "string") {
+        participantUpdate.glue_communication_email = notes.glue_communication_email;
+      }
+      if (notes.social_media && typeof notes.social_media === "object") {
+        participantUpdate.social_media = notes.social_media;
+      }
+
+      const { error: participantFieldsError } = await supabase
+        .from("participant_details")
+        .update(participantUpdate)
+        .eq("user_id", userId);
+
+      if (participantFieldsError) {
+        return NextResponse.json(
+          { error: "Failed to update participant profile fields" },
+          { status: 500 }
+        );
+      }
+
+      const invoicePayload = {
+        user_id: userId,
+        invoice_company_name:
+          typeof notes.invoice_company_name === "string"
+            ? notes.invoice_company_name
+            : undefined,
+        invoice_zip_code:
+          typeof notes.invoice_zip_code === "string"
+            ? notes.invoice_zip_code
+            : undefined,
+        invoice_address:
+          typeof notes.invoice_address === "string"
+            ? notes.invoice_address
+            : undefined,
+        invoice_country:
+          typeof notes.invoice_country === "string"
+            ? notes.invoice_country
+            : undefined,
+        invoice_city:
+          typeof notes.invoice_city === "string" ? notes.invoice_city : undefined,
+        invoice_extra:
+          typeof notes.invoice_extra === "string" ? notes.invoice_extra : null,
+      };
+
+      const hasInvoiceFields = [
+        invoicePayload.invoice_company_name,
+        invoicePayload.invoice_zip_code,
+        invoicePayload.invoice_address,
+        invoicePayload.invoice_country,
+        invoicePayload.invoice_city,
+      ].every((value) => typeof value === "string" && value.length > 0);
+
+      if (hasInvoiceFields) {
+        const { data: existingInvoice } = await supabase
+          .from("invoice_data")
+          .select("user_id")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (existingInvoice) {
+          const { error: invoiceError } = await supabase
+            .from("invoice_data")
+            .update(invoicePayload)
+            .eq("user_id", userId);
+
+          if (invoiceError) {
+            return NextResponse.json(
+              { error: "Failed to update invoice data" },
+              { status: 500 }
+            );
+          }
+        } else {
+          const { error: invoiceError } = await supabase
+            .from("invoice_data")
+            .insert(invoicePayload);
+
+          if (invoiceError) {
+            return NextResponse.json(
+              { error: "Failed to create invoice data" },
+              { status: 500 }
+            );
+          }
+        }
+      }
+    }
+
     // Update map_info
     if (participantData.reactivation_notes) {
+      const notes = participantData.reactivation_notes as Record<string, unknown>;
       const { error: updateMapInfoError } = await supabase
         .from("map_info")
         .update({
           formatted_address:
-            participantData.reactivation_notes.formatted_address,
-          latitude: participantData.reactivation_notes.latitude,
-          longitude: participantData.reactivation_notes.longitude,
-          no_address: participantData.reactivation_notes.no_address,
+            typeof notes.formatted_address === "string"
+              ? notes.formatted_address
+              : null,
+          latitude:
+            typeof notes.latitude === "number" ? notes.latitude : null,
+          longitude:
+            typeof notes.longitude === "number" ? notes.longitude : null,
+          no_address: Boolean(notes.no_address),
+          exhibition_space_preference:
+            typeof notes.exhibition_space_preference === "string"
+              ? notes.exhibition_space_preference
+              : null,
         })
         .eq("user_id", userId);
 
@@ -157,6 +273,8 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+
+    await revalidateParticipantVisibilityCaches(supabase);
 
     return NextResponse.json({ success: true });
   } catch (error) {

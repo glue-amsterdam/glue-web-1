@@ -1,29 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidateSponsorsCache } from "@/lib/about/revalidate-sponsors-cache";
 import { sponsorsHeaderSchema } from "@/schemas/sponsorsSchema";
 import { createClient } from "@/utils/supabase/server";
-
-export async function GET() {
-  try {
-    const supabase = await createClient();
-
-    const { data, error } = await supabase
-      .from("about_sponsors_header")
-      .select("*")
-      .eq("id", "about-sponsors-header-section")
-      .single();
-
-    if (error) throw error;
-
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error in GET /api/admin/sponsors/header", error);
-    return NextResponse.json(
-      { error: "An error occurred while fetching sponsors header data" },
-      { status: 500 }
-    );
-  }
-}
 
 export async function PUT(request: Request) {
   const cookieStore = await cookies();
@@ -49,13 +28,13 @@ export async function PUT(request: Request) {
         description: validatedData.description,
         sponsors_types: validatedData.sponsors_types,
         is_visible: validatedData.is_visible,
-        text_color: validatedData.text_color,
-        background_color: validatedData.background_color,
       })
       .eq("id", "about-sponsors-header-section")
       .select();
 
     if (error) throw error;
+
+    revalidateSponsorsCache();
 
     return NextResponse.json(data);
   } catch (error) {

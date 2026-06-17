@@ -18,11 +18,18 @@ import { Sponsor, sponsorSchema, SponsorType } from "@/schemas/sponsorsSchema";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { ImageIcon } from "lucide-react";
-import Image from "next/image";
+import {
+  addAboutSponsor,
+  saveAboutSponsor,
+} from "@/app/actions/admin/about";
 import { uploadImage } from "@/utils/supabase/storage/client";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
-import { config } from "@/env";
+import { config } from "@/config";
+import { AdminImagePreview } from "@/components/admin/admin-image-preview";
+import {
+  createUploadProgressHandler,
+  type UploadState,
+} from "@/components/image-upload-overlay";
 
 interface SponsorFormProps {
   initialData?: Sponsor;
@@ -38,9 +45,11 @@ export default function SponsorForm({
   onSponsorUpdated,
 }: SponsorFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadState, setUploadState] = useState<UploadState | null>(null);
   const { toast } = useToast();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const handleUploadProgress = createUploadProgressHandler(setUploadState);
 
   const methods = useForm<Sponsor>({
     resolver: zodResolver(sponsorSchema),
@@ -76,10 +85,13 @@ export default function SponsorForm({
     try {
       let newImageUrl = data.image_url;
       if (data.file) {
+        setUploadState({ stage: "compressing", progress: 5 });
+
         const { imageUrl, error } = await uploadImage({
           file: data.file,
           bucket: config.bucketName,
           folder: "about/sponsors",
+          onProgress: handleUploadProgress,
         });
         if (error) {
           throw new Error(`Failed to upload image: ${error}`);
@@ -87,26 +99,23 @@ export default function SponsorForm({
         newImageUrl = imageUrl;
       }
 
+      setUploadState({ stage: "saving", progress: 96 });
+
       const sponsorData = {
         ...data,
         image_url: newImageUrl,
       };
 
-      const response = await fetch("/api/admin/about/sponsors", {
-        method: initialData ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sponsorData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save sponsor");
+      if (initialData) {
+        await saveAboutSponsor(sponsorData);
+      } else {
+        await addAboutSponsor(sponsorData);
       }
 
       toast({
         title: `Sponsor ${initialData ? "updated" : "added"}`,
-        description: `The sponsor has been successfully ${
-          initialData ? "updated" : "added"
-        }.`,
+        description: `The sponsor has been successfully ${initialData ? "updated" : "added"
+          }.`,
       });
 
       if (initialData && onSponsorUpdated) {
@@ -121,15 +130,19 @@ export default function SponsorForm({
       console.error("Form submission error:", error);
       toast({
         title: "Error",
-        description: `Failed to ${
-          initialData ? "update" : "add"
-        } sponsor. Please try again.`,
+        description: `Failed to ${initialData ? "update" : "add"
+          } sponsor. Please try again.`,
         variant: "destructive",
       });
     } finally {
+      setUploadState(null);
       setIsSubmitting(false);
     }
   };
+
+  const imageUrl = watch("image_url");
+  const pendingFile = watch("file");
+  const isBusy = isSubmitting || uploadState !== null;
 
   return (
     <Card className="w-full max-w-2xl">
@@ -181,28 +194,26 @@ export default function SponsorForm({
 
             <div>
               <Label>Logo</Label>
-              <div className="w-full h-52 bg-gray object-cover rounded-md relative mb-2">
-                {watch("image_url") ? (
-                  <Image
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    src={watch("image_url")}
-                    alt={"Sponsor logo"}
-                    className="object-cover rounded-md"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-md">
-                    <ImageIcon className="w-12 h-12 text-gray-400" />
-                  </div>
-                )}
-              </div>
+              <AdminImagePreview
+                src={imageUrl}
+                alt="Sponsor logo"
+                uploadState={uploadState}
+                aspectClassName="h-52 w-full"
+              />
+              {pendingFile && !uploadState && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  New file selected — save to apply
+                </p>
+              )}
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
+                size="sm"
+                className="mt-2 w-full"
+                disabled={isBusy}
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full mb-2"
               >
-                {watch("image_url") ? "Change Logo" : "Upload Logo"}
+                {imageUrl ? "Change Logo" : "Upload Logo"}
               </Button>
               <input
                 type="file"
@@ -210,6 +221,7 @@ export default function SponsorForm({
                 onChange={handleImageChange}
                 ref={fileInputRef}
                 className="hidden"
+                disabled={isBusy}
               />
               {errors.image_url && (
                 <p className="text-red-500">{errors.image_url.message}</p>

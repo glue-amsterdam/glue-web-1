@@ -7,30 +7,15 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { RichTextEditor } from "@/app/components/editor";
+import { RichTextEditor } from "@/components/editor";
 import { useFormContext } from "react-hook-form";
-import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
+import type { ParticipantDetailsInput } from "@/schemas/participantDetailsSchemas";
 
-export function BasicInfoFields() {
-  const { control } = useFormContext<ParticipantDetails>();
+export function BasicInfoFields({ readOnly = false }: { readOnly?: boolean }) {
+  const { control } = useFormContext<ParticipantDetailsInput>();
 
   return (
-    <>
-      <FormField
-        control={control}
-        name="short_description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Short Description</FormLabel>
-            <FormControl>
-              <Input {...field} className="bg-white text-black" />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
+    <div className="mini-padding space-y-[15px]">
       <FormField
         control={control}
         name="description"
@@ -39,14 +24,16 @@ export function BasicInfoFields() {
             <FormLabel>Description</FormLabel>
             <FormControl>
               <RichTextEditor
+                maxLength={3500}
                 value={field.value || ""}
                 onChange={field.onChange}
+                readOnly={readOnly}
               />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-    </>
+    </div>
   );
 }

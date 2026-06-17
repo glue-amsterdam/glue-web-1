@@ -5,34 +5,7 @@ import {
   pressKitLinksSchema,
   pressKitLinksFormSchema,
 } from "@/schemas/mainSchema";
-
-export async function GET() {
-  try {
-    const supabase = await createClient();
-
-    const { data: pressKitLinks, error } = await supabase
-      .from("press_kit_links")
-      .select("*")
-      .order("id");
-
-    if (error) {
-      throw new Error(`Error fetching press kit links: ${error.message}`);
-    }
-
-    const response = { pressKitLinks };
-
-    // Validate the response against the schema
-    const validatedResponse = pressKitLinksSchema.parse(response);
-
-    return NextResponse.json(validatedResponse);
-  } catch (error) {
-    console.error("Error in GET /api/admin/main/press_kit_links:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch press kit links" },
-      { status: 500 }
-    );
-  }
-}
+import { revalidatePressKitLinksCache } from "@/lib/main/revalidate-press-kit-links-cache";
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
@@ -64,6 +37,8 @@ export async function POST(request: Request) {
     if (error) {
       throw error;
     }
+
+    revalidatePressKitLinksCache();
 
     return NextResponse.json(data);
   } catch (error) {
@@ -120,6 +95,8 @@ export async function PUT(request: Request) {
     // Validate the response against the schema
     const validatedResponse = pressKitLinksSchema.parse(response);
 
+    revalidatePressKitLinksCache();
+
     return NextResponse.json(validatedResponse);
   } catch (error) {
     console.error("Error updating press kit links:", error);
@@ -161,6 +138,8 @@ export async function DELETE(request: Request) {
     if (error) {
       throw error;
     }
+
+    revalidatePressKitLinksCache();
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -1,5 +1,3 @@
-/* TODO ADD THE TEXT COLOR IN THE BACKEND */
-
 "use client";
 
 import { useForm, useFieldArray, FormProvider } from "react-hook-form";
@@ -13,7 +11,8 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
-import { createSubmitHandler } from "@/utils/form-helpers";
+import { createActionSubmitHandler } from "@/utils/form-helpers";
+import { saveAboutSponsorsHeader } from "@/app/actions/admin/about";
 import {
   FormControl,
   FormDescription,
@@ -22,10 +21,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { mutate } from "swr";
 import { Switch } from "@/components/ui/switch";
-import { RichTextEditor } from "@/app/components/editor";
-import { ColorPicker } from "@/components/ui/color-picker";
+import { RichTextEditor } from "@/components/editor";
 
 export default function SponsorHeaderForm({
   initialData,
@@ -45,7 +42,7 @@ export default function SponsorHeaderForm({
     register,
     control,
     handleSubmit,
-    formState: { errors, isDirty },
+    formState: { errors },
     reset,
   } = methods;
 
@@ -58,14 +55,13 @@ export default function SponsorHeaderForm({
     reset(initialData);
   }, [initialData, reset]);
 
-  const onSubmit = createSubmitHandler<SponsorsHeader>(
-    "/api/admin/about/sponsors/header",
+  const onSubmit = createActionSubmitHandler<SponsorsHeader>(
+    saveAboutSponsorsHeader,
     async () => {
       toast({
         title: "Sponsors header updated",
         description: "The sponsors header have been successfully updated.",
       });
-      await mutate("/api/admin/about/sponsors/header");
       router.refresh();
     },
     (error) => {
@@ -113,7 +109,7 @@ export default function SponsorHeaderForm({
             <FormItem>
               <FormLabel>Title</FormLabel>
               <FormControl>
-                <RichTextEditor
+                <Input
                   value={field.value || ""}
                   onChange={field.onChange}
                 />
@@ -139,53 +135,11 @@ export default function SponsorHeaderForm({
             </FormItem>
           )}
         />
-        <FormField
-          control={control}
-          name="text_color"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Text Color</FormLabel>
-              <FormDescription>
-                Pick the color of the text of the sponsors section
-              </FormDescription>
-              <FormControl>
-                <ColorPicker
-                  value={field.value || "#ffffff"}
-                  onChange={field.onChange}
-                  label="Pick text color"
-                  className="w-full"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name="background_color"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Background Color</FormLabel>
-              <FormDescription>
-                Pick the color of the background of the sponsors section
-              </FormDescription>
-              <FormControl>
-                <ColorPicker
-                  value={field.value || "#000000"}
-                  onChange={field.onChange}
-                  label="Pick background color"
-                  className="w-full"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <div>
           <Label>Sponsor Types</Label>
           {fields.map((field, index) => (
             <div
-              key={field.label + index}
+              key={field.id}
               className="flex items-center space-x-2 mt-2"
             >
               <Input
@@ -210,17 +164,15 @@ export default function SponsorHeaderForm({
                 : errors.sponsors_types.message}
             </p>
           )}
-          {fields.length && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-2"
-              onClick={() => append({ label: "" })}
-            >
-              <Plus className="h-4 w-4 mr-2" /> Add Sponsor Type
-            </Button>
-          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-2"
+            onClick={() => append({ label: "" })}
+          >
+            <Plus className="h-4 w-4 mr-2" /> Add Sponsor Type
+          </Button>
         </div>
 
         <SaveChangesButton
@@ -228,13 +180,10 @@ export default function SponsorHeaderForm({
           watchFields={[
             "title",
             "description",
-            "sponsorsTypes",
+            "sponsors_types",
             "is_visible",
-            "text_color",
-            "background_color",
           ]}
           className="w-full"
-          disabled={!isDirty}
         />
       </form>
     </FormProvider>

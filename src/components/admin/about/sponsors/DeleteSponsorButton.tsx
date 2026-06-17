@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { removeAboutSponsor } from "@/app/actions/admin/about";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -33,16 +34,7 @@ export function DeleteSponsorButton({
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const response = await fetch(
-        `/api/admin/about/sponsors?id=${sponsorId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to delete sponsor");
-      }
+      await removeAboutSponsor(sponsorId);
 
       toast({
         title: "Sponsor deleted",

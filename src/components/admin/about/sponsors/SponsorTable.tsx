@@ -13,13 +13,13 @@ import { DeleteSponsorButton } from "./DeleteSponsorButton";
 
 interface SponsorsTableProps {
   sponsors: Sponsor[];
-  mutate: () => void;
+  onSponsorDeleted: () => void;
   onEditSponsor: (sponsor: Sponsor) => void;
 }
 
 export function SponsorTable({
   sponsors,
-  mutate,
+  onSponsorDeleted,
   onEditSponsor,
 }: SponsorsTableProps) {
   return (
@@ -51,7 +51,7 @@ export function SponsorTable({
                 <DeleteSponsorButton
                   sponsorId={sponsor.id!}
                   sponsorName={sponsor.name}
-                  onSponsorDeleted={mutate}
+                  onSponsorDeleted={onSponsorDeleted}
                 />
               </div>
             </TableCell>

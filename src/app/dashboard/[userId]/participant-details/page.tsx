@@ -1,32 +1,40 @@
-"use client";
+import { ParticipantDetailsClient } from "@/app/dashboard/[userId]/participant-details/participant-details-client";
+import { getDashboardAuth } from "@/lib/dashboard/get-dashboard-auth";
+import { getParticipantProfileData } from "@/lib/dashboard/get-participant-profile-data";
+import { getCachedPressKitLinks } from "@/lib/main/get-press-kit-links";
+import { generateDashboardSectionMetadata } from "@/lib/metadata/build-dashboard-metadata";
+import type { Metadata } from "next";
 
-import { useDashboardContext } from "@/app/context/DashboardContext";
-import { ParticipantDetailsForm } from "@/app/dashboard/[userId]/participant-details/participant-details-form";
-import { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
-import useSWR from "swr";
-import LoadingSpinner from "@/app/components/LoadingSpinner";
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}): Promise<Metadata> {
+  const { userId } = await params;
+  return generateDashboardSectionMetadata(userId, "Participant Profile");
+}
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-export default function ParticipantDetailsPage() {
-  const { isMod, targetUserId } = useDashboardContext();
-  const {
-    data: participantDetails,
-    error,
-    isLoading,
-  } = useSWR<ParticipantDetails>(
-    `/api/users/participants/${targetUserId}/details`,
-    fetcher
-  );
+export default async function ParticipantDetailsPage({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}) {
+  const { userId } = await params;
 
-  if (isLoading) return <LoadingSpinner />;
-  if (error) return <div>Failed to load participant details data</div>;
-  if (!participantDetails)
-    return <div>No participant details data available</div>;
+  const { isMod } = await getDashboardAuth(userId);
+  const [profileData, pressKitLinks] = await Promise.all([
+    getParticipantProfileData(userId, {
+      includePlans: isMod,
+    }),
+    getCachedPressKitLinks(),
+  ]);
+
   return (
-    <ParticipantDetailsForm
-      participantDetails={participantDetails}
-      isMod={isMod || false}
-      targetUserId={targetUserId}
+    <ParticipantDetailsClient
+      targetUserId={userId}
+      isMod={isMod}
+      profileData={profileData}
+      pressKitLinks={pressKitLinks}
     />
   );
 }

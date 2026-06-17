@@ -2,86 +2,146 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Form } from "@/components/ui/form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import {
   type ParticipantDetails,
+  type ParticipantDetailsInput,
   participantDetailsSchema,
-  type ReactivationNotes,
 } from "@/schemas/participantDetailsSchemas";
+import type { PlanType } from "@/schemas/plansSchema";
 import { SaveChangesButton } from "@/app/admin/components/save-changes-button";
-import { mutate } from "swr";
-import { createSubmitHandler } from "@/utils/form-helpers";
-import { ConfirmationDialog } from "@/app/dashboard/[userId]/participant-details/confirmation-dialog";
-import { ReactivationDialog } from "@/app/dashboard/[userId]/participant-details/reactivation-dialog";
-import { ReactivationRequestModal } from "@/app/dashboard/[userId]/participant-details/reactivation-request-modal";
-
-import { MapPin, FileText } from "lucide-react";
+import {
+  createSubmitHandler,
+  resetWatchedFieldsDirtyState,
+} from "@/utils/form-helpers";
 import { BasicInfoFields } from "@/app/dashboard/[userId]/participant-details/basic-info-fields";
 import { SlugField } from "@/app/dashboard/[userId]/participant-details/slug-field";
-import { ModeratorSettings } from "@/app/dashboard/[userId]/participant-details/moderator-settings";
-import { ActiveStatusSection } from "@/app/dashboard/[userId]/participant-details/active-status-section";
-import { DisplayNumberField } from "@/app/dashboard/[userId]/participant-details/display-number-field";
+import { ContactFields } from "@/app/dashboard/[userId]/participant-details/contact-fields";
+import { SocialMediaFields } from "@/app/dashboard/[userId]/participant-details/social-media-fields";
+import { PlanSettingsFields } from "@/app/dashboard/[userId]/participant-details/plan-settings-fields";
+import { ModeratorPanel } from "@/app/dashboard/[userId]/participant-details/moderator-panel";
+import { ParticipantActiveStatus } from "@/app/dashboard/[userId]/participant-details/active-status-section";
+import { ParticipantSection } from "@/app/dashboard/[userId]/participant-details/participant-section";
+import { ProfileImageForm } from "@/app/dashboard/[userId]/profile-image/profile-image-form";
+import { VisitingHoursForm } from "@/app/dashboard/[userId]/visiting-hours/visiting-hours-form";
+import { InvoiceDataForm } from "@/app/dashboard/[userId]/invoice-data/invoice-data-form";
+import { PressKitDownloadSection } from "@/app/dashboard/[userId]/participant-details/press-kit-download-section";
+import type { ProfileImageRow } from "@/lib/dashboard/get-participant-profile-data";
+import type { VisitingHoursDays } from "@/schemas/visitingHoursSchema";
+import type { InvoiceData } from "@/schemas/invoiceSchemas";
+import type { PressKitLink } from "@/schemas/mainSchema";
+import Separator from "@/components/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
-import type { z } from "zod";
-import { mapInfoSchema } from "@/schemas/mapInfoSchemas";
+const PROFILE_WATCH_FIELDS = [
+  "description",
+  "slug",
+  "display_name",
+  "phone_numbers",
+  "visible_emails",
+  "glue_communication_email",
+  "visible_websites",
+  "social_media.facebookLink",
+  "social_media.linkedinLink",
+  "social_media.instagramLink",
+] as const;
 
-type MapInfoType = z.infer<typeof mapInfoSchema>;
+const PLAN_WATCH_FIELDS = ["plan_id", "plan_type"] as const;
+
+const buildDefaultSocialMedia = (
+  socialMedia: ParticipantDetailsInput["social_media"]
+) => ({
+  facebookLink: socialMedia?.facebookLink ?? "",
+  linkedinLink: socialMedia?.linkedinLink ?? "",
+  instagramLink: socialMedia?.instagramLink ?? "",
+});
+
+type ParticipantDetailsFormProps = {
+  participantDetails: ParticipantDetails | null;
+  isMod: boolean;
+  targetUserId: string;
+  visitingHours: VisitingHoursDays[];
+  invoiceData: InvoiceData | null;
+  profileImages: ProfileImageRow[];
+  planMaxImages: number;
+  plans: PlanType[];
+  pressKitLinks: PressKitLink[];
+};
 
 export function ParticipantDetailsForm({
   participantDetails,
   isMod,
   targetUserId,
-}: {
-  participantDetails: ParticipantDetails;
-  isMod: boolean;
-  targetUserId: string | undefined;
-}) {
-  const isError = participantDetails && "error" in participantDetails;
+  visitingHours,
+  invoiceData,
+  profileImages,
+  planMaxImages,
+  plans,
+  pressKitLinks,
+}: ParticipantDetailsFormProps) {
+  const hasExistingRecord = Boolean(participantDetails);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isReactivationDialogOpen, setIsReactivationDialogOpen] =
-    useState(false);
-  const [isReactivationRequestModalOpen, setIsReactivationRequestModalOpen] =
-    useState(false);
+  const [isPlanSubmitting, setIsPlanSubmitting] = useState(false);
+  const [currentProfileImages, setCurrentProfileImages] =
+    useState<ProfileImageRow[]>(profileImages);
   const { toast } = useToast();
   const router = useRouter();
-  const [mapInfo, setMapInfo] = useState<MapInfoType | null>(null);
 
-  const form = useForm<ParticipantDetails>({
+  const handleProfileImagesChange = useCallback((images: ProfileImageRow[]) => {
+    setCurrentProfileImages(images);
+  }, []);
+
+  const form = useForm<ParticipantDetailsInput, unknown, ParticipantDetails>({
     resolver: zodResolver(participantDetailsSchema),
     defaultValues: {
-      short_description: participantDetails?.short_description || "",
       description: participantDetails?.description || "",
       slug: participantDetails?.slug || "",
       status: participantDetails?.status || "pending",
-      user_id: targetUserId || "",
+      user_id: targetUserId,
       special_program: participantDetails?.special_program || false,
       is_active:
         participantDetails?.is_active !== undefined
           ? participantDetails.is_active
           : true,
-      reactivation_requested:
-        participantDetails?.reactivation_requested || false,
+      reactivation_requested: participantDetails?.reactivation_requested || false,
       reactivation_notes: participantDetails?.reactivation_notes || null,
       reactivation_status: participantDetails?.reactivation_status || null,
       display_number: participantDetails?.display_number || null,
+      display_name: participantDetails?.display_name || "",
+      phone_numbers: participantDetails?.phone_numbers ?? [],
+      social_media: buildDefaultSocialMedia(participantDetails?.social_media),
+      visible_emails: participantDetails?.visible_emails ?? [],
+      visible_websites: participantDetails?.visible_websites ?? [],
+      glue_communication_email: participantDetails?.glue_communication_email ?? null,
+      plan_id: participantDetails?.plan_id ?? null,
+      plan_type: participantDetails?.plan_type ?? null,
     },
     mode: "onBlur",
   });
 
+  const isActive = form.watch("is_active");
+  const status = form.watch("status");
+  const isProfileReadOnly =
+    !isMod && (status === "pending" || !isActive);
+  const isPendingParticipant = !isMod && status === "pending";
+  const requiresProfileImage =
+    !isMod && !isProfileReadOnly && planMaxImages > 0;
+  const hasProfileImage = currentProfileImages.length > 0;
+  const isMissingRequiredProfileImage =
+    requiresProfileImage && !hasProfileImage;
+
   const onSubmit = createSubmitHandler<ParticipantDetails>(
     `/api/users/participants/${targetUserId}/details`,
     async () => {
+      resetWatchedFieldsDirtyState(form, PROFILE_WATCH_FIELDS);
       toast({
         title: "Success",
         description: "Participant details updated successfully.",
       });
-      await mutate(`/api/users/participants/${targetUserId}/details`);
       router.refresh();
     },
     (error) => {
@@ -92,460 +152,191 @@ export function ParticipantDetailsForm({
         variant: "destructive",
       });
     },
-    isError ? "POST" : "PUT"
+    hasExistingRecord ? "PUT" : "POST"
   );
 
-  const getValidMapInfo = (
-    mapInfo: MapInfoType | null,
-    formValues: ParticipantDetails
-  ): MapInfoType => {
-    if (mapInfo)
-      return {
-        formatted_address: mapInfo.formatted_address ?? null,
-        latitude: mapInfo.latitude ?? null,
-        longitude: mapInfo.longitude ?? null,
-        no_address: mapInfo.no_address ?? true,
-      };
-    const notes = formValues.reactivation_notes;
-    if (
-      notes &&
-      (notes.formatted_address || notes.latitude || notes.longitude)
-    ) {
-      return {
-        formatted_address: notes.formatted_address ?? null,
-        latitude: notes.latitude ?? null,
-        longitude: notes.longitude ?? null,
-        no_address: notes.no_address ?? true,
-      };
-    }
-    return {
-      formatted_address: null,
-      latitude: null,
-      longitude: null,
-      no_address: true,
-    };
-  };
+  const onPlanSubmit = createSubmitHandler<ParticipantDetails>(
+    `/api/users/participants/${targetUserId}/details`,
+    async () => {
+      resetWatchedFieldsDirtyState(form, PLAN_WATCH_FIELDS);
+      toast({
+        title: "Success",
+        description: "Plan updated successfully.",
+      });
+      router.refresh();
+    },
+    (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update plan. Please try again. " + error,
+        variant: "destructive",
+      });
+    },
+    hasExistingRecord ? "PUT" : "POST"
+  );
 
-  const upsertParticipantDetailsAndMapInfo = async (
-    participantDetails: ParticipantDetails,
-    mapInfo: MapInfoType | null
-  ) => {
-    if (!targetUserId) return;
-    const response = await fetch(
-      `/api/users/participants/${targetUserId}/upsert-details-map-info`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          participantDetails: { ...participantDetails, user_id: targetUserId },
-          mapInfo,
-        }),
-      }
-    );
-    if (!response.ok) {
-      throw new Error("Error updating participant and map info");
-    }
-    return response.json();
-  };
+  const handleProfileSubmit = async (values: ParticipantDetails) => {
+    if (isProfileReadOnly || isMissingRequiredProfileImage) return;
 
-  const handleSubmit = async (values: ParticipantDetails) => {
     setIsSubmitting(true);
-    const isReactivationApproval =
-      values.is_active &&
-      participantDetails.reactivation_requested &&
-      !participantDetails.is_active;
-
-    if (
-      values.status === "accepted" &&
-      participantDetails.status !== "accepted"
-    ) {
-      console.log("[handleSubmit] form values before modal:", values);
-      setIsDialogOpen(true);
-    } else {
-      await onSubmit({ ...values, user_id: targetUserId! });
-      if (isReactivationApproval) {
-        await sendReactivationApprovedEmail();
-        form.setValue("reactivation_requested", false);
-        form.setValue("reactivation_status", "approved");
-        await onSubmit({
-          ...values,
-          user_id: targetUserId!,
-          reactivation_requested: false,
-          reactivation_status: "approved",
-        });
-      }
-    }
+    await onSubmit({ ...values, user_id: targetUserId });
     setIsSubmitting(false);
   };
 
-  const handleReactivationRequest = async (
-    reactivationData: ReactivationNotes
-  ) => {
-    setMapInfo({
-      formatted_address: reactivationData.formatted_address || null,
-      latitude: reactivationData.latitude || null,
-      longitude: reactivationData.longitude || null,
-      no_address: reactivationData.no_address,
-    });
-    form.setValue("reactivation_requested", true);
-    form.setValue("reactivation_notes", reactivationData);
-    form.setValue("reactivation_status", "pending");
-    await upsertParticipantDetailsAndMapInfo(
-      {
-        ...form.getValues(),
-        user_id: targetUserId!,
-        reactivation_requested: true,
-        reactivation_notes: reactivationData,
-        reactivation_status: "pending",
-      },
-      getValidMapInfo(
-        {
-          formatted_address: reactivationData.formatted_address || null,
-          latitude: reactivationData.latitude || null,
-          longitude: reactivationData.longitude || null,
-          no_address: reactivationData.no_address,
-        },
-        form.getValues()
-      )
-    );
-    await sendReactivationRequestEmail(reactivationData);
-  };
+  const handlePlanSubmit = async (values: ParticipantDetails) => {
+    if (!isMod) return;
 
-  const handleConfirmReactivation = async () => {
-    form.setValue("is_active", true);
-    form.setValue("reactivation_requested", false);
-    form.setValue("reactivation_status", "approved");
-    await upsertParticipantDetailsAndMapInfo(
-      {
-        ...form.getValues(),
-        user_id: targetUserId!,
-        is_active: true,
-        reactivation_requested: false,
-        reactivation_status: "approved",
-      },
-      getValidMapInfo(mapInfo, form.getValues())
-    );
-    await sendReactivationApprovedEmail();
-    setMapInfo(null);
-    setIsReactivationDialogOpen(false);
-  };
-
-  const handleCancelReactivation = async () => {
-    form.setValue("is_active", true);
-    form.setValue("reactivation_requested", false);
-    form.setValue("reactivation_status", "approved");
-    await upsertParticipantDetailsAndMapInfo(
-      {
-        ...form.getValues(),
-        user_id: targetUserId!,
-        is_active: true,
-        reactivation_requested: false,
-        reactivation_status: "approved",
-      },
-      getValidMapInfo(mapInfo, form.getValues())
-    );
-    setMapInfo(null);
-    setIsReactivationDialogOpen(false);
-  };
-
-  const handleConfirmSendEmail = async () => {
-    await onSubmit({ ...form.getValues(), user_id: targetUserId! });
-    setIsDialogOpen(false);
-    await sendAcceptanceEmail();
-  };
-
-  const handleCancelSendEmail = async () => {
-    await onSubmit({ ...form.getValues(), user_id: targetUserId! });
-    setIsDialogOpen(false);
-  };
-
-  const handleDeclineReactivation = async () => {
-    setIsSubmitting(true);
-    try {
-      form.setValue("reactivation_status", "declined");
-      await onSubmit({
-        ...form.getValues(),
-        user_id: targetUserId!,
-        reactivation_status: "declined",
-      });
-
-      const response = await fetch(`/api/send-decline-reactivation`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId: targetUserId }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to decline reactivation request");
+    const previousPlanId = participantDetails?.plan_id;
+    if (values.plan_id && values.plan_id !== previousPlanId) {
+      const currentPlan = plans.find((plan) => plan.plan_id === previousPlanId);
+      const newPlan = plans.find((plan) => plan.plan_id === values.plan_id);
+      const confirmed = window.confirm(
+        `Are you sure you want to change the user's plan from ${currentPlan?.plan_label || "current plan"
+        } to ${newPlan?.plan_label || "new plan"}?`
+      );
+      if (!confirmed) {
+        return;
       }
-
-      toast({
-        title: "Reactivation Declined",
-        description: "The reactivation request has been declined.",
-      });
-    } catch (error) {
-      console.error("Error declining reactivation:", error);
-      toast({
-        title: "Error",
-        description:
-          "Failed to decline reactivation request. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
     }
+
+    setIsPlanSubmitting(true);
+    await onPlanSubmit({ ...values, user_id: targetUserId });
+    setIsPlanSubmitting(false);
   };
 
-  const sendReactivationRequestEmail = async (
-    reactivationData: ReactivationNotes
-  ) => {
-    try {
-      const response = await fetch("/api/send-reactivation-request-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: targetUserId,
-          reactivationData,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to send reactivation request email");
-      }
-
-      toast({
-        title: "Request Sent",
-        description:
-          "Your reactivation request has been sent to the administrators.",
-      });
-    } catch (error) {
-      console.error("Error sending reactivation request:", error);
-      toast({
-        title: "Request Error",
-        description: "Failed to send reactivation request. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const sendReactivationApprovedEmail = async () => {
-    try {
-      const response = await fetch("/api/send-reactivation-approved-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId: targetUserId }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to send reactivation approval email");
-      }
-
-      toast({
-        title: "Email Sent",
-        description: "Reactivation approval email sent successfully.",
-      });
-    } catch (error) {
-      console.error("Error sending email:", error);
-      toast({
-        title: "Email Error",
-        description: "Failed to send reactivation approval email.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const sendAcceptanceEmail = async () => {
-    try {
-      const response = await fetch("/api/send-participant-accepted-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId: targetUserId }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to send email notification");
-      }
-
-      toast({
-        title: "Email Sent",
-        description: "Participant acceptance email sent successfully.",
-      });
-    } catch (error) {
-      console.error("Error sending email:", error);
-      toast({
-        title: "Email Error",
-        description: "Failed to send participant acceptance email.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  useEffect(() => {
-    form.reset(participantDetails);
-  }, [form, participantDetails]);
-
-  const renderReactivationDetails = () => {
-    if (!form.watch("reactivation_notes")) return null;
-
-    const reactivationNotes = form.watch("reactivation_notes");
-
-    return (
-      <div className="space-y-2 mt-2 p-3 bg-gray-50 rounded-md">
-        {reactivationNotes?.plan_label && (
-          <div className="flex items-center gap-2">
-            <FileText className="h-4 w-4 text-gray-500" />
-            <span className="text-sm">
-              <strong>Plan:</strong> {reactivationNotes.plan_label}
-            </span>
-          </div>
-        )}
-        {reactivationNotes?.plan_type && (
-          <div className="flex items-center gap-2">
-            <FileText className="h-4 w-4 text-gray-500" />
-            <span className="text-sm">
-              <strong>Plan Type:</strong> {reactivationNotes.plan_type}
-            </span>
-          </div>
-        )}
-        {reactivationNotes?.formatted_address && (
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-gray-500" />
-            <span className="text-sm">
-              <strong>Address:</strong> {reactivationNotes?.formatted_address}
-            </span>
-          </div>
-        )}
-        {reactivationNotes?.no_address && (
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-gray-500" />
-            <span className="text-sm">
-              <strong>Address:</strong> Participant requested an address
-            </span>
-          </div>
-        )}
-        {reactivationNotes?.notes && (
-          <div className="flex items-start gap-2">
-            <FileText className="h-4 w-4 text-gray-500 mt-1" />
-            <span className="text-sm">
-              <strong>Notes:</strong> {reactivationNotes?.notes}
-            </span>
-          </div>
-        )}
-      </div>
-    );
+  const handleOpenReactivationFlow = () => {
+    router.push("/participate?intent=reactivation#plans-selection-section");
   };
 
   return (
-    <Card className="w-full max-w-[80%] mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold">
-          Participant Details
-        </CardTitle>
-        {form.watch("status") === "pending" && (
-          <div
-            className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4"
-            role="alert"
-          >
-            <p className="font-bold">Pending Approval</p>
-            <p>This participant is waiting for approval.</p>
-          </div>
-        )}
-        {!form.watch("is_active") && (
-          <div
-            className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4"
-            role="alert"
-          >
-            <p className="font-bold">Inactive Participant</p>
-            <p>
-              This participant is currently inactive and has limited access.
-            </p>
-          </div>
-        )}
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)}>
-            <div className="space-y-6">
-              <BasicInfoFields />
-              <SlugField />
-              {isMod && (
-                <>
-                  <Separator className="my-4" />
-                  <ModeratorSettings />
-                  <DisplayNumberField
-                    isMod={isMod}
-                    targetUserId={targetUserId}
-                  />
-                </>
-              )}
-              <ActiveStatusSection
-                isMod={isMod}
-                onApproveReactivation={() => setIsReactivationDialogOpen(true)}
-                onDeclineReactivation={handleDeclineReactivation}
-                onReconsiderRequest={() => {
-                  form.setValue("reactivation_status", "pending");
-                  onSubmit({
-                    ...form.getValues(),
-                    user_id: targetUserId!,
-                    reactivation_status: "pending",
-                  });
-                }}
-                onOpenReactivationModal={() =>
-                  setIsReactivationRequestModalOpen(true)
-                }
-                renderReactivationDetails={renderReactivationDetails}
+    <div className="px-[30px] mini-padding">
+      <h1 className="title-text">{participantDetails?.display_name}</h1>
+
+      <Form {...form}>
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+          <input type="hidden" {...form.register("user_id")} />
+          <input type="hidden" {...form.register("plan_type")} />
+
+          {isMod && (
+            <>
+              <ModeratorPanel
+                targetUserId={targetUserId}
+                participantDetails={participantDetails}
+                hasExistingRecord={hasExistingRecord}
               />
 
-              <div className="pt-6">
-                <SaveChangesButton
-                  watchFields={[
-                    "id",
-                    "user_id",
-                    "short_description",
-                    "description",
-                    "slug",
-                    "status",
-                    "special_program",
-                    "is_active",
-                    "display_number",
-                  ]}
-                  isSubmitting={isSubmitting}
-                  className="w-full"
-                  label={
-                    isSubmitting ? "Updating..." : "Update Participant Details"
-                  }
-                />
-              </div>
+              <ParticipantSection title="Plan settings">
+                <PlanSettingsFields plans={plans} />
+                <div className="flex justify-center mini-padding">
+                  <SaveChangesButton
+                    type="button"
+                    onClick={form.handleSubmit(handlePlanSubmit)}
+                    watchFields={[...PLAN_WATCH_FIELDS]}
+                    isSubmitting={isPlanSubmitting}
+                    label={isPlanSubmitting ? "Updating..." : "Update plan"}
+                  />
+                </div>
+              </ParticipantSection>
+            </>
+          )}
+
+          {!isMod && (
+            <ParticipantSection title="Tour participation" className="mini-padding">
+              <ParticipantActiveStatus
+                onOpenReactivationModal={handleOpenReactivationFlow}
+              />
+            </ParticipantSection>
+          )}
+
+          {isPendingParticipant && (
+            <div
+              className="rounded-md border border-yellow-300 bg-yellow-50 p-4 text-yellow-800 mini-padding"
+              role="alert"
+            >
+              <p className="font-bold">Pending approval</p>
+              <p className="text-sm">
+                Your profile is waiting for moderator approval. Contact and
+                profile fields are read-only until you are accepted.
+              </p>
             </div>
-          </form>
-        </Form>
-      </CardContent>
-      <ConfirmationDialog
-        isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        onConfirm={handleConfirmSendEmail}
-        onCancel={handleCancelSendEmail}
-      />
-      <ReactivationDialog
-        isOpen={isReactivationDialogOpen}
-        onClose={() => setIsReactivationDialogOpen(false)}
-        onConfirm={handleConfirmReactivation}
-        onCancel={handleCancelReactivation}
-      />
-      <ReactivationRequestModal
-        isOpen={isReactivationRequestModalOpen}
-        onClose={() => setIsReactivationRequestModalOpen(false)}
-        onSubmit={handleReactivationRequest}
-        userId={targetUserId || ""}
-      />
-    </Card>
+          )}
+
+          <PressKitDownloadSection pressKitLinks={pressKitLinks} />
+
+          {isMissingRequiredProfileImage && (
+            <Alert variant="destructive" role="alert">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Profile image required</AlertTitle>
+              <AlertDescription>
+                You must upload at least one profile image before saving your
+                profile.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <ParticipantSection title="Participant Profile">
+            <BasicInfoFields readOnly={isProfileReadOnly} />
+            <SlugField readOnly={isProfileReadOnly} />
+            <ContactFields readOnly={isProfileReadOnly} />
+            <SocialMediaFields readOnly={isProfileReadOnly} />
+            <div className="flex justify-center mini-padding">
+              <SaveChangesButton
+                type="button"
+                onClick={form.handleSubmit(handleProfileSubmit)}
+                watchFields={[...PROFILE_WATCH_FIELDS]}
+                isSubmitting={isSubmitting}
+                {...(isProfileReadOnly || isMissingRequiredProfileImage
+                  ? { disabled: true }
+                  : {})}
+                label={isSubmitting ? "Updating..." : "Update participant"}
+              />
+            </div>
+          </ParticipantSection>
+        </form>
+
+        <Separator />
+
+        <div className="space-y-6 mt-6">
+          <ParticipantSection
+            id="profile-images"
+            title={
+              requiresProfileImage
+                ? "Profile images (required)"
+                : "Profile images"
+            }
+          >
+            <ProfileImageForm
+              targetUserId={targetUserId}
+              initialImages={profileImages}
+              planMaxImages={planMaxImages}
+              readOnly={isProfileReadOnly}
+              onImagesChange={handleProfileImagesChange}
+              preventDeleteLastImage={requiresProfileImage}
+            />
+          </ParticipantSection>
+
+          <Separator />
+
+          <ParticipantSection id="visiting-hours" title="Visiting hours">
+            <VisitingHoursForm
+              targetUserId={targetUserId}
+              initialData={visitingHours}
+              embedded
+              readOnly={isProfileReadOnly}
+            />
+          </ParticipantSection>
+          <Separator />
+
+          <ParticipantSection id="invoice-data" title="Invoice data">
+            <InvoiceDataForm
+              initialData={invoiceData}
+              isMod={isMod}
+              targetUserId={targetUserId}
+              embedded
+            />
+          </ParticipantSection>
+        </div>
+      </Form>
+    </div>
   );
 }
