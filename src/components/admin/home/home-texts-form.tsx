@@ -18,7 +18,7 @@ import {
 } from "@/app/actions/admin/home";
 import { ColorPicker } from "@/components/ui/color-picker";
 import {
-  homeTextsFormSchema,
+  homeTextsSaveSchema,
   type HomeTextPlacement,
   type HomeTextsFormData,
 } from "@/schemas/mainSchema";
@@ -132,7 +132,7 @@ export default function HomeTextsForm({ initialData }: HomeTextsFormProps) {
   const router = useRouter();
 
   const methods = useForm<HomeTextsFormData>({
-    resolver: zodResolver(homeTextsFormSchema),
+    resolver: zodResolver(homeTextsSaveSchema),
     defaultValues: initialData,
   });
 

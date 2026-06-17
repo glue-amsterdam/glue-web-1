@@ -5,7 +5,7 @@ import { mapHomeTextFromRow } from "@/lib/main/map-home-text-row";
 import { revalidateSiteThemeCache } from "@/lib/main/revalidate-site-theme-cache";
 import {
   homeTextsFormSchema,
-  homeTextsSchema,
+  homeTextsSaveSchema,
   type HomeTextPlacement,
 } from "@/schemas/mainSchema";
 
@@ -135,7 +135,7 @@ export async function PUT(request: Request) {
   try {
     const supabase = await createClient();
     const body = await request.json();
-    const validated = homeTextsFormSchema.parse(body);
+    const validated = homeTextsSaveSchema.parse(body);
     const slotError = validateFooterSlotUniqueness(validated.homeTexts);
 
     if (slotError) {
@@ -196,7 +196,7 @@ export async function PUT(request: Request) {
 
     revalidateSiteThemeCache();
 
-    return NextResponse.json(homeTextsSchema.parse({ homeTexts: updatedRows }));
+    return NextResponse.json(homeTextsFormSchema.parse({ homeTexts: updatedRows }));
   } catch (error) {
     console.error("Error in PUT /api/admin/main/home_text:", error);
     return NextResponse.json(

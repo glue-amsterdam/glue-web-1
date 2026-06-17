@@ -18,7 +18,9 @@ const getTextByPlacement = (
 ) => homeTexts.find((item) => item.placement === placement);
 
 const BottomNavigation = ({ homeTexts }: BottomNavigationProps) => {
-  const marqueeItems = homeTexts.filter((item) => item.placement === "marquee");
+  const marqueeItems = homeTexts.filter(
+    (item) => item.placement === "marquee" && item.label.trim().length > 0
+  );
   const footerLeft = getTextByPlacement(homeTexts, "footer_left");
   const footerRight = getTextByPlacement(homeTexts, "footer_right");
 

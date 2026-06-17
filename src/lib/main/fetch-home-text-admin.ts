@@ -1,7 +1,7 @@
 import { mapHomeTextFromRow } from "@/lib/main/map-home-text-row";
 import {
   homeTextsFormSchema,
-  homeTextsSchema,
+  homeTextsSaveSchema,
   type HomeTextPlacement,
   type HomeTextsFormData,
 } from "@/schemas/mainSchema";
@@ -49,7 +49,7 @@ export const fetchHomeTexts = async (supabase?: SupabaseClient) => {
     throw new Error(error.message);
   }
 
-  return homeTextsSchema.parse({
+  return homeTextsFormSchema.parse({
     homeTexts: (data ?? []).map(mapHomeTextFromRow),
   });
 };
@@ -59,7 +59,7 @@ export const updateHomeTexts = async (
   supabase?: SupabaseClient
 ) => {
   const client = supabase ?? (await createClient());
-  const validated = homeTextsFormSchema.parse(input);
+  const validated = homeTextsSaveSchema.parse(input);
   const slotError = validateFooterSlotUniqueness(validated.homeTexts);
 
   if (slotError) {
