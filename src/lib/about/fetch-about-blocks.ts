@@ -212,3 +212,24 @@ export const fetchAboutFaqBlock = async (
         : fixture.items,
   };
 };
+
+export type AboutBlockDisplayOrderRow = {
+  id: string;
+  display_order: number;
+};
+
+export const fetchAboutBlockDisplayOrder = async (
+  supabase: SupabaseClient
+): Promise<AboutBlockDisplayOrderRow[]> => {
+  const { data, error } = await supabase
+    .from("about_blocks")
+    .select("id, display_order")
+    .order("display_order");
+
+  if (error) {
+    console.error("[about] Failed to fetch block display order:", error);
+    return [];
+  }
+
+  return data ?? [];
+};

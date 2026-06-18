@@ -4,6 +4,7 @@ export const ABOUT_MISSION_CACHE_TAG = "about-block-mission-statement";
 export const ABOUT_PRESS_CACHE_TAG = "about-block-press-media";
 export const ABOUT_ARCHIVE_CACHE_TAG = "about-block-archive";
 export const ABOUT_FAQ_CACHE_TAG = "about-block-faq";
+export const ABOUT_BLOCK_ORDER_CACHE_TAG = "about-block-order";
 
 export const aboutCitizensYearCacheTag = (year: number) =>
   `about-citizens-${year}`;

@@ -6,6 +6,7 @@ import {
 import {
   ABOUT_ARCHIVE_CACHE_TAG,
   ABOUT_BLOCK_CACHE_TAGS,
+  ABOUT_BLOCK_ORDER_CACHE_TAG,
   aboutArchiveYearCacheTag,
   aboutCitizensYearCacheTag,
   aboutStickyYearCacheTag,
@@ -25,6 +26,7 @@ export const revalidateAboutBlockCache = (blockId: string): void => {
   if (tag) {
     revalidateTag(tag, "max");
   }
+  revalidateTag(ABOUT_BLOCK_ORDER_CACHE_TAG, "max");
   revalidateAboutPage();
 };
 

@@ -1,12 +1,26 @@
 import Link from "next/link";
-import type { AboutNavLink } from "@/schemas/aboutPageSchema";
+import { ABOUT_ANCHORS, type AboutNavLink } from "@/schemas/aboutPageSchema";
 
 type Props = {
   links: AboutNavLink[];
 };
 
+const FAQ_NAV_HREF = `#${ABOUT_ANCHORS.FAQ}`;
+
+const pinFaqLinkLast = (links: AboutNavLink[]): AboutNavLink[] => {
+  const faqIndex = links.findIndex((link) => link.href === FAQ_NAV_HREF);
+  if (faqIndex < 0 || faqIndex === links.length - 1) {
+    return links;
+  }
+
+  const reordered = [...links];
+  const [faqLink] = reordered.splice(faqIndex, 1);
+  reordered.push(faqLink);
+  return reordered;
+};
+
 const AboutNavbar = ({ links }: Props) => {
-  const visibleLinks = links.filter((link) => link.is_visible);
+  const visibleLinks = pinFaqLinkLast(links.filter((link) => link.is_visible));
 
   if (visibleLinks.length === 0) {
     return null;

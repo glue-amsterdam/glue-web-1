@@ -12,6 +12,7 @@ import { ABOUT_BLOCK_IDS } from "@/schemas/aboutPageSchema";
 import type { ArchiveYearSection } from "@/schemas/aboutPageSchema";
 import {
   ABOUT_ARCHIVE_CACHE_TAG,
+  ABOUT_BLOCK_ORDER_CACHE_TAG,
   ABOUT_FAQ_CACHE_TAG,
   ABOUT_FOUNDATION_CACHE_TAG,
   ABOUT_MISSION_CACHE_TAG,
@@ -24,6 +25,7 @@ import {
 import { assembleArchiveYear } from "./assemble-archive-year";
 import {
   fetchAboutArchiveBlock,
+  fetchAboutBlockDisplayOrder,
   fetchAboutFaqBlock,
   fetchAboutTeamBlock,
   fetchAboutTextDualBlock,
@@ -74,6 +76,15 @@ export const getCachedAboutFaqBlock = unstable_cache(
   },
   [ABOUT_FAQ_CACHE_TAG],
   { tags: [ABOUT_FAQ_CACHE_TAG], revalidate: CACHE_REVALIDATE }
+);
+
+export const getCachedAboutBlockDisplayOrder = unstable_cache(
+  async () => {
+    const supabase = createPublicSupabaseClient();
+    return fetchAboutBlockDisplayOrder(supabase);
+  },
+  [ABOUT_BLOCK_ORDER_CACHE_TAG],
+  { tags: [ABOUT_BLOCK_ORDER_CACHE_TAG], revalidate: CACHE_REVALIDATE }
 );
 
 export const getCachedAboutArchiveBlock = unstable_cache(

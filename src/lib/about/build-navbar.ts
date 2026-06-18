@@ -60,17 +60,41 @@ const BLOCK_NAV_CONFIG: {
   },
 ];
 
-export const buildNavbar = (blocks: AboutBlock[]): AboutNavLink[] => {
-  return BLOCK_NAV_CONFIG.map((config) => {
-    const block = blocks.find((b) => b.id === config.blockId);
-    const visible = config.isVisible(blocks);
+const NAV_CONFIG_BY_BLOCK_ID = new Map(
+  BLOCK_NAV_CONFIG.map((config) => [config.blockId, config])
+);
 
-    return {
-      label: block ? config.label(block) : config.label(blocks[0]!),
-      href: config.href,
-      is_visible: visible,
-    };
-  }).filter((link) => link.is_visible);
+const FAQ_NAV_HREF = `#${ABOUT_ANCHORS.FAQ}`;
+
+const pinFaqLinkLast = (links: AboutNavLink[]): AboutNavLink[] => {
+  const faqIndex = links.findIndex((link) => link.href === FAQ_NAV_HREF);
+  if (faqIndex < 0 || faqIndex === links.length - 1) {
+    return links;
+  }
+
+  const reordered = [...links];
+  const [faqLink] = reordered.splice(faqIndex, 1);
+  reordered.push(faqLink);
+  return reordered;
+};
+
+export const buildNavbar = (blocks: AboutBlock[]): AboutNavLink[] => {
+  const links = blocks.flatMap((block) => {
+    const config = NAV_CONFIG_BY_BLOCK_ID.get(block.id);
+    if (!config || !config.isVisible(blocks)) {
+      return [];
+    }
+
+    return [
+      {
+        label: config.label(block),
+        href: config.href,
+        is_visible: true,
+      },
+    ];
+  });
+
+  return pinFaqLinkLast(links);
 };
 
 const FOOTER_ABOUT_BLOCK_IDS = [

@@ -1,6 +1,7 @@
 import { ABOUT_PAGE_FIXTURE } from "./about-page-fixture";
 import {
   getCachedAboutArchiveBlock,
+  getCachedAboutBlockDisplayOrder,
   getCachedAboutFaqBlock,
   getCachedAboutFoundationBlock,
   getCachedAboutMissionBlock,
@@ -10,6 +11,7 @@ import {
 } from "./cached-about-data";
 import { buildFooterAboutLinks, buildNavbar } from "./build-navbar";
 import type { FooterAboutLink } from "./build-navbar";
+import type { AboutBlockDisplayOrderRow } from "./fetch-about-blocks";
 import { ABOUT_BLOCK_IDS } from "@/schemas/aboutPageSchema";
 import {
   type AboutBlock,
@@ -33,6 +35,62 @@ const NEWSLETTER_BLOCK: NewsletterBlock = {
   is_visible: true,
 };
 
+const DEFAULT_BLOCK_ORDER = [
+  ABOUT_BLOCK_IDS.TEAM,
+  ABOUT_BLOCK_IDS.FOUNDATION,
+  ABOUT_BLOCK_IDS.MISSION,
+  ABOUT_BLOCK_IDS.PRESS,
+  ABOUT_BLOCK_IDS.ARCHIVE,
+  ABOUT_BLOCK_IDS.FAQ,
+] as const;
+
+const sortAboutPageBlocks = (
+  blocksById: Map<string, AboutBlock>,
+  displayOrder: AboutBlockDisplayOrderRow[],
+  newsletterBlock: NewsletterBlock
+): AboutBlock[] => {
+  const orderedIds =
+    displayOrder.length > 0
+      ? displayOrder.map((row) => row.id)
+      : [...DEFAULT_BLOCK_ORDER];
+
+  const sortedBlocks: AboutBlock[] = [];
+  const seen = new Set<string>();
+
+  for (const id of orderedIds) {
+    const block = blocksById.get(id);
+    if (!block) {
+      continue;
+    }
+
+    sortedBlocks.push(block);
+    seen.add(id);
+  }
+
+  for (const [id, block] of blocksById) {
+    if (!seen.has(id)) {
+      sortedBlocks.push(block);
+    }
+  }
+
+  const foundationIndex = sortedBlocks.findIndex(
+    (block) => block.id === ABOUT_BLOCK_IDS.FOUNDATION
+  );
+
+  if (foundationIndex >= 0) {
+    sortedBlocks.splice(foundationIndex + 1, 0, newsletterBlock);
+    return sortedBlocks;
+  }
+
+  const teamIndex = sortedBlocks.findIndex(
+    (block) => block.id === ABOUT_BLOCK_IDS.TEAM
+  );
+  const insertAt = teamIndex >= 0 ? teamIndex + 1 : 0;
+  sortedBlocks.splice(insertAt, 0, newsletterBlock);
+
+  return sortedBlocks;
+};
+
 const loadAboutSection = async <T>(
   blockId: string,
   load: () => Promise<T>,
@@ -54,6 +112,7 @@ export const loadAboutPageData = async (): Promise<AboutPageData> => {
     archiveBlock,
     faqBlock,
     missionBlock,
+    displayOrder,
   ] = await Promise.all([
     loadAboutSection(
       "team",
@@ -85,6 +144,7 @@ export const loadAboutPageData = async (): Promise<AboutPageData> => {
       getCachedAboutMissionBlock,
       getFixtureBlock(ABOUT_BLOCK_IDS.MISSION)
     ),
+    loadAboutSection("block-display-order", getCachedAboutBlockDisplayOrder, []),
   ]);
 
   const archive = { ...archiveBlock } as ArchiveBlock;
@@ -112,15 +172,20 @@ export const loadAboutPageData = async (): Promise<AboutPageData> => {
       preloadedSections[0];
   }
 
-  const blocks = [
-    teamBlock,
-    foundationBlock,
-    NEWSLETTER_BLOCK,
-    pressBlock,
-    archive,
-    faqBlock,
-    missionBlock,
-  ];
+  const blocksById = new Map<string, AboutBlock>([
+    [ABOUT_BLOCK_IDS.TEAM, teamBlock],
+    [ABOUT_BLOCK_IDS.FOUNDATION, foundationBlock],
+    [ABOUT_BLOCK_IDS.PRESS, pressBlock],
+    [ABOUT_BLOCK_IDS.ARCHIVE, archive],
+    [ABOUT_BLOCK_IDS.FAQ, faqBlock],
+    [ABOUT_BLOCK_IDS.MISSION, missionBlock],
+  ]);
+
+  const blocks = sortAboutPageBlocks(
+    blocksById,
+    displayOrder,
+    NEWSLETTER_BLOCK
+  );
 
   const navbar = buildNavbar(blocks);
 
