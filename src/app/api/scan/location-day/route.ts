@@ -1,4 +1,5 @@
 import { isHubHostForLocation } from "@/lib/hubs/get-hub-host-context";
+import { getIsPlatformMod } from "@/lib/permissions/get-is-mod";
 import { enforceScanDayGuard } from "@/lib/scan/enforce-scan-day-guard";
 import { resolveVisitorFromToken } from "@/lib/scan/resolve-visitor-from-token";
 import { scanDebug } from "@/lib/scan/scan-debug";
@@ -32,12 +33,12 @@ export async function POST(request: Request) {
   try {
     json = await request.json();
   } catch {
-    return json400("Invalid JSON body", "invalid_json");
+    return json400("Invalid QR request.", "invalid_json");
   }
 
   const parsedBody = locationDayScanSchema.safeParse(json);
   if (!parsedBody.success) {
-    return json400("Invalid request. Check QR and scan target.", "invalid_body", {
+    return json400("Invalid QR request.", "invalid_body", {
       zod: parsedBody.error.flatten(),
     });
   }
@@ -49,17 +50,22 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Please sign in to scan QR codes." },
+      { status: 401 },
+    );
   }
 
-  const isHostForLocation = await isHubHostForLocation(
-    supabase,
-    user.id,
-    location_id,
-  );
+  const [isHostForLocation, isPlatformMod] = await Promise.all([
+    isHubHostForLocation(supabase, user.id, location_id),
+    getIsPlatformMod(supabase, user.id),
+  ]);
 
-  if (!isHostForLocation) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!isHostForLocation && !isPlatformMod) {
+    return NextResponse.json(
+      { error: "You do not have permission to scan this QR code." },
+      { status: 403 },
+    );
   }
 
   const { data: dayRow, error: dayError } = await supabase
@@ -69,7 +75,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (dayError || !dayRow) {
-    return json400("Event day not found.", "invalid_day");
+    return json400("Scan day not found.", "invalid_day");
   }
 
   const dayGuardResponse = await enforceScanDayGuard(supabase, day_id, time_zone);
@@ -96,14 +102,14 @@ export async function POST(request: Request) {
   if (insertError) {
     if (insertError.code === "23505") {
       return NextResponse.json(
-        { error: "Visitor already checked in at this venue today" },
+        { error: "Visitor already checked in at this venue today." },
         { status: 409 },
       );
     }
 
     console.error("Error inserting location day attendance:", insertError);
     return NextResponse.json(
-      { error: "Failed to register venue attendance" },
+      { error: "Could not register venue attendance. Please try again." },
       { status: 500 },
     );
   }

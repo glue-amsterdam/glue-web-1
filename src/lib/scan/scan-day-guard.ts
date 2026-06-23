@@ -18,7 +18,7 @@ export const assertScanDayAllowed = (
   if (!timeZone?.trim() || !isValidIanaTimeZone(timeZone)) {
     return {
       ok: false,
-      error: "A valid device timezone is required for scanning.",
+      error: "A valid device time zone is required for scanning.",
       code: "invalid_time_zone",
     };
   }

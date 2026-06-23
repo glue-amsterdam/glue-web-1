@@ -235,12 +235,11 @@ export const QrScanClient = ({
       <div className="mb-6">
         <h1 className="title-text">QR Scan</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Tap a card to start scanning. Only today&apos;s options are active
-          unless debug mode is on.
+          Select a scan card to begin.
         </p>
         {debugEnabled && (
           <p className="mt-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            Day check bypassed (DATA_DEBUG).
+            Debug mode is active. Scan day checks are bypassed.
           </p>
         )}
       </div>

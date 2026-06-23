@@ -1,4 +1,5 @@
 import { getHubHostContext } from "@/lib/hubs/get-hub-host-context";
+import { getIsPlatformMod } from "@/lib/permissions/get-is-mod";
 import { enforceScanDayGuard } from "@/lib/scan/enforce-scan-day-guard";
 import { isEventScanAllowed } from "@/lib/scan/is-event-scan-allowed";
 import { resolveVisitorFromToken } from "@/lib/scan/resolve-visitor-from-token";
@@ -33,12 +34,12 @@ export async function POST(request: Request) {
   try {
     json = await request.json();
   } catch {
-    return json400("Invalid JSON body", "invalid_json");
+    return json400("Invalid QR request.", "invalid_json");
   }
 
   const parsedBody = scanSchema.safeParse(json);
   if (!parsedBody.success) {
-    return json400("Invalid request. Check QR and event.", "invalid_body", {
+    return json400("Invalid QR request.", "invalid_body", {
       zod: parsedBody.error.flatten(),
     });
   }
@@ -51,7 +52,10 @@ export async function POST(request: Request) {
 
   if (!user) {
     scanDebug("api/scan", "401:unauthorized", { event_id });
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Please sign in to scan QR codes." },
+      { status: 401 },
+    );
   }
 
   scanDebug("api/scan", "auth_ok", { userId: user.id, event_id });
@@ -63,32 +67,41 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (eventError || !eventData) {
-    return json400("Event not found.", "invalid_event", {
+    return json400("Scan target not found.", "invalid_event", {
       supabaseMessage: eventError?.message,
       hasRow: Boolean(eventData),
     });
   }
 
-  const hubHost = await getHubHostContext(supabase, user.id);
-  const allowed = isEventScanAllowed(
-    user.id,
-    {
-      organizer_id: eventData.organizer_id as string,
-      co_organizers: eventData.co_organizers as string[] | null,
-      location_id: eventData.location_id as string,
-    },
-    hubHost.hostedLocationIds,
-  );
+  const [hubHost, isPlatformMod] = await Promise.all([
+    getHubHostContext(supabase, user.id),
+    getIsPlatformMod(supabase, user.id),
+  ]);
+  const allowed =
+    isPlatformMod ||
+    isEventScanAllowed(
+      user.id,
+      {
+        organizer_id: eventData.organizer_id as string,
+        co_organizers: eventData.co_organizers as string[] | null,
+        location_id: eventData.location_id as string,
+      },
+      hubHost.hostedLocationIds,
+    );
 
   scanDebug("api/scan", "event_permissions", {
     organizer_id: eventData.organizer_id,
     isAllowed: allowed,
     isHubHost: hubHost.isHubHost,
+    isPlatformMod,
   });
 
   if (!allowed) {
     scanDebug("api/scan", "403:forbidden", { userId: user.id, event_id });
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json(
+      { error: "You do not have permission to scan this QR code." },
+      { status: 403 },
+    );
   }
 
   const dayGuardResponse = await enforceScanDayGuard(
@@ -118,7 +131,7 @@ export async function POST(request: Request) {
     if (insertError.code === "23505") {
       scanDebug("api/scan", "409:duplicate_attendance");
       return NextResponse.json(
-        { error: "Visitor already checked in" },
+        { error: "Visitor already checked in." },
         { status: 409 },
       );
     }
@@ -129,7 +142,7 @@ export async function POST(request: Request) {
       message: insertError.message,
     });
     return NextResponse.json(
-      { error: "Failed to register attendance" },
+      { error: "Could not register attendance. Please try again." },
       { status: 500 },
     );
   }
