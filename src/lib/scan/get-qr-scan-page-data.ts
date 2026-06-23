@@ -143,6 +143,7 @@ const getLocationDayCounts = async (
 export const getQrScanPageData = async (
   supabase: SupabaseClient,
   userId: string,
+  countsClient: SupabaseClient = supabase,
 ): Promise<QrScanPageData> => {
   const hubHost = await getHubHostContext(supabase, userId);
   const [eventDays, events] = await Promise.all([
@@ -151,11 +152,17 @@ export const getQrScanPageData = async (
   ]);
 
   const eventIds = events.map((event) => event.id);
-  const dayIds = [...new Set(events.map((event) => event.dayId))];
+  const dayIds = [
+    ...new Set(
+      hubHost.isHubHost
+        ? eventDays.map((day) => day.dayId)
+        : events.map((event) => event.dayId),
+    ),
+  ];
 
   const [eventAttendanceCounts, locationDayCounts] = await Promise.all([
-    getEventAttendanceCounts(supabase, eventIds),
-    getLocationDayCounts(supabase, hubHost.hostedLocationIds, dayIds),
+    getEventAttendanceCounts(countsClient, eventIds),
+    getLocationDayCounts(countsClient, hubHost.hostedLocationIds, dayIds),
   ]);
 
   return {

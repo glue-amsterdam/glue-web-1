@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Building2, CalendarDays, QrCode } from "lucide-react";
 import { QrScanner, type QrScannerTarget } from "@/components/scan/qr-scanner";
 import { Badge } from "@/components/ui/badge";
@@ -80,7 +80,19 @@ export const QrScanClient = ({
   initialEventId,
 }: QrScanClientProps) => {
   const [activeTarget, setActiveTarget] = useState<QrScannerTarget | null>(null);
+  const [currentEventAttendanceCounts, setCurrentEventAttendanceCounts] =
+    useState(eventAttendanceCounts);
+  const [currentLocationDayCounts, setCurrentLocationDayCounts] =
+    useState(locationDayCounts);
   const timeZone = useMemo(() => getDeviceTimeZone(), []);
+
+  useEffect(() => {
+    setCurrentEventAttendanceCounts(eventAttendanceCounts);
+  }, [eventAttendanceCounts]);
+
+  useEffect(() => {
+    setCurrentLocationDayCounts(locationDayCounts);
+  }, [locationDayCounts]);
 
   const sections = useMemo(() => {
     const eventsByDay = new Map<string, ScannableEventRow[]>();
@@ -111,7 +123,7 @@ export const QrScanClient = ({
             dayDate: day.date,
             locationId,
             title: "Scan venue visitors",
-            count: locationDayCounts[countKey] ?? 0,
+            count: currentLocationDayCounts[countKey] ?? 0,
           });
         }
       }
@@ -124,7 +136,7 @@ export const QrScanClient = ({
           dayLabel: day.label,
           dayDate: day.date,
           event,
-          count: eventAttendanceCounts[event.id] ?? 0,
+          count: currentEventAttendanceCounts[event.id] ?? 0,
         });
       }
 
@@ -139,12 +151,12 @@ export const QrScanClient = ({
     });
   }, [
     debugEnabled,
-    eventAttendanceCounts,
+    currentEventAttendanceCounts,
+    currentLocationDayCounts,
     eventDays,
     events,
     hubHost.hostedLocationIds,
     hubHost.isHubHost,
-    locationDayCounts,
     timeZone,
   ]);
 
@@ -206,6 +218,22 @@ export const QrScanClient = ({
     });
   };
 
+  const handleScanSuccess = useCallback((target: QrScannerTarget) => {
+    if (target.mode === "event") {
+      setCurrentEventAttendanceCounts((currentCounts) => ({
+        ...currentCounts,
+        [target.eventId]: (currentCounts[target.eventId] ?? 0) + 1,
+      }));
+      return;
+    }
+
+    const countKey = `${target.locationId}:${target.dayId}`;
+    setCurrentLocationDayCounts((currentCounts) => ({
+      ...currentCounts,
+      [countKey]: (currentCounts[countKey] ?? 0) + 1,
+    }));
+  }, []);
+
   return (
     <div className="px-[30px] mini-padding">
       <Dialog
@@ -227,6 +255,7 @@ export const QrScanClient = ({
               }
               target={activeTarget}
               timeZone={timeZone}
+              onScanSuccess={handleScanSuccess}
             />
           ) : null}
         </DialogContent>
