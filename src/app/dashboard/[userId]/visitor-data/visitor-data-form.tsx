@@ -116,7 +116,7 @@ export const VisitorDataForm = ({
   return (
     <div className="px-[30px] mini-padding">
       <h1 className="title-text">
-        {subjectDisplayName ?? "Check-in profile"}
+        {subjectDisplayName ?? " "}
       </h1>
 
       <CheckInQrButton
@@ -131,7 +131,7 @@ export const VisitorDataForm = ({
           role="status"
           className="mb-6 base-text-size text-(--primary-color) max-w-prose"
         >
-          Your check-in profile is incomplete. Select Age range and Work area
+          Your profile is incomplete. Select Age range and Work area
           below, then save to generate your QR code.
         </p>
       ) : null}

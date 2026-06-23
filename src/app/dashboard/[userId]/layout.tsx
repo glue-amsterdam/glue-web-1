@@ -1,7 +1,6 @@
 import RejectedAccess from "@/app/dashboard/[userId]/rejected-access";
 import DashboardMenu from "@/app/dashboard/components/dashboard-menu";
 import DashboardPendingGate from "@/app/dashboard/components/dashboard-pending-gate";
-import { DashboardParticipateInvite } from "@/components/dashboard/dashboard-participate-invite";
 import MainContainer from "@/components/main-container";
 import { NAVBAR_HEIGHT } from "@/constants";
 import { getDashboardAuth } from "@/lib/dashboard/get-dashboard-auth";
@@ -47,21 +46,6 @@ export default async function DashboardLayout({
     ? await getDashboardSubjectProfile(targetUserId)
     : null;
 
-  const isOwnProfile = auth.loggedInUserId === targetUserId;
-  const showParticipateInvite =
-    isOwnProfile &&
-    !auth.isMod &&
-    (auth.isVisitorOnly ||
-      (auth.isParticipant && !auth.is_active && !auth.isPendingLimitedAccess));
-
-  const participateInviteHref = auth.isVisitorOnly
-    ? "/participate"
-    : "/participate?intent=reactivation#plans-selection-section";
-
-  const participateInviteLabel = auth.isVisitorOnly
-    ? "Apply to participate"
-    : "Apply for the new Design Route";
-
   return (
     <section className="flex h-full min-h-0 flex-1 overflow-hidden">
       <MainContainer className="flex h-full min-h-0 w-full flex-col lg:flex-row">
@@ -82,12 +66,6 @@ export default async function DashboardLayout({
             displayName={auth.displayName}
             targetUserId={targetUserId}
           >
-            {showParticipateInvite ? (
-              <DashboardParticipateInvite
-                ctaHref={participateInviteHref}
-                ctaLabel={participateInviteLabel}
-              />
-            ) : null}
             {children}
           </DashboardPendingGate>
         </div>
