@@ -2,6 +2,10 @@ import { v4 as uuidv4 } from "uuid";
 import imageCompression from "browser-image-compression";
 import { createClient } from "@/utils/supabase/client";
 
+const STORAGE_IMMUTABLE_CACHE_CONTROL =
+  "public, max-age=31536000, immutable";
+
+// Content invalidation is handled by admin revalidate*Cache tags and new UUID paths.
 function getStorage() {
   const { storage } = createClient();
   return storage;
@@ -64,7 +68,9 @@ export const uploadImage = async ({
   }
 
   console.log("Uploading to storage:", { bucket, path });
-  const { data, error } = await storage.from(bucket).upload(path, file);
+  const { data, error } = await storage.from(bucket).upload(path, file, {
+    cacheControl: STORAGE_IMMUTABLE_CACHE_CONTROL,
+  });
 
   if (error) {
     console.error("Image upload failed:", error);
@@ -144,7 +150,7 @@ export const uploadVideo = async ({
   onProgress?.(10);
 
   const { data, error } = await storage.from(bucket).upload(path, file, {
-    cacheControl: "3600",
+    cacheControl: STORAGE_IMMUTABLE_CACHE_CONTROL,
   });
 
   if (error) {

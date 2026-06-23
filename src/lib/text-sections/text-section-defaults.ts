@@ -43,7 +43,7 @@ export const TEXT_SECTION_DEFAULTS: Record<TextSectionSlug, TextSectionData> = {
     description:
       "Are you a designer, member of the general public, architect, brand, label, showroom, gallery, academy or other colleague and would like to take part in the Design Route and showcase your work? Then sign up now! You can find details on how to participate here.",
     showButton: true,
-    buttonLabel: "learn more",
+    buttonLabel: "Learn how to participate in GLUE",
     buttonLink: "/participate",
     sectionId: "become-an-exhibitor",
   },

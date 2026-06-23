@@ -1,11 +1,6 @@
 @import "tailwindcss";
 @config "../../tailwind.config.ts";
 
-@font-face {
-  font-family: "lausanne";
-  src: url("/lausanne.woff2") format("woff2");
-}
-
 @layer components {
   .hover-link {
     @apply hover:text-(--primary-color) hover:underline transition-all duration-100 ease-in-out;
