@@ -103,14 +103,6 @@ export const getCachedMapPageData = unstable_cache(
   { tags: [MAP_DATA_CACHE_TAG], revalidate: 60 }
 );
 
-export const fetchMapPageDataForSnapshot = async (
-  supabase: SupabaseClient
-): Promise<MapPageData> => {
-  const locations = await buildMapLocations(supabase, "new");
-  const routes = await fetchMapRoutes(supabase);
-  return { tourMode: "live", locations, routes };
-};
-
 export const loadMapPageData = async (supabase: SupabaseClient) => {
   const tourRow = await getTourStatusRow(supabase);
   const initialData = await getCachedMapPageData(

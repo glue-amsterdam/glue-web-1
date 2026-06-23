@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export const parseStoredMediaUrl = (
+const parseStoredMediaUrl = (
   url: string
 ): { bucket: string; path: string } | null => {
   if (!url) {
@@ -25,7 +25,7 @@ export const parseStoredMediaUrl = (
   };
 };
 
-export const deleteStoredMediaUrl = async (
+const deleteStoredMediaUrl = async (
   supabase: SupabaseClient,
   url: string | null | undefined
 ): Promise<void> => {

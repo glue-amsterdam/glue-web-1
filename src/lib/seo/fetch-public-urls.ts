@@ -50,18 +50,6 @@ const fetchPublicUrlsCached = unstable_cache(
   }
 );
 
-export const getPublicExhibitorSlugs = async (): Promise<PublicUrlEntry[]> =>
-  (await fetchPublicUrlsCached()).exhibitorSlugs;
-
-export const getPublicHubIds = async (): Promise<PublicUrlEntry[]> =>
-  (await fetchPublicUrlsCached()).hubIds;
-
-export const getPublicProgramEventIds = async (): Promise<PublicUrlEntry[]> =>
-  (await fetchPublicUrlsCached()).programEvents;
-
-export const getPublicPostSlugs = async (): Promise<PublicUrlEntry[]> =>
-  (await fetchPublicUrlsCached()).postPages;
-
 export const getAllPublicDynamicUrls = async (): Promise<PublicUrlEntry[]> => {
   const data = await fetchPublicUrlsCached();
   return [

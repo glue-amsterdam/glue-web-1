@@ -19,13 +19,6 @@ export const normalizeMapAddressLine = (
   return addressLine.toLowerCase().replace(/\s+/g, " ").trim();
 };
 
-export const getUserName = (
-  userInfo: { user_name: string } | { user_name: string }[]
-): string => {
-  const info = Array.isArray(userInfo) ? userInfo[0] : userInfo;
-  return info?.user_name ?? "Unknown User";
-};
-
 type GoogleMapsSearchLocation = {
   latitude: number;
   longitude: number;

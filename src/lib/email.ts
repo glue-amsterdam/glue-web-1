@@ -30,59 +30,6 @@ async function sendEmail(subject: string, htmlContent: string) {
   }
 }
 
-export async function sendModeratorFreeUserNotification(userData: {
-  user_id: string;
-  user_name?: string;
-  email: string;
-}) {
-  const htmlContent = `
-    <h1>New Visitor Registered</h1>
-    <p>A new visitor has registered with the following details:</p>
-    <ul>
-      <li>User ID: ${userData.user_id}</li>
-      <li>Username: ${userData.user_name || "N/A"}</li>
-      <li>Email: ${userData.email}</li>
-    </ul>
-  `;
-
-  await sendEmail("New Visitor User Registration", htmlContent);
-}
-
-export async function sendModeratorMemberNotification(userData: {
-  user_id: string;
-  user_name?: string;
-  email: string;
-  invoice_company_name: string;
-  invoice_address: string;
-  invoice_city: string;
-  invoice_zip_code: string;
-  invoice_country: string;
-  invoice_extra?: string;
-}) {
-  const htmlContent = `
-  <h1>New Member Registered</h1>
-  <p>A new member has registered with the following details:</p>
-  <h2>User Information</h2>
-  <ul>
-    <li>User ID: ${userData.user_id}</li>
-    <li>Username: ${userData.user_name || "N/A"}</li>
-    <li>Email: ${userData.email}</li>
-  </ul>
-  
-  <h2>Invoice Information</h2>
-  <ul>
-    <li>Company Name: ${userData.invoice_company_name}</li>
-    <li>Address: ${userData.invoice_address}</li>
-    <li>City: ${userData.invoice_city}</li>
-    <li>Zip Code: ${userData.invoice_zip_code}</li>
-    <li>Country: ${userData.invoice_country}</li>
-    <li>Extra Information: ${userData.invoice_extra || "N/A"}</li>
-  </ul>
-`;
-
-  await sendEmail("New Member Registration", htmlContent);
-}
-
 export async function sendModeratorParticipantNotification(
   userData: UserData & {
     user_id: string;

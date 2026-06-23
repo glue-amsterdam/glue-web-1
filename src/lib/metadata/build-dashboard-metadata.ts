@@ -9,12 +9,12 @@ const DASHBOARD_ROBOTS: Metadata["robots"] = {
   follow: false,
 };
 
-export type DashboardSubjectProfile = {
+type DashboardSubjectProfile = {
   name: string;
   slug: string | null;
 };
 
-export const buildDashboardTitle = (
+const buildDashboardTitle = (
   subjectName: string,
   sectionLabel?: string
 ): string => {
@@ -25,7 +25,7 @@ export const buildDashboardTitle = (
   return `${base} | ${sectionLabel.trim()}`;
 };
 
-export const getDashboardSubjectName = async (
+const getDashboardSubjectName = async (
   targetUserId: string
 ): Promise<string> => {
   const auth = await getDashboardAuth(targetUserId);
@@ -99,7 +99,7 @@ type BuildDashboardSectionMetadataOptions = {
   description?: string;
 };
 
-export const buildDashboardSectionMetadata = ({
+const buildDashboardSectionMetadata = ({
   sectionLabel,
   subjectName,
   description,

@@ -1,9 +1,9 @@
 import { isDataDebugEnabled } from "@/lib/data-debug";
 import { isScanDayToday, isValidIanaTimeZone } from "@/lib/scan/is-scan-day-today";
 
-export const isScanDayCheckBypassed = (): boolean => isDataDebugEnabled();
+const isScanDayCheckBypassed = (): boolean => isDataDebugEnabled();
 
-export type ScanDayGuardResult =
+type ScanDayGuardResult =
   | { ok: true }
   | { ok: false; error: string; code: string };
 

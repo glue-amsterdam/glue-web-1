@@ -42,6 +42,3 @@ export const getCachedHomeHero = unstable_cache(
     revalidate: HOME_HERO_REVALIDATE_SECONDS,
   }
 );
-
-/** @deprecated Use getCachedHomeHero */
-export const getCachedHomeVideo = getCachedHomeHero;
