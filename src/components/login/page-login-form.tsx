@@ -8,7 +8,7 @@ import { getCookieConsent } from "@/app/actions/cookieConsent";
 import { CookieSettingsModal } from "@/components/cookies/cookies-modal";
 import BigButton from "@/components/big-button";
 import { ParticipateFormField } from "@/components/participate/participate-form-field";
-import { fetchDashboardHomeHref } from "@/lib/users/fetch-dashboard-home";
+import { fetchNavbarIdentity } from "@/lib/users/fetch-navbar-identity";
 import { redirectToDashboardHome } from "@/lib/users/redirect-to-dashboard-home";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import {
@@ -74,12 +74,12 @@ const PageLoginForm = () => {
         return;
       }
 
-      const href = await fetchDashboardHomeHref();
+      const identity = await fetchNavbarIdentity();
       redirectToDashboardHome({
         router,
         userId: user.id,
         hasRedirectedRef,
-        href,
+        href: identity?.dashboardHref,
       });
     };
     void redirectExistingSession();

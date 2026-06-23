@@ -35,7 +35,7 @@ type PostMediaDbRow = {
   created_at: string;
 };
 
-export const mapPostFromRow = (row: PostDbRow): PostData => ({
+const mapPostFromRow = (row: PostDbRow): PostData => ({
   id: row.id,
   title: row.title,
   slug: row.slug,
@@ -54,7 +54,7 @@ export const mapPostSummaryFromRow = (row: PostDbRow): PostSummaryData => ({
   createdAt: row.created_at,
 });
 
-export const mapPostMediaFromRow = (row: PostMediaDbRow): PostMedia => ({
+const mapPostMediaFromRow = (row: PostMediaDbRow): PostMedia => ({
   id: row.id,
   post_id: row.post_id,
   image_url: row.image_url,
@@ -74,7 +74,7 @@ export const mapPostWithMediaFromRow = (
   media: media.map(mapPostMediaFromRow),
 });
 
-export const mapPostToApiResponse = (post: PostData) => ({
+const mapPostToApiResponse = (post: PostData) => ({
   id: post.id,
   title: post.title,
   slug: post.slug,

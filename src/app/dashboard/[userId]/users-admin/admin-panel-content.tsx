@@ -582,18 +582,20 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
           </div>
 
           <div className="hidden md:block border border-gray-200 overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full table-fixed text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 text-left">
-                  <th className="px-3 py-2 font-medium w-10">
+                  <th className="w-[5%] px-3 py-2 font-medium">
                     <span className="sr-only">Select</span>
                   </th>
-                  <th className="px-3 py-2 font-medium">Name</th>
-                  <th className="px-3 py-2 font-medium">Type</th>
-                  <th className="px-3 py-2 font-medium">Status</th>
-                  <th className="px-3 py-2 font-medium">Email</th>
-                  <th className="px-3 py-2 font-medium">Created</th>
-                  <th className="px-3 py-2 font-medium min-w-32 text-right">
+                  <th className="w-[19%] px-3 py-2 font-medium">Name</th>
+                  <th className="w-[10%] px-3 py-2 font-medium">Type</th>
+                  <th className="w-[15%] px-3 py-2 font-medium">Status</th>
+                  <th className="w-[20%] px-3 py-2 font-medium">Email</th>
+                  <th className="w-[13%] px-3 py-2 font-medium whitespace-nowrap">
+                    Created
+                  </th>
+                  <th className="w-[18%] px-3 py-2 font-medium text-right">
                     Actions
                   </th>
                 </tr>

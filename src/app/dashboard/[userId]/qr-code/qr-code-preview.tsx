@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { jsPDF } from "jspdf";
-import { Button } from "@/components/ui/button";
 import { CHECKIN_QR_PDF_COPY } from "./checkin-qr-pdf-copy";
 import BigButton from "@/components/big-button";
 

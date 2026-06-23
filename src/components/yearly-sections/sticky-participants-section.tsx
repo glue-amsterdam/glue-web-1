@@ -44,7 +44,7 @@ const StickyParticipantsSection = ({
           <Image
             width={1045}
             height={1045}
-            sizes="(max-width: 768px) 100vw, 1045px"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 609px, 1045px"
             src={groupPhotoUrl}
             alt={`${title} group photo`}
             className="w-full h-auto"

@@ -1,5 +1,6 @@
 import { Analytics } from "@vercel/analytics/next";
 import "@/app/globals.css";
+import { lausanne } from "@/app/fonts";
 import { LayoutMetadata } from "@/lib/metadata";
 
 import { fetchMain } from "@/lib/main/fetch-main";
@@ -33,6 +34,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
+      className={lausanne.variable}
       style={
         {
           "--primary-color": theme.primaryColor,
@@ -51,7 +53,7 @@ export default async function RootLayout({
         } as React.CSSProperties
       }
     >
-      <body className="font-lausanne bg-(--background-color)">
+      <body className={`${lausanne.className} bg-(--background-color)`}>
         <MainContextProvider initialData={initialData}>
           <AppProviders>
             <AdminSiteChrome

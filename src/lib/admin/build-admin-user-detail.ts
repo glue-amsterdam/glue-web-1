@@ -9,7 +9,6 @@ type BuildAdminUserDetailInput = {
   isMod: boolean;
   visitorData: AdminVisitorData | null;
   participantDetails: ParticipantDetails | null;
-  legacyUserName: string | null;
   invoiceData?: AdminUserDetail["invoiceData"];
   visitingHours?: AdminUserDetail["visitingHours"];
 };
@@ -19,7 +18,6 @@ export const buildAdminUserDetail = ({
   isMod,
   visitorData,
   participantDetails,
-  legacyUserName,
   invoiceData,
   visitingHours,
 }: BuildAdminUserDetailInput): AdminUserDetail => {
@@ -29,11 +27,9 @@ export const buildAdminUserDetail = ({
     (participantDetails
       ? getParticipantDisplayName({
           display_name: participantDetails.display_name,
-          user_name: legacyUserName,
         })
       : "") ||
     (visitorData ? getVisitorDisplayName(visitorData) : "") ||
-    legacyUserName?.trim() ||
     authUser.email?.trim() ||
     "Unnamed User";
 

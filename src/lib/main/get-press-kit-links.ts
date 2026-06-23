@@ -19,7 +19,7 @@ const parsePressKitLinkRow = (row: {
   return parsed.success ? parsed.data : null;
 };
 
-export const fetchPressKitLinks = async (): Promise<PressKitLink[]> => {
+const fetchPressKitLinks = async (): Promise<PressKitLink[]> => {
   const supabase = createPublicSupabaseClient();
   const { data, error } = await supabase
     .from("press_kit_links")

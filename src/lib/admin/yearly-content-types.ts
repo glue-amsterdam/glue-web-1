@@ -12,11 +12,6 @@ export type YearlyContentYearStatus = {
   archive: { configured: boolean; has_media: boolean };
 };
 
-export type YearlyContentSummaryResponse = {
-  years: number[];
-  status?: YearlyContentYearStatus;
-};
-
 export const YEARLY_CONTENT_SECTION_LABELS: Record<
   YearlyContentSection,
   string

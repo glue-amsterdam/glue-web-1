@@ -1,13 +1,5 @@
 import { unstable_cache } from "next/cache";
 import { createPublicSupabaseClient } from "@/utils/supabase/public";
-import { fetchCitizensForYear } from "@/lib/home/fetch-citizens-for-year";
-import { fetchStickyGroupForYear } from "@/lib/home/fetch-sticky-group-for-year";
-import {
-  HOME_CITIZENS_CACHE_TAG,
-  HOME_STICKY_CACHE_TAG,
-  type HomeCitizensData,
-  type HomeStickyGroupData,
-} from "@/lib/home/types";
 import { ABOUT_BLOCK_IDS } from "@/schemas/aboutPageSchema";
 import type { ArchiveYearSection } from "@/schemas/aboutPageSchema";
 import {
@@ -19,8 +11,6 @@ import {
   ABOUT_PRESS_CACHE_TAG,
   ABOUT_TEAM_CACHE_TAG,
   aboutArchiveYearCacheTag,
-  aboutCitizensYearCacheTag,
-  aboutStickyYearCacheTag,
 } from "./about-cache-tags";
 import { assembleArchiveYear } from "./assemble-archive-year";
 import {
@@ -95,38 +85,6 @@ export const getCachedAboutArchiveBlock = unstable_cache(
   [ABOUT_ARCHIVE_CACHE_TAG],
   { tags: [ABOUT_ARCHIVE_CACHE_TAG], revalidate: CACHE_REVALIDATE }
 );
-
-export const getCachedCitizensForYear = (year: number): Promise<HomeCitizensData> => {
-  const tag = aboutCitizensYearCacheTag(year);
-  const cached = unstable_cache(
-    async () => {
-      const supabase = createPublicSupabaseClient();
-      return fetchCitizensForYear(supabase, year);
-    },
-    [tag],
-    {
-      tags: [tag, HOME_CITIZENS_CACHE_TAG],
-      revalidate: CACHE_REVALIDATE,
-    }
-  );
-  return cached();
-};
-
-export const getCachedStickyForYear = (year: number): Promise<HomeStickyGroupData> => {
-  const tag = aboutStickyYearCacheTag(year);
-  const cached = unstable_cache(
-    async () => {
-      const supabase = createPublicSupabaseClient();
-      return fetchStickyGroupForYear(supabase, year);
-    },
-    [tag],
-    {
-      tags: [tag, HOME_STICKY_CACHE_TAG],
-      revalidate: CACHE_REVALIDATE,
-    }
-  );
-  return cached();
-};
 
 export const getCachedArchiveYear = (
   year: number

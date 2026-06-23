@@ -40,5 +40,14 @@ export const isScanDayToday = (
   return normalizedDay === today;
 };
 
-export const isValidIanaTimeZone = (timeZone: string): boolean =>
-  /^[A-Za-z_]+\/[A-Za-z0-9_+-]+$/.test(timeZone.trim());
+export const isValidIanaTimeZone = (timeZone: string): boolean => {
+  const trimmedTimeZone = timeZone.trim();
+  if (!trimmedTimeZone) return false;
+
+  try {
+    new Intl.DateTimeFormat("en-CA", { timeZone: trimmedTimeZone }).format();
+    return true;
+  } catch {
+    return false;
+  }
+};

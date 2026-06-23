@@ -197,29 +197,21 @@ export const getParticipationEligibility = async (
   }
 
   const admin = await createAdminClient();
-  const [visitorRowRes, participantDetailsRes, loggedUserInfoRes] =
-    await Promise.all([
-      admin
-        .from("visitor_data")
-        .select("id")
-        .eq("auth_user_id", user.id)
-        .maybeSingle(),
-      supabase
-        .from("participant_details")
-        .select("status, is_active, reactivation_status")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-      supabase
-        .from("user_info")
-        .select("plan_type")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-    ]);
+  const [visitorRowRes, participantDetailsRes] = await Promise.all([
+    admin
+      .from("visitor_data")
+      .select("id")
+      .eq("auth_user_id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("participant_details")
+      .select("status, is_active, reactivation_status")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
 
   const hasParticipantRow = Boolean(participantDetailsRes.data);
-  const isLegacyParticipant =
-    loggedUserInfoRes.data?.plan_type === "participant";
-  const isParticipant = hasParticipantRow || isLegacyParticipant;
+  const isParticipant = hasParticipantRow;
   const hasVisitorRow = Boolean(visitorRowRes.data);
 
   const actor: ParticipationActor = isParticipant

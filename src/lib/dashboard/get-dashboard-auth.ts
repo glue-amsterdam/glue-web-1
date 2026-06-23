@@ -29,12 +29,7 @@ export const getDashboardAuth = async (
 
   const loggedInUserId = user.id;
 
-  const [
-    visitorRowRes,
-    participantDetailsRes,
-    loggedUserInfoRes,
-    isModerator,
-  ] = await Promise.all([
+  const [visitorRowRes, participantDetailsRes, isModerator] = await Promise.all([
     supabaseAdmin
       .from("visitor_data")
       .select(
@@ -47,28 +42,19 @@ export const getDashboardAuth = async (
       .select("status, is_active, slug, display_name")
       .eq("user_id", loggedInUserId)
       .maybeSingle(),
-    supabase
-      .from("user_info")
-      .select("plan_type, user_name")
-      .eq("user_id", loggedInUserId)
-      .maybeSingle(),
     getIsPlatformMod(supabase, loggedInUserId),
   ]);
 
   const visitorRow = visitorRowRes.data;
   const participantDetails = participantDetailsRes.data;
-  const loggedUserInfo = loggedUserInfoRes.data;
 
   const hasParticipantRow = Boolean(participantDetails);
-  const isLegacyParticipant = loggedUserInfo?.plan_type === "participant";
-  const isParticipant = hasParticipantRow || isLegacyParticipant;
-  const isVisitorOnly =
-    Boolean(visitorRow) && !hasParticipantRow && !isLegacyParticipant;
+  const isParticipant = hasParticipantRow;
+  const isVisitorOnly = Boolean(visitorRow) && !hasParticipantRow;
 
   const displayName =
     getVisitorDisplayName(visitorRow ?? {}) ||
     participantDetails?.display_name ||
-    loggedUserInfo?.user_name ||
     user.email ||
     "";
 

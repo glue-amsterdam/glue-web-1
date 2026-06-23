@@ -11,7 +11,7 @@ const parseMainLinkRow = (row: { platform?: string; link?: string }): LinkItem |
   return parsed.success ? parsed.data : null;
 };
 
-export const fetchMainLinks = async (): Promise<LinkItem[]> => {
+const fetchMainLinks = async (): Promise<LinkItem[]> => {
   const supabase = createPublicSupabaseClient();
   const { data, error } = await supabase
     .from("main_links")

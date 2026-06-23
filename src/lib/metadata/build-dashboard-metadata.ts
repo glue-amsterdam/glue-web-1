@@ -1,6 +1,7 @@
 import { config } from "@/config";
 import { getDashboardAuth } from "@/lib/dashboard/get-dashboard-auth";
-import { createClient } from "@/utils/supabase/server";
+import { getVisitorDisplayName } from "@/lib/visitor/display-name";
+import { createAdminClient } from "@/utils/supabase/adminClient";
 import type { Metadata } from "next";
 
 const DASHBOARD_ROBOTS: Metadata["robots"] = {
@@ -8,12 +9,12 @@ const DASHBOARD_ROBOTS: Metadata["robots"] = {
   follow: false,
 };
 
-export type DashboardSubjectProfile = {
+type DashboardSubjectProfile = {
   name: string;
   slug: string | null;
 };
 
-export const buildDashboardTitle = (
+const buildDashboardTitle = (
   subjectName: string,
   sectionLabel?: string
 ): string => {
@@ -24,7 +25,7 @@ export const buildDashboardTitle = (
   return `${base} | ${sectionLabel.trim()}`;
 };
 
-export const getDashboardSubjectName = async (
+const getDashboardSubjectName = async (
   targetUserId: string
 ): Promise<string> => {
   const auth = await getDashboardAuth(targetUserId);
@@ -33,23 +34,23 @@ export const getDashboardSubjectName = async (
     return auth.displayName || "User";
   }
 
-  const supabase = await createClient();
-  const [targetUserInfoRes, targetParticipantDetailsRes] = await Promise.all([
-    supabase
-      .from("user_info")
-      .select("user_name")
-      .eq("user_id", targetUserId)
-      .maybeSingle(),
-    supabase
+  const admin = await createAdminClient();
+  const [targetParticipantDetailsRes, targetVisitorRes] = await Promise.all([
+    admin
       .from("participant_details")
       .select("display_name")
       .eq("user_id", targetUserId)
+      .maybeSingle(),
+    admin
+      .from("visitor_data")
+      .select("email, first_name, last_name, display_name, full_name")
+      .eq("auth_user_id", targetUserId)
       .maybeSingle(),
   ]);
 
   return (
     targetParticipantDetailsRes.data?.display_name ??
-    targetUserInfoRes.data?.user_name ??
+    getVisitorDisplayName(targetVisitorRes.data ?? {}) ??
     "User"
   );
 };
@@ -63,23 +64,23 @@ export const getDashboardSubjectProfile = async (
     return null;
   }
 
-  const supabase = await createClient();
-  const [targetUserInfoRes, targetParticipantDetailsRes] = await Promise.all([
-    supabase
-      .from("user_info")
-      .select("user_name")
-      .eq("user_id", targetUserId)
-      .maybeSingle(),
-    supabase
+  const admin = await createAdminClient();
+  const [targetParticipantDetailsRes, targetVisitorRes] = await Promise.all([
+    admin
       .from("participant_details")
       .select("slug, display_name")
       .eq("user_id", targetUserId)
+      .maybeSingle(),
+    admin
+      .from("visitor_data")
+      .select("email, first_name, last_name, display_name, full_name")
+      .eq("auth_user_id", targetUserId)
       .maybeSingle(),
   ]);
 
   const name =
     targetParticipantDetailsRes.data?.display_name ??
-    targetUserInfoRes.data?.user_name ??
+    getVisitorDisplayName(targetVisitorRes.data ?? {}) ??
     null;
 
   if (!name && !targetParticipantDetailsRes.data?.slug) {
@@ -98,7 +99,7 @@ type BuildDashboardSectionMetadataOptions = {
   description?: string;
 };
 
-export const buildDashboardSectionMetadata = ({
+const buildDashboardSectionMetadata = ({
   sectionLabel,
   subjectName,
   description,

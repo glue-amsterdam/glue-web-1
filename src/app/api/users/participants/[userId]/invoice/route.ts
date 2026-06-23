@@ -1,7 +1,31 @@
 import { invoiceData } from "@/schemas/invoiceSchemas";
+import { getIsPlatformMod } from "@/lib/permissions/get-is-mod";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
+
+const authorizeInvoiceAccess = async (userId: string) => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {
+      ok: false as const,
+      response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    };
+  }
+
+  if (user.id === userId || (await getIsPlatformMod(supabase, user.id))) {
+    return { ok: true as const, supabase };
+  }
+
+  return {
+    ok: false as const,
+    response: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+  };
+};
 
 export async function GET(
   request: Request,
@@ -14,9 +38,10 @@ export async function GET(
   }
 
   try {
-    const supabase = await createClient();
+    const auth = await authorizeInvoiceAccess(userId);
+    if (!auth.ok) return auth.response;
 
-    const { data, error } = await supabase
+    const { data, error } = await auth.supabase
       .from("invoice_data")
       .select("*")
       .eq("user_id", userId)
@@ -73,20 +98,21 @@ async function handleRequest(
   }
 
   try {
-    const supabase = await createClient();
+    const auth = await authorizeInvoiceAccess(userId);
+    if (!auth.ok) return auth.response;
 
     const body = await request.json();
     const validatedData = invoiceData.parse(body);
 
     let result;
     if (action === "create") {
-      result = await supabase
+      result = await auth.supabase
         .from("invoice_data")
         .insert({ ...validatedData, user_id: userId })
         .select()
         .single();
     } else {
-      result = await supabase
+      result = await auth.supabase
         .from("invoice_data")
         .update(validatedData)
         .eq("user_id", userId)

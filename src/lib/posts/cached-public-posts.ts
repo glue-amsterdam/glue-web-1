@@ -2,7 +2,6 @@ import { unstable_cache } from "next/cache";
 import { createPublicSupabaseClient } from "@/utils/supabase/public";
 import {
   fetchPublishedPostBySlug,
-  fetchPublishedPostSlugs,
   fetchPublishedPostSummaries,
   fetchPublishedPostSummariesForHome,
 } from "./fetch-public-post";
@@ -67,19 +66,6 @@ export const getCachedPublishedPostBySlug = (
       return mapPublicPostWithMediaToApiResponse(post);
     },
     [POSTS_CACHE_TAG, "published-post", slug],
-    {
-      tags: [POSTS_CACHE_TAG],
-      revalidate: false,
-    }
-  )();
-
-export const getCachedPublishedPostSlugs = (): Promise<string[]> =>
-  unstable_cache(
-    async (): Promise<string[]> => {
-      const supabase = createPublicSupabaseClient();
-      return fetchPublishedPostSlugs(supabase);
-    },
-    [POSTS_CACHE_TAG, "published-slugs"],
     {
       tags: [POSTS_CACHE_TAG],
       revalidate: false,

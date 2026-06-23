@@ -105,7 +105,7 @@ export const QrScanner = ({ target, timeZone }: QrScannerProps) => {
       if (response.status === 200) {
         setScanStatus({
           type: "success",
-          message: "Success: visitor checked in.",
+          message: "Visitor checked in.",
         });
         return;
       }
@@ -121,7 +121,11 @@ export const QrScanner = ({ target, timeZone }: QrScannerProps) => {
         return;
       }
 
-      if (response.status === 400 || response.status === 403) {
+      if (
+        response.status === 400 ||
+        response.status === 401 ||
+        response.status === 403
+      ) {
         const data = (await response.json().catch(() => ({}))) as {
           error?: string;
         };

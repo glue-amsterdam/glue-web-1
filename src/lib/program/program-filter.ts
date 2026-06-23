@@ -2,7 +2,7 @@ import type { EventType } from "@/schemas/eventSchemas";
 import type { ProgramFilterType } from "./program-filters";
 import type { ProgramListItem } from "./program-types";
 
-export const filterProgramByType = (
+const filterProgramByType = (
   items: ProgramListItem[],
   type: ProgramFilterType
 ): ProgramListItem[] => {
@@ -10,7 +10,7 @@ export const filterProgramByType = (
   return items.filter((item) => item.type === type);
 };
 
-export const filterProgramByDay = (
+const filterProgramByDay = (
   items: ProgramListItem[],
   day: string
 ): ProgramListItem[] => {
@@ -18,7 +18,7 @@ export const filterProgramByDay = (
   return items.filter((item) => item.date.dayId === day);
 };
 
-export const filterProgramBySearch = (
+const filterProgramBySearch = (
   items: ProgramListItem[],
   q: string
 ): ProgramListItem[] => {
@@ -51,7 +51,7 @@ const parseDateToSortKey = (date: string | null): number => {
   return Number.isNaN(parsed) ? Number.MAX_SAFE_INTEGER : parsed;
 };
 
-export const sortProgramItems = (items: ProgramListItem[]): ProgramListItem[] => {
+const sortProgramItems = (items: ProgramListItem[]): ProgramListItem[] => {
   return [...items].sort((a, b) => {
     const dateDiff =
       parseDateToSortKey(a.date.date) - parseDateToSortKey(b.date.date);

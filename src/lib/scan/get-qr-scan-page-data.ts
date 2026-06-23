@@ -19,7 +19,7 @@ export type QrScanPageData = {
   locationDayCounts: Record<string, number>;
 };
 
-export const getScannableEvents = async (
+const getScannableEvents = async (
   supabase: SupabaseClient,
   userId: string,
   hostedLocationIds: string[],
@@ -68,7 +68,7 @@ export const getScannableEvents = async (
   return [...merged.values()].filter((event) => event.dayId && event.dayId !== "day-off");
 };
 
-export const getEventDaysForScan = async (
+const getEventDaysForScan = async (
   supabase: SupabaseClient,
 ): Promise<EventDayForScan[]> => {
   const { data: eventDays, error } = await supabase
@@ -88,7 +88,7 @@ export const getEventDaysForScan = async (
   }));
 };
 
-export const getEventAttendanceCounts = async (
+const getEventAttendanceCounts = async (
   supabase: SupabaseClient,
   eventIds: string[],
 ): Promise<Record<string, number>> => {
@@ -113,7 +113,7 @@ export const getEventAttendanceCounts = async (
   return counts;
 };
 
-export const getLocationDayCounts = async (
+const getLocationDayCounts = async (
   supabase: SupabaseClient,
   locationIds: string[],
   dayIds: string[],

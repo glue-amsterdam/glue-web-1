@@ -1,5 +1,5 @@
 import { revalidateHomeCitizensCache } from "@/lib/home";
-import { createClient } from "@/utils/supabase/server";
+import { requireAdminToken } from "@/lib/admin/require-admin-token";
 import { NextResponse } from "next/server";
 import { citizenSchema } from "@/schemas/citizenSchema";
 import { config } from "@/config";
@@ -12,8 +12,10 @@ export async function GET(
   const { year } = params;
 
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
+    const { data, error } = await auth.supabase
       .from("about_citizens")
       .select("*")
       .eq("year", year)
@@ -36,10 +38,12 @@ export async function POST(
   props: { params: Promise<{ year: string }> }
 ) {
   const params = await props.params;
-  const supabase = await createClient();
   const { year } = params;
 
   try {
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
     const body = await request.json();
 
     // Validate the incoming data (without id for creation)
@@ -62,7 +66,7 @@ export async function POST(
     };
 
     // Insert the new citizen
-    const { error: insertError, data: insertedCitizen } = await supabase
+    const { error: insertError, data: insertedCitizen } = await auth.supabase
       .from("about_citizens")
       .insert(citizenToInsert)
       .select()
@@ -90,12 +94,14 @@ export async function DELETE(
   props: { params: Promise<{ year: string }> }
 ) {
   const params = await props.params;
-  const supabase = await createClient();
   const { year } = params;
 
   try {
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
     // Delete citizens for the year
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await auth.supabase
       .from("about_citizens")
       .delete()
       .eq("year", year)
@@ -105,18 +111,21 @@ export async function DELETE(
 
     const yearInt = parseInt(year, 10);
     if (!Number.isNaN(yearInt)) {
-      await supabase.from("citizens_year_meta").delete().eq("year", yearInt);
+      await auth.supabase
+        .from("citizens_year_meta")
+        .delete()
+        .eq("year", yearInt);
     }
 
     // Delete corresponding images from the storage bucket
-    const { data: images, error: fetchError } = await supabase.storage
+    const { data: images, error: fetchError } = await auth.supabase.storage
       .from(config.bucketName)
       .list(`about/citizens/${year}`);
 
     if (fetchError) throw fetchError;
 
     if (images && images.length > 0) {
-      const { error: storageError } = await supabase.storage
+      const { error: storageError } = await auth.supabase.storage
         .from(config.bucketName)
         .remove(images.map((img) => `about/citizens/${year}/${img.name}`));
 

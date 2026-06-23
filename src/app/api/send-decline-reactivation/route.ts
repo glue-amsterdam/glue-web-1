@@ -3,11 +3,15 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { config } from "@/config";
 import { revalidateParticipantVisibilityCaches } from "@/lib/participants/revalidate-participant-visibility-caches";
+import { requirePlatformMod } from "@/lib/permissions/require-platform-mod";
 import { sendDeclineReactivationEmail } from "@/components/emails/participant-details-emails";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
+  const mod = await requirePlatformMod();
+  if (!mod.ok) return mod.response;
+
   const body = await request.json();
   const { userId } = body;
 
@@ -60,16 +64,15 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get user information for email
-    const { data: userData, error: userError } = await supabase
-      .from("user_info")
-      .select("user_name")
+    const { data: participantData, error: participantError } = await supabase
+      .from("participant_details")
+      .select("display_name")
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
 
-    if (userError || !userData) {
+    if (participantError) {
       return NextResponse.json(
-        { error: "Failed to fetch user information" },
+        { error: "Failed to fetch participant details" },
         { status: 500 }
       );
     }
@@ -79,7 +82,10 @@ export async function POST(request: Request) {
         from: `GLUE <${config.baseEmail}>`,
         to: user.email,
         subject: "Your Reactivation Request Has Been Declined",
-        html: sendDeclineReactivationEmail(userData.user_name, user.email),
+        html: sendDeclineReactivationEmail(
+          participantData?.display_name ?? user.email,
+          user.email
+        ),
       });
     } catch (emailError) {
       console.error("Error sending reactivation declined email:", emailError);

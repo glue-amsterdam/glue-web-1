@@ -34,7 +34,7 @@ const formatCreatedAt = (createdAt: string | null): string => {
   if (!createdAt) return "—";
   const date = new Date(createdAt);
   if (Number.isNaN(date.getTime())) return "—";
-  return format(date, "dd MMM yyyy, HH:mm");
+  return format(date, "dd MMM yyyy");
 };
 
 export const UserStatusIndicators = ({ user }: { user: AdminUserListItem }) => {
@@ -233,16 +233,28 @@ export const UserRowDesktop = ({
             aria-label={`Select ${user.displayName}`}
           />
         </td>
-        <td className="px-3 py-2 font-medium">{user.displayName}</td>
-        <td className="px-3 py-2 capitalize text-gray-700">{user.entityType}</td>
-        <td className="px-3 py-2">
+        <td
+          className="max-w-0 truncate px-3 py-2 font-medium"
+          title={user.displayName}
+        >
+          {user.displayName}
+        </td>
+        <td className="px-3 py-2 capitalize text-gray-700 whitespace-nowrap">
+          {user.entityType}
+        </td>
+        <td className="px-3 py-2 align-top">
           <UserStatusIndicators user={user} />
         </td>
-        <td className="px-3 py-2 text-gray-600">{user.email ?? "—"}</td>
+        <td
+          className="max-w-0 truncate px-3 py-2 text-gray-600"
+          title={user.email ?? undefined}
+        >
+          {user.email ?? "—"}
+        </td>
         <td className="px-3 py-2 text-gray-600 whitespace-nowrap">
           {formatCreatedAt(user.createdAt)}
         </td>
-        <td className="px-3 py-2">
+        <td className="px-3 py-2 align-top">
           <div className="flex justify-end">
             <UserRowActions
               user={user}

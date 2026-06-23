@@ -14,34 +14,25 @@ export const getNavbarIdentity = async (
   const supabase = await createClient();
   const supabaseAdmin = await createAdminClient();
 
-  const [visitorRowRes, participantDetailsRes, loggedUserInfoRes] =
-    await Promise.all([
-      supabaseAdmin
-        .from("visitor_data")
-        .select("id")
-        .eq("auth_user_id", userId)
-        .maybeSingle(),
-      supabase
-        .from("participant_details")
-        .select("user_id, status")
-        .eq("user_id", userId)
-        .maybeSingle(),
-      supabase
-        .from("user_info")
-        .select("plan_type")
-        .eq("user_id", userId)
-        .maybeSingle(),
-    ]);
+  const [visitorRowRes, participantDetailsRes] = await Promise.all([
+    supabaseAdmin
+      .from("visitor_data")
+      .select("id")
+      .eq("auth_user_id", userId)
+      .maybeSingle(),
+    supabase
+      .from("participant_details")
+      .select("user_id, status")
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ]);
 
   const visitorRow = visitorRowRes.data;
   const participantDetails = participantDetailsRes.data;
-  const loggedUserInfo = loggedUserInfoRes.data;
 
   const hasParticipantRow = Boolean(participantDetails);
-  const isLegacyParticipant = loggedUserInfo?.plan_type === "participant";
-  const isParticipant = hasParticipantRow || isLegacyParticipant;
-  const isVisitorOnly =
-    Boolean(visitorRow) && !hasParticipantRow && !isLegacyParticipant;
+  const isParticipant = hasParticipantRow;
+  const isVisitorOnly = Boolean(visitorRow) && !hasParticipantRow;
 
   const participantStatus = participantDetails?.status ?? null;
   const isPendingParticipant =

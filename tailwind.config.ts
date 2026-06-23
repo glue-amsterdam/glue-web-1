@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        lausanne: ["lausanne", "sans-serif"],
+        lausanne: ["var(--font-lausanne)", "sans-serif"],
         overpass: ["Overpass", "sans-serif"],
       },
       scrollBehavior: {

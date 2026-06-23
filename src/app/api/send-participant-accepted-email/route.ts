@@ -2,6 +2,7 @@ import { config } from "@/config";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { requirePlatformMod } from "@/lib/permissions/require-platform-mod";
 import {
   getEmailTemplateWithFallback,
   processEmailTemplate,
@@ -10,6 +11,9 @@ import {
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
+  const mod = await requirePlatformMod();
+  if (!mod.ok) return mod.response;
+
   const supabase = createClient(
     config.supabaseUrl,
     process.env.SUPABASE_SERVICE_ROLE_KEY as string,
@@ -41,15 +45,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get user information to retrieve user_name
-    const { data: userData, error: userError } = await supabase
-      .from("user_info")
-      .select("user_name")
+    const { data: participantData, error: participantError } = await supabase
+      .from("participant_details")
+      .select("display_name")
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
 
-    if (userError || !userData) {
-      console.warn("Failed to fetch user_info, using email as fallback");
+    if (participantError) {
+      console.warn("Failed to fetch participant details, using email as fallback");
     }
 
     try {
@@ -58,7 +61,7 @@ export async function POST(request: Request) {
       );
       const htmlContent = processEmailTemplate(template.html_content, {
         email: user.email,
-        user_name: userData?.user_name || user.email,
+        user_name: participantData?.display_name || user.email,
       });
 
       await resend.emails.send({

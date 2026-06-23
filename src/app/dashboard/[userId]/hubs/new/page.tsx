@@ -18,9 +18,12 @@ export default async function NewHubPage({
   params: Promise<{ userId: string }>;
 }) {
   const { userId } = await params;
-  const userInfoList = await getHubParticipantsList();
+  const participantOptions = await getHubParticipantsList();
 
   return (
-    <CreateHubClient targetUserId={userId} userInfoList={userInfoList} />
+    <CreateHubClient
+      targetUserId={userId}
+      participantOptions={participantOptions}
+    />
   );
 }

@@ -64,7 +64,6 @@ const deleteUserRelatedRows = async (
     "participant_details",
     "visitor_data",
     "user_permissions",
-    "user_info",
   ] as const;
 
   for (const table of tables) {

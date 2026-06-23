@@ -10,12 +10,10 @@ const resolveDisplayName = (
 ): string => {
   const participant = enrichment.participantByUserId.get(authUser.id);
   const visitor = enrichment.visitorByUserId.get(authUser.id);
-  const legacy = enrichment.legacyUserInfoByUserId.get(authUser.id);
 
   const fromParticipant = participant
     ? getParticipantDisplayName({
         display_name: participant.display_name,
-        user_name: legacy?.user_name,
       })
     : "";
 
@@ -26,7 +24,6 @@ const resolveDisplayName = (
   const fromVisitor = visitor ? getVisitorDisplayName(visitor) : "";
   if (fromVisitor) return fromVisitor;
 
-  if (legacy?.user_name?.trim()) return legacy.user_name.trim();
   if (authUser.email?.trim()) return authUser.email.trim();
 
   return "Unnamed User";
@@ -42,7 +39,7 @@ const resolveEmail = (
   return null;
 };
 
-export const buildAdminUserListItem = (
+const buildAdminUserListItem = (
   authUser: AuthUserSummary,
   enrichment: AdminUserEnrichment
 ): AdminUserListItem => {

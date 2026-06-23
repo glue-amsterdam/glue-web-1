@@ -1,9 +1,9 @@
 import { isDataDebugEnabled } from "@/lib/data-debug";
 import { isScanDayToday, isValidIanaTimeZone } from "@/lib/scan/is-scan-day-today";
 
-export const isScanDayCheckBypassed = (): boolean => isDataDebugEnabled();
+const isScanDayCheckBypassed = (): boolean => isDataDebugEnabled();
 
-export type ScanDayGuardResult =
+type ScanDayGuardResult =
   | { ok: true }
   | { ok: false; error: string; code: string };
 
@@ -18,7 +18,7 @@ export const assertScanDayAllowed = (
   if (!timeZone?.trim() || !isValidIanaTimeZone(timeZone)) {
     return {
       ok: false,
-      error: "A valid device timezone is required for scanning.",
+      error: "A valid device time zone is required for scanning.",
       code: "invalid_time_zone",
     };
   }

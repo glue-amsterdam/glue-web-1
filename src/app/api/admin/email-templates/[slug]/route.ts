@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { requireAdminToken } from "@/lib/admin/require-admin-token";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -13,10 +13,12 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const supabase = await createClient();
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
     const { slug } = await params;
 
-    const { data, error } = await supabase
+    const { data, error } = await auth.supabase
       .from("email_templates")
       .select("*")
       .eq("slug", slug)
@@ -47,13 +49,15 @@ export async function PUT(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const supabase = await createClient();
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
     const { slug } = await params;
     const body = await request.json();
 
     const validatedData = emailTemplateUpdateSchema.parse(body);
 
-    const { data, error } = await supabase
+    const { data, error } = await auth.supabase
       .from("email_templates")
       .update({
         subject: validatedData.subject,
@@ -96,10 +100,12 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const supabase = await createClient();
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
     const { slug } = await params;
 
-    const { error } = await supabase
+    const { error } = await auth.supabase
       .from("email_templates")
       .delete()
       .eq("slug", slug);

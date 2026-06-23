@@ -46,7 +46,6 @@ export async function GET(
       permissionsResult,
       invoiceResult,
       visitingHoursResult,
-      legacyResult,
     ] = await Promise.all([
       admin
         .from("visitor_data")
@@ -66,11 +65,6 @@ export async function GET(
         .from("visiting_hours")
         .select("day_id, hours")
         .eq("user_id", userId),
-      admin
-        .from("user_info")
-        .select("user_name")
-        .eq("user_id", userId)
-        .maybeSingle(),
     ]);
 
     if (visitingHoursResult.error) {
@@ -93,7 +87,6 @@ export async function GET(
       isMod: permissionsResult.data?.is_mod === true,
       visitorData,
       participantDetails: participantResult.data ?? null,
-      legacyUserName: legacyResult.data?.user_name ?? null,
       invoiceData: invoiceResult.data ?? undefined,
       visitingHours:
         formattedVisitingHours.length > 0 ? formattedVisitingHours : undefined,
