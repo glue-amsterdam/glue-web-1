@@ -1,11 +1,12 @@
-import { createClient } from "@/utils/supabase/server";
+import { requireAdminToken } from "@/lib/admin/require-admin-token";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const supabase = await createClient();
-
   try {
-    const { data, error } = await supabase
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
+    const { data, error } = await auth.supabase
       .from("about_citizens")
       .select("year")
       .order("year", { ascending: false });

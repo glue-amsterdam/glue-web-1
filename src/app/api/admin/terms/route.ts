@@ -1,5 +1,5 @@
 import { TERMS_CACHE_TAG } from "@/lib/terms/get-cached-terms";
-import { createClient } from "@/utils/supabase/server";
+import { requireAdminToken } from "@/lib/admin/require-admin-token";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -10,13 +10,15 @@ const termsSchema = z.object({
 
 export async function PUT(request: Request) {
   try {
-    const supabase = await createClient();
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
     const body = await request.json();
 
     const validatedData = termsSchema.parse(body);
 
     // Check if a record exists
-    const { data: existingData } = await supabase
+    const { data: existingData } = await auth.supabase
       .from("terms_and_conditions")
       .select("id")
       .limit(1)
@@ -24,7 +26,7 @@ export async function PUT(request: Request) {
 
     if (existingData) {
       // Update existing record
-      const { data, error } = await supabase
+      const { data, error } = await auth.supabase
         .from("terms_and_conditions")
         .update({
           content: validatedData.content,
@@ -43,7 +45,7 @@ export async function PUT(request: Request) {
     }
 
     // Insert new record
-    const { data, error } = await supabase
+    const { data, error } = await auth.supabase
       .from("terms_and_conditions")
       .insert({
         content: validatedData.content,

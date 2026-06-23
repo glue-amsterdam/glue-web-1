@@ -191,22 +191,15 @@ export const loadVisitorHintsForAuthUser = async (
 ): Promise<EnsureVisitorHints> => {
   const admin = await createAdminClient();
 
-  const [userInfoRes, participantRes] = await Promise.all([
-    admin
-      .from("user_info")
-      .select("user_name")
-      .eq("user_id", authUserId)
-      .maybeSingle(),
-    admin
-      .from("participant_details")
-      .select("display_name")
-      .eq("user_id", authUserId)
-      .maybeSingle(),
-  ]);
+  const participantRes = await admin
+    .from("participant_details")
+    .select("display_name")
+    .eq("user_id", authUserId)
+    .maybeSingle();
 
   return {
     email,
-    userName: userInfoRes.data?.user_name ?? null,
+    userName: null,
     displayName: participantRes.data?.display_name ?? null,
   };
 };

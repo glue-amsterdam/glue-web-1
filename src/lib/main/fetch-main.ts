@@ -1,7 +1,9 @@
-import { BASE_URL } from "@/constants";
+import { unstable_cache } from "next/cache";
+
 import { MAIN_SECTION_CACHE_TAG } from "@/lib/main/main-section-cache-tags";
 import { MainSectionData, mainSectionSchema } from "@/schemas/mainSchema";
-import { ApiMainSectionData } from "@/types/api-main-raw";
+import { EventDay } from "@/schemas/eventSchemas";
+import { createPublicSupabaseClient } from "@/utils/supabase/public";
 
 const mainSection: MainSectionData = {
   eventDays: [
@@ -29,41 +31,50 @@ const mainSection: MainSectionData = {
   currentTourStatus: "new" as const,
 };
 
-function transformApiData(data: ApiMainSectionData): MainSectionData {
-  const transformedEventDays = (data.eventDays || []).map((day) => ({
-    dayId: day.dayId as string,
-    label: day.label || "",
-    date: day.date || null,
-  }));
+const fetchMainCached = unstable_cache(
+  async (): Promise<MainSectionData> => {
+    const supabase = createPublicSupabaseClient();
+    const { data: tourStatus, error: tourStatusError } = await supabase
+      .from("tour_status")
+      .select("current_tour_status, previous_tour_event_days")
+      .single();
 
-  return {
-    eventDays: transformedEventDays,
-    currentTourStatus: (data.currentTourStatus as "new" | "older") || "new",
-  };
-}
+    if (tourStatusError) {
+      console.error("Error fetching tour status:", tourStatusError);
+    }
+
+    const currentTourStatus = tourStatus?.current_tour_status || "new";
+    const previousTourEventDays = (tourStatus?.previous_tour_event_days as
+      | Array<{ dayId: string; label: string; date: string | null }>
+      | null) || null;
+
+    const shouldUseCurrentDays = currentTourStatus !== "older";
+    const { data: currentEventDays, error: eventDaysError } = shouldUseCurrentDays
+      ? await supabase.from("events_days").select()
+      : { data: previousTourEventDays || [], error: null };
+
+    if (eventDaysError) {
+      throw new Error(`Error fetching events_days: ${eventDaysError.message}`);
+    }
+
+    const eventDays: EventDay[] = (currentEventDays || []).map((day) => ({
+      dayId: day.dayId,
+      label: day.label,
+      date: day.date,
+    }));
+
+    return mainSectionSchema.parse({
+      eventDays,
+      currentTourStatus: currentTourStatus as "new" | "older",
+    });
+  },
+  [MAIN_SECTION_CACHE_TAG],
+  { tags: [MAIN_SECTION_CACHE_TAG], revalidate: 3600 }
+);
 
 export async function fetchMain(): Promise<MainSectionData> {
   try {
-    const response = await fetch(`${BASE_URL}/main`, {
-      next: { revalidate: 3600, tags: [MAIN_SECTION_CACHE_TAG] },
-    });
-
-    if (!response.ok) {
-      if (
-        process.env.NODE_ENV === "production" &&
-        process.env.NEXT_PHASE === "phase-production-build"
-      ) {
-        console.log("Build environment detected, using mock data");
-        return getMockData();
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: ApiMainSectionData = await response.json();
-    const transformedData = transformApiData(data);
-    const validatedData = mainSectionSchema.parse(transformedData);
-
-    return validatedData;
+    return await fetchMainCached();
   } catch (error) {
     console.error("Error fetching main data in main-api-calls:", error);
     return getMockData();

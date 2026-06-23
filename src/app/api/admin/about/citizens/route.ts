@@ -1,13 +1,14 @@
 import { revalidateHomeCitizensCache } from "@/lib/home";
-import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
+import { requireAdminToken } from "@/lib/admin/require-admin-token";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const supabase = await createClient();
   try {
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
     // Fetch the citizens section data
-    const { data: sectionData, error: sectionError } = await supabase
+    const { data: sectionData, error: sectionError } = await auth.supabase
       .from("about_citizens_section")
       .select("*")
       .eq("id", "about-citizens-section")
@@ -16,7 +17,7 @@ export async function GET() {
     if (sectionError) throw sectionError;
 
     // Fetch all citizens
-    const { data: citizensData, error: citizensError } = await supabase
+    const { data: citizensData, error: citizensError } = await auth.supabase
       .from("about_citizens")
       .select("*")
       .order("year", { ascending: false });
@@ -49,21 +50,13 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const cookieStore = await cookies();
-  const adminToken = cookieStore.get("admin_token");
-
-  if (!adminToken) {
-    return NextResponse.json(
-      { error: "Unauthorized: Admin access required" },
-      { status: 403 }
-    );
-  }
-
   try {
-    const supabase = await createClient();
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
     const body = await request.json();
 
-    const { data, error } = await supabase
+    const { data, error } = await auth.supabase
       .from("about_citizens_section")
       .update({
         title: body.title,

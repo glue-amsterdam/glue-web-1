@@ -10,10 +10,6 @@ import { ZodError } from "zod";
 import { participantDetailsSchema } from "@/schemas/participantDetailsSchemas";
 import { mapInfoSchema } from "@/schemas/mapInfoSchemas";
 
-function isValidUUID(uuid: string | null | undefined) {
-  return typeof uuid === "string" && /^[0-9a-fA-F-]{36}$/.test(uuid);
-}
-
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ userId: string }> }
@@ -102,39 +98,6 @@ export async function PUT(
         { error: "Failed to update/insert map info", details: mapInfoError },
         { status: 500 }
       );
-    }
-
-    let plan_id = null;
-    let plan_type = null;
-    if (
-      participantDetails.reactivation_notes &&
-      isValidUUID(participantDetails.reactivation_notes.plan_id)
-    ) {
-      plan_id = participantDetails.reactivation_notes.plan_id;
-    }
-    if (
-      participantDetails.reactivation_notes &&
-      typeof participantDetails.reactivation_notes.plan_type === "string"
-    ) {
-      plan_type = participantDetails.reactivation_notes.plan_type;
-    }
-    if (plan_id || plan_type) {
-      const updateObj: Partial<{ plan_id: string; plan_type: string }> = {};
-      if (plan_id) updateObj.plan_id = plan_id;
-      if (plan_type) updateObj.plan_type = plan_type;
-      const { error: userInfoError } = await supabase
-        .from("user_info")
-        .update(updateObj)
-        .eq("user_id", userId);
-      if (userInfoError) {
-        return NextResponse.json(
-          {
-            error: "Failed to update user_info with plan",
-            details: userInfoError,
-          },
-          { status: 500 }
-        );
-      }
     }
 
     await revalidateParticipantVisibilityCaches(supabase);

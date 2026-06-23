@@ -22,7 +22,7 @@ export default async function EditHubPage({
 }) {
   const { userId, hubId } = await params;
 
-  const [hub, userInfoList] = await Promise.all([
+  const [hub, participantOptions] = await Promise.all([
     getHubById(hubId),
     getHubParticipantsList(),
   ]);
@@ -35,7 +35,7 @@ export default async function EditHubPage({
     <EditHubForm
       hub={hub}
       targetUserId={userId}
-      userInfoList={userInfoList}
+      participantOptions={participantOptions}
     />
   );
 }

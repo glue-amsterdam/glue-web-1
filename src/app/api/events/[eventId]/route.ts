@@ -4,6 +4,7 @@ import {
   loadOrganizerProfiles,
   type OrganizerProfile,
 } from "@/lib/participants/load-organizer-profiles";
+import { getIsPlatformMod } from "@/lib/permissions/get-is-mod";
 import { revalidateProgramCache } from "@/lib/program/revalidate-program-cache";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
@@ -249,6 +250,35 @@ export async function DELETE(
   try {
     const supabase = await createClient();
     const { eventId } = await params;
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: existingEvent, error: existingEventError } = await supabase
+      .from("events")
+      .select("organizer_id")
+      .eq("id", eventId)
+      .maybeSingle();
+
+    if (existingEventError) {
+      return NextResponse.json(
+        { error: existingEventError.message },
+        { status: 500 }
+      );
+    }
+
+    if (!existingEvent) {
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    }
+
+    const isMod = await getIsPlatformMod(supabase, user.id);
+    if (!isMod && user.id !== existingEvent.organizer_id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const { error } = await supabase.from("events").delete().eq("id", eventId);
 

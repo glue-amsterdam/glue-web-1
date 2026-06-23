@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import type { UserInfo } from "@/schemas/userInfoSchemas";
+import type { HubParticipantOption } from "@/lib/hubs/get-hub-participants-list";
 import {
   HubFormFields,
   type HubFormFieldValues,
@@ -16,12 +16,12 @@ import {
 
 type CreateHubClientProps = {
   targetUserId: string;
-  userInfoList: UserInfo[];
+  participantOptions: HubParticipantOption[];
 };
 
 export const CreateHubClient = ({
   targetUserId,
-  userInfoList,
+  participantOptions,
 }: CreateHubClientProps) => {
   const router = useRouter();
   const { toast } = useToast();
@@ -37,7 +37,7 @@ export const CreateHubClient = ({
     display_number: null,
   });
 
-  const addParticipantToHub = (userInfo: UserInfo) => {
+  const addParticipantToHub = (userInfo: HubParticipantOption) => {
     setSelectedParticipants((prev) => [...prev, userInfo.user_id]);
     setHubHost((current) => current ?? userInfo.user_id);
   };
@@ -141,14 +141,14 @@ export const CreateHubClient = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-4 mb-6 lg:items-stretch">
           <HubSelectedParticipants
-            userInfoList={userInfoList}
+            participantOptions={participantOptions}
             selectedParticipants={selectedParticipants}
             hubHost={hubHost}
             onRemove={removeParticipantFromHub}
             onSetHost={setParticipantAsHost}
           />
           <HubAvailableParticipants
-            userInfoList={userInfoList}
+            participantOptions={participantOptions}
             selectedParticipants={selectedParticipants}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}

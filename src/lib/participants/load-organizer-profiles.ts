@@ -22,23 +22,16 @@ export const loadOrganizerProfiles = async (
     return profileMap;
   }
 
-  const [participantsResult, visitorsResult, legacyUsersResult] =
-    await Promise.all([
-      supabase
-        .from("participant_details")
-        .select(
-          "user_id, display_name, slug, special_program, display_number"
-        )
-        .in("user_id", uniqueIds),
-      supabase
-        .from("visitor_data")
-        .select("auth_user_id, display_name, full_name")
-        .in("auth_user_id", uniqueIds),
-      supabase
-        .from("user_info")
-        .select("user_id, user_name")
-        .in("user_id", uniqueIds),
-    ]);
+  const [participantsResult, visitorsResult] = await Promise.all([
+    supabase
+      .from("participant_details")
+      .select("user_id, display_name, slug, special_program, display_number")
+      .in("user_id", uniqueIds),
+    supabase
+      .from("visitor_data")
+      .select("auth_user_id, display_name, full_name")
+      .in("auth_user_id", uniqueIds),
+  ]);
 
   const participantByUserId = new Map(
     (participantsResult.data ?? []).map((row) => [row.user_id, row])
@@ -46,21 +39,16 @@ export const loadOrganizerProfiles = async (
   const visitorByUserId = new Map(
     (visitorsResult.data ?? []).map((row) => [row.auth_user_id, row])
   );
-  const legacyUserByUserId = new Map(
-    (legacyUsersResult.data ?? []).map((row) => [row.user_id, row])
-  );
 
   for (const userId of uniqueIds) {
     const participant = participantByUserId.get(userId);
     const visitor = visitorByUserId.get(userId);
-    const legacyUser = legacyUserByUserId.get(userId);
 
     const user_name = getParticipantDisplayName({
       display_name:
         participant?.display_name ??
         visitor?.display_name ??
         visitor?.full_name,
-      user_name: legacyUser?.user_name,
     });
 
     profileMap.set(userId, {

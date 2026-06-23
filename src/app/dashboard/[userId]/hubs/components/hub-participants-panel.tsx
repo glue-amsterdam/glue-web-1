@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { Plus, XIcon } from "lucide-react";
 import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
-import type { UserInfo } from "@/schemas/userInfoSchemas";
+import type { HubParticipantOption } from "@/lib/hubs/get-hub-participants-list";
 
 const panelClass = "flex flex-col min-h-0 lg:h-full";
 const toolbarClass =
@@ -17,14 +17,14 @@ const truncateClass = `${cellClass} truncate max-w-0`;
 const profileLinkClass =
   "text-xs border border-gray-300 rounded px-2 py-1";
 
-const getParticipantLabel = (participant: UserInfo) =>
+const getParticipantLabel = (participant: HubParticipantOption) =>
   getParticipantDisplayName(participant);
 
 const getParticipantProfileHref = (userId: string) =>
   `/dashboard/${userId}/participant-details`;
 
 type HubSelectedParticipantsProps = {
-  userInfoList: UserInfo[];
+  participantOptions: HubParticipantOption[];
   selectedParticipants: string[];
   hubHost: string | null;
   onRemove: (userId: string) => void;
@@ -32,7 +32,7 @@ type HubSelectedParticipantsProps = {
 };
 
 export const HubSelectedParticipants = ({
-  userInfoList,
+  participantOptions,
   selectedParticipants,
   hubHost,
   onRemove,
@@ -67,7 +67,9 @@ export const HubSelectedParticipants = ({
               </tr>
             ) : (
               selectedParticipants.map((userId) => {
-                const participant = userInfoList.find((u) => u.user_id === userId);
+                const participant = participantOptions.find(
+                  (option) => option.user_id === userId
+                );
                 if (!participant) return null;
 
                 const label = getParticipantLabel(participant);
@@ -125,15 +127,15 @@ export const HubSelectedParticipants = ({
 };
 
 type HubAvailableParticipantsProps = {
-  userInfoList: UserInfo[];
+  participantOptions: HubParticipantOption[];
   selectedParticipants: string[];
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  onAdd: (userInfo: UserInfo) => void;
+  onAdd: (participantOption: HubParticipantOption) => void;
 };
 
 export const HubAvailableParticipants = ({
-  userInfoList,
+  participantOptions,
   selectedParticipants,
   searchTerm,
   onSearchChange,
@@ -144,20 +146,20 @@ export const HubAvailableParticipants = ({
     [selectedParticipants]
   );
 
-  const filteredUserInfoList = useMemo(() => {
+  const filteredParticipantOptions = useMemo(() => {
     const searchLower = searchTerm.toLowerCase();
-    return userInfoList.filter((userInfo) => {
-      const label = getParticipantDisplayName(userInfo).toLowerCase();
+    return participantOptions.filter((participantOption) => {
+      const label = getParticipantDisplayName(participantOption).toLowerCase();
 
       return (
         label.includes(searchLower) ||
-        userInfo.visible_emails?.some((email) =>
+        participantOption.visible_emails?.some((email) =>
           email.toLowerCase().includes(searchLower)
         ) ||
-        userInfo.user_id.toLowerCase().includes(searchLower)
+        participantOption.user_id.toLowerCase().includes(searchLower)
       );
     });
-  }, [userInfoList, searchTerm]);
+  }, [participantOptions, searchTerm]);
 
   return (
     <div className={panelClass}>
@@ -182,7 +184,7 @@ export const HubAvailableParticipants = ({
             </tr>
           </thead>
           <tbody>
-            {filteredUserInfoList.length === 0 ? (
+            {filteredParticipantOptions.length === 0 ? (
               <tr>
                 <td
                   colSpan={3}
@@ -192,12 +194,15 @@ export const HubAvailableParticipants = ({
                 </td>
               </tr>
             ) : (
-              filteredUserInfoList.map((userInfo) => {
-                const isSelected = selectedIds.has(userInfo.user_id);
-                const label = getParticipantLabel(userInfo);
+              filteredParticipantOptions.map((participantOption) => {
+                const isSelected = selectedIds.has(participantOption.user_id);
+                const label = getParticipantLabel(participantOption);
 
                 return (
-                  <tr key={userInfo.id} className="border-b border-gray-100">
+                  <tr
+                    key={participantOption.id}
+                    className="border-b border-gray-100"
+                  >
                     <td
                       className={`${truncateClass} font-medium`}
                       title={label}
@@ -206,7 +211,7 @@ export const HubAvailableParticipants = ({
                     </td>
                     <td className={cellClass}>
                       <Link
-                        href={getParticipantProfileHref(userInfo.user_id)}
+                        href={getParticipantProfileHref(participantOption.user_id)}
                         className={profileLinkClass}
                         aria-label={`Open profile for ${label}`}
                       >
@@ -216,7 +221,7 @@ export const HubAvailableParticipants = ({
                     <td className={cellClass}>
                       <button
                         type="button"
-                        onClick={() => onAdd(userInfo)}
+                        onClick={() => onAdd(participantOption)}
                         disabled={isSelected}
                         className="p-1 hover:bg-gray-100 rounded disabled:opacity-30"
                         aria-label={`Add ${label}`}

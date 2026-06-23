@@ -9,10 +9,6 @@ import {
   revalidateExhibitorSlugPaths,
   revalidateParticipantVisibilityCaches,
 } from "@/lib/participants/revalidate-participant-visibility-caches";
-import {
-  resolvePlanTypeFromPlanId,
-  syncParticipantContactToUserInfo,
-} from "@/lib/participants/sync-participant-to-user-info";
 import { getIsPlatformMod } from "@/lib/permissions/get-is-mod";
 import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
 import { participantDetailsSchema } from "@/schemas/participantDetailsSchemas";
@@ -90,7 +86,13 @@ const resolvePlanType = async (
     return data;
   }
 
-  const planType = await resolvePlanTypeFromPlanId(supabase, data.plan_id);
+  const { data: plan } = await supabase
+    .from("plans")
+    .select("plan_type")
+    .eq("plan_id", data.plan_id)
+    .maybeSingle();
+  const planType = typeof plan?.plan_type === "string" ? plan.plan_type : null;
+
   if (planType) {
     data.plan_type = planType;
   }
@@ -187,28 +189,6 @@ async function handleRequest(
         );
       }
 
-      const { error: syncError } = await syncParticipantContactToUserInfo(
-        supabase,
-        userId,
-        {
-          plan_id: data.plan_id,
-          plan_type: data.plan_type,
-          display_name: data.display_name,
-          phone_numbers: data.phone_numbers,
-          social_media: data.social_media,
-          visible_emails: data.visible_emails,
-          visible_websites: data.visible_websites,
-          glue_communication_email: data.glue_communication_email,
-        }
-      );
-
-      if (syncError) {
-        return NextResponse.json(
-          { error: "Failed to sync user info", details: syncError.message },
-          { status: 500 }
-        );
-      }
-
       const updatedDetails = data as ParticipantDetails;
 
       if (hasParticipantVisibilityChanged(existing, updatedDetails)) {
@@ -238,28 +218,6 @@ async function handleRequest(
       return NextResponse.json(
         { error: "Participant details not found" },
         { status: 404 }
-      );
-    }
-
-    const { error: syncError } = await syncParticipantContactToUserInfo(
-      supabase,
-      userId,
-      {
-        plan_id: data.plan_id,
-        plan_type: data.plan_type,
-        display_name: data.display_name,
-        phone_numbers: data.phone_numbers,
-        social_media: data.social_media,
-        visible_emails: data.visible_emails,
-        visible_websites: data.visible_websites,
-        glue_communication_email: data.glue_communication_email,
-      }
-    );
-
-    if (syncError) {
-      return NextResponse.json(
-        { error: "Failed to sync user info", details: syncError.message },
-        { status: 500 }
       );
     }
 

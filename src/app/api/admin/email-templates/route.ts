@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { requireAdminToken } from "@/lib/admin/require-admin-token";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 const emailTemplateSchema = z.object({
@@ -10,12 +10,14 @@ const emailTemplateSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient();
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
     const body = await request.json();
 
     const validatedData = emailTemplateSchema.parse(body);
 
-    const { data, error } = await supabase
+    const { data, error } = await auth.supabase
       .from("email_templates")
       .insert({
         slug: validatedData.slug,

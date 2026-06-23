@@ -18,7 +18,6 @@ import {
 } from "@/lib/visitor/ensure-visitor-data";
 import { isCheckInProfileComplete } from "@/lib/visitor/is-check-in-profile-complete";
 import { mapVisitorRowToProfileResponse } from "@/lib/visitor/map-visitor-row-to-profile";
-import { createAdminClient } from "@/utils/supabase/adminClient";
 import { createClient } from "@/utils/supabase/server";
 
 export type ParticipationActor = "guest" | "visitor" | "participant";
@@ -61,24 +60,14 @@ export const getParticipationFormContext = async (
     };
   }
 
-  const admin = await createAdminClient();
-  const [participantDetailsRes, loggedUserInfoRes] = await Promise.all([
-    supabase
-      .from("participant_details")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle(),
-    supabase
-      .from("user_info")
-      .select("plan_type")
-      .eq("user_id", user.id)
-      .maybeSingle(),
-  ]);
+  const participantDetailsRes = await supabase
+    .from("participant_details")
+    .select("*")
+    .eq("user_id", user.id)
+    .maybeSingle();
 
   const hasParticipantRow = Boolean(participantDetailsRes.data);
-  const isLegacyParticipant =
-    loggedUserInfoRes.data?.plan_type === "participant";
-  const isParticipant = hasParticipantRow || isLegacyParticipant;
+  const isParticipant = hasParticipantRow;
 
   const hints = await loadVisitorHintsForAuthUser(user.id, user.email);
   const visitorRow = await ensureVisitorDataForAuthUser(

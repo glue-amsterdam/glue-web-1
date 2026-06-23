@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { config } from "@/config";
 import { revalidateParticipantVisibilityCaches } from "@/lib/participants/revalidate-participant-visibility-caches";
+import { requirePlatformMod } from "@/lib/permissions/require-platform-mod";
 import {
   getEmailTemplateWithFallback,
   processEmailTemplate,
@@ -11,6 +12,9 @@ import {
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
+  const mod = await requirePlatformMod();
+  if (!mod.ok) return mod.response;
+
   try {
     const body = await request.json();
     const { userId } = body;
@@ -218,38 +222,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Update user_info
-    if (participantData.reactivation_notes) {
-      const { error: updateUserInfoError } = await supabase
-        .from("user_info")
-        .update({
-          plan_id: participantData.reactivation_notes.plan_id,
-          plan_type: participantData.reactivation_notes.plan_type,
-        })
-        .eq("user_id", userId);
-
-      if (updateUserInfoError) {
-        return NextResponse.json(
-          { error: "Failed to update user info" },
-          { status: 500 }
-        );
-      }
-    }
-
-    // Get user information
-    const { data: userData, error: userError } = await supabase
-      .from("user_info")
-      .select("*")
-      .eq("user_id", userId)
-      .single();
-
-    if (userError || !userData) {
-      return NextResponse.json(
-        { error: "Failed to fetch user information" },
-        { status: 500 }
-      );
-    }
-
     // Send email to participant
     try {
       const template = await getEmailTemplateWithFallback(
@@ -257,7 +229,7 @@ export async function POST(request: Request) {
       );
       const htmlContent = processEmailTemplate(template.html_content, {
         email: user.email,
-        user_name: userData.user_name || user.email,
+        user_name: participantData.display_name || user.email,
       });
 
       await resend.emails.send({

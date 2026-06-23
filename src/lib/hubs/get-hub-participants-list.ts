@@ -1,4 +1,3 @@
-import type { UserInfo } from "@/schemas/userInfoSchemas";
 import { createClient } from "@/utils/supabase/server";
 
 type ParticipantDetailsRow = {
@@ -9,7 +8,18 @@ type ParticipantDetailsRow = {
   plan_id: string | null;
 };
 
-const mapParticipantToUserInfo = (row: ParticipantDetailsRow): UserInfo => ({
+export type HubParticipantOption = {
+  id: string;
+  user_id: string;
+  user_name: string | null;
+  visible_emails: string[] | null;
+  plan_type: string;
+  plan_id: string;
+};
+
+const mapParticipantToHubOption = (
+  row: ParticipantDetailsRow
+): HubParticipantOption => ({
   id: row.user_id,
   user_id: row.user_id,
   user_name: row.display_name,
@@ -18,7 +28,7 @@ const mapParticipantToUserInfo = (row: ParticipantDetailsRow): UserInfo => ({
   plan_id: row.plan_id ?? "",
 });
 
-export const getHubParticipantsList = async (): Promise<UserInfo[]> => {
+export const getHubParticipantsList = async (): Promise<HubParticipantOption[]> => {
   const supabase = await createClient();
 
   const { data: participants, error } = await supabase
@@ -34,5 +44,5 @@ export const getHubParticipantsList = async (): Promise<UserInfo[]> => {
     return [];
   }
 
-  return (participants ?? []).map(mapParticipantToUserInfo);
+  return (participants ?? []).map(mapParticipantToHubOption);
 };

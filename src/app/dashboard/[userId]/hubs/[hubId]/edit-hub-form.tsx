@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import type { HubApiCall } from "@/schemas/hubSchemas";
-import type { UserInfo } from "@/schemas/userInfoSchemas";
+import type { HubParticipantOption } from "@/lib/hubs/get-hub-participants-list";
 import {
   HubFormFields,
   type HubFormFieldValues,
@@ -18,13 +18,13 @@ import {
 type EditHubFormProps = {
   hub: HubApiCall;
   targetUserId: string;
-  userInfoList: UserInfo[];
+  participantOptions: HubParticipantOption[];
 };
 
 export const EditHubForm = ({
   hub,
   targetUserId,
-  userInfoList,
+  participantOptions,
 }: EditHubFormProps) => {
   const router = useRouter();
   const { toast } = useToast();
@@ -40,7 +40,7 @@ export const EditHubForm = ({
     display_number: hub.display_number ?? null,
   });
 
-  const addParticipantToHub = (userInfo: UserInfo) => {
+  const addParticipantToHub = (userInfo: HubParticipantOption) => {
     if (selectedParticipants.includes(userInfo.user_id)) return;
     setSelectedParticipants((prev) => [...prev, userInfo.user_id]);
     setHubHost((current) => current || userInfo.user_id);
@@ -150,14 +150,14 @@ export const EditHubForm = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-4 mb-6 lg:items-stretch">
           <HubSelectedParticipants
-            userInfoList={userInfoList}
+            participantOptions={participantOptions}
             selectedParticipants={selectedParticipants}
             hubHost={hubHost}
             onRemove={removeParticipantFromHub}
             onSetHost={setParticipantAsHost}
           />
           <HubAvailableParticipants
-            userInfoList={userInfoList}
+            participantOptions={participantOptions}
             selectedParticipants={selectedParticipants}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}

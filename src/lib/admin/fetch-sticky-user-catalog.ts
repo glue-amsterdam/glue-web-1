@@ -24,7 +24,6 @@ export const fetchStickyUserCatalog = async (
     .filter((user) => user.displayName.trim() && user.displayName !== "Unnamed User")
     .map((user) => {
       const participant = enrichment.participantByUserId.get(user.userId);
-      const legacy = enrichment.legacyUserInfoByUserId.get(user.userId);
 
       return {
         user_id: user.userId,
@@ -33,7 +32,7 @@ export const fetchStickyUserCatalog = async (
           participant?.display_name ??
           enrichment.visitorByUserId.get(user.userId)?.display_name ??
           null,
-        user_name: legacy?.user_name ?? null,
+        user_name: null,
         entity_type: user.entityType,
         slug: participant?.slug ?? null,
       };

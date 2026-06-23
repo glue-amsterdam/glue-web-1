@@ -1,9 +1,11 @@
-import { BASE_URL } from "@/constants";
+import { unstable_cache } from "next/cache";
+
 import { SPONSORS_CACHE_TAG } from "@/lib/about/sponsors-cache-tags";
 import {
   SponsorsSection,
   sponsorsSectionSchema,
 } from "@/schemas/sponsorsSchema";
+import { createPublicSupabaseClient } from "@/utils/supabase/public";
 
 const SPONSORS_FALLBACK_DATA: SponsorsSection = {
   sponsorsHeaderSchema: {
@@ -43,30 +45,54 @@ const SPONSORS_FALLBACK_DATA: SponsorsSection = {
   ],
 };
 
-export async function fetchSponsorsData(): Promise<SponsorsSection> {
-  try {
-    const res = await fetch(`${BASE_URL}/about/sponsors`, {
-      next: {
-        revalidate: 3600,
-        tags: [SPONSORS_CACHE_TAG],
-      },
-    });
+const SPONSORS_HIDDEN_DATA: SponsorsSection = {
+  sponsorsHeaderSchema: {
+    id: "sponsors-section",
+    title: "Sponsor data is not yet available. ",
+    is_visible: false,
+    description: "Sponsor data is not yet available.",
+    sponsors_types: [],
+  },
+  sponsors: [],
+};
 
-    if (!res.ok) {
-      if (
-        process.env.NODE_ENV === "production" &&
-        process.env.NEXT_PHASE === "phase-production-build"
-      ) {
-        console.log("Build environment detected, using mock data");
-        return getMockData();
-      }
-      throw new Error(`HTTP error! status: ${res.status}`);
+const fetchSponsorsDataCached = unstable_cache(
+  async (): Promise<SponsorsSection> => {
+    const supabase = createPublicSupabaseClient();
+    const { data: headerData, error: headerError } = await supabase
+      .from("about_sponsors_header")
+      .select("*")
+      .eq("id", "about-sponsors-header-section")
+      .single();
+
+    if (headerError) {
+      throw headerError;
     }
 
-    const data: SponsorsSection = await res.json();
-    const validatedData = sponsorsSectionSchema.parse(data);
+    if (!headerData.is_visible) {
+      return sponsorsSectionSchema.parse(SPONSORS_HIDDEN_DATA);
+    }
 
-    return validatedData;
+    const { data: sponsorsData, error: sponsorsError } = await supabase
+      .from("about_sponsors")
+      .select("*");
+
+    if (sponsorsError) {
+      throw sponsorsError;
+    }
+
+    return sponsorsSectionSchema.parse({
+      sponsorsHeaderSchema: headerData,
+      sponsors: sponsorsData ?? [],
+    });
+  },
+  [SPONSORS_CACHE_TAG],
+  { tags: [SPONSORS_CACHE_TAG], revalidate: 3600 }
+);
+
+export async function fetchSponsorsData(): Promise<SponsorsSection> {
+  try {
+    return await fetchSponsorsDataCached();
   } catch (error) {
     console.error("Error fetching sponsors data:", error);
     return getMockData();

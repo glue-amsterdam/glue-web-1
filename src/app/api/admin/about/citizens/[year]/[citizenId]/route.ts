@@ -1,5 +1,5 @@
 import { revalidateHomeCitizensCache } from "@/lib/home";
-import { createClient } from "@/utils/supabase/server";
+import { requireAdminToken } from "@/lib/admin/require-admin-token";
 import { NextResponse } from "next/server";
 import { citizenSchema } from "@/schemas/citizenSchema";
 import { config } from "@/config";
@@ -12,8 +12,10 @@ export async function GET(
   const { year, citizenId } = params;
 
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
+    const { data, error } = await auth.supabase
       .from("about_citizens")
       .select("*")
       .eq("id", citizenId)
@@ -40,17 +42,19 @@ export async function PUT(
   props: { params: Promise<{ year: string; citizenId: string }> }
 ) {
   const params = await props.params;
-  const supabase = await createClient();
   const { year, citizenId } = params;
 
   try {
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
     const body = await request.json();
 
     // Validate the incoming data
     const validatedData = citizenSchema.parse(body);
 
     // Get existing citizen to check for image changes
-    const { data: existingCitizen, error: fetchError } = await supabase
+    const { data: existingCitizen, error: fetchError } = await auth.supabase
       .from("about_citizens")
       .select("id, image_url")
       .eq("id", citizenId)
@@ -71,7 +75,7 @@ export async function PUT(
     };
 
     // Update the citizen
-    const { error: updateError, data: updatedCitizen } = await supabase
+    const { error: updateError, data: updatedCitizen } = await auth.supabase
       .from("about_citizens")
       .update(citizenToUpdate)
       .eq("id", citizenId)
@@ -93,7 +97,7 @@ export async function PUT(
 
         console.log(`Attempting to delete old image: ${filePath}`);
 
-        const { error: storageError } = await supabase.storage
+        const { error: storageError } = await auth.supabase.storage
           .from(config.bucketName)
           .remove([filePath]);
 
@@ -136,12 +140,14 @@ export async function DELETE(
   props: { params: Promise<{ year: string; citizenId: string }> }
 ) {
   const params = await props.params;
-  const supabase = await createClient();
   const { year, citizenId } = params;
 
   try {
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
     // Get citizen to delete image
-    const { data: citizen, error: fetchError } = await supabase
+    const { data: citizen, error: fetchError } = await auth.supabase
       .from("about_citizens")
       .select("image_url")
       .eq("id", citizenId)
@@ -151,7 +157,7 @@ export async function DELETE(
     if (fetchError) throw fetchError;
 
     // Delete citizen from database
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await auth.supabase
       .from("about_citizens")
       .delete()
       .eq("id", citizenId)
@@ -169,7 +175,7 @@ export async function DELETE(
 
         console.log(`Attempting to delete image: ${filePath}`);
 
-        const { error: storageError } = await supabase.storage
+        const { error: storageError } = await auth.supabase.storage
           .from(config.bucketName)
           .remove([filePath]);
 

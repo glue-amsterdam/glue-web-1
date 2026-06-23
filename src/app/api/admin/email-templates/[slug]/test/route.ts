@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { requireAdminToken } from "@/lib/admin/require-admin-token";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { config } from "@/config";
@@ -21,7 +21,9 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const supabase = await createClient();
+    const auth = await requireAdminToken();
+    if (!auth.ok) return auth.response;
+
     const { slug } = await params;
     const body = await request.json();
 
@@ -38,7 +40,7 @@ export async function POST(
       finalHtmlContent = html_content;
     } else {
       // Get the template from database
-      const { data: templateData, error: templateError } = await supabase
+      const { data: templateData, error: templateError } = await auth.supabase
         .from("email_templates")
         .select("subject, html_content")
         .eq("slug", slug)
