@@ -27,6 +27,7 @@ import {
   Coffee,
   Hash,
   QrCode,
+  FileSpreadsheet,
 } from "lucide-react";
 
 export const USER_DASHBOARD_SECTIONS = [
@@ -80,6 +81,11 @@ export const ADMIN_DASHBOARD_SECTIONS = [
     href: `numbers`,
     label: "Numbers",
     icon: Hash,
+  },
+  {
+    href: `report`,
+    label: "Report",
+    icon: FileSpreadsheet,
   },
 ];
 

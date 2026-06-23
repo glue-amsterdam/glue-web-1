@@ -27,6 +27,28 @@ const json400 = (
   return NextResponse.json({ error, code }, { status: 400 });
 };
 
+const jsonInsertError = (insertError: {
+  code?: string;
+  message?: string;
+  details?: string;
+}) => {
+  if (insertError.code === "23503" || insertError.code === "23514") {
+    return NextResponse.json(
+      {
+        error:
+          "This QR code cannot be used for this scan target. Ask the visitor to refresh their check-in QR and try again.",
+        code: "invalid_scan_target",
+      },
+      { status: 400 },
+    );
+  }
+
+  return NextResponse.json(
+    { error: "Could not register attendance. Please try again." },
+    { status: 500 },
+  );
+};
+
 export async function POST(request: Request) {
   scanDebug("api/scan", "request_received");
 
@@ -141,10 +163,7 @@ export async function POST(request: Request) {
       code: insertError.code,
       message: insertError.message,
     });
-    return NextResponse.json(
-      { error: "Could not register attendance. Please try again." },
-      { status: 500 },
-    );
+    return jsonInsertError(insertError);
   }
 
   scanDebug("api/scan", "200:success", {

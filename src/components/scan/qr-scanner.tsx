@@ -19,6 +19,7 @@ export type QrScannerTarget =
 type QrScannerProps = {
   target: QrScannerTarget;
   timeZone: string;
+  onScanSuccess?: (target: QrScannerTarget) => void;
 };
 
 type ScanStatus = {
@@ -40,7 +41,26 @@ const isDomException = (
 const isActiveSession = (session: number, sessionRef: { current: number }) =>
   session === sessionRef.current;
 
-export const QrScanner = ({ target, timeZone }: QrScannerProps) => {
+const getScanErrorMessage = async (
+  response: Response,
+  fallback: string,
+): Promise<string> => {
+  const data = (await response.json().catch(() => ({}))) as {
+    error?: string;
+  };
+
+  if (typeof data.error === "string" && data.error.trim().length > 0) {
+    return data.error;
+  }
+
+  return fallback;
+};
+
+export const QrScanner = ({
+  target,
+  timeZone,
+  onScanSuccess,
+}: QrScannerProps) => {
   const containerId = useId().replace(/:/g, "");
   const scannerRef = useRef<import("html5-qrcode").Html5Qrcode | null>(null);
   const isProcessingRef = useRef(false);
@@ -103,6 +123,7 @@ export const QrScanner = ({ target, timeZone }: QrScannerProps) => {
       });
 
       if (response.status === 200) {
+        onScanSuccess?.(currentTarget);
         setScanStatus({
           type: "success",
           message: "Visitor checked in.",
@@ -121,28 +142,17 @@ export const QrScanner = ({ target, timeZone }: QrScannerProps) => {
         return;
       }
 
-      if (
-        response.status === 400 ||
-        response.status === 401 ||
-        response.status === 403
-      ) {
-        const data = (await response.json().catch(() => ({}))) as {
-          error?: string;
-        };
+      if (!response.ok) {
+        const message = await getScanErrorMessage(
+          response,
+          "Unexpected scan error. Try again.",
+        );
         setScanStatus({
           type: "error",
-          message:
-            typeof data.error === "string" && data.error.trim().length > 0
-              ? data.error
-              : "Invalid QR token.",
+          message,
         });
         return;
       }
-
-      setScanStatus({
-        type: "error",
-        message: "Unexpected scan error. Try again.",
-      });
     } catch (error) {
       console.error("Scan request error:", error);
       setScanStatus({
@@ -154,7 +164,7 @@ export const QrScanner = ({ target, timeZone }: QrScannerProps) => {
         isProcessingRef.current = false;
       }, 900);
     }
-  }, []);
+  }, [onScanSuccess]);
 
   useEffect(() => {
     const session = ++startSessionRef.current;
