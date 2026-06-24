@@ -4,7 +4,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getCookieConsent } from "@/app/actions/cookieConsent";
-import { submitNewsletter } from "@/app/actions/newsletter";
 import {
   VisitorAccountStep,
   type VisitorAccountValues,
@@ -73,18 +72,6 @@ export const SignUpVisitorForm = ({
             : "Account created but sign-in failed. Please log in manually.";
         setSubmitError(message);
         return;
-      }
-
-      if (data.newsletterSubscribe) {
-        try {
-          await submitNewsletter({
-            firstName: data.firstName,
-            lastName: data.lastName,
-            email: data.email,
-          });
-        } catch {
-          // best-effort; registration already succeeded
-        }
       }
 
       redirecting = true;

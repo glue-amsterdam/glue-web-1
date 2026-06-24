@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/subscribe-to-mailchimp";
 import { visitorRegisterSchema } from "@/schemas/visitorSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
@@ -20,8 +21,15 @@ export async function POST(request: Request) {
     );
   }
 
-  const { firstName, lastName, email, password, birthDate, areaId } =
-    parsed.data;
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    birthDate,
+    areaId,
+    newsletterSubscribe,
+  } = parsed.data;
   const normalizedEmail = email.toLowerCase();
 
   try {
@@ -68,6 +76,17 @@ export async function POST(request: Request) {
 
       if (linkError) throw linkError;
 
+      if (newsletterSubscribe) {
+        await subscribeToNewsletterBestEffort(
+          {
+            firstName,
+            lastName,
+            email: normalizedEmail,
+          },
+          "POST /api/visitors/register",
+        );
+      }
+
       return NextResponse.json({
         success: true,
         visitorId: existingVisitor.id,
@@ -91,6 +110,17 @@ export async function POST(request: Request) {
       .single();
 
     if (insertError) throw insertError;
+
+    if (newsletterSubscribe) {
+      await subscribeToNewsletterBestEffort(
+        {
+          firstName,
+          lastName,
+          email: normalizedEmail,
+        },
+        "POST /api/visitors/register",
+      );
+    }
 
     return NextResponse.json({
       success: true,

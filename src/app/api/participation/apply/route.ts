@@ -16,6 +16,7 @@ import {
 } from "@/lib/email";
 import { config } from "@/config";
 import { revalidateParticipantVisibilityCaches } from "@/lib/participants/revalidate-participant-visibility-caches";
+import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/subscribe-to-mailchimp";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -252,6 +253,17 @@ export async function POST(request: Request) {
       if (visitorError) {
         return NextResponse.json({ error: visitorError.message }, { status: 500 });
       }
+    }
+
+    if (accountData.newsletterSubscribe) {
+      await subscribeToNewsletterBestEffort(
+        {
+          firstName: accountData.firstName,
+          lastName: accountData.lastName,
+          email: normalizedEmail,
+        },
+        "POST /api/participation/apply",
+      );
     }
   }
 

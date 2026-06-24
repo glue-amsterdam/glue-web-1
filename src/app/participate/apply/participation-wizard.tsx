@@ -48,8 +48,6 @@ import { useToast } from "@/hooks/use-toast";
 
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 
-import { submitNewsletter } from "@/app/actions/newsletter";
-
 
 
 type ParticipationWizardProps = {
@@ -342,30 +340,6 @@ export const ParticipationWizard = ({
         });
 
         return;
-
-      }
-
-
-
-      if (account?.newsletterSubscribe) {
-
-        try {
-
-          await submitNewsletter({
-
-            firstName: account.firstName,
-
-            lastName: account.lastName,
-
-            email: account.email,
-
-          });
-
-        } catch {
-
-          // best-effort; application already succeeded
-
-        }
 
       }
 
