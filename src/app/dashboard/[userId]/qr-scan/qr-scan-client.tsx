@@ -23,7 +23,6 @@ import type {
 import type { EventDayForScan } from "@/lib/scan/get-qr-scan-page-data";
 import type { ScannableEventRow } from "@/lib/scan/is-event-scan-allowed";
 import { isScanDayToday } from "@/lib/scan/is-scan-day-today";
-import { cn } from "@/lib/utils";
 
 type QrScanClientProps = {
   eventDays: EventDayForScan[];
@@ -160,17 +159,15 @@ export const QrScanClient = ({
         });
       }
 
-      const canScanToday =
-        debugEnabled || isScanDayToday(day.date, timeZone);
+      const isEventDayToday = isScanDayToday(day.date, timeZone);
 
       return {
         day,
         cards,
-        canScanToday,
+        isEventDayToday,
       };
     });
   }, [
-    debugEnabled,
     currentEventAttendanceCounts,
     currentLocationDayCounts,
     eventDays,
@@ -182,15 +179,15 @@ export const QrScanClient = ({
 
   const sortedSections = useMemo(() => {
     const todayFirst = [...sections].sort((a, b) => {
-      if (a.canScanToday && !b.canScanToday) return -1;
-      if (!a.canScanToday && b.canScanToday) return 1;
+      if (a.isEventDayToday && !b.isEventDayToday) return -1;
+      if (!a.isEventDayToday && b.isEventDayToday) return 1;
       return a.day.dayId.localeCompare(b.day.dayId);
     });
     return todayFirst;
   }, [sections]);
 
   const enabledCardCount = sortedSections.reduce(
-    (total, section) => total + (section.canScanToday ? section.cards.length : 0),
+    (total, section) => total + section.cards.length,
     0,
   );
 
@@ -209,18 +206,14 @@ export const QrScanClient = ({
     const section = sortedSections.find((item) =>
       item.cards.some((card) => card.id === matchingCard.id),
     );
-    if (!section?.canScanToday && !debugEnabled) return;
-
     setActiveTarget({
       mode: "event",
       eventId: matchingCard.event.id,
       label: matchingCard.event.title,
     });
-  }, [activeTarget, debugEnabled, initialEventId, sortedSections]);
+  }, [activeTarget, initialEventId, sortedSections]);
 
-  const handleOpenCard = (card: ScanCard, canScanToday: boolean) => {
-    if (!canScanToday && !debugEnabled) return;
-
+  const handleOpenCard = (card: ScanCard) => {
     if (card.kind === "venue") {
       setActiveTarget({
         mode: "location-day",
@@ -384,11 +377,11 @@ export const QrScanClient = ({
               <span className="text-sm text-muted-foreground">
                 {formatDayDate(section.day.date)}
               </span>
-              {section.canScanToday ? (
+              {section.isEventDayToday ? (
                 <Badge variant="default">Today</Badge>
               ) : (
                 <Badge variant="secondary">
-                  Opens {formatDayDate(section.day.date)}
+                  {formatDayDate(section.day.date)}
                 </Badge>
               )}
             </div>
@@ -400,14 +393,10 @@ export const QrScanClient = ({
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {section.cards.map((card) => {
-                  const isEnabled = section.canScanToday || debugEnabled;
                   const isVenue = card.kind === "venue";
 
                   return (
-                    <Card
-                      key={card.id}
-                      className={cn("min-h-[150px]", !isEnabled && "opacity-75")}
-                    >
+                    <Card key={card.id} className="min-h-[150px]">
                       <CardContent className="flex h-full flex-col justify-between gap-3 p-4">
                         <div className="space-y-3">
                           <div className="flex w-full items-start justify-between gap-2">
@@ -437,24 +426,18 @@ export const QrScanClient = ({
                             </p>
                           )}
 
-                          {!isEnabled ? (
-                            <span className="block text-xs text-muted-foreground">
-                              Opens {formatDayDate(card.dayDate)}
-                            </span>
-                          ) : null}
                         </div>
 
                         <div className="flex flex-wrap gap-2">
                           <Button
                             type="button"
                             variant={isVenue ? "default" : "outline"}
-                            disabled={!isEnabled}
                             aria-label={
                               card.kind === "event"
                                 ? `Scan check-in for ${card.event.title}`
                                 : `Scan venue visitors for ${card.dayLabel}`
                             }
-                            onClick={() => handleOpenCard(card, section.canScanToday)}
+                            onClick={() => handleOpenCard(card)}
                           >
                             Scan
                           </Button>
