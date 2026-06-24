@@ -8,7 +8,7 @@ export type NewsletterPayload = {
 };
 
 export type NewsletterActionResult =
-  | { status: 200; success: true }
+  | { status: 200; success: true; memberStatus: string }
   | { status: 400; success: false; error: string }
   | { status: 500; success: false; error: string };
 
@@ -20,6 +20,13 @@ type MailchimpConfig = {
   audienceId: string;
   serverPrefix: string;
 };
+
+type MailchimpMemberResponse = {
+  status?: string;
+  email_address?: string;
+};
+
+const normalizeEmail = (email: string): string => email.trim().toLowerCase();
 
 const getMailchimpConfig = (): MailchimpConfig | null => {
   const apiKey = process.env.MAILCHIMP_API_KEY?.trim();
@@ -38,7 +45,7 @@ const getMailchimpConfig = (): MailchimpConfig | null => {
 };
 
 const createSubscriberHash = (email: string): string =>
-  createHash("md5").update(email.toLowerCase()).digest("hex");
+  createHash("md5").update(normalizeEmail(email)).digest("hex");
 
 const getMailchimpErrorMessage = async (response: Response): Promise<string> => {
   try {
@@ -56,7 +63,8 @@ const subscribeToMailchimp = async (
   payload: NewsletterPayload,
   config: MailchimpConfig,
 ): Promise<NewsletterActionResult> => {
-  const subscriberHash = createSubscriberHash(payload.email);
+  const normalizedEmail = normalizeEmail(payload.email);
+  const subscriberHash = createSubscriberHash(normalizedEmail);
   const url = `https://${config.serverPrefix}.api.mailchimp.com/3.0/lists/${config.audienceId}/members/${subscriberHash}`;
   const credentials = Buffer.from(`newsletter:${config.apiKey}`).toString("base64");
 
@@ -67,7 +75,8 @@ const subscribeToMailchimp = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      email_address: payload.email,
+      email_address: normalizedEmail,
+      status: MAILCHIMP_SUBSCRIBED_STATUS,
       status_if_new: MAILCHIMP_SUBSCRIBED_STATUS,
       merge_fields: {
         FNAME: payload.firstName,
@@ -78,7 +87,13 @@ const subscribeToMailchimp = async (
   });
 
   if (response.ok) {
-    return { status: 200, success: true };
+    const body = (await response.json()) as MailchimpMemberResponse;
+    const memberStatus = body.status ?? MAILCHIMP_SUBSCRIBED_STATUS;
+    const email = body.email_address ?? normalizedEmail;
+
+    console.log(`[newsletter] ${email} → status: ${memberStatus}`);
+
+    return { status: 200, success: true, memberStatus };
   }
 
   const error = await getMailchimpErrorMessage(response);
@@ -101,7 +116,10 @@ export const subscribeToNewsletter = async (
       };
     }
 
-    return await subscribeToMailchimp(payload, config);
+    return await subscribeToMailchimp(
+      { ...payload, email: normalizeEmail(payload.email) },
+      config,
+    );
   } catch {
     return {
       status: 500,

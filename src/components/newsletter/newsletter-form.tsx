@@ -55,7 +55,7 @@ function NewsletterForm() {
     const [fieldErrors, setFieldErrors] = useState<Partial<Record<FormFieldName, string>>>({});
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     const getFieldErrorMessage = (
         fieldErrors: Partial<Record<FormFieldName, string>>,
@@ -66,7 +66,7 @@ function NewsletterForm() {
         event.preventDefault();
 
         setSubmitError(null);
-        setIsSuccess(false);
+        setSuccessMessage(null);
         setFieldErrors({});
 
         const formData = new FormData(event.currentTarget);
@@ -102,7 +102,11 @@ function NewsletterForm() {
             const result = await submitNewsletter(parsed.data);
 
             if (result.status === 200 && result.success) {
-                setIsSuccess(true);
+                const message =
+                    result.memberStatus === "pending"
+                        ? "Check your email to confirm your subscription."
+                        : "Thank you for subscribing to our newsletter.";
+                setSuccessMessage(message);
                 form.reset();
                 return;
             }
@@ -164,9 +168,9 @@ function NewsletterForm() {
                 </p>
             ) : null}
 
-            {isSuccess ? (
+            {successMessage ? (
                 <p role="status" className="pt-[15px] base-text-size text-[var(--primary-color)]">
-                    Thank you for subscribing to our newsletter.
+                    {successMessage}
                 </p>
             ) : null}
 
