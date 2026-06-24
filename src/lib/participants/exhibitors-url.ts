@@ -1,6 +1,8 @@
-import type {
-  ExhibitorsQueryParams,
-} from "@/lib/participants/exhibitor-types";
+import type { ExhibitorsQueryParams } from "@/lib/participants/exhibitor-types";
+import {
+  getListVisibleCount,
+  LIST_VISIBLE_PARAM,
+} from "@/lib/list-page-session-cache";
 import { parseExhibitorsQuery } from "@/lib/participants/exhibitors-query";
 import {
   EXHIBITORS_PAGE_SIZE,
@@ -8,7 +10,7 @@ import {
 } from "@/lib/participants/exhibitors-filters";
 
 export const buildExhibitorsSearchParams = (
-  params: ExhibitorsQueryParams
+  params: ExhibitorsQueryParams,
 ): URLSearchParams => {
   const searchParams = new URLSearchParams();
 
@@ -33,7 +35,7 @@ export const buildExhibitorsSearchParams = (
 
 export const filtersToQueryParams = (
   filters: ExhibitorsFilters,
-  offset = 0
+  offset = 0,
 ): ExhibitorsQueryParams => ({
   limit: EXHIBITORS_PAGE_SIZE,
   offset,
@@ -44,7 +46,7 @@ export const filtersToQueryParams = (
 });
 
 export const searchParamsToFilters = (
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
 ): ExhibitorsFilters => {
   const parsed = parseExhibitorsQuery(searchParams);
 
@@ -58,7 +60,8 @@ export const searchParamsToFilters = (
 
 export const buildExhibitorsPageUrl = (
   pathname: string,
-  filters: ExhibitorsFilters
+  filters: ExhibitorsFilters,
+  visibleCount = EXHIBITORS_PAGE_SIZE,
 ): string => {
   const searchParams = new URLSearchParams();
 
@@ -74,13 +77,20 @@ export const buildExhibitorsPageUrl = (
   if (filters.q.trim()) {
     searchParams.set("q", filters.q.trim());
   }
+  if (visibleCount > EXHIBITORS_PAGE_SIZE) {
+    searchParams.set(LIST_VISIBLE_PARAM, String(visibleCount));
+  }
 
   const queryString = searchParams.toString();
   return queryString ? `${pathname}?${queryString}` : pathname;
 };
 
+export const getExhibitorsVisibleCount = (
+  searchParams: URLSearchParams,
+): number => getListVisibleCount(searchParams, EXHIBITORS_PAGE_SIZE);
+
 export const recordToSearchParams = (
-  params: Record<string, string | string[] | undefined>
+  params: Record<string, string | string[] | undefined>,
 ): URLSearchParams => {
   const searchParams = new URLSearchParams();
 

@@ -1,12 +1,13 @@
 import type { ProgramQueryParams } from "./program-types";
-import { parseProgramQuery } from "./program-query";
 import {
-  PROGRAM_PAGE_SIZE,
-  type ProgramFilters,
-} from "./program-filters";
+  getListVisibleCount,
+  LIST_VISIBLE_PARAM,
+} from "@/lib/list-page-session-cache";
+import { parseProgramQuery } from "./program-query";
+import { PROGRAM_PAGE_SIZE, type ProgramFilters } from "./program-filters";
 
 export const buildProgramSearchParams = (
-  params: ProgramQueryParams
+  params: ProgramQueryParams,
 ): URLSearchParams => {
   const searchParams = new URLSearchParams();
 
@@ -28,7 +29,7 @@ export const buildProgramSearchParams = (
 
 export const filtersToQueryParams = (
   filters: ProgramFilters,
-  offset = 0
+  offset = 0,
 ): ProgramQueryParams => ({
   limit: PROGRAM_PAGE_SIZE,
   offset,
@@ -38,7 +39,7 @@ export const filtersToQueryParams = (
 });
 
 export const searchParamsToFilters = (
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
 ): ProgramFilters => {
   const parsed = parseProgramQuery(searchParams);
 
@@ -51,7 +52,8 @@ export const searchParamsToFilters = (
 
 export const buildProgramPageUrl = (
   pathname: string,
-  filters: ProgramFilters
+  filters: ProgramFilters,
+  visibleCount = PROGRAM_PAGE_SIZE,
 ): string => {
   const searchParams = new URLSearchParams();
 
@@ -64,13 +66,19 @@ export const buildProgramPageUrl = (
   if (filters.q.trim()) {
     searchParams.set("q", filters.q.trim());
   }
+  if (visibleCount > PROGRAM_PAGE_SIZE) {
+    searchParams.set(LIST_VISIBLE_PARAM, String(visibleCount));
+  }
 
   const queryString = searchParams.toString();
   return queryString ? `${pathname}?${queryString}` : pathname;
 };
 
+export const getProgramVisibleCount = (searchParams: URLSearchParams): number =>
+  getListVisibleCount(searchParams, PROGRAM_PAGE_SIZE);
+
 export const recordToSearchParams = (
-  params: Record<string, string | string[] | undefined>
+  params: Record<string, string | string[] | undefined>,
 ): URLSearchParams => {
   const searchParams = new URLSearchParams();
 

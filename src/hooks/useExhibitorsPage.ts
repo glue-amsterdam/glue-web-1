@@ -8,6 +8,7 @@ import {
   clearListSnapshot,
   filtersKeyFromPageUrl,
   readListSnapshot,
+  replaceListVisibleCountInUrl,
   saveListSnapshot,
   type ListPageCatalogSnapshot,
 } from "@/lib/list-page-session-cache";
@@ -27,6 +28,7 @@ import {
 import {
   buildExhibitorsPageUrl,
   filtersToQueryParams,
+  getExhibitorsVisibleCount,
   searchParamsToFilters,
 } from "@/lib/participants/exhibitors-url";
 
@@ -63,7 +65,7 @@ type ResolvedExhibitorsState = {
 
 const areFiltersEqual = (
   left: ExhibitorsFilters,
-  right: ExhibitorsFilters
+  right: ExhibitorsFilters,
 ): boolean => {
   return (
     left.type === right.type &&
@@ -85,15 +87,16 @@ const isCatalogComplete = (catalog: ExhibitorsCatalog): boolean =>
 const getLocalPage = (
   catalog: ExhibitorsCatalog,
   filters: ExhibitorsFilters,
-  offset: number
+  offset: number,
+  limit = EXHIBITORS_PAGE_SIZE,
 ) => {
   const filteredItems = applyExhibitorsFilters(catalog.items, filters);
-  return paginateExhibitors(filteredItems, offset, EXHIBITORS_PAGE_SIZE);
+  return paginateExhibitors(filteredItems, offset, limit);
 };
 
 const createInitialCatalog = (
   initialFilters: ExhibitorsFilters,
-  initialData: ExhibitorsPageResponse
+  initialData: ExhibitorsPageResponse,
 ): ExhibitorsCatalog | null => {
   if (initialFilters.q.trim()) return null;
 
@@ -107,7 +110,7 @@ const createInitialCatalog = (
 
 const resolveInitialExhibitorsState = (
   initialData: ExhibitorsPageResponse,
-  initialFilters: ExhibitorsFilters
+  initialFilters: ExhibitorsFilters,
 ): ResolvedExhibitorsState => ({
   items: initialData.items,
   total: initialData.total,
@@ -119,7 +122,7 @@ const resolveInitialExhibitorsState = (
 
 export const useExhibitorsPage = (
   initialData: ExhibitorsPageResponse,
-  initialFilters: ExhibitorsFilters = DEFAULT_EXHIBITORS_FILTERS
+  initialFilters: ExhibitorsFilters = DEFAULT_EXHIBITORS_FILTERS,
 ): UseExhibitorsPageReturn => {
   const router = useRouter();
   const pathname = usePathname();
@@ -129,7 +132,7 @@ export const useExhibitorsPage = (
   if (initialStateRef.current === null) {
     initialStateRef.current = resolveInitialExhibitorsState(
       initialData,
-      initialFilters
+      initialFilters,
     );
   }
   const initialState = initialStateRef.current;
@@ -137,18 +140,21 @@ export const useExhibitorsPage = (
   const [items, setItems] = useState<ExhibitorItem[]>(initialState.items);
   const [total, setTotal] = useState(initialState.total);
   const [hasMore, setHasMore] = useState(initialState.hasMore);
-  const [filters, setFilters] = useState<ExhibitorsFilters>(initialState.filters);
+  const [filters, setFilters] = useState<ExhibitorsFilters>(
+    initialState.filters,
+  );
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const skipInitialFiltersEffectRef = useRef(true);
   const suppressFetchForFiltersKeyRef = useRef<string | null>(
-    initialState.suppressFetchKey
+    initialState.suppressFetchKey,
   );
   const filtersSourceRef = useRef<"url" | "internal">("url");
   const requestIdRef = useRef(0);
   const catalogRef = useRef<ExhibitorsCatalog | null>(initialState.catalog);
+  const visibleCountRef = useRef(getExhibitorsVisibleCount(searchParams));
 
   const listStateRef = useRef({
     items: initialState.items,
@@ -156,6 +162,7 @@ export const useExhibitorsPage = (
     hasMore: initialState.hasMore,
     filters: initialState.filters,
     catalog: initialState.catalog,
+    visibleCount: visibleCountRef.current,
   });
 
   const clearSuppressFetch = useCallback(() => {
@@ -169,6 +176,7 @@ export const useExhibitorsPage = (
       hasMore,
       filters,
       catalog: catalogRef.current,
+      visibleCount: visibleCountRef.current,
     };
   }, [items, total, hasMore, filters]);
 
@@ -191,30 +199,39 @@ export const useExhibitorsPage = (
         hasMore: state.hasMore,
         filters: state.filters,
         catalog: catalogSnapshot,
+        visibleCount: state.visibleCount,
       });
     };
   }, []);
 
   const syncUrl = useCallback(
     (nextFilters: ExhibitorsFilters) => {
-      const nextUrl = buildExhibitorsPageUrl(pathname, nextFilters);
+      const nextUrl = buildExhibitorsPageUrl(
+        pathname,
+        nextFilters,
+        visibleCountRef.current,
+      );
       router.replace(nextUrl, { scroll: false });
     },
-    [pathname, router]
+    [pathname, router],
   );
 
   const updateCatalog = useCallback(
     (
       nextFilters: ExhibitorsFilters,
       data: ExhibitorsPageResponse,
-      append: boolean
+      append: boolean,
     ) => {
       if (nextFilters.q.trim()) return;
 
       const filtersKey = getBaseFiltersKey(nextFilters);
       const currentCatalog = catalogRef.current;
 
-      if (!append || !currentCatalog || currentCatalog.filtersKey !== filtersKey) {
+      if (
+        !append ||
+        !currentCatalog ||
+        currentCatalog.filtersKey !== filtersKey
+      ) {
         catalogRef.current = {
           filtersKey,
           items: data.items,
@@ -231,17 +248,17 @@ export const useExhibitorsPage = (
         hasMore: data.hasMore,
       };
     },
-    []
+    [],
   );
 
   const applyLocalPage = useCallback(
-    (nextFilters: ExhibitorsFilters, offset: number) => {
+    (nextFilters: ExhibitorsFilters, offset: number, limit: number) => {
       const catalog = catalogRef.current;
       if (!catalog || catalog.filtersKey !== getBaseFiltersKey(nextFilters)) {
         return null;
       }
 
-      const localPage = getLocalPage(catalog, nextFilters, offset);
+      const localPage = getLocalPage(catalog, nextFilters, offset, limit);
       setItems(localPage.pageItems);
       setTotal(localPage.total);
       setHasMore(localPage.hasMore);
@@ -250,7 +267,7 @@ export const useExhibitorsPage = (
         canSkipFetch: isCatalogComplete(catalog),
       };
     },
-    []
+    [],
   );
 
   const fetchPage = useCallback(
@@ -259,21 +276,25 @@ export const useExhibitorsPage = (
       offset: number,
       append: boolean,
       shouldSyncUrl: boolean,
-      options?: { silent?: boolean; preserveOnError?: boolean }
+      options?: {
+        silent?: boolean;
+        preserveOnError?: boolean;
+        limit?: number;
+        nextVisibleCount?: number;
+      },
     ) => {
       const cacheKey = getExhibitorsFiltersCacheKey(nextFilters);
+      const limit = options?.limit ?? EXHIBITORS_PAGE_SIZE;
 
       if (!append && offset === 0) {
         const cached = readListSnapshot<ExhibitorsFilters>(
           EXHIBITORS_LIST_ROUTE,
           cacheKey,
           areFiltersEqual,
-          nextFilters
+          nextFilters,
+          limit,
         );
-        if (
-          cached &&
-          suppressFetchForFiltersKeyRef.current === cacheKey
-        ) {
+        if (cached && suppressFetchForFiltersKeyRef.current === cacheKey) {
           return;
         }
       }
@@ -295,18 +316,26 @@ export const useExhibitorsPage = (
       }
 
       try {
-        const data = await fetchExhibitorsPageClient(
-          filtersToQueryParams(nextFilters, offset)
-        );
+        const data = await fetchExhibitorsPageClient({
+          ...filtersToQueryParams(nextFilters, offset),
+          limit,
+        });
 
         if (requestId !== requestIdRef.current) return;
 
         suppressFetchForFiltersKeyRef.current = null;
         updateCatalog(nextFilters, data, append);
+        if (options?.nextVisibleCount) {
+          visibleCountRef.current = options.nextVisibleCount;
+          replaceListVisibleCountInUrl(
+            options.nextVisibleCount,
+            EXHIBITORS_PAGE_SIZE,
+          );
+        }
         setTotal(data.total);
         setHasMore(data.hasMore);
         setItems((currentItems) =>
-          append ? [...currentItems, ...data.items] : data.items
+          append ? [...currentItems, ...data.items] : data.items,
         );
       } catch (err) {
         if (requestId !== requestIdRef.current) return;
@@ -328,7 +357,7 @@ export const useExhibitorsPage = (
         }
       }
     },
-    [syncUrl, updateCatalog]
+    [syncUrl, updateCatalog],
   );
 
   const sessionRestoreDoneRef = useRef(false);
@@ -338,26 +367,41 @@ export const useExhibitorsPage = (
     sessionRestoreDoneRef.current = true;
 
     const filtersKey = getExhibitorsFiltersCacheKey(initialFilters);
+    const requestedVisibleCount = visibleCountRef.current;
     const snapshot = readListSnapshot<ExhibitorsFilters>(
       EXHIBITORS_LIST_ROUTE,
       filtersKey,
       areFiltersEqual,
-      initialFilters
+      initialFilters,
+      requestedVisibleCount,
     );
 
-    if (!snapshot) return;
+    if (!snapshot) {
+      if (requestedVisibleCount > EXHIBITORS_PAGE_SIZE) {
+        void fetchPage(initialFilters, 0, false, false, {
+          limit: requestedVisibleCount,
+          preserveOnError: true,
+        });
+      }
+      return;
+    }
 
     suppressFetchForFiltersKeyRef.current = filtersKey;
     catalogRef.current = snapshot.catalog as ExhibitorsCatalog | null;
-    setItems(snapshot.items as ExhibitorItem[]);
+    const restoredItems = (snapshot.items as ExhibitorItem[]).slice(
+      0,
+      requestedVisibleCount,
+    );
+    setItems(restoredItems);
     setTotal(snapshot.total);
-    setHasMore(snapshot.hasMore);
+    setHasMore(restoredItems.length < snapshot.total);
     setFilters(snapshot.filters);
 
     clearSuppressFetch();
     void fetchPage(snapshot.filters, 0, false, false, {
       silent: true,
       preserveOnError: true,
+      limit: requestedVisibleCount,
     });
   }, [clearSuppressFetch, fetchPage, initialFilters]);
 
@@ -367,7 +411,7 @@ export const useExhibitorsPage = (
       filtersSourceRef.current = "internal";
       setFilters((currentFilters) => ({ ...currentFilters, ...next }));
     },
-    [clearSuppressFetch]
+    [clearSuppressFetch],
   );
 
   const handleLoadMore = useCallback(() => {
@@ -382,12 +426,18 @@ export const useExhibitorsPage = (
       const localPage = getLocalPage(catalog, filters, items.length);
       if (localPage.pageItems.length === 0) return;
 
+      const nextVisibleCount = items.length + localPage.pageItems.length;
+      visibleCountRef.current = nextVisibleCount;
+      replaceListVisibleCountInUrl(nextVisibleCount, EXHIBITORS_PAGE_SIZE);
       setItems((currentItems) => [...currentItems, ...localPage.pageItems]);
       setHasMore(localPage.hasMore);
       return;
     }
 
-    fetchPage(filters, items.length, true, false);
+    const nextVisibleCount = items.length + EXHIBITORS_PAGE_SIZE;
+    fetchPage(filters, items.length, true, false, {
+      nextVisibleCount,
+    });
   }, [fetchPage, filters, hasMore, items.length, loading, loadingMore]);
 
   const handleRetry = useCallback(() => {
@@ -407,13 +457,15 @@ export const useExhibitorsPage = (
     }
 
     const shouldSyncUrl = filtersSourceRef.current === "internal";
-    const localResult = applyLocalPage(filters, 0);
+    const requestedVisibleCount = visibleCountRef.current;
+    const localResult = applyLocalPage(filters, 0, requestedVisibleCount);
 
     if (localResult?.canSkipFetch) {
       return;
     }
 
     fetchPage(filters, 0, false, shouldSyncUrl, {
+      limit: requestedVisibleCount,
       silent: localResult !== null,
       preserveOnError: localResult !== null,
     });
@@ -425,6 +477,7 @@ export const useExhibitorsPage = (
       return;
     }
 
+    visibleCountRef.current = getExhibitorsVisibleCount(searchParams);
     const filtersFromUrl = searchParamsToFilters(searchParams);
 
     setFilters((currentFilters) => {
@@ -441,7 +494,7 @@ export const useExhibitorsPage = (
       } else {
         clearListSnapshot(
           EXHIBITORS_LIST_ROUTE,
-          getExhibitorsFiltersCacheKey(currentFilters)
+          getExhibitorsFiltersCacheKey(currentFilters),
         );
       }
 

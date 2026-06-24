@@ -1,5 +1,7 @@
 const CACHE_PREFIX = "glue:list:";
 const TTL_MS = 15 * 60 * 1000;
+export const LIST_VISIBLE_PARAM = "visible";
+const MAX_VISIBLE_PAGES = 10;
 
 export type ListPageCatalogSnapshot = {
   filtersKey: string;
@@ -14,6 +16,7 @@ export type ListPageSnapshot<TFilters> = {
   hasMore: boolean;
   filters: TFilters;
   catalog: ListPageCatalogSnapshot | null;
+  visibleCount: number;
   savedAt: number;
 };
 
@@ -34,10 +37,58 @@ export const getClientSearchParamsString = (): string => {
   return search.startsWith("?") ? search.slice(1) : search;
 };
 
+export const normalizeListVisibleCount = (
+  visibleCount: number,
+  pageSize: number,
+): number => {
+  if (!Number.isFinite(visibleCount) || visibleCount <= pageSize) {
+    return pageSize;
+  }
+
+  const maxVisibleCount = pageSize * MAX_VISIBLE_PAGES;
+  const roundedCount = Math.ceil(visibleCount / pageSize) * pageSize;
+  return Math.min(roundedCount, maxVisibleCount);
+};
+
+export const getListVisibleCount = (
+  searchParams: URLSearchParams,
+  pageSize: number,
+): number => {
+  const rawVisibleCount = searchParams.get(LIST_VISIBLE_PARAM);
+  if (!rawVisibleCount) return pageSize;
+
+  return normalizeListVisibleCount(Number(rawVisibleCount), pageSize);
+};
+
+export const replaceListVisibleCountInUrl = (
+  visibleCount: number,
+  pageSize: number,
+): void => {
+  if (typeof window === "undefined") return;
+
+  const normalizedVisibleCount = normalizeListVisibleCount(
+    visibleCount,
+    pageSize,
+  );
+  const url = new URL(window.location.href);
+
+  if (normalizedVisibleCount <= pageSize) {
+    url.searchParams.delete(LIST_VISIBLE_PARAM);
+  } else {
+    url.searchParams.set(LIST_VISIBLE_PARAM, String(normalizedVisibleCount));
+  }
+
+  window.history.replaceState(
+    null,
+    "",
+    `${url.pathname}${url.search}${url.hash}`,
+  );
+};
+
 /** Avoid syncing useSearchParams → filters while the hook still lags behind the real URL. */
 export const areClientSearchParamsReady = (
   searchParams: URLSearchParams,
-  expectedFiltersKey: string
+  expectedFiltersKey: string,
 ): boolean => {
   if (typeof window === "undefined") return true;
 
@@ -70,7 +121,8 @@ export const saveListSnapshot = <TFilters>(
     hasMore: boolean;
     filters: TFilters;
     catalog: ListPageCatalogSnapshot | null;
-  }
+    visibleCount: number;
+  },
 ): void => {
   if (typeof window === "undefined") return;
 
@@ -81,7 +133,7 @@ export const saveListSnapshot = <TFilters>(
     };
     sessionStorage.setItem(
       getStorageKey(route, filtersKey),
-      JSON.stringify(payload)
+      JSON.stringify(payload),
     );
   } catch {
     // sessionStorage full or unavailable
@@ -92,7 +144,8 @@ export const readListSnapshot = <TFilters>(
   route: string,
   filtersKey: string,
   areFiltersEqual: (left: TFilters, right: TFilters) => boolean,
-  currentFilters: TFilters
+  currentFilters: TFilters,
+  requestedVisibleCount?: number,
 ): ListPageSnapshot<TFilters> | null => {
   if (typeof window === "undefined") return null;
 
@@ -108,6 +161,15 @@ export const readListSnapshot = <TFilters>(
 
     if (!areFiltersEqual(parsed.filters, currentFilters)) {
       return null;
+    }
+
+    if (requestedVisibleCount) {
+      const availableCount = Math.min(parsed.items.length, parsed.total);
+      const requiredCount = Math.min(requestedVisibleCount, parsed.total);
+
+      if (availableCount < requiredCount) {
+        return null;
+      }
     }
 
     return parsed;

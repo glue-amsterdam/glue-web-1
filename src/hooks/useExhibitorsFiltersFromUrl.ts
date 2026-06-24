@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ExhibitorsFilters } from "@/lib/participants/exhibitors-filters";
 import {
   buildExhibitorsPageUrl,
+  getExhibitorsVisibleCount,
   searchParamsToFilters,
 } from "@/lib/participants/exhibitors-url";
 
@@ -20,7 +21,7 @@ export const useExhibitorsFiltersFromUrl = (): UseExhibitorsFiltersFromUrlReturn
 
   const filters = useMemo(
     () => searchParamsToFilters(searchParams),
-    [searchParams]
+    [searchParams],
   );
 
   const filtersRef = useRef(filters);
@@ -29,10 +30,11 @@ export const useExhibitorsFiltersFromUrl = (): UseExhibitorsFiltersFromUrlReturn
   const updateFilters = useCallback(
     (next: Partial<ExhibitorsFilters>) => {
       const merged: ExhibitorsFilters = { ...filtersRef.current, ...next };
-      const nextUrl = buildExhibitorsPageUrl(pathname, merged);
+      const visibleCount = getExhibitorsVisibleCount(searchParams);
+      const nextUrl = buildExhibitorsPageUrl(pathname, merged, visibleCount);
       router.replace(nextUrl, { scroll: false });
     },
-    [pathname, router]
+    [pathname, router, searchParams],
   );
 
   return { filters, updateFilters };

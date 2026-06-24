@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ProgramFilters } from "@/lib/program/program-filters";
 import {
   buildProgramPageUrl,
+  getProgramVisibleCount,
   searchParamsToFilters,
 } from "@/lib/program/program-url";
 
@@ -20,7 +21,7 @@ export const useProgramFiltersFromUrl = (): UseProgramFiltersFromUrlReturn => {
 
   const filters = useMemo(
     () => searchParamsToFilters(searchParams),
-    [searchParams]
+    [searchParams],
   );
 
   const filtersRef = useRef(filters);
@@ -29,10 +30,11 @@ export const useProgramFiltersFromUrl = (): UseProgramFiltersFromUrlReturn => {
   const updateFilters = useCallback(
     (next: Partial<ProgramFilters>) => {
       const merged: ProgramFilters = { ...filtersRef.current, ...next };
-      const nextUrl = buildProgramPageUrl(pathname, merged);
+      const visibleCount = getProgramVisibleCount(searchParams);
+      const nextUrl = buildProgramPageUrl(pathname, merged, visibleCount);
       router.replace(nextUrl, { scroll: false });
     },
-    [pathname, router]
+    [pathname, router, searchParams],
   );
 
   return { filters, updateFilters };
