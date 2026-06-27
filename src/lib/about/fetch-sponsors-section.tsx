@@ -6,6 +6,7 @@ import {
   sponsorsSectionSchema,
 } from "@/schemas/sponsorsSchema";
 import { createPublicSupabaseClient } from "@/utils/supabase/public";
+import { toMediaUrl } from "@/lib/media/media-url";
 
 const SPONSORS_FALLBACK_DATA: SponsorsSection = {
   sponsorsHeaderSchema: {
@@ -83,7 +84,10 @@ const fetchSponsorsDataCached = unstable_cache(
 
     return sponsorsSectionSchema.parse({
       sponsorsHeaderSchema: headerData,
-      sponsors: sponsorsData ?? [],
+      sponsors: (sponsorsData ?? []).map((sponsor) => ({
+        ...sponsor,
+        image_url: toMediaUrl(sponsor.image_url),
+      })),
     });
   },
   [SPONSORS_CACHE_TAG],

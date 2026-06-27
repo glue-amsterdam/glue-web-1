@@ -3,6 +3,7 @@
 import { requireAdmin } from "@/lib/admin/require-admin";
 import { fetchHomeHero } from "@/lib/home/fetch-home-hero";
 import { mapHomeHeroToRow } from "@/lib/home/map-home-hero-row";
+import { toMediaKey, toMediaUrl } from "@/lib/media/media-url";
 import { revalidateHomeVideoCache } from "@/lib/home/revalidate-home-cache";
 import {
   createHomeText,
@@ -44,8 +45,8 @@ export async function saveHomeHero(data: {
       .from("home_hero")
       .insert({
         description: validated.description,
-        video_url: validated.video_url,
-        poster_url: validated.poster_url,
+        video_url: toMediaKey(validated.video_url) ?? "",
+        poster_url: toMediaKey(validated.poster_url) ?? "",
       })
       .select("id, description, video_url, poster_url")
       .single();
@@ -61,8 +62,8 @@ export async function saveHomeHero(data: {
   return homeHeroSchema.parse({
     id: savedRow.id,
     description: savedRow.description,
-    video_url: savedRow.video_url,
-    poster_url: savedRow.poster_url,
+    video_url: toMediaUrl(savedRow.video_url),
+    poster_url: toMediaUrl(savedRow.poster_url),
   });
 }
 

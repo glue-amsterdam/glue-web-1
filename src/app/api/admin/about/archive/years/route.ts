@@ -1,5 +1,6 @@
 import { requireAdminToken } from "@/lib/admin/require-admin-token";
 import { revalidateAboutArchiveCache } from "@/lib/about/revalidate-about-cache";
+import { toMediaKey, toMediaUrl } from "@/lib/media/media-url";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -32,7 +33,12 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      years: years ?? [],
+      years: (years ?? []).map((row) => ({
+        ...row,
+        video_src: toMediaUrl(row.video_src),
+        video_poster: toMediaUrl(row.video_poster),
+        image_src: toMediaUrl(row.image_src),
+      })),
     });
   } catch (error) {
     console.error("Error in GET archive years:", error);
@@ -58,10 +64,10 @@ export async function POST(request: Request) {
       .insert({
         year: validated.year,
         media_type: validated.media_type ?? null,
-        video_src: validated.video_src ?? null,
-        video_poster: validated.video_poster ?? null,
+        video_src: toMediaKey(validated.video_src) ?? null,
+        video_poster: toMediaKey(validated.video_poster) ?? null,
         video_alt: validated.video_alt ?? null,
-        image_src: validated.image_src ?? null,
+        image_src: toMediaKey(validated.image_src) ?? null,
         image_alt: validated.image_alt ?? null,
         text_title: validated.text_title ?? "",
         text_description: validated.text_description ?? "",

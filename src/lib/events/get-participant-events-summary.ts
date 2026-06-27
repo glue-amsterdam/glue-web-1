@@ -1,3 +1,4 @@
+import { toMediaUrl } from "@/lib/media/media-url";
 import { createClient } from "@/utils/supabase/server";
 
 export type EventSummary = {
@@ -57,6 +58,6 @@ export const getParticipantEventsSummary = async (
     dayLabel: dayLabelById.get(event.dayId) ?? null,
     start_time: event.start_time,
     end_time: event.end_time,
-    image_url: event.image_url ?? null,
+    image_url: toMediaUrl(event.image_url) ?? null,
   }));
 };

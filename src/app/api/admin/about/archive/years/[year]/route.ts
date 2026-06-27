@@ -6,6 +6,7 @@ import {
   revalidateAboutCitizensYearCache,
   revalidateAboutStickyYearCache,
 } from "@/lib/about/revalidate-about-cache";
+import { toMediaKey } from "@/lib/media/media-url";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -46,14 +47,14 @@ const collectOrphanedMediaUrls = (
     if (
       current.video_src &&
       validated.video_src !== undefined &&
-      validated.video_src !== current.video_src
+      toMediaKey(validated.video_src) !== current.video_src
     ) {
       orphaned.push(current.video_src);
     }
     if (
       current.video_poster &&
       validated.video_poster !== undefined &&
-      validated.video_poster !== current.video_poster
+      toMediaKey(validated.video_poster) !== current.video_poster
     ) {
       orphaned.push(current.video_poster);
     }
@@ -66,7 +67,7 @@ const collectOrphanedMediaUrls = (
   } else if (
     current.image_src &&
     validated.image_src !== undefined &&
-    validated.image_src !== current.image_src
+    toMediaKey(validated.image_src) !== current.image_src
   ) {
     orphaned.push(current.image_src);
   }
@@ -130,17 +131,20 @@ export async function PUT(
       updatePayload.media_type = validated.media_type;
     }
     if (validated.video_src !== undefined) {
-      updatePayload.video_src = normalizeMediaField(validated.video_src) ?? null;
+      updatePayload.video_src =
+        toMediaKey(normalizeMediaField(validated.video_src) ?? undefined) ?? null;
     }
     if (validated.video_poster !== undefined) {
       updatePayload.video_poster =
-        normalizeMediaField(validated.video_poster) ?? null;
+        toMediaKey(normalizeMediaField(validated.video_poster) ?? undefined) ??
+        null;
     }
     if (validated.video_alt !== undefined) {
       updatePayload.video_alt = normalizeMediaField(validated.video_alt) ?? null;
     }
     if (validated.image_src !== undefined) {
-      updatePayload.image_src = normalizeMediaField(validated.image_src) ?? null;
+      updatePayload.image_src =
+        toMediaKey(normalizeMediaField(validated.image_src) ?? undefined) ?? null;
     }
     if (validated.image_alt !== undefined) {
       updatePayload.image_alt = normalizeMediaField(validated.image_alt) ?? null;

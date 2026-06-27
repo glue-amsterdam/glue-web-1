@@ -1,5 +1,6 @@
 import { config } from "@/config";
 import { carouselSectionSchema } from "@/schemas/carouselSchema";
+import { toMediaKey } from "@/lib/media/media-url";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -52,19 +53,19 @@ export async function POST(request: Request) {
       throw new Error(`Failed to fetch existing slides: ${fetchError.message}`);
     }
 
-    // Prepare new slides data
+    // Prepare new slides data (persist bucket-relative keys)
     const newSlidesData = validatedData.slides.map((slide) => ({
       carousel_id: "about-carousel",
-      image_url: slide.image_url,
+      image_url: toMediaKey(slide.image_url),
       image_name: slide.image_name,
     }));
 
-    // Identify slides to be deleted
-    const currentSlideUrls = validatedData.slides.map(
-      (slide) => slide.image_url
+    // Identify slides to be deleted (compare on keys; existing rows store keys)
+    const currentSlideKeys = validatedData.slides.map((slide) =>
+      toMediaKey(slide.image_url)
     );
     const slidesToDelete = existingSlides.filter(
-      (slide) => !currentSlideUrls.includes(slide.image_url)
+      (slide) => !currentSlideKeys.includes(toMediaKey(slide.image_url))
     );
 
     // Delete slides from the database and storage
@@ -83,31 +84,27 @@ export async function POST(request: Request) {
         throw deleteError;
       }
 
-      // Delete from storage
-      try {
-        const url = new URL(slide.image_url);
-        const pathParts = url.pathname.split("/");
-        const filename = pathParts[pathParts.length - 1];
-        const filePath = `about/carousel-images/${filename}`;
+      // Delete from storage (stored value is a bucket-relative key)
+      const filePath = toMediaKey(slide.image_url);
+      if (filePath) {
+        try {
+          const { error: storageError } = await supabase.storage
+            .from(config.bucketName)
+            .remove([filePath]);
 
-        console.log(`Attempting to delete image: ${filePath}`);
-
-        const { error: storageError } = await supabase.storage
-          .from(config.bucketName)
-          .remove([filePath]);
-
-        if (storageError) {
-          console.error(`Error deleting image ${filePath}:`, storageError);
-          throw storageError;
-        } else {
-          console.log(`Successfully deleted image: ${filePath}`);
+          if (storageError) {
+            console.error(`Error deleting image ${filePath}:`, storageError);
+            throw storageError;
+          } else {
+            console.log(`Successfully deleted image: ${filePath}`);
+          }
+        } catch (error) {
+          console.error(
+            `Error processing image deletion for ${filePath}:`,
+            error
+          );
+          throw error;
         }
-      } catch (error) {
-        console.error(
-          `Error processing image deletion for ${slide.image_url}:`,
-          error
-        );
-        throw error;
       }
     }
 

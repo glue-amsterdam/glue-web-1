@@ -11,6 +11,7 @@ import {
 } from "./exhibitor-visibility";
 import { getParticipantDisplayName } from "./get-participant-display-name";
 import { getParticipantPlaceholderUrl } from "./get-participant-placeholder-url";
+import { toMediaUrl } from "@/lib/media/media-url";
 
 type ParticipantRow = {
   user_id: string;
@@ -49,7 +50,7 @@ const buildImageMap = (images: ImageRow[]): Map<string, string> => {
   const map = new Map<string, string>();
   for (const image of images) {
     if (!map.has(image.user_id)) {
-      map.set(image.user_id, image.image_url);
+      map.set(image.user_id, toMediaUrl(image.image_url) ?? image.image_url);
     }
   }
   return map;

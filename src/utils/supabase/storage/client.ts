@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
 import imageCompression from "browser-image-compression";
 import { createClient } from "@/utils/supabase/client";
+import { config } from "@/config";
+import { toMediaKey, toMediaUrl } from "@/lib/media/media-url";
 
 // storage-js builds the header as `max-age=${cacheControl}`, so pass only the
 // seconds value. UUID paths make each upload effectively immutable (1 year).
@@ -75,20 +77,23 @@ export const uploadImage = async ({
 
   if (error) {
     console.error("Image upload failed:", error);
-    return { imageUrl: "", error: `Image upload failed: ${error.message}` };
+    return { imageUrl: "", key: "", error: `Image upload failed: ${error.message}` };
   }
 
   if (!data?.path) {
     console.error("No path returned from upload");
-    return { imageUrl: "", error: "No path returned from upload" };
+    return { imageUrl: "", key: "", error: "No path returned from upload" };
   }
 
   onProgress?.(95);
 
-  const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${data.path}`;
+  // `data.path` is the bucket-relative key persisted to the DB; `imageUrl` is the
+  // full URL for instant preview before serving rebuilds it from the key.
+  const key = data.path;
+  const imageUrl = toMediaUrl(key) ?? "";
   console.log("Generated image URL:", imageUrl);
 
-  return { imageUrl, error: "" };
+  return { imageUrl, key, error: "" };
 };
 
 export const MAX_HERO_VIDEO_BYTES = 10 * 1024 * 1024;
@@ -155,22 +160,23 @@ export const uploadVideo = async ({
   });
 
   if (error) {
-    return { videoUrl: "", error: `Video upload failed: ${error.message}` };
+    return { videoUrl: "", key: "", error: `Video upload failed: ${error.message}` };
   }
 
   if (!data?.path) {
-    return { videoUrl: "", error: "No path returned from upload" };
+    return { videoUrl: "", key: "", error: "No path returned from upload" };
   }
 
   onProgress?.(95);
 
-  const videoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${data.path}`;
+  const key = data.path;
+  const videoUrl = toMediaUrl(key) ?? "";
 
-  return { videoUrl, error: "" };
+  return { videoUrl, key, error: "" };
 };
 
-export const deleteImage = async (imageUrl: string) => {
-  if (!imageUrl) {
+export const deleteImage = async (imageUrlOrKey: string) => {
+  if (!imageUrlOrKey) {
     return { data: null, error: "No image URL provided" };
   }
 
@@ -180,20 +186,15 @@ export const deleteImage = async (imageUrl: string) => {
     return { data: null, error: "Storage not initialized" };
   }
 
-  const bucketAndPathString = imageUrl.split("/storage/v1/object/public/")[1];
-  if (!bucketAndPathString) {
+  // Accepts a bucket-relative key or a legacy absolute URL.
+  const path = toMediaKey(imageUrlOrKey);
+  if (!path) {
     return { data: null, error: "Invalid image URL" };
   }
 
-  const firstSlashIndex = bucketAndPathString.indexOf("/");
-  if (firstSlashIndex === -1) {
-    return { data: null, error: "Invalid image URL format" };
-  }
-
-  const bucket = bucketAndPathString.slice(0, firstSlashIndex);
-  const path = bucketAndPathString.slice(firstSlashIndex + 1);
-
-  const { data, error } = await storage.from(bucket).remove([path]);
+  const { data, error } = await storage
+    .from(config.bucketName)
+    .remove([path]);
 
   return { data, error };
 };

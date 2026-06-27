@@ -6,6 +6,7 @@ import { revalidateMainSectionCache } from "@/lib/main/revalidate-main-section-c
 import { revalidateMapDataCache } from "@/lib/map/revalidate-map-cache";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
+import { toMediaKey } from "@/lib/media/media-url";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { config } from "@/config";
@@ -186,38 +187,22 @@ export async function PUT(request: Request) {
         );
       }
 
-      // Delete event images from storage
+      // Delete event images from storage. Stored values are bucket-relative keys
+      // (toMediaKey also tolerates legacy absolute URLs).
       if (oldEvents && oldEvents.length > 0) {
         for (const event of oldEvents) {
-          if (event.image_url) {
+          const path = toMediaKey(event.image_url as string | null);
+          if (path && !path.startsWith("/") && !/^https?:\/\//i.test(path)) {
             try {
-              // Extract path from image URL
-              // Format: https://...supabase.co/storage/v1/object/public/bucket/events/userId/filename
-              const urlString = event.image_url as string;
+              const { error: storageError } = await supabase.storage
+                .from(config.bucketName)
+                .remove([path]);
 
-              // Check if it's a Supabase storage URL
-              if (urlString.includes("/storage/v1/object/public/")) {
-                const bucketAndPathString = urlString.split("/storage/v1/object/public/")[1];
-
-                if (bucketAndPathString) {
-                  const firstSlashIndex = bucketAndPathString.indexOf("/");
-
-                  if (firstSlashIndex !== -1) {
-                    // Path after bucket name
-                    const path = bucketAndPathString.slice(firstSlashIndex + 1);
-
-                    const { error: storageError } = await supabase.storage
-                      .from(config.bucketName)
-                      .remove([path]);
-
-                    if (storageError) {
-                      console.error(
-                        `Failed to delete image for event ${event.id}:`,
-                        storageError
-                      );
-                    }
-                  }
-                }
+              if (storageError) {
+                console.error(
+                  `Failed to delete image for event ${event.id}:`,
+                  storageError
+                );
               }
             } catch (error) {
               // Log but don't fail if image deletion fails

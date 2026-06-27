@@ -6,6 +6,7 @@ import {
   type TeamBlock,
   type TextDualBlock,
 } from "@/schemas/aboutPageSchema";
+import { toMediaUrl } from "@/lib/media/media-url";
 import { ABOUT_PAGE_FIXTURE } from "./about-page-fixture";
 
 const EMPTY_MEDIA = { image: { src: "/placeholder.jpg", alt: "" } };
@@ -72,7 +73,7 @@ export const fetchAboutTeamBlock = async (
     media: media?.image_src
       ? {
           image: {
-            src: media.image_src,
+            src: toMediaUrl(media.image_src) ?? "",
             alt: media.image_alt ?? block.title,
           },
         }
@@ -124,7 +125,7 @@ export const fetchAboutTextDualBlock = async (
     media: media?.image_src
       ? {
           image: {
-            src: media.image_src,
+            src: toMediaUrl(media.image_src) ?? "",
             alt: media.image_alt ?? block.title,
           },
         }

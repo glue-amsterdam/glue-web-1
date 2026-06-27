@@ -84,6 +84,13 @@ const nextConfig = {
           : "localhost",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: process.env.NEXT_PUBLIC_MEDIA_BASE_URL
+          ? new URL(process.env.NEXT_PUBLIC_MEDIA_BASE_URL).hostname
+          : "localhost",
+        pathname: "/**",
+      }
     ],
     minimumCacheTTL: 2678400,
     formats: ["image/avif", "image/webp"],

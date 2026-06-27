@@ -16,6 +16,9 @@ export const config = {
   adminEmails: process.env.NEXT_PUBLIC_ADMIN_EMAILS as string,
   baseEmail:
     (process.env.NEXT_PUBLIC_BASE_EMAIL as string) || "onboarding@resend.dev",
+  mediaBaseUrl:
+    (process.env.NEXT_PUBLIC_MEDIA_BASE_URL as string) ||
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_BUCKET}/`,
 };
 
 /* 
@@ -33,4 +36,7 @@ cityCenterLng => The longitude of the city center
 cityCenterLat => The latitude of the city center
 countryPreFix => The country prefix of the website
 mapboxAccesToken => The Mapbox access token
+mediaBaseUrl => Base URL prepended to bucket-relative media keys (trailing slash included).
+  Read once from NEXT_PUBLIC_MEDIA_BASE_URL; falls back to the Supabase public bucket URL.
+  Change this single value to point media at a custom S3/CDN domain.
 */

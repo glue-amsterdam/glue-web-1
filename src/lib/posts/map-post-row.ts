@@ -3,6 +3,7 @@ import {
 } from "@/lib/seo/build-entity-metadata";
 import { sanitizePostHtml, stripHtmlTags } from "@/lib/sanitize-html";
 import { normalizePostImagesForDisplay } from "@/lib/posts/normalize-post-html";
+import { rewriteHtmlKeysToUrls, toMediaUrl } from "@/lib/media/media-url";
 import type { PostMedia, PublicPost, PublicPostSummary } from "@/schemas/postSchema";
 import type {
   PostData,
@@ -66,6 +67,13 @@ const mapPostMediaFromRow = (row: PostMediaDbRow): PostMedia => ({
   created_at: row.created_at,
 });
 
+// Media is stored as bucket-relative keys; expand to full URLs for API responses.
+const mapPostMediaToApiResponse = (media: PostMedia): PostMedia => ({
+  ...media,
+  image_url: toMediaUrl(media.image_url) ?? null,
+  video_url: toMediaUrl(media.video_url) ?? null,
+});
+
 export const mapPostWithMediaFromRow = (
   row: PostDbRow,
   media: PostMediaDbRow[]
@@ -88,7 +96,8 @@ const mapPostToApiResponse = (post: PostData) => ({
 
 export const mapPostWithMediaToApiResponse = (post: PostWithMediaData) => ({
   ...mapPostToApiResponse(post),
-  media: post.media,
+  content_html: rewriteHtmlKeysToUrls(post.contentHtml),
+  media: post.media.map(mapPostMediaToApiResponse),
 });
 
 export const mapPostSummaryToApiResponse = (summary: PostSummaryData) => ({
@@ -141,6 +150,8 @@ export const mapPublicPostWithMediaToApiResponse = (
     created_at: post.createdAt,
     updated_at: post.updatedAt,
   })),
-  content_html: normalizePostImagesForDisplay(sanitizePostHtml(post.contentHtml)),
-  media: post.media,
+  content_html: normalizePostImagesForDisplay(
+    sanitizePostHtml(rewriteHtmlKeysToUrls(post.contentHtml))
+  ),
+  media: post.media.map(mapPostMediaToApiResponse),
 });

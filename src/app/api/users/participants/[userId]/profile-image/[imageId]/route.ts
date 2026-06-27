@@ -3,6 +3,7 @@ import { guardParticipantProfileWrite } from "@/lib/participants/guard-participa
 import {
   requiresProfileImage,
 } from "@/lib/participants/require-profile-image";
+import { toMediaKey } from "@/lib/media/media-url";
 import { getIsPlatformMod } from "@/lib/permissions/get-is-mod";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
@@ -29,7 +30,7 @@ export async function PUT(
 
     const { error } = await supabase
       .from("participant_image")
-      .update({ image_url })
+      .update({ image_url: toMediaKey(image_url) })
       .match({ id: imageId, user_id: userId });
 
     if (error) throw error;
@@ -107,22 +108,20 @@ export async function DELETE(
     if (error) throw error;
 
     if (data && data.length > 0) {
-      // Delete the image from storage
-      const imageUrl = data[0].image_url;
-      const url = new URL(imageUrl);
-      const pathParts = url.pathname.split("/");
-      const filename = pathParts[pathParts.length - 1];
-      const filePath = `profile-images/${userId}/${filename}`;
+      // Stored value is a bucket-relative key; tolerate legacy absolute URLs.
+      const filePath = toMediaKey(data[0].image_url);
 
-      const { error: storageError } = await supabase.storage
-        .from(config.bucketName)
-        .remove([filePath]);
+      if (filePath) {
+        const { error: storageError } = await supabase.storage
+          .from(config.bucketName)
+          .remove([filePath]);
 
-      if (storageError) {
-        console.error(
-          `Failed to delete image from storage: ${filePath}`,
-          storageError
-        );
+        if (storageError) {
+          console.error(
+            `Failed to delete image from storage: ${filePath}`,
+            storageError
+          );
+        }
       }
     }
 

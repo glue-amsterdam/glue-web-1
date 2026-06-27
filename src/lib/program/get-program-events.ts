@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildMapLocations } from "@/lib/map/build-map-locations";
+import { toMediaUrl } from "@/lib/media/media-url";
 import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
 import {
   collectOrganizerUserIds,
@@ -172,7 +173,7 @@ export const loadProgramListItems = async (
     return {
       eventId: event.id,
       name: event.title,
-      eventImg: event.image_url || "",
+      eventImg: toMediaUrl(event.image_url) || "",
       date: {
         dayId: event.dayId!,
         label: dayMeta.label,

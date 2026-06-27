@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ClientCitizen } from "@/schemas/citizenSchema";
 import { fetchCitizensYearMeta } from "@/lib/citizens/fetch-citizens-year-meta";
+import { toMediaUrl } from "@/lib/media/media-url";
 import { EMPTY_HOME_CITIZENS } from "./fetch-citizens";
 import type { HomeCitizensData } from "./types";
 
@@ -29,7 +30,7 @@ export const fetchCitizensForYear = async (
     name: citizen.name,
     description: citizen.description,
     year: citizen.year,
-    image_url: citizen.image_url ?? "/placeholder.jpg",
+    image_url: toMediaUrl(citizen.image_url) ?? "/placeholder.jpg",
   }));
 
   return {

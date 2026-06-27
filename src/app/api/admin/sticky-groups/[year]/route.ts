@@ -8,6 +8,7 @@ import {
   membersToInsertRows,
   validateStickyGroupMembers,
 } from "@/lib/admin/sticky-group-members";
+import { toMediaKey, toMediaUrl } from "@/lib/media/media-url";
 import type { StickyGroupMemberInput } from "@/types/sticky-member";
 
 type GroupParticipantRow = {
@@ -75,7 +76,7 @@ export async function GET(
     return NextResponse.json({
       id: group.id,
       year: group.year,
-      group_photo_url: group.group_photo_url,
+      group_photo_url: toMediaUrl(group.group_photo_url),
       title: group.title ?? "",
       description: group.description ?? "",
       additional_members_text: group.additional_members_text ?? "",
@@ -181,7 +182,7 @@ export async function PUT(
     const { error: updateError } = await supabase
       .from("sticky_groups")
       .update({
-        group_photo_url,
+        group_photo_url: toMediaKey(group_photo_url),
         title: title ?? "",
         description: description ?? "",
         additional_members_text: additional_members_text ?? "",
@@ -231,6 +232,7 @@ export async function PUT(
 
     return NextResponse.json({
       ...updatedGroup,
+      group_photo_url: toMediaUrl(updatedGroup.group_photo_url),
       memberCount,
       participantCount: memberCount,
     });

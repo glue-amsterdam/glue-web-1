@@ -3,6 +3,7 @@ import {
   buildHomeStickyMemberDisplays,
   buildStickyGroupMemberApiRows,
 } from "@/lib/admin/sticky-group-members";
+import { toMediaUrl } from "@/lib/media/media-url";
 import type { HomeStickyGroupData } from "./types";
 
 export const EMPTY_STICKY_GROUP: HomeStickyGroupData = {
@@ -74,7 +75,7 @@ export const fetchLatestStickyGroup = async (
     title: group.title ?? "",
     description: group.description ?? "",
     year: group.year,
-    group_photo_url: group.group_photo_url ?? null,
+    group_photo_url: toMediaUrl(group.group_photo_url) ?? null,
     additional_members_text: additionalMembersText,
     participants,
   };

@@ -3,6 +3,7 @@ import {
   buildHomeStickyMemberDisplays,
   buildStickyGroupMemberApiRows,
 } from "@/lib/admin/sticky-group-members";
+import { toMediaUrl } from "@/lib/media/media-url";
 import { EMPTY_STICKY_GROUP } from "./fetch-sticky-group";
 import type { HomeStickyGroupData } from "./types";
 
@@ -39,7 +40,7 @@ export const fetchStickyGroupForYear = async (
       title: group.title ?? "",
       description: group.description ?? "",
       year: group.year,
-      group_photo_url: group.group_photo_url ?? null,
+      group_photo_url: toMediaUrl(group.group_photo_url) ?? null,
       additional_members_text: group.additional_members_text ?? "",
       participants: [],
     };
@@ -54,7 +55,7 @@ export const fetchStickyGroupForYear = async (
     title: group.title ?? "",
     description: group.description ?? "",
     year: group.year,
-    group_photo_url: group.group_photo_url ?? null,
+    group_photo_url: toMediaUrl(group.group_photo_url) ?? null,
     additional_members_text: group.additional_members_text ?? "",
     participants: buildHomeStickyMemberDisplays(memberRows),
   };

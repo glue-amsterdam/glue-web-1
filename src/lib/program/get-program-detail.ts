@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { toMediaUrl } from "@/lib/media/media-url";
 import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
 import {
   loadOrganizerProfiles,
@@ -126,7 +127,7 @@ export const getProgramDetail = async (
   const detail: ProgramDetail = {
     eventId: event.id,
     name: event.title,
-    eventImg: event.image_url || "",
+    eventImg: toMediaUrl(event.image_url) || "",
     description: event.description || "",
     type: (event.type || "Other") as EventType,
     date: {
