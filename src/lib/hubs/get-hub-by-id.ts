@@ -1,8 +1,9 @@
+import { cache } from "react";
 import type { HubApiCall } from "@/schemas/hubSchemas";
 import { getHubHostProfile } from "@/lib/hubs/get-hub-host-profiles";
 import { createClient } from "@/utils/supabase/server";
 
-export const getHubById = async (
+export const getHubById = cache(async (
   hubId: string
 ): Promise<HubApiCall | null> => {
   const supabase = await createClient();
@@ -45,4 +46,4 @@ export const getHubById = async (
     },
     participants: hub.participants ?? [],
   };
-};
+});

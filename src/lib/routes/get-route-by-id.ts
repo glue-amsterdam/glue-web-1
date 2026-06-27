@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 import { resolveRouteZoneName } from "@/lib/routes/resolve-route-zone-name";
 import type { IndividualRoute, RouteDot } from "@/schemas/routeSchema";
@@ -11,7 +12,7 @@ const getMapInfoId = (
   return mapInfo.id ?? "";
 };
 
-export const getRouteById = async (
+export const getRouteById = cache(async (
   routeId: string
 ): Promise<IndividualRoute | null> => {
   const supabase = await createClient();
@@ -120,4 +121,4 @@ export const getRouteById = async (
     zone: resolveRouteZoneName(routeData.route_zones),
     route_dots: processedRouteDots,
   };
-};
+});

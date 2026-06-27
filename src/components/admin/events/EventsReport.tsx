@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Printer, FileSpreadsheet } from "lucide-react";
-import ExcelJS from "exceljs";
 import type { SelectableField } from "./EventsClientPage";
 import { EVENT_TYPES } from "@/constants";
 import {
@@ -168,6 +167,8 @@ export default function EventsReport({
 
   const handleExportExcel = async () => {
     try {
+      // Loaded on demand to keep the heavy exceljs bundle out of the initial chunk.
+      const ExcelJS = (await import("exceljs")).default;
       // Create a new workbook and worksheet using ExcelJS
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Events Report");

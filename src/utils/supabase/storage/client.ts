@@ -2,8 +2,9 @@ import { v4 as uuidv4 } from "uuid";
 import imageCompression from "browser-image-compression";
 import { createClient } from "@/utils/supabase/client";
 
-const STORAGE_IMMUTABLE_CACHE_CONTROL =
-  "public, max-age=31536000, immutable";
+// storage-js builds the header as `max-age=${cacheControl}`, so pass only the
+// seconds value. UUID paths make each upload effectively immutable (1 year).
+const STORAGE_IMMUTABLE_CACHE_CONTROL = "31536000";
 
 // Content invalidation is handled by admin revalidate*Cache tags and new UUID paths.
 function getStorage() {

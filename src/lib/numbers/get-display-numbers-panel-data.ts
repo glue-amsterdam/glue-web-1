@@ -92,6 +92,7 @@ export const getDisplayNumbersPanelData =
       hubMembersResult,
       participantsResult,
       allParticipantsResult,
+      allHubsWithNumber,
     ] = await Promise.all([
       supabase
         .from("hubs")
@@ -110,6 +111,10 @@ export const getDisplayNumbersPanelData =
         .select(
           "user_id, display_name, display_number, is_active, status, slug"
         )
+        .not("display_number", "is", null),
+      supabase
+        .from("hubs")
+        .select("id, name, display_number")
         .not("display_number", "is", null),
     ]);
 
@@ -186,11 +191,6 @@ export const getDisplayNumbersPanelData =
       [...hubRows, ...participantRows],
       (row) => row.displayNumber
     );
-
-    const allHubsWithNumber = await supabase
-      .from("hubs")
-      .select("id, name, display_number")
-      .not("display_number", "is", null);
 
     const occupants: DisplayNumberOccupant[] = [];
 

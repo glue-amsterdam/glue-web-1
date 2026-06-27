@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import QRCode from "qrcode";
-import { jsPDF } from "jspdf";
 import { CHECKIN_QR_PDF_COPY } from "./checkin-qr-pdf-copy";
 import BigButton from "@/components/big-button";
 
@@ -25,6 +23,7 @@ export default function QrCodePreview({ token }: QrCodePreviewProps) {
     const createQrSvg = async () => {
       try {
         setErrorMessage("");
+        const QRCode = (await import("qrcode")).default;
         const svg = await QRCode.toString(token, {
           type: "svg",
           errorCorrectionLevel: "M",
@@ -60,6 +59,11 @@ export default function QrCodePreview({ token }: QrCodePreviewProps) {
     setIsPdfSaving(true);
     setPdfError("");
     try {
+      // Loaded on demand to keep qrcode/jspdf out of the initial bundle.
+      const [{ default: QRCode }, { jsPDF }] = await Promise.all([
+        import("qrcode"),
+        import("jspdf"),
+      ]);
       // Small raster + JPEG keeps the PDF tiny; ECC "L" minimizes QR module count for long payloads.
       const qrImageDataUrl = await QRCode.toDataURL(token, {
         errorCorrectionLevel: "L",

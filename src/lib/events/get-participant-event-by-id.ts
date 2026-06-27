@@ -1,7 +1,8 @@
+import { cache } from "react";
 import type { EventType } from "@/schemas/eventsSchemas";
 import { createClient } from "@/utils/supabase/server";
 
-export const getParticipantEventById = async (
+export const getParticipantEventById = cache(async (
   userId: string,
   eventId: string
 ): Promise<EventType | null> => {
@@ -43,4 +44,4 @@ export const getParticipantEventById = async (
     co_organizers: event.co_organizers ?? [],
     dayId: event.dayId,
   };
-};
+});

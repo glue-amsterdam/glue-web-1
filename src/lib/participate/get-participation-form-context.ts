@@ -60,21 +60,24 @@ export const getParticipationFormContext = async (
     };
   }
 
-  const participantDetailsRes = await supabase
-    .from("participant_details")
-    .select("*")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  // participant_details is independent of the visitor hints/ensure chain, so
+  // run both in parallel. The visitor steps stay sequential (ensure needs hints).
+  const loadVisitorRow = async () => {
+    const hints = await loadVisitorHintsForAuthUser(user.id, user.email);
+    return ensureVisitorDataForAuthUser(user.id, hints, user.email);
+  };
+
+  const [participantDetailsRes, visitorRow] = await Promise.all([
+    supabase
+      .from("participant_details")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    loadVisitorRow(),
+  ]);
 
   const hasParticipantRow = Boolean(participantDetailsRes.data);
   const isParticipant = hasParticipantRow;
-
-  const hints = await loadVisitorHintsForAuthUser(user.id, user.email);
-  const visitorRow = await ensureVisitorDataForAuthUser(
-    user.id,
-    hints,
-    user.email
-  );
   const visitorProfile = mapVisitorRowToProfileResponse(visitorRow, user.email);
   const visitorProfileComplete = isCheckInProfileComplete(visitorProfile);
 
