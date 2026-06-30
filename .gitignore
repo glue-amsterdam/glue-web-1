@@ -31,6 +31,12 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# migration working doc (contains real secrets)
+MIGRACION-SUPABASE.md
+
+# migration ready-to-use files (contain real secrets)
+/migracion/
+
 # vercel
 .vercel
 
