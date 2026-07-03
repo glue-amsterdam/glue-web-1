@@ -1,10 +1,6 @@
 "use client";
 
 import type { ExhibitorDisplayProps } from "@/components/exhibitors/exhibitor-display-props";
-import {
-  getExhibitorMapHref,
-  getExhibitorProgramHref,
-} from "@/lib/participants/exhibitor-detail-links";
 import ExhibitorDescription from "@/components/exhibitors/exhibitor-description";
 import ExhibitorDetailInfo from "@/components/exhibitors/exhibitor-detail-info";
 import ExhibitorImagesCarousel from "@/components/exhibitors/exhibitor-images-carousel";
@@ -19,13 +15,9 @@ const ExhibitorDetailView = ({
   displayLabel,
   description,
   contactInfo,
+  navigation,
 }: ExhibitorDisplayProps) => {
-  const mapHref = getExhibitorMapHref(contactInfo?.mapInfo[0]?.id);
-  const programHref = getExhibitorProgramHref({
-    ownAddress: contactInfo?.mapInfo[0]?.formatted_address,
-    hubHostAddress: contactInfo?.hubHostAddress,
-    fallbackName: name,
-  });
+  const showNavigation = navigation.showMap || navigation.showEvents;
 
   return (
     <section id="exhibitor-detail-section" className="text-(--black-color) pt-[122px] lg:pt-[113px]">
@@ -49,32 +41,39 @@ const ExhibitorDetailView = ({
             id="exhibitor-detail-description-section"
             className="border-t border-(--black-color) pt-[30px] lg:border-t-2"
           >
-            <div className="flex items-start gap-[20px]">
+            <div className="flex items-center gap-[20px]">
               <RoundedNumber
                 type={type}
                 participant_n={displayLabel}
                 className="shrink-0"
               />
-              <div className="min-w-0 flex-1">
-                {contactInfo && (
-                  <ExhibitorDetailInfo contactInfo={contactInfo} />
-                )}
+              <h2 className="versal-body-text uppercase min-w-0 flex-1">
+                {name.toUpperCase()}
+              </h2>
+            </div>
+            <div className="pl-[46px]">
+              {contactInfo && <ExhibitorDetailInfo contactInfo={contactInfo} />}
+              {showNavigation ? (
                 <div className="flex gap-[20px] pt-[30px] flex-wrap">
-                  <BigButton
-                    label="map"
-                    href={mapHref}
-                    mode="navbar"
-                    as="link"
-                  />
-                  <BigButton
-                    label="events"
-                    href={programHref}
-                    mode="navbar"
-                    target="_self"
-                    as="link"
-                  />
+                  {navigation.showMap && navigation.mapHref ? (
+                    <BigButton
+                      label="map"
+                      href={navigation.mapHref}
+                      mode="navbar"
+                      as="link"
+                    />
+                  ) : null}
+                  {navigation.showEvents && navigation.eventsHref ? (
+                    <BigButton
+                      label="events"
+                      href={navigation.eventsHref}
+                      mode="navbar"
+                      target="_self"
+                      as="link"
+                    />
+                  ) : null}
                 </div>
-              </div>
+              ) : null}
             </div>
           </article>
         </div>

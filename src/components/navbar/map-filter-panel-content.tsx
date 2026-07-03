@@ -1,7 +1,7 @@
 "use client";
 
-import { MAP_CATEGORY_FILTER_OPTIONS } from "@/lib/map/map-category-filter-options";
 import { useAuth } from "@/context/AuthContext";
+import { useParticipantCategories } from "@/context/ParticipantCategoriesContext";
 import { useMapFiltersFromUrl } from "@/hooks/useMapFiltersFromUrl";
 import {
   type MapFilterId,
@@ -12,6 +12,7 @@ import ExhibitorList from "@/app/map/components/exhibitor-list";
 import RoutesList from "@/app/map/components/routes-list";
 import RoundedNumber from "../rounded-number";
 import { cn } from "@/lib/utils";
+import type { ExhibitorsFilterType } from "@/lib/participants/exhibitors-filters";
 
 export const MAP_FILTER_PANEL_CLASS =
   "lg:py-[25px] gap-[15px] lg:gap-[40px]";
@@ -23,6 +24,88 @@ type MapFilterPanelContentProps = {
   filterId: MapFilterId;
   variant: "panel" | "sidebar";
   className?: string;
+};
+
+type CategoryPickerContentProps = {
+  variant: "panel" | "sidebar";
+  className?: string;
+};
+
+type CategoryExhibitorListContentProps = {
+  variant: "panel" | "sidebar";
+  categoryType: ExhibitorsFilterType;
+  className?: string;
+};
+
+export const CategoryPickerContent = ({
+  variant,
+  className,
+}: CategoryPickerContentProps) => {
+  const filterPanelStore = useMapFilterPanel();
+  const { filters } = useMapFiltersFromUrl();
+  const { filterOptions } = useParticipantCategories();
+
+  if (!filterPanelStore) return null;
+
+  const { onTypeSelect } = filterPanelStore;
+
+  return (
+    <div
+      className={cn(
+        variant === "sidebar" && "flex flex-col gap-[20px] py-[30px]",
+        variant === "panel" && "flex flex-col gap-[15px]",
+        className
+      )}
+    >
+      {filterOptions.map((option) => {
+        const isActive = filters.type === option.value;
+
+        return (
+          <button
+            key={option.value}
+            type="button"
+            aria-pressed={isActive}
+            onClick={() => onTypeSelect(option.value)}
+            className="text-left flex items-center gap-[15px] base-text-size max-w-[289px] lg:max-w-[237px] cursor-pointer"
+          >
+            <RoundedNumber type={option.value} participant_n="00" />
+            <span>{option.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+export const CategoryExhibitorListContent = ({
+  variant,
+  categoryType,
+  className,
+}: CategoryExhibitorListContentProps) => {
+  const mapPageStore = useMapPage();
+  const filterPanelStore = useMapFilterPanel();
+
+  if (!filterPanelStore || !mapPageStore) return null;
+
+  const { onExhibitorListSelect } = filterPanelStore;
+
+  return (
+    <div
+      className={cn(
+        variant === "sidebar" && "flex flex-col",
+        className
+      )}
+    >
+      <ExhibitorList
+        locations={mapPageStore.filteredLocationsForList}
+        selectedLocation={mapPageStore.selectedLocation}
+        onLocationSelect={onExhibitorListSelect}
+        categoryType={categoryType}
+        variant={variant}
+        itemsAlign="start"
+      />
+    </div>
+  );
 };
 
 export const MapFilterPanelContent = ({
@@ -40,7 +123,6 @@ export const MapFilterPanelContent = ({
   const {
     onExhibitorListSelect,
     onRouteListSelect,
-    onTypeSelect,
     onRouteSelected,
   } = filterPanelStore;
 
@@ -102,47 +184,18 @@ export const MapFilterPanelContent = ({
     );
   }
 
-  return (
-    <div
-      className={cn(
-        variant === "sidebar" && "flex flex-col gap-[20px] py-[30px]",
-        variant === "panel" && "flex flex-col gap-[15px]",
-        className
-      )}
-    >
-      <button
-        type="button"
-        aria-pressed={filters.type === "all"}
-        onClick={() => onTypeSelect("all")}
-        className="text-left base-text-size max-w-[289px] lg:max-w-[237px]"
-      >
-        All categories
-      </button>
-      {MAP_CATEGORY_FILTER_OPTIONS.map((option) => {
-        const isActive = filters.type === option.value;
+  if (filters.type !== "all" && mapPageStore) {
+    return (
+      <CategoryExhibitorListContent
+        variant={variant}
+        categoryType={filters.type}
+        className={className}
+      />
+    );
+  }
 
-        return (
-          <button
-            key={option.value}
-            type="button"
-            aria-pressed={isActive}
-            onClick={() => onTypeSelect(option.value)}
-            className="text-left flex items-start gap-[15px] base-text-size max-w-[289px] lg:max-w-[237px]"
-          >
-            <RoundedNumber
-              type={
-                option.value as
-                | "special-program"
-                | "up-to-three-participants"
-                | "hub"
-              }
-              participant_n="00"
-            />
-            <span>{option.label}</span>
-          </button>
-        );
-      })}
-    </div>
+  return (
+    <CategoryPickerContent variant={variant} className={className} />
   );
 };
 

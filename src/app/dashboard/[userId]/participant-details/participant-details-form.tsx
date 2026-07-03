@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { navigateWithHashHref } from "@/lib/navigation/hash-route";
 import { Form } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -102,7 +103,7 @@ export function ParticipantDetailsForm({
       slug: participantDetails?.slug || "",
       status: participantDetails?.status || "pending",
       user_id: targetUserId,
-      special_program: participantDetails?.special_program || false,
+      category: participantDetails?.category || "standard",
       is_active:
         participantDetails?.is_active !== undefined
           ? participantDetails.is_active
@@ -205,7 +206,11 @@ export function ParticipantDetailsForm({
   };
 
   const handleOpenReactivationFlow = () => {
-    router.push("/participate?intent=reactivation#plans-selection-section");
+    navigateWithHashHref(
+      router,
+      "/participate?intent=reactivation#plans-selection-section",
+      "push",
+    );
   };
 
   return (

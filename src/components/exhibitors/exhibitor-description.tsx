@@ -60,7 +60,7 @@ const ExhibitorDescription = ({
       <div
         id={descriptionId}
         ref={contentRef}
-        className={cn(descriptionClassName, "base-text-size font-lausanne")}
+        className={cn(descriptionClassName, "base-text-size font-lausanne post-content")}
         dangerouslySetInnerHTML={{ __html: descriptionHtml }}
       />
 

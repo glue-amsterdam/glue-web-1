@@ -6,7 +6,7 @@ export type OrganizerProfile = {
   user_name: string;
   participant_details: {
     slug: string | null;
-    special_program: boolean;
+    category: string;
     display_number: string | null;
   } | null;
 };
@@ -25,7 +25,7 @@ export const loadOrganizerProfiles = async (
   const [participantsResult, visitorsResult] = await Promise.all([
     supabase
       .from("participant_details")
-      .select("user_id, display_name, slug, special_program, display_number")
+      .select("user_id, display_name, slug, category, display_number")
       .in("user_id", uniqueIds),
     supabase
       .from("visitor_data")
@@ -57,7 +57,7 @@ export const loadOrganizerProfiles = async (
       participant_details: participant
         ? {
             slug: participant.slug ?? null,
-            special_program: participant.special_program ?? false,
+            category: participant.category ?? "standard",
             display_number: participant.display_number ?? null,
           }
         : null,

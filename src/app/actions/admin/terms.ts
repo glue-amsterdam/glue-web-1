@@ -13,7 +13,11 @@ export async function getTerms() {
   return fetchTerms();
 }
 
-export async function saveTerms(data: { content: string }) {
+export async function saveTerms(data: {
+  title: string;
+  subtitle: string;
+  content: string;
+}) {
   await requireAdmin();
   termsSchema.parse(data);
   const result = await upsertTerms(data);

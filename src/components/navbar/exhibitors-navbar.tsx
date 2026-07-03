@@ -3,16 +3,22 @@
 import {
     useCallback,
     useId,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 import type { ExhibitorSortField } from "@/lib/participants/exhibitor-types";
 import {
-    EXHIBITOR_TYPE_OPTIONS,
+    DEFAULT_EXHIBITORS_FILTERS,
     type ExhibitorsFilterType,
     type ExhibitorsFilters,
 } from "@/lib/participants/exhibitors-filters";
+import { useParticipantCategories } from "@/context/ParticipantCategoriesContext";
 import { useDebouncedUrlSearch } from "@/hooks/useDebouncedUrlSearch";
+import { useDesktopListFilterPanel } from "@/hooks/useDesktopListFilterPanel";
 import { useExhibitorsFiltersFromUrl } from "@/hooks/useExhibitorsFiltersFromUrl";
-import { useFilterPanel } from "@/hooks/useFilterPanel";
+import { useFilterPanelHeight } from "@/hooks/useFilterPanelHeight";
+import { cn } from "@/lib/utils";
 import RoundedNumber from "../rounded-number";
 import BaseSecondNavbar, { FilterButton } from "./base-second-navbar";
 import { FilterDropdownPanel } from "./filter-dropdown-panel";
@@ -22,27 +28,34 @@ type ExhibitorFilterId = "category" | "sort";
 type SortOption = {
     field: ExhibitorSortField;
     label: string;
-    reverseLabel: string;
 };
 
 const SEARCH_DEBOUNCE_MS = 400;
 
 const SORT_OPTIONS: SortOption[] = [
-    { field: "name", label: "A - Z", reverseLabel: "Z - A" },
-    { field: "displayNumber", label: "1 - 60", reverseLabel: "60 - 1" },
+    { field: "name", label: "A - Z" },
+    { field: "displayNumber", label: "1 - 60" },
 ];
 
-const getSortOptionLabel = (
-    option: SortOption,
-    sort: ExhibitorSortField,
-    order: ExhibitorsFilters["order"]
-): string => {
-    if (sort !== option.field) return option.label;
-    return order === "asc" ? option.label : option.reverseLabel;
+const isCategoryFilterActive = (filters: ExhibitorsFilters) =>
+    filters.type !== "all";
+
+const isSortFilterActive = (filters: ExhibitorsFilters) =>
+    filters.sort === "name";
+
+const getActiveFilterId = (
+    filters: ExhibitorsFilters
+): ExhibitorFilterId | null => {
+    if (isCategoryFilterActive(filters)) return "category";
+    if (isSortFilterActive(filters)) return "sort";
+    return null;
 };
 
 const ExhibitorsNavbar = () => {
+    const { filterOptions } = useParticipantCategories();
     const { filters, updateFilters } = useExhibitorsFiltersFromUrl();
+    const [isDisplayNumberSortChosen, setIsDisplayNumberSortChosen] =
+        useState(false);
     const handleSearchCommit = useCallback(
         (q: string) => updateFilters({ q }),
         [updateFilters]
@@ -56,38 +69,116 @@ const ExhibitorsNavbar = () => {
         onCommit: handleSearchCommit,
         debounceMs: SEARCH_DEBOUNCE_MS,
     });
+
+    const activeFilterId = useMemo(() => getActiveFilterId(filters), [filters]);
+
+    const isFilterActive = useCallback(
+        (filterId: ExhibitorFilterId) => {
+            if (filterId === "category") return isCategoryFilterActive(filters);
+            return isSortFilterActive(filters);
+        },
+        [filters]
+    );
+
+    const handleClearFilter = useCallback(
+        (filterId: ExhibitorFilterId) => {
+            if (filterId === "category") {
+                updateFilters({ type: "all" });
+                return;
+            }
+
+            setIsDisplayNumberSortChosen(false);
+            updateFilters({
+                sort: DEFAULT_EXHIBITORS_FILTERS.sort,
+                order: DEFAULT_EXHIBITORS_FILTERS.order,
+            });
+        },
+        [updateFilters]
+    );
+
     const {
         openFilter,
         handleFilterToggle,
         handleFilterKeyDown,
-        closeFilter,
-    } = useFilterPanel<ExhibitorFilterId>();
+        isButtonOpen,
+        afterSelect,
+        setOpenFilter,
+    } = useDesktopListFilterPanel<ExhibitorFilterId>({
+        activeFilterId,
+        isFilterActive,
+        onClearFilter: handleClearFilter,
+    });
+
     const categoryPanelId = useId();
     const sortPanelId = useId();
 
-    const handleTypeSelect = (value: ExhibitorsFilterType) => {
-        updateFilters({ type: value });
-        closeFilter();
-    };
+    const categoryPanelRef = useRef<HTMLDivElement>(null);
+    const sortPanelRef = useRef<HTMLDivElement>(null);
 
-    const handleSortSelect = (field: ExhibitorSortField) => {
-        if (filters.sort === field) {
-            updateFilters({
-                order: filters.order === "asc" ? "desc" : "asc",
-            });
-            closeFilter();
+    useFilterPanelHeight(
+        categoryPanelRef,
+        openFilter === "category" && activeFilterId === "category"
+    );
+    useFilterPanelHeight(
+        sortPanelRef,
+        openFilter === "sort" && activeFilterId === "sort"
+    );
+
+    const handleTypeSelect = (value: ExhibitorsFilterType) => {
+        setIsDisplayNumberSortChosen(false);
+
+        if (value === "all") {
+            updateFilters({ type: "all" });
+            afterSelect();
             return;
         }
 
-        updateFilters({ sort: field, order: "asc" });
-        closeFilter();
+        updateFilters({
+            type: value,
+            sort: DEFAULT_EXHIBITORS_FILTERS.sort,
+            order: DEFAULT_EXHIBITORS_FILTERS.order,
+        });
+        afterSelect();
+    };
+
+    const handleSortSelect = (field: ExhibitorSortField) => {
+        if (field === "displayNumber") {
+            if (
+                filters.sort === DEFAULT_EXHIBITORS_FILTERS.sort &&
+                filters.order === DEFAULT_EXHIBITORS_FILTERS.order &&
+                isDisplayNumberSortChosen
+            ) {
+                return;
+            }
+
+            setIsDisplayNumberSortChosen(true);
+            updateFilters({
+                sort: DEFAULT_EXHIBITORS_FILTERS.sort,
+                order: DEFAULT_EXHIBITORS_FILTERS.order,
+            });
+
+            setOpenFilter("sort");
+            return;
+        }
+
+        setIsDisplayNumberSortChosen(false);
+
+        if (filters.sort === field && filters.order === "asc") {
+            return;
+        }
+
+        updateFilters({
+            sort: field,
+            order: "asc",
+            type: "all",
+        });
+        afterSelect();
     };
 
     return (
         <section
             aria-label="Exhibitors filters"
             className="w-full h-(--nav-secondary-h) flex items-center relative overflow-visible border-b lg:border-b-2 border-(--black-color) bg-(--background-color) py-[12px]"
-
         >
             <BaseSecondNavbar
                 searchValue={searchValue}
@@ -101,7 +192,8 @@ const ExhibitorsNavbar = () => {
                     openFilter={openFilter}
                     panelId={categoryPanelId}
                     label="Category"
-                    isActive={filters.type !== "all"}
+                    isActive={activeFilterId === "category" && openFilter === "category"}
+                    isOpen={isButtonOpen("category")}
                     onToggle={handleFilterToggle}
                     onKeyDown={handleFilterKeyDown}
                 />
@@ -110,44 +202,39 @@ const ExhibitorsNavbar = () => {
                     openFilter={openFilter}
                     panelId={sortPanelId}
                     label="Sort"
+                    isActive={activeFilterId === "sort" && openFilter === "sort"}
+                    isOpen={isButtonOpen("sort")}
                     onToggle={handleFilterToggle}
                     onKeyDown={handleFilterKeyDown}
                 />
             </BaseSecondNavbar>
 
             <FilterDropdownPanel<ExhibitorFilterId>
+                ref={categoryPanelRef}
                 filterId="category"
                 openFilter={openFilter}
                 panelId={categoryPanelId}
                 ariaLabel="Category options"
                 className="py-[30px] lg:py-[25px] gap-[15px] lg:gap-[40px] min-h-[80px] lg:h-[81px]"
             >
-                <button
-                    type="button"
-                    aria-pressed={filters.type === "all"}
-                    onClick={() => handleTypeSelect("all")}
-                    className="text-left base-text-size cursor-pointer"
-                >
-                    All
-                </button>
-                {EXHIBITOR_TYPE_OPTIONS.map((option) => {
-                    const isActive = filters.type === option.value;
+                {filterOptions.map((option) => {
+                    const isSelected =
+                        activeFilterId === "category" &&
+                        filters.type === option.value;
 
                     return (
                         <button
                             key={option.value}
                             type="button"
-                            aria-pressed={isActive}
+                            aria-pressed={isSelected}
                             onClick={() => handleTypeSelect(option.value)}
-                            className="text-left flex items-center gap-[15px] base-text-size cursor-pointer"
+                            className={cn(
+                                "text-left flex items-center gap-[15px] base-text-size cursor-pointer",
+                                isSelected && "text-(--primary-color)"
+                            )}
                         >
                             <RoundedNumber
-                                type={
-                                    option.value as
-                                    | "special-program"
-                                    | "up-to-three-participants"
-                                    | "hub"
-                                }
+                                type={option.value}
                                 participant_n={"00"}
                             />
                             {option.label}
@@ -157,6 +244,7 @@ const ExhibitorsNavbar = () => {
             </FilterDropdownPanel>
 
             <FilterDropdownPanel<ExhibitorFilterId>
+                ref={sortPanelRef}
                 filterId="sort"
                 openFilter={openFilter}
                 panelId={sortPanelId}
@@ -164,22 +252,25 @@ const ExhibitorsNavbar = () => {
                 className="py-[35px] lg:py-[25px] gap-[15px] min-h-[80px] lg:h-[81px]"
             >
                 {SORT_OPTIONS.map((option) => {
-                    const isActive = filters.sort === option.field;
-                    const label = getSortOptionLabel(
-                        option,
-                        filters.sort,
-                        filters.order
-                    );
+                    const isSelected =
+                        option.field === "name"
+                            ? activeFilterId === "sort" &&
+                              filters.sort === option.field
+                            : isDisplayNumberSortChosen &&
+                              filters.sort === option.field;
 
                     return (
                         <button
                             key={option.field}
                             type="button"
-                            aria-pressed={isActive}
+                            aria-pressed={isSelected}
                             onClick={() => handleSortSelect(option.field)}
-                            className="text-left flex items-center gap-[20px] base-text-size"
+                            className={cn(
+                                "text-left flex items-center gap-[20px] base-text-size cursor-pointer",
+                                isSelected && "text-(--primary-color)"
+                            )}
                         >
-                            {label}
+                            {option.label}
                         </button>
                     );
                 })}

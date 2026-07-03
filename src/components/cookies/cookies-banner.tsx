@@ -1,73 +1,221 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import CookieConsent from "react-cookie-consent";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   setCookieConsent,
-  getCookieConsent,
+  getCookieConsentStatus,
+  type CookieConsentStatus,
 } from "@/app/actions/cookieConsent";
-import Link from "next/link";
+import MainContainer from "../main-container";
+import BigButton from "../big-button";
+import { cn } from "@/lib/utils";
 
-export function CookieBanner() {
-  const [showBanner, setShowBanner] = useState(false);
+type CookieBannerContextValue = {
+  forceShow: boolean;
+  requestShow: () => void;
+  subscribeConsentChange: (
+    listener: (status: CookieConsentStatus) => void,
+  ) => () => void;
+  notifyConsentChange: (status: CookieConsentStatus) => void;
+};
+
+const CookieBannerContext = createContext<CookieBannerContextValue | null>(
+  null,
+);
+
+export const CookieBannerProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const [forceShow, setForceShow] = useState(false);
+  const listenersRef = useRef(new Set<(status: CookieConsentStatus) => void>());
+
+  const requestShow = useCallback(() => {
+    setForceShow(true);
+  }, []);
+
+  const subscribeConsentChange = useCallback(
+    (listener: (status: CookieConsentStatus) => void) => {
+      listenersRef.current.add(listener);
+      return () => {
+        listenersRef.current.delete(listener);
+      };
+    },
+    [],
+  );
+
+  const notifyConsentChange = useCallback((status: CookieConsentStatus) => {
+    setForceShow(false);
+    listenersRef.current.forEach((listener) => {
+      listener(status);
+    });
+  }, []);
+
+  return (
+    <CookieBannerContext.Provider
+      value={{
+        forceShow,
+        requestShow,
+        subscribeConsentChange,
+        notifyConsentChange,
+      }}
+    >
+      {children}
+    </CookieBannerContext.Provider>
+  );
+};
+
+export const useRequestCookieBanner = () => {
+  const context = useContext(CookieBannerContext);
+  return context?.requestShow ?? (() => undefined);
+};
+
+export const useCookieBannerConsent = () => {
+  const context = useContext(CookieBannerContext);
+  return context?.subscribeConsentChange ?? (() => () => undefined);
+};
+
+const COOKIES_TEXT = {
+  title: "This website uses cookies for session management.",
+  description:
+    'By clicking "Accept", you consent to the use of session cookies. You can decline if you don\'t want us to use cookies, but it may affect your user experience. To learn all about cookies, check our terms of use.',
+  accepted:
+    "Cookies are enabled.",
+  declined:
+    "Cookies are disabled. Some features may not work as expected until you accept cookies.",
+} as const;
+
+type CookieBannerProps = {
+  variant?: "fixed" | "inline";
+};
+
+export function CookieBanner({ variant = "fixed" }: CookieBannerProps) {
+  const [consentStatus, setConsentStatus] =
+    useState<CookieConsentStatus | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
   const { logout, user } = useAuth();
+  const bannerContext = useContext(CookieBannerContext);
+  const forceShow = bannerContext?.forceShow ?? false;
+
+  const isTermsPage = pathname === "/terms-and-conditions";
+  const isInline = variant === "inline";
+
+  useEffect(() => {
+    const checkConsent = async () => {
+      const status = await getCookieConsentStatus();
+      setConsentStatus(status);
+    };
+
+    checkConsent();
+  }, []);
 
   const handleAccept = async () => {
-    console.log("Session cookies accepted");
     await setCookieConsent(true);
+    setConsentStatus("accepted");
+    bannerContext?.notifyConsentChange("accepted");
     router.refresh();
   };
 
   const handleDecline = async () => {
-    console.log("Session cookies declined");
     await setCookieConsent(false);
     if (user) {
       await logout();
     }
+    setConsentStatus("declined");
+    bannerContext?.notifyConsentChange("declined");
     router.refresh();
   };
 
-  useEffect(() => {
-    const checkConsent = async () => {
-      const hasConsent = await getCookieConsent();
-      setShowBanner(!hasConsent);
-    };
-    checkConsent();
-  }, []);
-
-  if (!showBanner) {
+  if (consentStatus === null) {
     return null;
   }
 
+  if (!isInline && isTermsPage) {
+    return null;
+  }
+
+  const shouldShowFixedBanner =
+    consentStatus === "pending" ||
+    (forceShow && consentStatus !== "accepted");
+
+  if (!isInline && !shouldShowFixedBanner) {
+    return null;
+  }
+
+  const showActions = consentStatus !== "accepted";
+
   return (
-    <CookieConsent
-      location="bottom"
-      buttonText="Accept"
-      declineButtonText="Decline"
-      cookieName="session-cookie-consent"
-      style={{ background: "#2B373B" }}
-      buttonStyle={{ color: "#4e503b", fontSize: "13px" }}
-      declineButtonStyle={{ color: "#f7f7f2", fontSize: "13px" }}
-      expires={150}
-      onAccept={handleAccept}
-      onDecline={handleDecline}
-      enableDeclineButton={true}
+    <aside
+      role="dialog"
+      aria-label="Cookie consent"
+      className={cn(
+        "bg-(--background-color)",
+        isInline
+          ? "title-padding max-w-[1045px] mx-auto"
+          : "fixed inset-x-0 bottom-0 z-[999]",
+      )}
     >
-      <p className="text-sm">
-        This website uses cookies for session management.
-      </p>
-      <p className="text-sm">{`By clicking "Accept", you consent to the use of session cookies. 
-      You can decline if you don't want us to use cookies, but it may affect your user experience.`}</p>
-      <Link
-        href="/privacy-policy"
-        target="_blank"
-        className="ml-2 text-white underline text-sm"
-      >
-        View our Privacy Policy
-      </Link>
-    </CookieConsent>
+      <MainContainer>
+        <div
+          className={cn(
+            "main-boder-top flex flex-wrap items-baseline justify-between py-[30px]",
+          )}
+        >
+          <div className="min-w-[300px] max-w-[750px] flex-1 pl-[30px]">
+            <p className="versal-body-text uppercase">{COOKIES_TEXT.title}</p>
+
+            <p className="versal-body-text mini-padding">
+              {consentStatus === "accepted"
+                ? COOKIES_TEXT.accepted
+                : consentStatus === "declined"
+                  ? COOKIES_TEXT.declined
+                  : COOKIES_TEXT.description}
+            </p>
+          </div>
+          <div className="flex shrink-0 gap-[30px] justify-end w-full lg:w-auto lg:flex-col pr-[30px] mini-padding lg:p-0">
+            {showActions ? (
+              <>
+                <BigButton
+                  as="button"
+                  label="Decline"
+                  mode="navbar"
+                  fontSize="base"
+                  onClick={handleDecline}
+                />
+                <BigButton
+                  as="button"
+                  label="Accept"
+                  mode="navbar"
+                  fontSize="base"
+                  onClick={handleAccept}
+                />
+              </>
+            ) : (
+              <BigButton
+                as="button"
+                label="Decline"
+                mode="navbar"
+                fontSize="base"
+                onClick={handleDecline}
+              />
+            )}
+          </div>
+          {isInline && (<p className="versal-body-text mini-padding">We use cookies to improve your browsing experience, analyze website traffic, and understand how visitors interact with our site. This helps us enhance performance and provide a better experience.
+
+            By clicking Accept, you consent to the use of analytics and performance cookies. <br />Ccookies are required for the website to function are always enabled.</p>)}
+        </div>
+      </MainContainer>
+    </aside>
   );
 }

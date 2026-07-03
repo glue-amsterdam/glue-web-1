@@ -19,7 +19,7 @@ const ExhibitorCard = ({ exhibitor }: Props) => {
     <article className="max-w-[400px] max-h-[260px] lg:max-h-[310px] border-t lg:border-t-2 border-(--black-color) pt-[15px] overflow-hidden mx-auto">
       <div className="flex items-center gap-[20px]">
         <RoundedNumber type={exhibitor.type} participant_n={displayNumber} />
-        <h2 className="text-[15px] leading-[21px] font-normal text-(--black-color)">
+        <h2 className="versal-body-text font-normal text-(--black-color)">
           {exhibitor.name.toUpperCase()}
         </h2>
       </div>

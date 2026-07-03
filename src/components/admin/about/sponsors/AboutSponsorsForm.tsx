@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Sponsor, SponsorsHeader } from "@/schemas/sponsorsSchema";
-import SponsorForm from "./SponsorForm";
 import SponsorModal from "./SponsorModal";
-import { SponsorTable } from "./SponsorTable";
+import SponsorAddModal from "./SponsorAddModal";
+import { SponsorsGroupedList } from "./SponsorsGroupedList";
 import SponsorHeaderForm from "./SponsorHeaderForm";
 
 type AboutSponsorsFormProps = {
@@ -19,30 +19,41 @@ export default function AboutSponsorsForm({
 }: AboutSponsorsFormProps) {
   const router = useRouter();
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
+  const [addModalTypeId, setAddModalTypeId] = useState<string | undefined>();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const handleSponsorUpdate = () => {
     setSelectedSponsor(null);
+    setIsAddModalOpen(false);
+    setAddModalTypeId(undefined);
     router.refresh();
+  };
+
+  const handleOpenAddModal = (typeId?: string) => {
+    setAddModalTypeId(typeId);
+    setIsAddModalOpen(true);
   };
 
   return (
     <div className="space-y-8">
       <SponsorHeaderForm initialData={initialHeaderData} />
-      <div>
-        <h3 className="text-xl font-semibold mb-2">Existing Sponsors</h3>
-        <SponsorTable
-          onEditSponsor={setSelectedSponsor}
+
+      <section className="rounded-lg border p-4">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold">Partners</h3>
+          <p className="text-sm text-muted-foreground">
+            Logos and links shown in the site footer, grouped by partner type.
+          </p>
+        </div>
+        <SponsorsGroupedList
           sponsors={initialSponsors}
-          onSponsorDeleted={handleSponsorUpdate}
-        />
-      </div>
-      <div className="flex flex-col items-start">
-        <h2 className="text-2xl font-bold mb-4">Add Sponsor</h2>
-        <SponsorForm
           sponsorTypes={initialHeaderData.sponsors_types}
-          onSponsorAdded={handleSponsorUpdate}
+          onEditSponsor={setSelectedSponsor}
+          onSponsorDeleted={handleSponsorUpdate}
+          onAddSponsor={handleOpenAddModal}
         />
-      </div>
+      </section>
+
       {selectedSponsor && (
         <SponsorModal
           key={selectedSponsor.id}
@@ -50,6 +61,18 @@ export default function AboutSponsorsForm({
           sponsorTypes={initialHeaderData.sponsors_types}
           onClose={() => setSelectedSponsor(null)}
           onSponsorUpdated={handleSponsorUpdate}
+        />
+      )}
+
+      {isAddModalOpen && (
+        <SponsorAddModal
+          sponsorTypes={initialHeaderData.sponsors_types}
+          defaultTypeId={addModalTypeId}
+          onClose={() => {
+            setIsAddModalOpen(false);
+            setAddModalTypeId(undefined);
+          }}
+          onSponsorAdded={handleSponsorUpdate}
         />
       )}
     </div>

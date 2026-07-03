@@ -1,5 +1,13 @@
 "use client";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 type ParticipateFormFieldProps = {
   label: string;
   name: string;
@@ -16,8 +24,22 @@ type ParticipateFormFieldProps = {
   disabled?: boolean;
 };
 
-const fieldClassName =
-  "w-full pt-[5px] md:pt-[15px] base-text-size bg-(--white-color) border border-(--black-color) pl-1 max-w-(507px)";
+const fieldLayoutClassName =
+  "w-full max-w-full min-w-0 pt-[5px] bg-(--white-color) border border-(--black-color) lg:border-2 pl-1";
+
+const bodyTextTypographyClassName =
+  "text-[15px] leading-[21px] lg:text-[19px] lg:leading-[25px]";
+
+const fieldClassName = `${fieldLayoutClassName} body-text`;
+
+const participateSelectTriggerClassName =
+  "h-[42px] px-0 py-0 pr-2 rounded-none shadow-none ring-0 focus:ring-0 text-(--black-color) [&_[data-placeholder]]:text-(--black-color)/50 [&_svg]:hidden disabled:opacity-60";
+
+const participateSelectContentClassName =
+  "rounded-none border border-(--black-color) lg:border-2 bg-(--white-color) p-0 shadow-none [&_[data-radix-select-viewport]]:p-0";
+
+const participateSelectItemClassName =
+  "rounded-none py-[5px] pl-1 pr-2 text-(--black-color) outline-none cursor-pointer data-[highlighted]:bg-(--primary-color) data-[highlighted]:text-(--white-color) focus:bg-(--primary-color) focus:text-(--white-color) [&_svg]:hidden";
 
 export const participateFieldClassName = fieldClassName;
 
@@ -44,51 +66,52 @@ export const ParticipateFormField = ({
     .join(" ") || undefined;
 
   return (
-    <div className={`flex flex-col gap-[10px] ${wrapperClassName ?? ""}`}>
-      <label htmlFor={name} className="base-text-size">
-        {label}{" "}
-        {required ? <span aria-hidden="true">*</span> : null}
-      </label>
-      <div className="relative">
+    <div className={`flex w-full min-w-0 flex-col gap-[5px] ${wrapperClassName ?? ""}`}>
+      <div className="flex items-center gap-2">
+        <label htmlFor={name} className="body-text">
+          {label}{" "}
+          {required ? <span aria-hidden="true">*</span> : null}
+        </label>
+
         {error ? (
           <span
             id={`${name}-error`}
             role="alert"
-            className="pointer-events-none absolute bottom-full left-0 right-0 mb-[4px] text-[12px] leading-[14px] text-(--primary-color) line-clamp-2"
+            className="pointer-events-none text-[12px] leading-[14px] text-(--primary-color) line-clamp-2"
           >
             {error}
           </span>
-        ) : null}
-        {as === "textarea" ? (
-          <textarea
-            id={name}
-            name={name}
-            required={required}
-            value={value}
-            onChange={(e) => onChange?.(e.target.value)}
-            placeholder={placeholder}
-            disabled={disabled}
-            aria-invalid={Boolean(error)}
-            aria-describedby={describedBy}
-            className={`${fieldClassName} min-h-[120px] resize-y py-[5px] md:py-[15px] disabled:opacity-60`}
-          />
-        ) : (
-          <input
-            type={type}
-            id={name}
-            name={name}
-            required={required}
-            value={value}
-            onChange={(e) => onChange?.(e.target.value)}
-            autoComplete={autoComplete}
-            placeholder={placeholder}
-            disabled={disabled}
-            aria-invalid={Boolean(error)}
-            aria-describedby={describedBy}
-            className={`${fieldClassName} h-[42px] disabled:opacity-60`}
-          />
-        )}
-      </div>
+        ) : null}</div>
+      {as === "textarea" ? (
+        <textarea
+          id={name}
+          name={name}
+          required={required}
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+          aria-invalid={Boolean(error)}
+          aria-describedby={describedBy}
+          className={`${fieldClassName} min-h-[120px] resize-y py-[5px] md:py-[15px] disabled:opacity-60`}
+        />
+      ) : (
+        <input
+          type={type}
+          id={name}
+          name={name}
+          required={required}
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          autoComplete={autoComplete}
+          placeholder={placeholder}
+          disabled={disabled}
+          aria-invalid={Boolean(error)}
+          aria-describedby={describedBy}
+          className={`${fieldClassName} h-[42px] disabled:opacity-60`}
+        />
+      )}
+
       {description ? (
         <p id={`${name}-description`} className="mini-text-size">
           {description}
@@ -138,42 +161,62 @@ export const ParticipateFormSelect = ({
     .join(" ") || undefined;
 
   return (
-    <div className={`flex flex-col gap-[10px] ${wrapperClassName ?? ""}`}>
-      <label htmlFor={name} className="base-text-size">
-        {label}{" "}
-        {required ? <span aria-hidden="true">*</span> : null}
-      </label>
-      <div className="relative">
+    <div className={`flex w-full min-w-0 flex-col gap-[5px] ${wrapperClassName ?? ""}`}>
+      <div className="flex items-center gap-2">
+        <label htmlFor={name} className="body-text">
+          {label}{" "}
+          {required ? <span aria-hidden="true">*</span> : null}
+        </label>
+
         {error ? (
           <span
             id={`${name}-error`}
             role="alert"
-            className="pointer-events-none absolute bottom-full left-0 right-0 mb-[4px] text-[12px] leading-[14px] text-(--primary-color) line-clamp-2"
+            className="pointer-events-none text-[12px] leading-[14px] text-(--primary-color) line-clamp-2"
           >
             {error}
           </span>
-        ) : null}
-        <select
+        ) : null}</div>
+      <Select
+        value={value || undefined}
+        onValueChange={onChange}
+        disabled={disabled}
+        required={required}
+      >
+        <SelectTrigger
           id={name}
-          name={name}
-          required={required}
-          value={value}
-          onChange={(event) => onChange?.(event.target.value)}
-          disabled={disabled}
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy}
-          className={`${fieldClassName} h-[42px] pr-2 appearance-none disabled:opacity-60`}
+          className={cn(
+            fieldLayoutClassName,
+            bodyTextTypographyClassName,
+            participateSelectTriggerClassName,
+          )}
         >
-          <option value="" disabled>
-            {placeholder}
-          </option>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent
+          position="popper"
+          className={cn(
+            bodyTextTypographyClassName,
+            participateSelectContentClassName,
+          )}
+        >
           {options.map((option) => (
-            <option key={option.value} value={option.value}>
+            <SelectItem
+              key={option.value}
+              value={option.value}
+              className={cn(
+                bodyTextTypographyClassName,
+                participateSelectItemClassName,
+              )}
+            >
               {option.label}
-            </option>
+            </SelectItem>
           ))}
-        </select>
-      </div>
+        </SelectContent>
+      </Select>
+
       {description ? (
         <p id={`${name}-description`} className="mini-text-size">
           {description}

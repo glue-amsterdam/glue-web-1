@@ -11,7 +11,7 @@ export const TermsContent = ({ content }: TermsContentProps) => {
 
   return (
     <div
-      className="base-text-size max-w-none"
+      className="base-text-size max-w-none post-content"
       dangerouslySetInnerHTML={{
         __html: sanitizedContent || "<p>No terms and conditions available.</p>",
       }}

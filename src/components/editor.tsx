@@ -20,17 +20,25 @@ import {
   Heading2,
   Heading3,
   Underline as UnderlineIcon,
+  SeparatorHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { Editor } from "@tiptap/react";
+import {
+  GridItemBreak,
+} from "@/components/editor/grid-item-break-extension";
+
+const DEFAULT_EDITOR_CLASS =
+  "min-h-[150px] max-h-[50dvh] lg:h-[150px] overflow-y-auto bg-white text-black w-full p-2 focus:outline-none prose prose-sm max-w-none [&_a]:text-blue-500 [&_a]:underline [&_a]:cursor-pointer";
 
 type RichTextEditorProps = {
   value: string;
   onChange: (content: string) => void;
   readOnly?: boolean;
   maxLength?: number;
+  editorClassName?: string;
 };
 
 const MenuBar = ({ editor }: { editor: Editor | null }) => {
@@ -61,6 +69,10 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 
   const handleHeading = (level: 1 | 2 | 3) => {
     editor.chain().focus().toggleHeading({ level }).run();
+  };
+
+  const handleGridBreak = () => {
+    editor.chain().focus().insertGridItemBreak().run();
   };
 
   return (
@@ -232,6 +244,17 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
       >
         <Quote className="h-4 w-4" />
       </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={handleGridBreak}
+        className="text-black hover:bg-uiblack/30"
+        aria-label="Insert grid item break"
+        title="Grid item break (two-column layout)"
+      >
+        <SeparatorHorizontal className="h-4 w-4" />
+      </Button>
 
       <Separator orientation="vertical" className="mx-1 h-6 bg-gray-400" />
 
@@ -268,6 +291,7 @@ export const RichTextEditor = ({
   onChange,
   readOnly = false,
   maxLength = 1700,
+  editorClassName,
 }: RichTextEditorProps) => {
   const [isMounted, setIsMounted] = useState(false);
   const [charCount, setCharCount] = useState(0);
@@ -278,7 +302,10 @@ export const RichTextEditor = ({
     immediatelyRender: false,
     editable: !readOnly,
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        horizontalRule: false,
+      }),
+      GridItemBreak,
       Underline,
       Link.configure({
         openOnClick: false,
@@ -306,8 +333,7 @@ export const RichTextEditor = ({
     },
     editorProps: {
       attributes: {
-        class:
-          "min-h-[150px] max-h-[50dvh] lg:h-[150px] overflow-y-auto bg-white text-black w-full p-2 focus:outline-none prose prose-sm max-w-none [&_a]:text-blue-500 [&_a]:underline [&_a]:cursor-pointer",
+        class: editorClassName ?? DEFAULT_EDITOR_CLASS,
       },
     },
   });

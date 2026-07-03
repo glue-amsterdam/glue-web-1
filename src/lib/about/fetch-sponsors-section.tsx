@@ -7,6 +7,7 @@ import {
 } from "@/schemas/sponsorsSchema";
 import { createPublicSupabaseClient } from "@/utils/supabase/public";
 import { toMediaUrl } from "@/lib/media/media-url";
+import { ensureSponsorTypeIds } from "@/lib/about/sponsor-type-utils";
 
 const SPONSORS_FALLBACK_DATA: SponsorsSection = {
   sponsorsHeaderSchema: {
@@ -16,9 +17,9 @@ const SPONSORS_FALLBACK_DATA: SponsorsSection = {
     description:
       "Discover the GLUE project, the GLUE Foundation, and the GLUE International initiative.",
     sponsors_types: [
-      { label: "Gold" },
-      { label: "Silver" },
-      { label: "Bronze" },
+      { id: "gold", label: "Gold" },
+      { id: "silver", label: "Silver" },
+      { id: "bronze", label: "Bronze" },
     ],
   },
   sponsors: [
@@ -26,21 +27,21 @@ const SPONSORS_FALLBACK_DATA: SponsorsSection = {
       id: "placeholder-1",
       name: "Placeholder 1",
       website: "https://www.placeholder.com",
-      sponsor_type: "Gold",
+      sponsor_type: "gold",
       image_url: "/placeholder.jgp",
     },
     {
       id: "placeholder-2",
       name: "Placeholder 2",
       website: "https://www.placeholder.com",
-      sponsor_type: "Silver",
+      sponsor_type: "silver",
       image_url: "/placeholder.jgp",
     },
     {
       id: "placeholder-3",
       name: "Placeholder 3",
       website: "https://www.placeholder.com",
-      sponsor_type: "Bronze",
+      sponsor_type: "bronze",
       image_url: "/placeholder.jgp",
     },
   ],
@@ -83,7 +84,10 @@ const fetchSponsorsDataCached = unstable_cache(
     }
 
     return sponsorsSectionSchema.parse({
-      sponsorsHeaderSchema: headerData,
+      sponsorsHeaderSchema: {
+        ...headerData,
+        sponsors_types: ensureSponsorTypeIds(headerData.sponsors_types ?? []),
+      },
       sponsors: (sponsorsData ?? []).map((sponsor) => ({
         ...sponsor,
         image_url: toMediaUrl(sponsor.image_url),

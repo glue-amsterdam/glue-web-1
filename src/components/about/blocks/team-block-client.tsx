@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useMediaQuery } from "@/hooks/userMediaQuery";
 import {
   Accordion,
   AccordionContent,
@@ -39,9 +40,9 @@ const TeamMemberContent = ({
   member: TeamMember;
   sanitizedDescription: string;
 }) => (
-  <div className="base-text-size space-y-3">
+  <div className="space-y-3 mini-padding versal-body-text">
     {(member.email || member.phone) && (
-      <address className="not-italic space-y-1 flex flex-col">
+      <address className="not-italic space-y-1 flex flex-col versal-body-text">
         {member.email ? (
           <a
             href={`mailto:${member.email.trim()}`}
@@ -52,6 +53,7 @@ const TeamMemberContent = ({
         ) : null}
         {member.phone ? (
           <a
+            className="versal-body-text"
             href={`tel:${member.phone.replace(/\s/g, "")}`}
             aria-label={`Phone ${member.name}`}
           >
@@ -61,7 +63,10 @@ const TeamMemberContent = ({
       </address>
     )}
     {member.description ? (
-      <div dangerouslySetInnerHTML={{ __html: sanitizedDescription }} />
+      <p
+        className="post-content post-content-tight body-text mini-padding"
+        dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+      />
     ) : null}
   </div>
 );
@@ -79,7 +84,7 @@ const TeamMemberTrigger = ({ member, memberId, iconAlign }: TeamMemberTriggerPro
   return (
     <AccordionTrigger
       hideIcon
-      className="group w-full base-text-size main-boder-top text-left hover:no-underline py-[15px]"
+      className="group w-full main-boder-top text-left hover:no-underline pt-[15px] lg:pointer-events-none"
     >
       <div className="flex w-full flex-1 flex-col">
         <div
@@ -88,11 +93,13 @@ const TeamMemberTrigger = ({ member, memberId, iconAlign }: TeamMemberTriggerPro
             iconAlign === "center" ? "items-center" : "items-start"
           )}
         >
-          <div className="flex min-w-0 flex-1 flex-col text-left base-text-size">
-            <span id={`${memberId}-name`}>{name.toUpperCase()}</span>
-            <span>{role}</span>
+          <div className="flex min-w-0 flex-1 flex-col text-left">
+            <span id={`${memberId}-name`} className="versal-body-text">{name.toUpperCase()}</span>
+            <span className="versal-body-text">{role}</span>
           </div>
-          <AccordionPlusCrossIcon />
+          <span className="lg:hidden">
+            <AccordionPlusCrossIcon />
+          </span>
         </div>
       </div>
     </AccordionTrigger>
@@ -101,6 +108,24 @@ const TeamMemberTrigger = ({ member, memberId, iconAlign }: TeamMemberTriggerPro
 
 const TeamBlockClient = ({ block, sanitized }: Props) => {
   const [openIds, setOpenIds] = useState<string[]>([]);
+  const isLargeScreen = useMediaQuery("(min-width: 1024px)");
+  const allMemberIds = useMemo(
+    () => block.members.map((member, index) => getMemberId(member, index)),
+    [block.members]
+  );
+
+  useEffect(() => {
+    if (isLargeScreen) {
+      setOpenIds(allMemberIds);
+    }
+  }, [isLargeScreen, allMemberIds]);
+
+  const handleValueChange = (value: string[]) => {
+    if (isLargeScreen) {
+      return;
+    }
+    setOpenIds(value);
+  };
 
   if (!block.is_visible) {
     return null;
@@ -117,7 +142,7 @@ const TeamBlockClient = ({ block, sanitized }: Props) => {
           dangerouslySetInnerHTML={{ __html: sanitized.description }}
         />
       ) : null}
-      <div className="pt-[40px] lg:pt-[60px] max-w-[1045px] mx-auto">
+      <div className="title-padding max-w-[1045px] mx-auto">
         <AboutBlockImage
           src={block.media.image.src}
           alt={block.media.image.alt}
@@ -126,16 +151,16 @@ const TeamBlockClient = ({ block, sanitized }: Props) => {
         />
         <Accordion
           type="multiple"
-          className="w-full pt-[40px] lg:pt-[60px] lg:grid lg:grid-cols-2 lg:gap-x-[30px] lg:gap-y-[100px]"
+          className="w-full title-padding lg:grid lg:grid-cols-2 lg:gap-x-[30px] lg:gap-y-[100px]"
           aria-label={block.title}
-          value={openIds}
-          onValueChange={setOpenIds}
+          value={isLargeScreen ? allMemberIds : openIds}
+          onValueChange={handleValueChange}
         >
           {block.members.map((member, index) => {
             const memberId = getMemberId(member, index);
 
             return (
-              <AccordionItem key={memberId} value={memberId} className="border-b-0">
+              <AccordionItem key={memberId} value={memberId} className="border-b-0 first:pt-0 pt-[40px] lg:pt-0">
                 <TeamMemberTrigger
                   member={member}
                   memberId={memberId}

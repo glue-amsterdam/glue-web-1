@@ -1,5 +1,6 @@
 import ResetPasswordForm from "@/app/reset-password/reset-password-form";
 import { AuthPageHeadline } from "@/components/auth/auth-page-headline";
+import StaggerEnterContainer from "@/components/stagger-enter-container";
 import MainContainer from "@/components/main-container";
 import { resetPasswordMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
@@ -20,7 +21,7 @@ export default function ResetPasswordPage() {
       className="first-padding pb-[65px] md:pb-[105px]"
     >
       <MainContainer>
-        <section id="reset-password-section" className="stagger-enter">
+        <StaggerEnterContainer as="section" variant="enter" id="reset-password-section">
           <Suspense fallback={null}>
             <AuthPageHeadline title={pageTexts.title} />
           </Suspense>
@@ -30,7 +31,7 @@ export default function ResetPasswordPage() {
           <Suspense fallback={null}>
             <ResetPasswordForm />
           </Suspense>
-        </section>
+        </StaggerEnterContainer>
       </MainContainer>
     </main>
   );

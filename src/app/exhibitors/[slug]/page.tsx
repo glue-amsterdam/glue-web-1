@@ -2,7 +2,7 @@ import BottomBlock from "@/components/bottom-block";
 import ExhibitorDeclined from "@/components/exhibitors/exhibitor-declined";
 import ExhibitorDetailView from "@/components/exhibitors/exhibitor-detail-view";
 import ExhibitorPending from "@/components/exhibitors/exhibitor-pending";
-import MainContainer from "@/components/main-container";
+import StaggerEnterContainer from "@/components/stagger-enter-container";
 import { config } from "@/config";
 import { ExhibitorNotFoundError } from "@/lib/participants/exhibitor-detail-types";
 import { fetchExhibitorDetailBySlug } from "@/lib/participants/fetch-exhibitor-detail";
@@ -74,7 +74,7 @@ export default async function ExhibitorPage({ params }: PageProps) {
     if (participant.is_sticky || participant.status === "accepted") {
       return (
         <main id="exhibitor-detail-page">
-          <MainContainer className="stagger-enter-fade">
+          <StaggerEnterContainer variant="fade">
             <nav className="sr-only" aria-label="Breadcrumb">
               <ol>
                 <li>
@@ -88,7 +88,7 @@ export default async function ExhibitorPage({ params }: PageProps) {
             </nav>
             <ExhibitorDetailView {...toDisplayPropsFromParticipant(participant)} />
             <BottomBlock />
-          </MainContainer>
+          </StaggerEnterContainer>
         </main>
       );
     }

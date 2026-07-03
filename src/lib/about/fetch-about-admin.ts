@@ -1,6 +1,7 @@
 import { HOME_EXHIBITORS_HEADER_CACHE_TAG } from "@/lib/participants/fetch-home-exhibitors-header";
 import { revalidateHomeStickyCache, revalidateHomeCitizensCache } from "@/lib/home";
 import { revalidateSponsorsCache } from "@/lib/about/revalidate-sponsors-cache";
+import { ensureSponsorTypeIds } from "@/lib/about/sponsor-type-utils";
 import { participantsSectionSchema } from "@/schemas/participantsAdminSchema";
 import { curatedMembersSectionSchema } from "@/schemas/curatedSchema";
 import {
@@ -180,7 +181,10 @@ export const fetchAboutSponsorsHeader = async (
     throw error;
   }
 
-  return data;
+  return {
+    ...data,
+    sponsors_types: ensureSponsorTypeIds(data.sponsors_types ?? []),
+  };
 };
 
 export const updateAboutSponsorsHeader = async (
@@ -188,7 +192,10 @@ export const updateAboutSponsorsHeader = async (
   supabase?: SupabaseClient
 ) => {
   const client = supabase ?? (await createClient());
-  const validatedData = sponsorsHeaderSchema.parse(input);
+  const validatedData = sponsorsHeaderSchema.parse({
+    ...input,
+    sponsors_types: ensureSponsorTypeIds(input.sponsors_types),
+  });
 
   const { data, error } = await client
     .from("about_sponsors_header")
@@ -208,7 +215,10 @@ export const updateAboutSponsorsHeader = async (
 
   revalidateSponsorsCache();
 
-  return data;
+  return {
+    ...data,
+    sponsors_types: ensureSponsorTypeIds(data.sponsors_types ?? []),
+  };
 };
 
 export const createAboutSponsor = async (

@@ -1,10 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ExhibitorsFilters } from "@/lib/participants/exhibitors-filters";
+import { useParticipantCategories } from "@/context/ParticipantCategoriesContext";
 import {
   buildExhibitorsPageUrl,
+  getExhibitorsUrlCleanupTarget,
   getExhibitorsVisibleCount,
   searchParamsToFilters,
 } from "@/lib/participants/exhibitors-url";
@@ -19,13 +21,28 @@ export const useExhibitorsFiltersFromUrl = (): UseExhibitorsFiltersFromUrlReturn
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const { categorySlugs } = useParticipantCategories();
+
   const filters = useMemo(
-    () => searchParamsToFilters(searchParams),
-    [searchParams],
+    () => searchParamsToFilters(searchParams, categorySlugs),
+    [searchParams, categorySlugs],
   );
 
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
+
+  useEffect(() => {
+    const cleanupUrl = getExhibitorsUrlCleanupTarget(
+      pathname,
+      searchParams,
+      filters,
+      getExhibitorsVisibleCount(searchParams),
+    );
+
+    if (!cleanupUrl) return;
+
+    router.replace(cleanupUrl, { scroll: false });
+  }, [filters, pathname, router, searchParams]);
 
   const updateFilters = useCallback(
     (next: Partial<ExhibitorsFilters>) => {

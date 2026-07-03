@@ -1,5 +1,8 @@
 import type { ExhibitorCarouselSlide } from "@/lib/participants/exhibitor-carousel-slides";
-import type { ExhibitorContactInfo } from "@/lib/participants/exhibitor-detail-types";
+import type {
+  ExhibitorContactInfo,
+  ExhibitorDetailNavigation,
+} from "@/lib/participants/exhibitor-detail-types";
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
 
 export type ExhibitorDisplayProps = {
@@ -9,4 +12,5 @@ export type ExhibitorDisplayProps = {
   displayLabel: string;
   description: string | null;
   contactInfo?: ExhibitorContactInfo;
+  navigation: ExhibitorDetailNavigation;
 };

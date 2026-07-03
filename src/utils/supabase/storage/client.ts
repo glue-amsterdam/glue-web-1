@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import imageCompression from "browser-image-compression";
 import { createClient } from "@/utils/supabase/client";
 import { config } from "@/config";
+import { PUBLIC_MEDIA_STORAGE_CACHE_CONTROL } from "@/lib/media/public-media-cache";
 import { toMediaKey, toMediaUrl } from "@/lib/media/media-url";
 
 // storage-js builds the header as `max-age=${cacheControl}`, so pass only the
@@ -92,6 +93,78 @@ export const uploadImage = async ({
   const key = data.path;
   const imageUrl = toMediaUrl(key) ?? "";
   console.log("Generated image URL:", imageUrl);
+
+  return { imageUrl, key, error: "" };
+};
+
+type UploadFixedPathProps = {
+  file: File;
+  bucket: string;
+  path: string;
+  maxSizeMB?: number;
+  maxWidthOrHeight?: number;
+  fileType?: string;
+  onProgress?: (progress: number) => void;
+};
+
+export const uploadImageToFixedPath = async ({
+  file,
+  bucket,
+  path,
+  maxSizeMB = 2,
+  maxWidthOrHeight = 1920,
+  fileType = "image/jpeg",
+  onProgress,
+}: UploadFixedPathProps) => {
+  if (!file || !bucket || !path) {
+    return { imageUrl: "", key: "", error: "Missing file, bucket, or path" };
+  }
+
+  try {
+    file = await imageCompression(file, {
+      maxSizeMB,
+      maxWidthOrHeight,
+      fileType,
+      useWebWorker: true,
+      onProgress: (progress) => {
+        onProgress?.(Math.round(progress * 0.85));
+      },
+    });
+  } catch (error) {
+    console.error("Image compression failed:", error);
+    return { imageUrl: "", key: "", error: "Image compression failed" };
+  }
+
+  onProgress?.(88);
+
+  const storage = getStorage();
+
+  if (!storage) {
+    return { imageUrl: "", key: "", error: "Storage not initialized" };
+  }
+
+  const { data, error } = await storage.from(bucket).upload(path, file, {
+    upsert: true,
+    contentType: fileType,
+    cacheControl: PUBLIC_MEDIA_STORAGE_CACHE_CONTROL,
+  });
+
+  if (error) {
+    return {
+      imageUrl: "",
+      key: "",
+      error: `Image upload failed: ${error.message}`,
+    };
+  }
+
+  if (!data?.path) {
+    return { imageUrl: "", key: "", error: "No path returned from upload" };
+  }
+
+  onProgress?.(95);
+
+  const key = data.path;
+  const imageUrl = toMediaUrl(key) ?? "";
 
   return { imageUrl, key, error: "" };
 };

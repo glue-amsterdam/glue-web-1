@@ -4,6 +4,7 @@ import {
   canGoBackInternally,
   skipNextInternalNavIncrement,
 } from '@/lib/internal-navigation'
+import { navigateWithHashHref } from '@/lib/navigation/hash-route'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -31,11 +32,11 @@ const CrossButton = ({
 
     skipNextInternalNavIncrement()
     if (preferFallback) {
-      router.replace(fallbackHref)
+      navigateWithHashHref(router, fallbackHref, 'replace')
       return
     }
 
-    router.push(fallbackHref)
+    navigateWithHashHref(router, fallbackHref, 'push')
   }
 
   return (

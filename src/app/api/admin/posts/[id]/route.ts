@@ -8,7 +8,7 @@ import {
   collectPostMediaUrls,
   syncPostMedia,
 } from "@/lib/posts/sync-post-media";
-import { rewriteHtmlMediaToKeys } from "@/lib/media/media-url";
+import { rewriteHtmlMediaToKeys, toMediaKey } from "@/lib/media/media-url";
 import { postPatchSchema } from "@/schemas/postSchema";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -103,6 +103,26 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (validated.status !== undefined) {
       updateRow.status = validated.status;
     }
+    if (validated.thumbnail !== undefined) {
+      const nextThumbnailKey =
+        validated.thumbnail === null
+          ? null
+          : toMediaKey(validated.thumbnail) ?? validated.thumbnail;
+
+      if (
+        nextThumbnailKey &&
+        existing.thumbnail &&
+        nextThumbnailKey !== existing.thumbnail
+      ) {
+        await deleteStoredMediaUrls(auth.supabase, [existing.thumbnail]);
+      }
+
+      if (nextThumbnailKey === null && existing.thumbnail) {
+        await deleteStoredMediaUrls(auth.supabase, [existing.thumbnail]);
+      }
+
+      updateRow.thumbnail = nextThumbnailKey;
+    }
 
     const { error: updateError } = await auth.supabase
       .from("posts")
@@ -171,12 +191,15 @@ export async function DELETE(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    const mediaUrls = collectPostMediaUrls(
-      existing.media.map((item) => ({
-        image_url: item.image_url,
-        video_url: item.video_url,
-      }))
-    );
+    const mediaUrls = [
+      ...collectPostMediaUrls(
+        existing.media.map((item) => ({
+          image_url: item.image_url,
+          video_url: item.video_url,
+        }))
+      ),
+      existing.thumbnail,
+    ];
 
     const { error: deleteError } = await auth.supabase
       .from("posts")

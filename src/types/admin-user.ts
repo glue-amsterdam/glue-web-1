@@ -13,7 +13,7 @@ export type AdminUserListItem = {
   participantStatus?: string;
   participantIsSticky?: boolean;
   participantIsActive?: boolean;
-  participantSpecialProgram?: boolean;
+  participantCategory?: string;
   participantReactivationRequested?: boolean;
   participantReactivationStatus?: string | null;
 };

@@ -7,12 +7,12 @@ type ParticipantDetailsEmbed =
 type OrganizerParticipantDetailsEmbed =
   | {
       slug?: string | null;
-      special_program?: boolean | null;
+      category?: string | null;
       display_number?: string | null;
     }
   | Array<{
       slug?: string | null;
-      special_program?: boolean | null;
+      category?: string | null;
       display_number?: string | null;
     }>
   | null
@@ -40,14 +40,14 @@ export const slugFromEmbed = (
 
 export const organizerBadgeFieldsFromEmbed = (
   participantDetails: OrganizerParticipantDetailsEmbed
-): { specialProgram: boolean; displayNumber: string | null } => {
+): { category: string; displayNumber: string | null } => {
   const details = firstFromParticipantEmbed<{
-    special_program?: boolean | null;
+    category?: string | null;
     display_number?: string | null;
   }>(participantDetails);
 
   return {
-    specialProgram: details?.special_program ?? false,
+    category: details?.category ?? "standard",
     displayNumber: details?.display_number ?? null,
   };
 };

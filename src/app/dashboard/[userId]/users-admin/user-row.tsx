@@ -61,8 +61,8 @@ export const UserStatusIndicators = ({ user }: { user: AdminUserListItem }) => {
           sticky
         </span>
       )}
-      {user.participantSpecialProgram && (
-        <span className="text-purple-700">special</span>
+      {user.participantCategory && user.participantCategory !== "standard" && (
+        <span className="text-purple-700">{user.participantCategory}</span>
       )}
       {user.participantReactivationRequested &&
         user.participantReactivationStatus === "pending" && (

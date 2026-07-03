@@ -15,3 +15,20 @@ export async function getCookieConsent() {
   const cookieStore = await cookies();
   return cookieStore.get("session-cookie-consent")?.value === "true";
 }
+
+export type CookieConsentStatus = "pending" | "accepted" | "declined";
+
+export async function getCookieConsentStatus(): Promise<CookieConsentStatus> {
+  const cookieStore = await cookies();
+  const value = cookieStore.get("session-cookie-consent")?.value;
+
+  if (value === "true") {
+    return "accepted";
+  }
+
+  if (value === "false") {
+    return "declined";
+  }
+
+  return "pending";
+}

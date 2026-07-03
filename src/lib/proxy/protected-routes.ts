@@ -1,10 +1,15 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { buildSignUpHref } from "@/lib/auth/post-auth-redirect";
+import {
+  buildSignUpHref,
+  captureCancelPathFromReferer,
+  captureReturnPath,
+} from "@/lib/auth/post-auth-redirect";
+import { requiresUserAuth } from "@/lib/auth/protected-routes";
+
+export { requiresUserAuth } from "@/lib/auth/protected-routes";
 
 const ADMIN_PUBLIC_PREFIXES = ["/admin/login"];
-
-const PROGRAM_DETAIL_PATTERN = /^\/program\/[^/]+$/;
 
 export const requiresAdminAuth = (pathname: string): boolean => {
   if (!pathname.startsWith("/admin")) {
@@ -14,31 +19,14 @@ export const requiresAdminAuth = (pathname: string): boolean => {
   return !ADMIN_PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 };
 
-export const requiresUserAuth = (
-  pathname: string,
-  searchParams: URLSearchParams
-): boolean => {
-  if (pathname.startsWith("/dashboard")) {
-    return true;
-  }
-
-  if (pathname === "/map" && searchParams.get("route")) {
-    return true;
-  }
-
-  if (pathname === "/map" && searchParams.get("view") === "routes") {
-    return true;
-  }
-
-  if (PROGRAM_DETAIL_PATTERN.test(pathname)) {
-    return true;
-  }
-
-  return false;
-};
-
 export const buildSignUpRedirect = (request: NextRequest): NextResponse => {
   const { pathname, search } = request.nextUrl;
-  const href = buildSignUpHref(pathname, search);
+  const returnPath = captureReturnPath(pathname, search);
+  const cancelTo = captureCancelPathFromReferer(
+    request.headers.get("referer"),
+    request.nextUrl.origin,
+    returnPath,
+  );
+  const href = buildSignUpHref(pathname, search, cancelTo);
   return NextResponse.redirect(new URL(href, request.url));
 };

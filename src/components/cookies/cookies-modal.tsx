@@ -42,12 +42,11 @@ export function CookieSettingsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] text-black">
+      <DialogContent className="sm:max-w-[425px] text-(--black-color)">
         <DialogHeader>
           <DialogTitle>Cookie Settings</DialogTitle>
           <DialogDescription>
-            Manage your cookie preferences here. Enabling cookies allows us to
-            provide a better user experience.
+            Manage your cookie preferences here.
           </DialogDescription>
         </DialogHeader>
         <div className="flex items-center space-x-2 py-4">
@@ -58,7 +57,7 @@ export function CookieSettingsModal({
           />
           <Label htmlFor="cookie-consent">Enable session cookies</Label>
         </div>
-        <DialogDescription className="text-sm text-black">
+        <DialogDescription className="text-sm text-(--black-color)">
           {cookiesEnabled
             ? "Cookies are currently enabled. You can log in."
             : "Cookies are currently disabled. You won't be able to log in or use certain features of the site."}

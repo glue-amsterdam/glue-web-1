@@ -14,6 +14,7 @@ import RoundedNumber from "@/components/rounded-number";
 import CrossRotatedMobile from "@/components/icons/cross-rotated-mobile";
 import BigButton from "@/components/big-button";
 import SlideLineNav from "@/components/slide-line-nav";
+import PreloadedImageStack from "@/components/preloaded-image-stack";
 
 const DEFAULT_AUTOPLAY_DELAY_MS = 3000;
 
@@ -51,6 +52,7 @@ const ExhibitorFooter = ({
         handleMouseEnter,
         handleMouseLeave,
         handleSelect,
+        handleAdvance,
     } = useCyclicIndex({
         itemCount: slides.length,
         delayMs,
@@ -112,6 +114,21 @@ const ExhibitorFooter = ({
                             <div className="h-full w-full flex items-center justify-center">
                                 <LoadingSpinner />
                             </div>
+                        ) : hasMultiple ? (
+                            <PreloadedImageStack
+                                slides={slides.map((slide) => ({
+                                    id: slide.id,
+                                    src: slide.imageUrl ?? null,
+                                    alt: `Image of ${slide.name}`,
+                                }))}
+                                currentIndex={currentIndex}
+                                onAdvance={hasMultiple ? handleAdvance : undefined}
+                                className="relative h-full w-full"
+                                sizes="(max-width: 768px) 100vw, 33vw"
+                                objectFit="contain"
+                                objectPosition="top"
+                                fullWidth
+                            />
                         ) : currentSlide.imageUrl ? (
 
                             <Image

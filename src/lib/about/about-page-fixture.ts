@@ -1,4 +1,34 @@
-import type { AboutPageData } from "@/schemas/aboutPageSchema";
+import type { AboutPageData, ArchiveYearSection } from "@/schemas/aboutPageSchema";
+
+export const ARCHIVE_FIXTURE_SECTIONS: Record<number, ArchiveYearSection> = {
+  2025: {
+    year: 2025,
+    media: {
+      video: {
+        src: "/videos/glue-2025.mp4",
+        alt: "GLUE 2025",
+        poster: "/images/glue-2025.jpg",
+      },
+      image: {
+        src: "/images/glue-2025.jpg",
+        alt: "GLUE 2025",
+      },
+    },
+    numbers: [
+      { label: "Spaces", value: "60+" },
+      { label: "Exhibitors", value: "150+" },
+      { label: "Sticky", value: "20+" },
+      { label: "Visitors", value: "2500+" },
+    ],
+    text_block: {
+      title: "Embrace the surprise during glue 2025",
+      description:
+        "GLUE 2025 was a year of surprises. We had a new location, a new format, and a new team.",
+    },
+    citizens_of_honour: {},
+    sticky_members: {},
+  },
+};
 
 export const ABOUT_PAGE_FIXTURE: AboutPageData = {
   navbar: [
@@ -93,33 +123,6 @@ export const ABOUT_PAGE_FIXTURE: AboutPageData = {
       is_visible: true,
       years: [2025],
       default_year: 2025,
-      default_section: {
-        year: 2025,
-        media: {
-          video: {
-            src: "/videos/glue-2025.mp4",
-            alt: "GLUE 2025",
-            poster: "/images/glue-2025.jpg",
-          },
-          image: {
-            src: "/images/glue-2025.jpg",
-            alt: "GLUE 2025",
-          },
-        },
-        numbers: [
-          { label: "Spaces", value: "60+" },
-          { label: "Exhibitors", value: "150+" },
-          { label: "Sticky", value: "20+" },
-          { label: "Visitors", value: "2500+" },
-        ],
-        text_block: {
-          title: "Embrace the surprise during glue 2025",
-          description:
-            "GLUE 2025 was a year of surprises. We had a new location, a new format, and a new team.",
-        },
-        citizens_of_honour: {},
-        sticky_members: {},
-      },
     },
     {
       id: "faq",

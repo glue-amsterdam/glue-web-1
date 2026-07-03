@@ -4,7 +4,10 @@ import { getExhibitors } from "@/lib/participants/get-exhibitors";
 import { getExhibitorLink } from "@/lib/participants/exhibitors-filters";
 import { loadProgramListItems } from "@/lib/program/get-program-events";
 import { POSTS_CACHE_TAG } from "@/lib/posts/revalidate-posts-cache";
+import { POSTS_PAGE_CACHE_TAG } from "@/lib/posts/fetch-posts-page";
 import { fetchPublishedPostSlugs } from "@/lib/posts/fetch-public-post";
+import { getCachedAboutArchiveBlock } from "@/lib/about/cached-about-data";
+import { ABOUT_ARCHIVE_CACHE_TAG } from "@/lib/about/about-cache-tags";
 import { createPublicSupabaseClient } from "@/utils/supabase/public";
 
 export type PublicUrlEntry = {
@@ -41,12 +44,17 @@ const fetchPublicUrlsCached = unstable_cache(
       path: `/posts/${slug}`,
     }));
 
-    return { exhibitorSlugs, hubIds, programEvents, postPages };
+    const archiveBlock = await getCachedAboutArchiveBlock();
+    const archiveYearPages: PublicUrlEntry[] = archiveBlock.years.map((year) => ({
+      path: `/about/archive/${year}`,
+    }));
+
+    return { exhibitorSlugs, hubIds, programEvents, postPages, archiveYearPages };
   },
   ["public-seo-urls"],
   {
     revalidate: 3600,
-    tags: ["exhibitors-page", "program-page", POSTS_CACHE_TAG],
+    tags: ["exhibitors-page", "program-page", POSTS_CACHE_TAG, POSTS_PAGE_CACHE_TAG, ABOUT_ARCHIVE_CACHE_TAG],
   }
 );
 
@@ -57,5 +65,6 @@ export const getAllPublicDynamicUrls = async (): Promise<PublicUrlEntry[]> => {
     ...data.hubIds,
     ...data.programEvents,
     ...data.postPages,
+    ...data.archiveYearPages,
   ];
 };

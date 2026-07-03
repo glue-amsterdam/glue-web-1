@@ -1,6 +1,7 @@
 import type { PostImageAlign } from "@/app/components/tiptap-post-image";
 
 const MAX_WIDTH_REGEX = /max-width:\s*([^;]+)/i;
+const POST_IMAGE_MOBILE_MAX_HEIGHT = "340px";
 const POST_IMAGE_CLASS = "post-image";
 const POST_IMAGE_TAG_REGEX = /<img\b[^>]*class="[^"]*post-image[^"]*"[^>]*>/gi;
 const LINKED_POST_IMAGE_REGEX =
@@ -17,6 +18,8 @@ export type ResponsiveImageStyle = {
   width: string;
   maxWidth: string;
   height: string;
+  maxHeight: string;
+  objectFit: string;
 };
 
 export const getResponsiveImageStyleObject = (
@@ -29,20 +32,24 @@ export const getResponsiveImageStyleObject = (
       width: "100%",
       maxWidth: "100%",
       height: "auto",
+      maxHeight: POST_IMAGE_MOBILE_MAX_HEIGHT,
+      objectFit: "contain",
     };
   }
 
   return {
-    width: "100%",
+    width: "auto",
     maxWidth: `min(${normalized}, 100%)`,
     height: "auto",
+    maxHeight: POST_IMAGE_MOBILE_MAX_HEIGHT,
+    objectFit: "contain",
   };
 };
 
 export const buildResponsiveImageStyle = (maxWidth: string): string => {
   const style = getResponsiveImageStyleObject(maxWidth);
 
-  return `width: ${style.width}; max-width: ${style.maxWidth}; height: ${style.height};`;
+  return `width: ${style.width}; max-width: ${style.maxWidth}; height: ${style.height}; max-height: ${style.maxHeight}; object-fit: ${style.objectFit};`;
 };
 
 const extractMaxWidthFromStyle = (style: string | null): string => {
@@ -58,6 +65,15 @@ const extractMaxWidthFromStyle = (style: string | null): string => {
   const match = style.match(MAX_WIDTH_REGEX);
   return match ? match[1].trim() : "600px";
 };
+
+const stripImageDimensionAttributes = (tag: string): string =>
+  tag.replace(/\s(?:width|height)\s*=\s*(["'])[^"']*\1/gi, "");
+
+const stripRoundedClass = (tag: string): string =>
+  tag.replace(/\sclass\s*=\s*(["'])(.*?)\1/i, (_match, quote: string, classes: string) => {
+    const nextClasses = classes.replace(/\brounded-md\b/g, "").replace(/\s+/g, " ").trim();
+    return ` class=${quote}${nextClasses}${quote}`;
+  });
 
 const replaceStyleAttribute = (tag: string, nextStyle: string): string => {
   if (/\sstyle\s*=/.test(tag)) {
@@ -79,7 +95,11 @@ const normalizePostImageTag = (tag: string): string => {
   const currentStyle = styleMatch?.[2] ?? null;
   const maxWidth = extractMaxWidthFromStyle(currentStyle);
 
-  return replaceStyleAttribute(tag, buildResponsiveImageStyle(maxWidth));
+  return stripRoundedClass(
+    stripImageDimensionAttributes(
+      replaceStyleAttribute(tag, buildResponsiveImageStyle(maxWidth))
+    )
+  );
 };
 
 const isInsideOpenAnchor = (html: string, index: number): boolean => {
@@ -111,8 +131,16 @@ const wrapLinkedPostImages = (html: string): string =>
   html.replace(LINKED_POST_IMAGE_REGEX, (_match, anchorAttrs, imgTag) => {
     const normalizedImg = normalizePostImageTag(imgTag);
     const nextAnchorAttrs = addPostImageLinkClass(anchorAttrs);
+    const linkedImage = `<a${nextAnchorAttrs}>${normalizedImg}</a>`;
 
-    return `<a${nextAnchorAttrs}>${normalizedImg}</a>`;
+    const alignMatch = normalizedImg.match(/\sdata-align\s*=\s*(["'])(.*?)\1/i);
+    const align = parseAlign(alignMatch?.[2] ?? null);
+
+    if (align === "left") {
+      return linkedImage;
+    }
+
+    return `<div class="post-image-wrapper post-image-wrapper--${align}">${linkedImage}</div>`;
   });
 
 const wrapStandalonePostImages = (html: string): string =>

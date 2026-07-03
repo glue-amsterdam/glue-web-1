@@ -11,7 +11,8 @@ export const TEXT_SECTION_SLUGS = [
   "participate-intro",
   "participate-how-it-works",
   "participate-select-plan",
-  "sign-up-intro",
+  "sign-up-intro-restricted",
+  "sign-up-intro-visitor",
 ] as const;
 
 export type TextSectionSlug = (typeof TEXT_SECTION_SLUGS)[number];

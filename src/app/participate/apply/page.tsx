@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { ParticipationWizard } from "@/app/participate/apply/participation-wizard";
 import { participateApplyMetadata } from "@/lib/metadata";
+import { parseEmailParam } from "@/lib/auth/post-auth-redirect";
 import { getParticipationEligibility } from "@/lib/participate/get-participation-eligibility";
 import { getParticipationFormContext } from "@/lib/participate/get-participation-form-context";
 import { getPlanByIdForApply } from "@/lib/participate/get-plan-by-id";
@@ -14,12 +15,18 @@ type PageProps = {
   searchParams: Promise<{
     planId?: string;
     intent?: string;
+    email?: string;
   }>;
 };
 
 export default async function ParticipateApplyPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const planId = params.planId?.trim();
+  const emailSearchParams = new URLSearchParams();
+  if (params.email) {
+    emailSearchParams.set("email", params.email);
+  }
+  const prefilledEmail = parseEmailParam(emailSearchParams);
 
   if (!planId) {
     redirect("/participate#plans-selection-section");
@@ -36,7 +43,7 @@ export default async function ParticipateApplyPage({ searchParams }: PageProps) 
     redirect(eligibility.participateBackHref);
   }
 
-  const [termsContent, formContext, workAreas] = await Promise.all([
+  const [termsBlock, formContext, workAreas] = await Promise.all([
     getCachedTerms(),
     getParticipationFormContext(eligibility.resolvedIntent),
     fetchVisitorAreas(),
@@ -55,8 +62,9 @@ export default async function ParticipateApplyPage({ searchParams }: PageProps) 
         plan={plan}
         formContext={formContext}
         participateBackHref={eligibility.participateBackHref}
-        termsContent={termsContent}
+        termsContent={termsBlock.content}
         workAreas={workAreas.map(({ id, name }) => ({ id, name }))}
+        prefilledEmail={prefilledEmail}
       />
     </main>
   );

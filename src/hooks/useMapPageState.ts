@@ -13,6 +13,7 @@ import type { MapFilters } from "@/lib/map/map-filters";
 import type { MapLocation, MapPageData, MapRoute } from "@/lib/map/types";
 import { resolveMapLocationSelectionId } from "@/lib/map/map-selection";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
+import { useParticipantCategories } from "@/context/ParticipantCategoriesContext";
 import {
   useMapStore,
   type MapNavigateParams,
@@ -31,6 +32,7 @@ export const useMapPageState = (initialData: MapPageData) => {
   const pendingPlaceIdRef = useRef<string | null>(null);
   const pendingRouteIdRef = useRef<string | null>(null);
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
+  const { categorySlugs } = useParticipantCategories();
   const setOptimisticFilters = useMapStore((state) => state.setOptimisticFilters);
   const setNavigation = useMapStore((state) => state.setNavigation);
 
@@ -150,7 +152,10 @@ export const useMapPageState = (initialData: MapPageData) => {
 
       isUpdatingUrl.current = true;
 
-      const currentFilters = searchParamsToMapFilters(searchParams);
+      const currentFilters = searchParamsToMapFilters(
+        searchParams,
+        categorySlugs
+      );
       let mergedFilters: MapFilters = params.filters
         ? params.filters
         : params.filterPatch
@@ -209,6 +214,7 @@ export const useMapPageState = (initialData: MapPageData) => {
       pathname,
       router,
       searchParams,
+      categorySlugs,
       isLargeScreen,
       setOptimisticFilters,
     ]
@@ -360,12 +366,29 @@ export const useMapPageState = (initialData: MapPageData) => {
 
       selectLocationLocal(resolvedLocationId, memberUserId);
 
-      const filterPatch: Partial<MapFilters> | undefined = !isLargeScreen
-        ? {
-            view: "none",
-            ...(urlOptions?.clearSearch ? { q: "" } : {}),
-          }
-        : undefined;
+      const currentFilters = searchParamsToMapFilters(
+        searchParams,
+        categorySlugs
+      );
+
+      let filterPatch: Partial<MapFilters> | undefined;
+
+      if (!isLargeScreen) {
+        filterPatch = { view: "none" };
+        if (
+          currentFilters.view === "category" &&
+          currentFilters.type !== "all"
+        ) {
+          filterPatch.type = currentFilters.type;
+        } else if (urlOptions?.clearSearch) {
+          filterPatch.q = "";
+        }
+      } else if (currentFilters.view === "category") {
+        filterPatch = {
+          view: "category",
+          type: currentFilters.type,
+        };
+      }
 
       navigateMap({
         filterPatch,
@@ -376,6 +399,7 @@ export const useMapPageState = (initialData: MapPageData) => {
     [
       pathname,
       searchParams,
+      categorySlugs,
       selectedLocation,
       selectedHubMemberId,
       clearMapSelection,

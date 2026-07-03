@@ -15,17 +15,24 @@ const SlidingTextArea = ({ marqueeItems }: SlidingTextAreaProps) => {
 
   if (!isHomePage || marqueeItems.length === 0) return null;
 
-  const repeatedItems = [...marqueeItems, ...marqueeItems];
-
   return (
-    <div className="w-full overflow-hidden border-t border-(--black-color) lg:border-t-2 bg-(--background-color) h-[40px] py-2 hidden md:block">
-      <div className="flex w-max animate-marquee gap-[50px] will-change-transform">
-        {repeatedItems.map((item, index) => (
-          <HomeTextItemDisplay
-            key={`${item.id}-${index}`}
-            item={item}
-            defaultColorClassName="text-[var(--primary-color)] whitespace-nowrap text-[23px] leading-[29px] font-[400]"
-          />
+    <div className="w-full overflow-hidden border-t border-(--black-color) lg:border-t-2 bg-(--background-color) h-[40px] py-2 hidden lg:block ">
+      <div className="flex w-max animate-marquee will-change-transform">
+        {[0, 1].map((groupIndex) => (
+          <div
+            key={groupIndex}
+            className="flex shrink-0 gap-[50px] pr-[50px]"
+            aria-hidden={groupIndex === 1}
+          >
+            {marqueeItems.map((item) => (
+              <HomeTextItemDisplay
+                key={`${groupIndex}-${item.id}`}
+                item={item}
+                mode="marquee"
+                defaultColorClassName="text-[var(--primary-color)] whitespace-nowrap"
+              />
+            ))}
+          </div>
         ))}
       </div>
     </div>

@@ -10,8 +10,11 @@ import {
   type VisitorWorkAreaOption,
 } from "@/components/participate/visitor-account-step";
 import {
-  buildLoginFromSignUpHref,
+  buildLoginHref,
+  parseCancelToParam,
+  parseEmailParam,
   parseReturnToParam,
+  resolveCancelTo,
   resolvePostAuthRedirect,
 } from "@/lib/auth/post-auth-redirect";
 
@@ -26,6 +29,8 @@ export const SignUpVisitorForm = ({
   const searchParams = useSearchParams();
   const { login } = useAuth();
   const returnTo = parseReturnToParam(searchParams);
+  const cancelTo = resolveCancelTo(parseCancelToParam(searchParams));
+  const prefilledEmail = parseEmailParam(searchParams);
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,9 +91,11 @@ export const SignUpVisitorForm = ({
     }
   };
 
-  const handleBack = () => {
-    router.push(buildLoginFromSignUpHref(returnTo));
-  };
+  const loginHref = buildLoginHref({
+    email: prefilledEmail,
+    returnTo,
+    cancelTo,
+  });
 
   return (
     <>
@@ -96,11 +103,13 @@ export const SignUpVisitorForm = ({
         workAreas={workAreas}
         submitError={submitError ?? undefined}
         onSubmit={(data) => void handleSubmit(data)}
-        onBack={handleBack}
+        showBackButton={false}
+        initialValues={{ email: prefilledEmail ?? "" }}
         submitLabel={isSubmitting ? "creating…" : "create account"}
         submitDisabled={isSubmitting || isRedirecting}
         isSubmitting={isSubmitting || isRedirecting}
         loadingMessage="Creating your account…"
+        loginHref={loginHref}
       />
     </>
   );

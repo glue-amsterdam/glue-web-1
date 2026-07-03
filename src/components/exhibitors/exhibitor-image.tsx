@@ -19,7 +19,7 @@ const ExhibitorImage = ({ src, alt }: ExhibitorImageProps) => {
         width={IMAGE_WIDTH}
         height={IMAGE_HEIGHT}
         sizes="(max-width: 768px) 100vw, 33vw"
-        className="h-full w-full object-contain object-top"
+        className="h-full w-full object-contain object-center"
       />
     </div>
   );

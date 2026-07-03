@@ -6,6 +6,10 @@ import {
 } from "@/lib/participants/exhibitor-visibility";
 import { classifyLocationType } from "./classify-location-type";
 import {
+  fetchParticipantCategories,
+  type ParticipantCategory,
+} from "@/lib/participants/participant-categories";
+import {
   getEligibleHubMemberIds,
   getOrderedEligibleMemberIds,
 } from "./hub-members";
@@ -21,7 +25,7 @@ import {
 type ParticipantRow = {
   user_id: string;
   slug: string | null;
-  special_program: boolean;
+  category: string;
   display_number: string | null;
   is_active: boolean;
   was_active_last_year: boolean;
@@ -47,7 +51,7 @@ type HubRow = {
 
 type LocationDraft = MapLocation & {
   hostUserId: string;
-  hostSpecialProgram: boolean;
+  hostCategory: string;
   hubRowId?: string;
 };
 
@@ -56,8 +60,10 @@ type HubMembershipContext = {
   hubAddressLine: string;
 };
 
-const getParticipantType = (specialProgram: boolean): ExhibitorType =>
-  specialProgram ? "special-program" : "up-to-three-participants";
+const getMemberType = (
+  category: string,
+  categories: ParticipantCategory[]
+): ExhibitorType => classifyLocationType(1, category, categories);
 
 const resolveMemberMapLocationId = (
   userId: string,
@@ -86,7 +92,8 @@ const buildHubMembers = (
   participantByUserId: Map<string, ParticipantRow>,
   hubMapInfoId: string,
   hubAddressLine: string,
-  mapInfoByUserId: Map<string, MapInfoRow>
+  mapInfoByUserId: Map<string, MapInfoRow>,
+  categories: ParticipantCategory[]
 ): MapLocationDetailMember[] => {
   const members: MapLocationDetailMember[] = [];
 
@@ -106,7 +113,7 @@ const buildHubMembers = (
     members.push({
       userId,
       name: getParticipantDisplayName(participant),
-      type: getParticipantType(participant.special_program),
+      type: getMemberType(participant.category, categories),
       displayNumber: participant.display_number,
       locationId,
       ...(slug ? { slug } : {}),
@@ -155,6 +162,8 @@ export const buildMapLocations = async (
   supabase: SupabaseClient,
   tourStatus: TourStatus
 ): Promise<MapLocation[]> => {
+  const categories = await fetchParticipantCategories(supabase);
+
   const [participantsResult, stickyIds, hubsResult] = await Promise.all([
     supabase
       .from("participant_details")
@@ -162,7 +171,7 @@ export const buildMapLocations = async (
         `
         user_id,
         slug,
-        special_program,
+        category,
         display_number,
         is_active,
         was_active_last_year,
@@ -257,7 +266,8 @@ export const buildMapLocations = async (
 
     const type = classifyLocationType(
       memberCount,
-      hostParticipant.special_program
+      hostParticipant.category,
+      categories
     );
 
     const members = buildHubMembers(
@@ -266,7 +276,8 @@ export const buildMapLocations = async (
       participantByUserId,
       hostMapInfo.id,
       hubAddressLine,
-      mapInfoByUserId
+      mapInfoByUserId,
+      categories
     );
 
     locationByMapInfoId.set(hostMapInfo.id, {
@@ -282,7 +293,7 @@ export const buildMapLocations = async (
       memberCount,
       ...(members.length > 0 ? { members } : {}),
       hostUserId: hub.hub_host_id,
-      hostSpecialProgram: hostParticipant.special_program,
+      hostCategory: hostParticipant.category,
       hubRowId: hub.id,
     });
   }
@@ -309,21 +320,21 @@ export const buildMapLocations = async (
       id: mapInfo.id,
       latitude: mapInfo.latitude,
       longitude: mapInfo.longitude,
-      type: classifyLocationType(1, participant.special_program),
+      type: classifyLocationType(1, participant.category, categories),
       name: getParticipantDisplayName(participant),
       displayNumber: participant.display_number,
       addressLine: getAddressLine(mapInfo.formatted_address),
       slug: participant.slug ?? undefined,
       memberCount: 1,
       hostUserId: participant.user_id,
-      hostSpecialProgram: participant.special_program,
+      hostCategory: participant.category,
     });
   }
 
   return Array.from(locationByMapInfoId.values()).map(
     ({
       hostUserId: _hostUserId,
-      hostSpecialProgram: _hostSpecialProgram,
+      hostCategory: _hostCategory,
       hubRowId: _hubRowId,
       ...location
     }) => location

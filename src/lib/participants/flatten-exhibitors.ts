@@ -5,8 +5,14 @@ import type {
 
 export const flattenExhibitors = (
   grouped: ExhibitorsGroupedResponse
-): ExhibitorItem[] => [
-  ...grouped.specialProgram,
-  ...grouped.upToThreeParticipants,
-  ...grouped.hubs,
-];
+): ExhibitorItem[] => Object.values(grouped).flat();
+
+export const createEmptyGroupedExhibitors = (
+  categorySlugs: string[]
+): ExhibitorsGroupedResponse => {
+  const grouped: ExhibitorsGroupedResponse = {};
+  for (const slug of categorySlugs) {
+    grouped[slug] = [];
+  }
+  return grouped;
+};

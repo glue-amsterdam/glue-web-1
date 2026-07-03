@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useParticipantCategories } from "@/context/ParticipantCategoriesContext";
 import { fetchExhibitorsPageClient } from "@/lib/client/fetch-exhibitors-page";
 import {
   areClientSearchParamsReady,
@@ -127,6 +128,7 @@ export const useExhibitorsPage = (
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { categorySlugs } = useParticipantCategories();
 
   const initialStateRef = useRef<ResolvedExhibitorsState | null>(null);
   if (initialStateRef.current === null) {
@@ -478,7 +480,7 @@ export const useExhibitorsPage = (
     }
 
     visibleCountRef.current = getExhibitorsVisibleCount(searchParams);
-    const filtersFromUrl = searchParamsToFilters(searchParams);
+    const filtersFromUrl = searchParamsToFilters(searchParams, categorySlugs);
 
     setFilters((currentFilters) => {
       if (areFiltersEqual(currentFilters, filtersFromUrl)) {
@@ -502,7 +504,7 @@ export const useExhibitorsPage = (
       filtersSourceRef.current = "url";
       return filtersFromUrl;
     });
-  }, [clearSuppressFetch, initialFilters, searchParams]);
+  }, [categorySlugs, clearSuppressFetch, initialFilters, searchParams]);
 
   return {
     items,

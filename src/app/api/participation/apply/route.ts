@@ -361,7 +361,7 @@ export async function POST(request: Request) {
     slug,
     status: "pending",
     is_active: true,
-    special_program: false,
+    category: "standard",
     reactivation_requested: false,
     plan_id: data.plan_id,
     plan_type: PARTICIPANT_PLAN_TYPE,

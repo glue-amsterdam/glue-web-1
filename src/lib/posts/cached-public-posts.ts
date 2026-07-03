@@ -39,7 +39,7 @@ const getCachedHomePostsData = (): Promise<PublicPostSummaryData[]> =>
       const supabase = createPublicSupabaseClient();
       return fetchPublishedPostSummariesForHome(supabase);
     },
-    [POSTS_CACHE_TAG, "home-posts"],
+    [POSTS_CACHE_TAG, "home-posts", "v2"],
     {
       tags: [POSTS_CACHE_TAG],
       revalidate: false,

@@ -1,9 +1,15 @@
 import { z } from "zod";
 import { invoiceDataTypeSchema } from "@/schemas/invoiceSchemas";
-import { mapInfoSchema } from "@/schemas/mapInfoSchemas";
+import {
+  mapInfoFieldsFromData,
+  mapInfoFieldsSchema,
+  refineMapInfoLocation,
+} from "@/schemas/mapInfoSchemas";
 import { participantExtraDataSchema } from "@/schemas/participantExtraDataSchema";
 import { visitorParticipantAccountSchema } from "@/schemas/visitorSchemas";
-import { reactivationRequestSubmissionSchema } from "@/schemas/participantDetailsSchemas";
+import {
+  reactivationRequestSubmissionFieldsSchema,
+} from "@/schemas/participantDetailsSchemas";
 
 export const participationIntentSchema = z.enum([
   "new",
@@ -17,7 +23,7 @@ const termsAcceptedSchema = z.object({
   }),
 });
 
-export const participantApplicationSchema = z
+const participantApplicationFieldsSchema = z
   .object({
     intent: participationIntentSchema,
     plan_id: z.string().uuid(),
@@ -26,16 +32,28 @@ export const participantApplicationSchema = z
   })
   .merge(invoiceDataTypeSchema)
   .merge(participantExtraDataSchema)
-  .merge(mapInfoSchema)
+  .merge(mapInfoFieldsSchema)
   .merge(termsAcceptedSchema);
 
+export const participantApplicationSchema =
+  participantApplicationFieldsSchema.superRefine((data, ctx) =>
+    refineMapInfoLocation(mapInfoFieldsFromData(data), ctx)
+  );
+
 export const participantApplicationWithAccountSchema =
-  participantApplicationSchema.merge(visitorParticipantAccountSchema);
+  participantApplicationFieldsSchema
+    .merge(visitorParticipantAccountSchema)
+    .superRefine((data, ctx) =>
+      refineMapInfoLocation(mapInfoFieldsFromData(data), ctx)
+    );
 
 export const reactivationFullSubmissionSchema =
-  reactivationRequestSubmissionSchema
+  reactivationRequestSubmissionFieldsSchema
     .merge(invoiceDataTypeSchema)
-    .merge(participantExtraDataSchema);
+    .merge(participantExtraDataSchema)
+    .superRefine((data, ctx) =>
+      refineMapInfoLocation(mapInfoFieldsFromData(data), ctx)
+    );
 
 export const reactivationApplicationSchema = z.object({
   intent: z.literal("reactivation"),

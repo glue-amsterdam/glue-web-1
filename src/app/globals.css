@@ -2,20 +2,58 @@
 @config "../../tailwind.config.ts";
 
 @layer components {
-  .hover-link {
-    @apply hover:text-(--primary-color) hover:underline transition-all duration-100 ease-in-out;
+  .navigation {
+    @apply text-[15px] leading-[15px] lg:text-[23px] lg:leading-[29px];
   }
-  .mini-padding {
+  .body-label {
+    @apply text-[15px] leading-[21px] lg:text-[23px] lg:leading-[29px];
+  }
+ .date-and-subline {
+  @apply text-[21px] leading-[21px] lg:text-[36px] lg:leading-[36px];
+ }
+ .title-text {
+  @apply text-[30px] leading-[38px] lg:text-[50px] lg:leading-[58px] font-normal;
+ }
+.small-title-text {
+ @apply text-[19px] leading-[26px] lg:text-[23px] lg:leading-[29px];
+ }
+.body-text {
+  @apply text-[15px] leading-[21px] lg:text-[19px] lg:leading-[25px];
+ }
+.big-body-text {
+  @apply text-[25px] leading-[31px] lg:text-[50px] lg:leading-[58px];
+ }
+.versal-body-text {
+  @apply text-[15px] leading-[21px] lg:text-[19px] lg:leading-[25px];
+ }
+.button-text {
+  @apply text-[19px] leading-[19px]
+}
+.footer-text {
+  @apply text-[10px] leading-[10px] lg:text-[19px] lg:leading-[25px];
+}
+.program-card-padding {
+  @apply pt-[15px] lg:pt-[40px];
+}
+.title-padding {
+  @apply pt-[40px] lg:pt-[60px];
+}
+.citizen-image-padding {
+  @apply pt-[30px] lg:pt-[60px];
+}
+.mini-padding {
     @apply pt-[15px] lg:pt-[30px];
   }
+
+  .hover-link {
+    @apply hover:text-(--primary-color) transition-all duration-100 ease-in-out;
+  }
+  
   .main-boder-top {
     @apply border-t border-(--black-color) lg:border-t-2;
   }
   .main-boder-bottom {
     @apply border-b border-(--black-color) lg:border-b-2;
-  }
-  .title-text {
-    @apply text-[30px] lg:text-[50px] lg:leading-[58px] leading-[38px] font-normal;
   }
   .cta-padding{
     @apply pt-[160px] lg:pt-[195px];
@@ -25,6 +63,9 @@
   }
   .main-padding {
     @apply pt-[100px] lg:pt-[200px];
+  }
+  .terms-and-conditions-padding {
+    @apply pt-[122px] lg:pt-[113px];
   }
   .base-text-size {
     @apply text-[15px] leading-[21px] lg:text-[19px] lg:leading-[25px];
@@ -44,7 +85,33 @@
   .dashboard-form-item {
     @apply bg-uiblack p-2;
   }
- 
+
+  .navbar-search-input::-webkit-search-decoration,
+  .navbar-search-input::-webkit-search-results-button,
+  .navbar-search-input::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .navbar-search-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 12px;
+    width: 12px;
+    margin-left: 4px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1 1l8 8M9 1L1 9' stroke='%23000' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  .navbar-search-input::-ms-clear {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
 }
 
 @layer base {
@@ -82,6 +149,10 @@
     --nav-secondary-h-mobile: 40px;
     --nav-total-h: calc(var(--nav-primary-h) + var(--nav-secondary-h));
     --nav-total-h-mobile: calc(var(--nav-primary-h-mobile) + var(--nav-secondary-h-mobile));
+    /* Height of the currently open secondary-navbar filter panel. Set at runtime
+       by useFilterPanelHeight; used to push list grids down on small screens so
+       a pinned-open filter panel never permanently hides participants. */
+    --filter-panel-open-h: 0px;
     --site-footer-h: 65px;
     --total-nav-height: calc(var(--nav-primary-h) + var(--site-footer-h));
   }
@@ -90,6 +161,33 @@
   html {
     background-color: var(--background-color);
     color: var(--black-color);
+  }
+
+  /* Offset hash-anchored sections by the fixed header height so their titles
+     stay visible. Applied by id (not :target) because client-side navigation
+     via history.pushState does not update the :target pseudo-class. */
+  #team,
+  #glue-foundation,
+  #mission-statement,
+  #press-media,
+  #archive,
+  #faq,
+  #home-posts-section,
+  #plans-selection-section {
+    scroll-margin-top: var(--nav-total-h-mobile);
+  }
+
+  @media (min-width: 1024px) {
+    #team,
+    #glue-foundation,
+    #mission-statement,
+    #press-media,
+    #archive,
+    #faq,
+    #home-posts-section,
+    #plans-selection-section {
+      scroll-margin-top: var(--nav-total-h);
+    }
   }
 }
 
@@ -222,6 +320,18 @@
   .stagger-enter-fade > *:nth-child(n + 7) {
     animation-delay: 0.54s;
   }
+
+  .stagger-enter.stagger-enter-done > *,
+  .stagger-enter-fade.stagger-enter-done > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.stagger-enter.stagger-enter-done > *,
+.stagger-enter-fade.stagger-enter-done > * {
+  opacity: 1;
 }
 /* Page entrance animations > */
 
@@ -282,6 +392,10 @@
 }
 
 /* Post editor / public content images */
+.post-image {
+  border-radius: 0;
+}
+
 .post-image-wrapper--left {
   display: flex;
   justify-content: flex-start;
@@ -330,6 +444,17 @@
 
 .post-content > * + * {
   margin-top: 1em;
+}
+
+/* CMS / about body copy: continuous line-height, no paragraph gaps (Figma) */
+.post-content-tight > * + * {
+  margin-top: 0;
+}
+
+/* Empty paragraphs (Enter in the editor) render as a blank line, matching WYSIWYG */
+.post-content p:empty {
+  min-height: 1em;
+  min-height: 1lh;
 }
 
 .post-content h1,
@@ -384,11 +509,21 @@
   opacity: 0.85;
 }
 
-.post-content img.post-image {
+.post-content img.post-image,
+.post-content img {
   display: block;
-  width: 100%;
+  width: auto;
   max-width: 100%;
-  height: auto;
+  max-height: 340px !important;
+  height: auto !important;
+  object-fit: contain;
+}
+
+@media (min-width: 1024px) {
+  .post-content img.post-image,
+  .post-content img {
+    max-height: 674px !important;
+  }
 }
 
 .post-content video {
@@ -399,18 +534,32 @@
 }
 
 .post-content .post-image-wrapper {
-  display: block;
+  display: flex;
   width: 100%;
   max-width: 100%;
 }
 
+.post-content .post-image-wrapper--left {
+  justify-content: flex-start;
+}
+
 .post-content .post-image-wrapper--center {
-  display: flex;
   justify-content: center;
 }
 
 .post-content .post-image-wrapper--right {
-  display: flex;
   justify-content: flex-end;
+}
+
+.post-content img.post-image[data-align="center"],
+.post-content img[data-align="center"] {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.post-content img.post-image[data-align="right"],
+.post-content img[data-align="right"] {
+  margin-left: auto;
+  margin-right: 0;
 }
 

@@ -21,10 +21,10 @@ type PartnersSectionProps = {
 
 const PartnersGroup = ({ group }: PartnersSectionProps) => (
     <section aria-labelledby={`sponsor-type-${group.label}`}>
-        <h3 id={`sponsor-type-${group.label}`} className="base-text-size">
+        <h3 id={`sponsor-type-${group.label}`} className="body-text">
             {group.label}
         </h3>
-        <ul className="flex flex-wrap pt-[30px] lg:pt-[15px] pb-[9px] gap-[30px]">
+        <ul className="flex flex-wrap lg:flex-nowrap pt-[30px] lg:pt-[15px] pb-[9px] gap-[30px]">
             {group.sponsors.map((sponsor) => (
                 <li key={getSponsorKey(sponsor)}>
                     <Link
@@ -32,7 +32,7 @@ const PartnersGroup = ({ group }: PartnersSectionProps) => (
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        <div className="lg:h-[32px] h-[50px]">
+                        <div className="h-[60px]">
                             <Image
                                 width={128}
                                 height={32}

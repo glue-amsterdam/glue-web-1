@@ -15,7 +15,6 @@ import MapGL, {
   Source,
   Layer,
   type MapEvent,
-  type MapMouseEvent,
 } from "react-map-gl/mapbox-legacy";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { config } from "@/config";
@@ -46,18 +45,11 @@ import {
   getMapThemeColorsFromDocument,
   type MapThemeColors,
 } from "@/lib/map/locations-geojson";
+import { getMapPointMarkerVariant } from "@/lib/map/map-point-marker-spec";
+import { useParticipantCategories } from "@/context/ParticipantCategoriesContext";
 import RoutePopup from "./route-popup";
-import {
-  MapMarkerImagesRegistrar,
-  MapPointLayers,
-  EXHIBITOR_STACK_TYPES,
-  MAP_LOCATIONS_LAYER_PREFIX,
-  MAP_LOCATIONS_SOURCE_ID,
-  MAP_POINT_INTERACTIVE_LAYER_IDS,
-  MAP_ROUTE_STOPS_LAYER_PREFIX,
-  MAP_ROUTE_STOPS_SOURCE_ID,
-  ROUTE_STOP_STACK_TYPES,
-} from "./map-point-layers";
+import type { MapPointFeature } from "@/lib/map/locations-geojson";
+import MapMarkers from "./map-markers";
 import ExhibitorPopup from "./exhibitor-popup";
 import { useMapFilterPanel } from "../stores/use-map-store";
 
@@ -70,9 +62,6 @@ type RoutePopupLayoutState = ExhibitorPopupLayoutState & {
   longitude: number;
   latitude: number;
 };
-
-const isRouteStopLayer = (layerId: string) =>
-  layerId.startsWith(MAP_ROUTE_STOPS_LAYER_PREFIX);
 
 const ZOOM_LEVELS = { INITIAL: 12.5 } as const;
 const MAP_STYLE_URI = "mapbox://styles/mapbox/light-v11";
@@ -158,7 +147,6 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
   const initialViewStateRef = useRef<MapInitialViewState | null>(null);
   const resizeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevFocusLocationRef = useRef<string | null>(null);
-  const prevFeatureStateLocationRef = useRef<string | null>(null);
   const prevSelectedRouteRef = useRef<string | null>(null);
   const prevActiveRouteStopIdRef = useRef<string | null>(null);
   const initialFocusDoneRef = useRef(false);
@@ -170,22 +158,29 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     );
   }
 
+  const { categorySlugs } = useParticipantCategories();
+
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [markerImagesReady, setMarkerImagesReady] = useState(false);
   const [themeColors, setThemeColors] = useState<MapThemeColors>(() =>
-    getMapThemeColorsFromDocument()
+    getMapThemeColorsFromDocument(categorySlugs)
   );
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const isMdScreen = useMediaQuery("(min-width: 768px)");
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
+  const markerVariant = getMapPointMarkerVariant(isMdScreen, isLargeScreen);
   const filterPanel = useMapFilterPanel();
   const [exhibitorPopupLayout, setExhibitorPopupLayout] =
     useState<ExhibitorPopupLayoutState | null>(null);
   const [routePopupLayout, setRoutePopupLayout] =
     useState<RoutePopupLayoutState | null>(null);
 
+  useEffect(() => {
+    setThemeColors(getMapThemeColorsFromDocument(categorySlugs));
+  }, [categorySlugs]);
+
   const locationsGeoJSON = useMemo(
-    () => buildLocationsGeoJSON(locations, themeColors),
-    [locations, themeColors]
+    () => buildLocationsGeoJSON(locations, themeColors, markerVariant),
+    [locations, themeColors, markerVariant]
   );
 
   const selectedLocationData = useMemo(() => {
@@ -229,8 +224,13 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
 
   const routeStopsGeoJSON = useMemo(() => {
     if (!selectedRouteObject) return null;
-    return buildRouteStopsGeoJSON(selectedRouteObject, locations, themeColors);
-  }, [selectedRouteObject, locations, themeColors]);
+    return buildRouteStopsGeoJSON(
+      selectedRouteObject,
+      locations,
+      themeColors,
+      markerVariant
+    );
+  }, [selectedRouteObject, locations, themeColors, markerVariant]);
 
   const scheduleMapResize = useCallback((map: MapboxMap) => {
     if (resizeDebounceRef.current) {
@@ -429,7 +429,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
   const handleMapLoad = useCallback(
     (event: MapEvent) => {
       const map = event.target;
-      setThemeColors(getMapThemeColorsFromDocument());
+      setThemeColors(getMapThemeColorsFromDocument(categorySlugs));
       setMapLoaded(true);
 
       resizeObserverRef.current?.disconnect();
@@ -438,7 +438,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
       });
       resizeObserverRef.current.observe(map.getContainer());
     },
-    [scheduleMapResize]
+    [scheduleMapResize, categorySlugs]
   );
 
   useEffect(() => {
@@ -537,82 +537,29 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     focusOnRoute,
   ]);
 
-  useEffect(() => {
-    if (!mapLoaded || selectedRoute) return;
-
-    const map = mapRef.current?.getMap();
-    if (!map?.getSource(MAP_LOCATIONS_SOURCE_ID)) return;
-
-    const sourceId = MAP_LOCATIONS_SOURCE_ID;
-    const prevId = prevFeatureStateLocationRef.current;
-
-    if (prevId && prevId !== selectedLocation) {
-      map.removeFeatureState({ source: sourceId, id: prevId }, "selected");
-    }
-
-    if (selectedLocation) {
-      map.setFeatureState(
-        { source: sourceId, id: selectedLocation },
-        { selected: true }
-      );
-      prevFeatureStateLocationRef.current = selectedLocation;
-      return;
-    }
-
-    if (prevId) {
-      map.removeFeatureState({ source: sourceId, id: prevId }, "selected");
-    }
-    prevFeatureStateLocationRef.current = null;
-  }, [mapLoaded, selectedLocation, selectedRoute, locationsGeoJSON]);
-
-  const handleMapClick = useCallback(
-    (event: MapMouseEvent) => {
+  const handleMarkerClick = useCallback(
+    (feature: MapPointFeature) => {
       if (pathname !== "/map") return;
 
-      const interactiveFeature = event.features?.find((feature) => {
-        const layerId = feature.layer?.id;
-        return (
-          layerId !== undefined &&
-          MAP_POINT_INTERACTIVE_LAYER_IDS.includes(
-            layerId as (typeof MAP_POINT_INTERACTIVE_LAYER_IDS)[number]
-          )
-        );
-      });
-
-      if (interactiveFeature && selectedRoute) {
-        const layerId = interactiveFeature.layer?.id;
-        if (layerId && isRouteStopLayer(layerId)) {
-          const dotId =
-            interactiveFeature.id ??
-            interactiveFeature.properties?.id;
-          if (dotId) {
-            onRouteStopSelect(String(dotId));
-            return;
-          }
-        }
+      if (selectedRoute) {
+        onRouteStopSelect(feature.properties.id);
+        return;
       }
 
-      if (interactiveFeature && !selectedRoute) {
-        const locationId = interactiveFeature.properties?.locationId;
-        if (locationId) {
-          onLocationSelect(String(locationId));
-          return;
-        }
-      }
-
-      if (selectedLocation || selectedRoute) {
-        handleDetailPanelDismiss();
-      }
+      onLocationSelect(feature.properties.locationId);
     },
-    [
-      pathname,
-      selectedRoute,
-      selectedLocation,
-      onLocationSelect,
-      onRouteStopSelect,
-      handleDetailPanelDismiss,
-    ]
+    [pathname, selectedRoute, onRouteStopSelect, onLocationSelect]
   );
+
+  const handleMapClick = useCallback(() => {
+    // Dot clicks are handled by the HTML markers (which stop propagation), so a
+    // click that reaches the map itself means the user clicked empty space.
+    if (pathname !== "/map") return;
+
+    if (selectedLocation || selectedRoute) {
+      handleDetailPanelDismiss();
+    }
+  }, [pathname, selectedLocation, selectedRoute, handleDetailPanelDismiss]);
 
   return (
     <MapGL
@@ -622,28 +569,16 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
       style={{ width: "100%", height: "100%" }}
       mapStyle={MAP_STYLE_URI}
       maxBounds={MAP_CITY_BOUNDS}
-      interactiveLayerIds={[...MAP_POINT_INTERACTIVE_LAYER_IDS]}
       onClick={pathname === "/map" ? handleMapClick : undefined}
       renderWorldCopies={false}
       onLoad={handleMapLoad}
     >
-      {/* Zoom controls disabled for now, but can be added back in if needed */}
-      {/* <NavigationControl /> */}
-
-      <MapMarkerImagesRegistrar
-        colors={themeColors}
-        onReadyChange={setMarkerImagesReady}
-      />
-
       {!selectedRoute && (
-        <MapPointLayers
-          sourceId={MAP_LOCATIONS_SOURCE_ID}
-          layerIdPrefix={MAP_LOCATIONS_LAYER_PREFIX}
-          stackTypes={EXHIBITOR_STACK_TYPES}
+        <MapMarkers
           data={locationsGeoJSON}
-          colors={themeColors}
-          markerImagesReady={markerImagesReady}
-          showPointerCursor
+          variant={markerVariant}
+          selectedId={selectedLocation}
+          onMarkerClick={handleMarkerClick}
         />
       )}
 
@@ -660,14 +595,11 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
               }}
             />
           </Source>
-          <MapPointLayers
-            sourceId={MAP_ROUTE_STOPS_SOURCE_ID}
-            layerIdPrefix={MAP_ROUTE_STOPS_LAYER_PREFIX}
-            stackTypes={ROUTE_STOP_STACK_TYPES}
+          <MapMarkers
             data={routeStopsGeoJSON}
-            colors={themeColors}
-            markerImagesReady={markerImagesReady}
-            showPointerCursor
+            variant={markerVariant}
+            selectedId={activeRouteStopId}
+            onMarkerClick={handleMarkerClick}
           />
         </>
       )}

@@ -190,10 +190,10 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
         if (activeFilter === "inactive" && user.participantIsActive) {
           return false;
         }
-        if (specialProgramFilter === "yes" && !user.participantSpecialProgram) {
+        if (specialProgramFilter === "yes" && user.participantCategory === "standard") {
           return false;
         }
-        if (specialProgramFilter === "no" && user.participantSpecialProgram) {
+        if (specialProgramFilter === "no" && user.participantCategory !== "standard") {
           return false;
         }
         if (

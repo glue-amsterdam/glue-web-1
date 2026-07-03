@@ -5,8 +5,8 @@ import {
   type MapThemeColors,
 } from "@/lib/map/locations-geojson";
 import {
-  exhibitorTypeBackgroundCss,
-  exhibitorTypeFontCss,
+  categoryCssVar,
+  categoryFontCssVar,
 } from "@/lib/participants/exhibitor-type-styles";
 
 export type RouteStopDisplay = {
@@ -47,8 +47,8 @@ export const getRouteStopsForDisplay = (
         backgroundColor = markerColors.backgroundColor;
         color = markerColors.color;
       } else if (participantType) {
-        backgroundColor = exhibitorTypeBackgroundCss(participantType);
-        color = exhibitorTypeFontCss(participantType);
+        backgroundColor = categoryCssVar(participantType);
+        color = categoryFontCssVar(participantType);
       } else {
         backgroundColor = ROUTE_STOP_BACKGROUND;
         color = ROUTE_STOP_FOREGROUND;

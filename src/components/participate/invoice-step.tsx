@@ -37,107 +37,105 @@ export const InvoiceStep = ({
   });
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="max-w-[508px] lg:max-w-[1045px] mx-auto pt-[40px] lg:pt-[60px] pb-[15px] lg:pb-[30px]"
-      noValidate
-    >
-      <h1 className="title-text pb-[30px] uppercase">Invoice Information</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-[15px] lg:gap-[30px]">
-        <Controller
-          name="invoice_company_name"
-          control={control}
-          render={({ field }) => (
-            <ParticipateFormField
-              label="Company Name"
-              name="invoice_company_name"
-              required
-              value={field.value}
-              onChange={field.onChange}
-              error={errors.invoice_company_name?.message}
-            />
-          )}
-        />
-        <Controller
-          name="invoice_zip_code"
-          control={control}
-          render={({ field }) => (
-            <ParticipateFormField
-              label="Zip Code"
-              name="invoice_zip_code"
-              required
-              value={field.value}
-              onChange={field.onChange}
-              error={errors.invoice_zip_code?.message}
-            />
-          )}
-        />
-        <Controller
-          name="invoice_address"
-          control={control}
-          render={({ field }) => (
-            <ParticipateFormField
-              label="Address"
-              name="invoice_address"
-              required
-              value={field.value}
-              onChange={field.onChange}
-              error={errors.invoice_address?.message}
-            />
-          )}
-        />
-        <Controller
-          name="invoice_country"
-          control={control}
-          render={({ field }) => (
-            <ParticipateFormField
-              label="Country"
-              name="invoice_country"
-              required
-              value={field.value}
-              onChange={field.onChange}
-              error={errors.invoice_country?.message}
-            />
-          )}
-        />
-        <Controller
-          name="invoice_city"
-          control={control}
-          render={({ field }) => (
-            <ParticipateFormField
-              label="City"
-              name="invoice_city"
-              required
-              value={field.value}
-              onChange={field.onChange}
-              error={errors.invoice_city?.message}
-            />
-          )}
-        />
-        <Controller
-          name="invoice_extra"
-          control={control}
-          render={({ field }) => (
-            <ParticipateFormField
-              label="Additional Information (Optional)"
-              name="invoice_extra"
-              value={field.value ?? ""}
-              onChange={field.onChange}
-              error={errors.invoice_extra?.message}
-            />
-          )}
-        />
-      </div>
-      <div className="flex justify-between pt-[30px] gap-4 pb-(--site-footer-h) lg:pb-0">
-        <button
-          type="button"
-          onClick={onBack}
-          className="base-text-size text-left hover:underline cursor-pointer"
-        >
-          Back
-        </button>
-        <BigButton as="submit" label="Next Step" mode="navbar" />
-      </div>
-    </form>
+    <div className="w-full max-w-[508px] lg:max-w-[1045px] mx-auto title-padding pb-[15px] lg:pb-[30px]">
+
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full" noValidate>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[15px] lg:gap-[30px]">
+          <Controller
+            name="invoice_company_name"
+            control={control}
+            render={({ field }) => (
+              <ParticipateFormField
+                label="Company Name"
+                name="invoice_company_name"
+                required
+                value={field.value}
+                onChange={field.onChange}
+                error={errors.invoice_company_name?.message}
+              />
+            )}
+          />
+          <Controller
+            name="invoice_zip_code"
+            control={control}
+            render={({ field }) => (
+              <ParticipateFormField
+                label="Zip Code"
+                name="invoice_zip_code"
+                required
+                value={field.value}
+                onChange={field.onChange}
+                error={errors.invoice_zip_code?.message}
+              />
+            )}
+          />
+          <Controller
+            name="invoice_address"
+            control={control}
+            render={({ field }) => (
+              <ParticipateFormField
+                label="Address"
+                name="invoice_address"
+                required
+                value={field.value}
+                onChange={field.onChange}
+                error={errors.invoice_address?.message}
+              />
+            )}
+          />
+          <Controller
+            name="invoice_country"
+            control={control}
+            render={({ field }) => (
+              <ParticipateFormField
+                label="Country"
+                name="invoice_country"
+                required
+                value={field.value}
+                onChange={field.onChange}
+                error={errors.invoice_country?.message}
+              />
+            )}
+          />
+          <Controller
+            name="invoice_city"
+            control={control}
+            render={({ field }) => (
+              <ParticipateFormField
+                label="City"
+                name="invoice_city"
+                required
+                value={field.value}
+                onChange={field.onChange}
+                error={errors.invoice_city?.message}
+              />
+            )}
+          />
+          <Controller
+            name="invoice_extra"
+            control={control}
+            render={({ field }) => (
+              <ParticipateFormField
+                label="Additional Information (Optional)"
+                name="invoice_extra"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                error={errors.invoice_extra?.message}
+              />
+            )}
+          />
+        </div>
+        <div className="flex justify-between items-end pt-[30px] gap-4">
+          <button
+            type="button"
+            onClick={onBack}
+            className="body-text text-left cursor-pointer"
+          >
+            Back
+          </button>
+          <BigButton as="submit" label="Next Step" mode="navbar" />
+        </div>
+      </form>
+    </div>
   );
 };

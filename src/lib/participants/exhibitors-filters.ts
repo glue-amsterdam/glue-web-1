@@ -22,30 +22,21 @@ export const DEFAULT_EXHIBITORS_FILTERS: ExhibitorsFilters = {
   q: "",
 };
 
-export const EXHIBITOR_TYPE_OPTIONS: {
-  value: ExhibitorsFilterType;
-  label: string;
-}[] = [
-    { value: "hub", label: "GLUE HUB" },
-    { value: "up-to-three-participants", label: "Up to 3 GLUE participants" },
-    { value: "special-program", label: "Special program" },
-  ];
-
 export const EXHIBITOR_SORT_OPTIONS: {
   value: ExhibitorSortField;
   label: string;
 }[] = [
-    { value: "displayNumber", label: "Display number" },
-    { value: "name", label: "Name" },
-  ];
+  { value: "displayNumber", label: "Display number" },
+  { value: "name", label: "Name" },
+];
 
 export const EXHIBITOR_ORDER_OPTIONS: {
   value: ExhibitorSortOrder;
   label: string;
 }[] = [
-    { value: "asc", label: "Ascending" },
-    { value: "desc", label: "Descending" },
-  ];
+  { value: "asc", label: "Ascending" },
+  { value: "desc", label: "Descending" },
+];
 
 export const getExhibitorItemKey = (item: {
   userId?: string;

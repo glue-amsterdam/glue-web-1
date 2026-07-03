@@ -15,296 +15,500 @@ import MainContainer from "@/components/main-container";
 import { useMapBottomInset } from "@/lib/map/map-viewport-insets";
 import { cn } from "@/lib/utils";
 
-export type MapFilterPanelPlacement =
-    | "below-navbar"
-    | "below-map"
-    /** Bottom-anchored sheet with wheel/touch expand (peek fraction of height). */
-    | "bottom-sheet";
+export type SheetHeightMode = "rising-sheet" | "full-natural";
 
-/** Collapsed peek for tall lists (~matches prior translate-y-2/3). */
-const BOTTOM_SHEET_PEEK_VISIBLE_RATIO = 1 / 3;
-const BOTTOM_SHEET_MIN_PEEK_PX = 120;
+const PEEK_FRACTION = 1 / 3;
+const MIN_PEEK_PX = 120;
+const PAN_START_THRESHOLD_PX = 8;
+const SWIPE_CLOSE_THRESHOLD_PX = 40;
 
 type MapFilterScrollPanelProps = {
     isOpen: boolean;
     panelId: string;
     ariaLabel: string;
-    placement?: MapFilterPanelPlacement;
+    heightMode?: SheetHeightMode;
     anchorRef?: RefObject<HTMLElement | null>;
-    /** @deprecated Prefer `bottom-sheet` placement. Extra vertical offset as % of panel height. */
-    anchorOffsetPercent?: number;
+    /** Extra bottom offset (px) to stack above another sheet (e.g. category picker). */
+    stackOffset?: number;
     className?: string;
+    /** Higher z-index for stacked overlays (default 45). */
+    zIndex?: number;
+    /** Called when user swipes down while the sheet is at peek (collapsed). */
+    onSwipeDownAtPeek?: () => void;
     children: ReactNode;
 };
 
 const clamp = (value: number, min: number, max: number) =>
     Math.min(max, Math.max(min, value));
 
+type RisingMetrics = {
+    availableSpace: number;
+    peekHeight: number;
+    maxExpand: number;
+    effectiveMaxHeight: number;
+};
+
+type PanGestureState = {
+    pointerId: number;
+    startX: number;
+    startY: number;
+    lastY: number;
+    isPanning: boolean;
+};
+
+const getFallbackAnchorTop = (): number => {
+    if (typeof document === "undefined") return 105;
+    const root = document.documentElement;
+    const mobileTotal = getComputedStyle(root)
+        .getPropertyValue("--nav-total-h-mobile")
+        .trim();
+    const parsed = Number.parseFloat(mobileTotal);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 105;
+};
+
 export const MapFilterScrollPanel = ({
     isOpen,
     panelId,
     ariaLabel,
-    placement = "below-navbar",
+    heightMode = "rising-sheet",
     anchorRef,
-    anchorOffsetPercent = 0,
+    stackOffset = 0,
     className,
+    zIndex = 45,
+    onSwipeDownAtPeek,
     children,
 }: MapFilterScrollPanelProps) => {
-    const isBelowMap = placement === "below-map";
-    const isBottomSheet = placement === "bottom-sheet";
-    const usesExpandScroll = !isBelowMap;
+    const isRisingSheet = heightMode === "rising-sheet";
     const panelRef = useRef<HTMLDivElement>(null);
-    const contentRef = useRef<HTMLDivElement>(null);
-    const scrollOffsetRef = useRef(0);
-    const maxScrollRef = useRef(0);
-    const touchStartYRef = useRef(0);
-    const [anchorTop, setAnchorTop] = useState(0);
+    const contentInnerRef = useRef<HTMLDivElement>(null);
+    const expandOffsetRef = useRef(0);
+    const contentScrollOffsetRef = useRef(0);
+    const contentHeightRef = useRef(0);
+    const peekSwipeDownAccumRef = useRef(0);
+    const panGestureRef = useRef<PanGestureState | null>(null);
+    const suppressClickRef = useRef(false);
+    const onSwipeDownAtPeekRef = useRef(onSwipeDownAtPeek);
+    const metricsRef = useRef<RisingMetrics>({
+        availableSpace: 0,
+        peekHeight: 0,
+        maxExpand: 0,
+        effectiveMaxHeight: 0,
+    });
+
+    const [anchorTop, setAnchorTop] = useState(getFallbackAnchorTop);
     const [contentHeight, setContentHeight] = useState(0);
-    const [scrollOffset, setScrollOffset] = useState(0);
+    const [expandOffset, setExpandOffset] = useState(0);
+    const [contentScrollOffset, setContentScrollOffset] = useState(0);
     const bottomInset = useMapBottomInset(isOpen);
+
+    useEffect(() => {
+        onSwipeDownAtPeekRef.current = onSwipeDownAtPeek;
+    }, [onSwipeDownAtPeek]);
 
     const measureNavbarAnchor = useCallback(() => {
         const anchor = anchorRef?.current;
-        if (!anchor) return;
-        setAnchorTop(anchor.getBoundingClientRect().top);
+        if (anchor) {
+            setAnchorTop(anchor.getBoundingClientRect().top);
+            return;
+        }
+        setAnchorTop(getFallbackAnchorTop());
     }, [anchorRef]);
 
     const measureContentHeight = useCallback(() => {
-        const content = contentRef.current;
+        const content = contentInnerRef.current;
         if (!content) return;
-        setContentHeight(content.scrollHeight);
+        const nextHeight = content.scrollHeight;
+        contentHeightRef.current = nextHeight;
+        setContentHeight(nextHeight);
     }, []);
 
-    const getBottomSheetMetrics = useCallback(
-        (height: number) => {
-            const viewportBottom = window.innerHeight - bottomInset;
-            const availableHeight = Math.max(0, viewportBottom - anchorTop);
+    const computeRisingMetrics = useCallback(
+        (measuredContentHeight = contentHeightRef.current): RisingMetrics => {
+            const viewportBottom = window.innerHeight - bottomInset - stackOffset;
+            const availableSpace = Math.max(0, viewportBottom - anchorTop);
 
-            if (height <= 0) {
-                return { peekHeight: 0, maxScroll: 0, maxVisibleHeight: 0 };
+            if (!isRisingSheet || availableSpace <= 0) {
+                return {
+                    availableSpace,
+                    peekHeight: 0,
+                    maxExpand: 0,
+                    effectiveMaxHeight: availableSpace,
+                };
             }
 
-            const maxVisibleHeight = Math.min(height, availableHeight);
-            const ratioPeek = height * BOTTOM_SHEET_PEEK_VISIBLE_RATIO;
-            const peekHeight =
-                maxVisibleHeight <= BOTTOM_SHEET_MIN_PEEK_PX ||
-                height <= ratioPeek * 1.5
-                    ? maxVisibleHeight
-                    : Math.min(
-                          maxVisibleHeight,
-                          Math.max(BOTTOM_SHEET_MIN_PEEK_PX, ratioPeek)
-                      );
-            const maxScroll = Math.max(0, maxVisibleHeight - peekHeight);
+            const contentCap =
+                measuredContentHeight > 0
+                    ? measuredContentHeight
+                    : availableSpace;
+            const effectiveMaxHeight = Math.min(availableSpace, contentCap);
 
-            return { peekHeight, maxScroll, maxVisibleHeight };
+            const peekHeight = Math.min(
+                effectiveMaxHeight,
+                Math.max(MIN_PEEK_PX, availableSpace * PEEK_FRACTION)
+            );
+            const maxExpand = Math.max(0, effectiveMaxHeight - peekHeight);
+
+            return {
+                availableSpace,
+                peekHeight,
+                maxExpand,
+                effectiveMaxHeight,
+            };
         },
-        [anchorTop, bottomInset]
+        [anchorTop, bottomInset, isRisingSheet, stackOffset]
     );
 
-    const computeMaxScroll = useCallback(() => {
-        const panel = panelRef.current;
-        if (!panel) return 0;
+    const refreshMetrics = useCallback(() => {
+        measureContentHeight();
+        metricsRef.current = computeRisingMetrics(contentHeightRef.current);
+    }, [computeRisingMetrics, measureContentHeight]);
 
-        if (isBottomSheet) {
-            const height = contentRef.current?.scrollHeight ?? contentHeight;
-            return getBottomSheetMetrics(height).maxScroll;
+    const isAtPeek = useCallback(() => {
+        return (
+            expandOffsetRef.current <= 0.5 &&
+            contentScrollOffsetRef.current <= 0.5
+        );
+    }, []);
+
+    const getShellHeight = useCallback(() => {
+        const metrics = metricsRef.current;
+        const height = contentHeightRef.current;
+
+        if (height > 0 && height <= metrics.peekHeight) {
+            return height;
         }
 
-        const bottom = panel.getBoundingClientRect().bottom;
-        const bottomAtZeroScroll = bottom + scrollOffsetRef.current;
-        const viewportBottom = window.innerHeight - bottomInset;
-        return Math.max(0, bottomAtZeroScroll - viewportBottom);
-    }, [bottomInset, isBottomSheet, contentHeight, getBottomSheetMetrics]);
+        return Math.min(
+            metrics.effectiveMaxHeight,
+            metrics.peekHeight + expandOffsetRef.current
+        );
+    }, []);
 
-    const setScrollOffsetClamped = useCallback(
-        (next: number | ((prev: number) => number)) => {
-            setScrollOffset((prev) => {
-                const resolved =
-                    typeof next === "function" ? next(prev) : next;
-                const clamped = clamp(resolved, 0, maxScrollRef.current);
-                scrollOffsetRef.current = clamped;
-                return clamped;
-            });
+    const applyPanDelta = useCallback(
+        (deltaY: number) => {
+            if (!isRisingSheet || deltaY === 0) return false;
+
+            const metrics = metricsRef.current;
+            const { maxExpand } = metrics;
+            const height = contentHeightRef.current;
+
+            if (height <= 0) return false;
+
+            const shellHeight = getShellHeight();
+            const contentScrollMax = Math.max(0, height - shellHeight);
+
+            if (maxExpand <= 0 && contentScrollMax <= 0) return false;
+
+            const atMaxExpand = expandOffsetRef.current >= maxExpand - 0.5;
+
+            let consumed = false;
+
+            if (deltaY > 0) {
+                const upward = deltaY;
+
+                if (!atMaxExpand) {
+                    const prev = expandOffsetRef.current;
+                    const next = clamp(prev + upward, 0, maxExpand);
+                    if (next !== prev) {
+                        expandOffsetRef.current = next;
+                        setExpandOffset(next);
+                        consumed = true;
+                    }
+                } else if (contentScrollOffsetRef.current < contentScrollMax) {
+                    const prev = contentScrollOffsetRef.current;
+                    const next = clamp(prev + upward, 0, contentScrollMax);
+                    if (next !== prev) {
+                        contentScrollOffsetRef.current = next;
+                        setContentScrollOffset(next);
+                        consumed = true;
+                    }
+                }
+            } else {
+                const downward = -deltaY;
+
+                if (contentScrollOffsetRef.current > 0) {
+                    const prev = contentScrollOffsetRef.current;
+                    const next = clamp(prev - downward, 0, contentScrollMax);
+                    if (next !== prev) {
+                        contentScrollOffsetRef.current = next;
+                        setContentScrollOffset(next);
+                        consumed = true;
+                    }
+                } else if (expandOffsetRef.current > 0) {
+                    const prev = expandOffsetRef.current;
+                    const next = clamp(prev - downward, 0, maxExpand);
+                    if (next !== prev) {
+                        expandOffsetRef.current = next;
+                        setExpandOffset(next);
+                        consumed = true;
+                    }
+                }
+            }
+
+            return consumed;
         },
-        []
+        [getShellHeight, isRisingSheet]
+    );
+
+    const applyPanDeltaWithClose = useCallback(
+        (deltaY: number) => {
+            const consumed = applyPanDelta(deltaY);
+
+            if (consumed) {
+                peekSwipeDownAccumRef.current = 0;
+                return true;
+            }
+
+            if (deltaY < 0 && isAtPeek()) {
+                peekSwipeDownAccumRef.current += -deltaY;
+
+                if (
+                    peekSwipeDownAccumRef.current >= SWIPE_CLOSE_THRESHOLD_PX &&
+                    onSwipeDownAtPeekRef.current
+                ) {
+                    peekSwipeDownAccumRef.current = 0;
+                    onSwipeDownAtPeekRef.current();
+                    return true;
+                }
+
+                return true;
+            }
+
+            peekSwipeDownAccumRef.current = 0;
+            return consumed;
+        },
+        [applyPanDelta, isAtPeek]
     );
 
     useLayoutEffect(() => {
-        if (!isOpen || isBelowMap) return;
+        if (!isOpen) return;
         measureNavbarAnchor();
         window.addEventListener("resize", measureNavbarAnchor);
         return () => window.removeEventListener("resize", measureNavbarAnchor);
-    }, [isOpen, isBelowMap, measureNavbarAnchor]);
+    }, [isOpen, measureNavbarAnchor]);
 
     useLayoutEffect(() => {
-        if (!isOpen || isBelowMap) {
+        if (!isOpen) {
             setContentHeight(0);
+            contentHeightRef.current = 0;
             return;
         }
+
+        expandOffsetRef.current = 0;
+        contentScrollOffsetRef.current = 0;
+        peekSwipeDownAccumRef.current = 0;
+        setExpandOffset(0);
+        setContentScrollOffset(0);
         measureContentHeight();
-    }, [isOpen, isBelowMap, measureContentHeight, children]);
+    }, [isOpen, measureContentHeight, children, heightMode]);
 
     useLayoutEffect(() => {
-        if (!isOpen || isBelowMap) {
-            setScrollOffset(0);
-            scrollOffsetRef.current = 0;
-            return;
-        }
-
-        maxScrollRef.current = computeMaxScroll();
+        if (!isOpen) return;
+        metricsRef.current = computeRisingMetrics(contentHeightRef.current);
     }, [
         isOpen,
-        isBelowMap,
         anchorTop,
         bottomInset,
+        stackOffset,
         contentHeight,
-        computeMaxScroll,
+        computeRisingMetrics,
     ]);
 
     useEffect(() => {
-        if (!isOpen || !usesExpandScroll) return;
+        if (!isOpen || !isRisingSheet) return;
 
         document.body.style.overflow = "hidden";
 
-        const refreshMaxScroll = () => {
-            measureContentHeight();
-            maxScrollRef.current = computeMaxScroll();
-            setScrollOffsetClamped(scrollOffsetRef.current);
-        };
-
-        const handleWheel = (event: WheelEvent) => {
-            refreshMaxScroll();
-            const max = maxScrollRef.current;
-            if (max <= 0) return;
-
-            const prev = scrollOffsetRef.current;
-            const next = clamp(prev + event.deltaY, 0, max);
-            if (next === prev) return;
-
-            event.preventDefault();
-            setScrollOffsetClamped(next);
-        };
-
-        const handleTouchStart = (event: TouchEvent) => {
-            touchStartYRef.current = event.touches[0]?.clientY ?? 0;
-        };
-
-        const handleTouchMove = (event: TouchEvent) => {
-            refreshMaxScroll();
-            const max = maxScrollRef.current;
-            if (max <= 0) return;
-
-            const touchY = event.touches[0]?.clientY ?? touchStartYRef.current;
-            const delta = touchStartYRef.current - touchY;
-            touchStartYRef.current = touchY;
-
-            const prev = scrollOffsetRef.current;
-            const next = clamp(prev + delta, 0, max);
-            if (next === prev) return;
-
-            event.preventDefault();
-            setScrollOffsetClamped(next);
-        };
-
-        const resizeObserver = contentRef.current
-            ? new ResizeObserver(refreshMaxScroll)
-            : null;
-        if (contentRef.current) {
-            resizeObserver?.observe(contentRef.current);
+        const panel = panelRef.current;
+        if (!panel) {
+            return () => {
+                document.body.style.overflow = "";
+            };
         }
 
-        window.addEventListener("wheel", handleWheel, { passive: false, capture: true });
-        window.addEventListener("touchstart", handleTouchStart, { passive: true });
-        window.addEventListener("touchmove", handleTouchMove, { passive: false });
-        window.addEventListener("resize", refreshMaxScroll);
+        const handleWheel = (event: WheelEvent) => {
+            refreshMetrics();
+            const consumed = applyPanDeltaWithClose(-event.deltaY);
+            if (consumed) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        };
+
+        const handlePointerDown = (event: PointerEvent) => {
+            if (event.pointerType === "mouse" && event.button !== 0) return;
+
+            panGestureRef.current = {
+                pointerId: event.pointerId,
+                startX: event.clientX,
+                startY: event.clientY,
+                lastY: event.clientY,
+                isPanning: false,
+            };
+        };
+
+        const handlePointerMove = (event: PointerEvent) => {
+            const gesture = panGestureRef.current;
+            if (!gesture || gesture.pointerId !== event.pointerId) return;
+
+            const totalDeltaY = gesture.startY - event.clientY;
+            const stepDeltaY = gesture.lastY - event.clientY;
+            gesture.lastY = event.clientY;
+
+            if (!gesture.isPanning) {
+                const totalDeltaX = event.clientX - gesture.startX;
+                if (
+                    Math.abs(totalDeltaY) >= PAN_START_THRESHOLD_PX &&
+                    Math.abs(totalDeltaY) > Math.abs(totalDeltaX)
+                ) {
+                    gesture.isPanning = true;
+                    panel.setPointerCapture(event.pointerId);
+                } else {
+                    return;
+                }
+            }
+
+            refreshMetrics();
+            applyPanDeltaWithClose(stepDeltaY);
+            event.preventDefault();
+        };
+
+        const handlePointerUp = (event: PointerEvent) => {
+            const gesture = panGestureRef.current;
+            if (!gesture || gesture.pointerId !== event.pointerId) return;
+
+            if (gesture.isPanning) {
+                suppressClickRef.current = true;
+                window.setTimeout(() => {
+                    suppressClickRef.current = false;
+                }, 300);
+            }
+
+            peekSwipeDownAccumRef.current = 0;
+            panGestureRef.current = null;
+
+            if (panel.hasPointerCapture(event.pointerId)) {
+                panel.releasePointerCapture(event.pointerId);
+            }
+        };
+
+        const handlePointerCancel = (event: PointerEvent) => {
+            handlePointerUp(event);
+        };
+
+        const handleClickCapture = (event: MouseEvent) => {
+            if (!suppressClickRef.current) return;
+            event.preventDefault();
+            event.stopPropagation();
+            suppressClickRef.current = false;
+        };
+
+        const resizeObserver = contentInnerRef.current
+            ? new ResizeObserver(refreshMetrics)
+            : null;
+        if (contentInnerRef.current) {
+            resizeObserver?.observe(contentInnerRef.current);
+        }
+
+        panel.addEventListener("wheel", handleWheel, { passive: false });
+        panel.addEventListener("pointerdown", handlePointerDown);
+        panel.addEventListener("pointermove", handlePointerMove);
+        panel.addEventListener("pointerup", handlePointerUp);
+        panel.addEventListener("pointercancel", handlePointerCancel);
+        panel.addEventListener("click", handleClickCapture, true);
+        window.addEventListener("resize", refreshMetrics);
 
         return () => {
             document.body.style.overflow = "";
             resizeObserver?.disconnect();
-            window.removeEventListener("wheel", handleWheel, { capture: true });
-            window.removeEventListener("touchstart", handleTouchStart);
-            window.removeEventListener("touchmove", handleTouchMove);
-            window.removeEventListener("resize", refreshMaxScroll);
+            panel.removeEventListener("wheel", handleWheel);
+            panel.removeEventListener("pointerdown", handlePointerDown);
+            panel.removeEventListener("pointermove", handlePointerMove);
+            panel.removeEventListener("pointerup", handlePointerUp);
+            panel.removeEventListener("pointercancel", handlePointerCancel);
+            panel.removeEventListener("click", handleClickCapture, true);
+            window.removeEventListener("resize", refreshMetrics);
         };
-    }, [
-        isOpen,
-        usesExpandScroll,
-        bottomInset,
-        computeMaxScroll,
-        setScrollOffsetClamped,
-        measureContentHeight,
-    ]);
+    }, [isOpen, isRisingSheet, applyPanDeltaWithClose, refreshMetrics]);
+
+    useEffect(() => {
+        if (!isOpen || isRisingSheet) return;
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [isOpen, isRisingSheet]);
 
     if (!isOpen || typeof document === "undefined") return null;
 
-    const bottomSheetMetrics = isBottomSheet
-        ? getBottomSheetMetrics(contentHeight)
-        : { peekHeight: 0, maxScroll: 0, maxVisibleHeight: 0 };
+    const metrics = computeRisingMetrics(contentHeight);
+    const panelBottom = bottomInset + stackOffset;
 
-    const bottomSheetVisibleHeight = isBottomSheet
-        ? Math.min(
-              bottomSheetMetrics.maxVisibleHeight,
-              bottomSheetMetrics.peekHeight + scrollOffset
-          )
+    const risingVisibleHeight = isRisingSheet
+        ? contentHeight > 0 && contentHeight <= metrics.peekHeight
+            ? contentHeight
+            : Math.min(
+                  metrics.effectiveMaxHeight,
+                  metrics.peekHeight + expandOffset
+              )
         : 0;
 
-    const panelTransform = isBottomSheet
-        ? undefined
-        : anchorOffsetPercent > 0
-          ? `translateY(calc(${anchorOffsetPercent}% - ${scrollOffset}px))`
-          : `translateY(${-scrollOffset}px)`;
+    const naturalFitsInViewport =
+        !isRisingSheet &&
+        contentHeight > 0 &&
+        contentHeight <= metrics.availableSpace;
+    const naturalOverflowsViewport =
+        !isRisingSheet &&
+        contentHeight > 0 &&
+        contentHeight > metrics.availableSpace;
 
-    const belowMapMaxHeight = `calc(100dvh - var(--secondary-nav-h) - ${bottomInset}px)`;
+    const shellHeight = isRisingSheet
+        ? risingVisibleHeight
+        : naturalFitsInViewport
+          ? contentHeight
+          : naturalOverflowsViewport
+            ? metrics.availableSpace
+            : 0;
 
-    const panelShellStyle = isBelowMap
-        ? {
-              position: "fixed" as const,
-              left: 0,
-              right: 0,
-              bottom: bottomInset,
-              top: "auto" as const,
-          }
-        : isBottomSheet
-          ? {
-                position: "fixed" as const,
-                left: 0,
-                right: 0,
-                bottom: bottomInset,
-                top: "auto" as const,
-            }
-          : {
-                position: "fixed" as const,
-                left: 0,
-                right: 0,
-                top: anchorTop,
-                transform: panelTransform,
-            };
+    const panelShellStyle = {
+        position: "fixed" as const,
+        left: 0,
+        right: 0,
+        bottom: panelBottom,
+        top: "auto" as const,
+        zIndex,
+        touchAction: isRisingSheet ? ("none" as const) : undefined,
+    };
 
     const panelBody = (
         <div
-            ref={contentRef}
             className={cn(
-                "flex w-full flex-col border-t lg:border-t-2 border-[var(--black-color)] bg-[var(--white-color)]",
-                usesExpandScroll && !isBottomSheet && "border-b lg:border-b-2 lg:flex-row",
-                isBottomSheet && "border-b lg:border-b-2",
-                isBelowMap && "overflow-y-auto border-b lg:border-b-2",
-                className
+                "flex w-full flex-col border-t lg:border-t-2 border-b lg:border-b-2 border-(--black-color) bg-(--white-color)",
+                isRisingSheet && "overflow-hidden",
+                naturalOverflowsViewport &&
+                    "overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]"
             )}
-            style={
-                isBelowMap
-                    ? { maxHeight: belowMapMaxHeight }
-                    : isBottomSheet
-                      ? {
-                            maxHeight: bottomSheetVisibleHeight,
-                            overflow: "hidden",
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "flex-start",
-                        }
-                      : undefined
-            }
+            style={{
+                height: shellHeight > 0 ? shellHeight : undefined,
+                maxHeight:
+                    metrics.availableSpace > 0
+                        ? metrics.availableSpace
+                        : undefined,
+            }}
         >
-            {children}
+            <div
+                ref={contentInnerRef}
+                className={cn("w-full shrink-0", className)}
+                style={
+                    isRisingSheet
+                        ? {
+                              transform: `translateY(-${contentScrollOffset}px)`,
+                          }
+                        : undefined
+                }
+            >
+                {children}
+            </div>
         </div>
     );
 
@@ -314,7 +518,6 @@ export const MapFilterScrollPanel = ({
             ref={panelRef}
             role="group"
             aria-label={ariaLabel}
-            className="z-45"
             style={panelShellStyle}
         >
             <MainContainer>{panelBody}</MainContainer>

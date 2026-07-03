@@ -1,4 +1,5 @@
 import BigButton from './big-button'
+import SanitizedHtmlGrid from './sanitized-html-grid'
 import { sanitizeHtml } from '@/lib/sanitize-html'
 
 type Props = {
@@ -8,20 +9,31 @@ type Props = {
     sectionId: string,
     buttonLink?: string,
     buttonLabel?: string,
+    shouldGrid?: boolean,
+    bodyClassName?: 'body-label' | 'body-text',
+    className?: string,
 }
 
-function TextSectionBlock({ button = true, description, title, sectionId, buttonLink, buttonLabel }: Props) {
+function TextSectionBlock({ button = true, description, title, sectionId, buttonLink, buttonLabel, shouldGrid = false, bodyClassName = 'body-label', className }: Props) {
     const sanitizedDescription = sanitizeHtml(description);
 
     return (
-        <section id={sectionId}>
-            <h2 className="title-text pt-[15px] lg:pt-[30px]">{title.toUpperCase()}</h2>
-            <div
-                className="pt-[40px] lg:max-w-(--paragraph-max-width) base-text-size"
-                dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
-            />
+        <section id={sectionId} className={className}>
+            <h2 className="title-text mini-padding">{title.toUpperCase()}</h2>
+            {shouldGrid ? (
+                <SanitizedHtmlGrid
+                    html={description}
+                    className="title-padding"
+                    itemClassName="body-label [&_strong]:uppercase"
+                />
+            ) : (
+                <div
+                    className={`title-padding lg:max-w-(--paragraph-max-width) ${bodyClassName} post-content post-content-tight`}
+                    dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+                />
+            )}
             {button &&
-                <div className='pt-[40px] lg:pt-[60px] flex justify-center'>
+                <div className='title-padding flex justify-center'>
                     <BigButton as="link" label={buttonLabel ?? 'no_label'} href={buttonLink ?? 'no_link'} mode='big' />
                 </div>}
         </section>

@@ -8,7 +8,7 @@ import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
 const CATALOG_REVALIDATION_FIELDS = [
   "is_active",
   "status",
-  "special_program",
+  "category",
   "display_number",
   "display_name",
   "slug",

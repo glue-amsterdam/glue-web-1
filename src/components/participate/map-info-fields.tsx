@@ -45,18 +45,18 @@ export const MapInfoFields = ({
         name="no_address"
         control={control}
         render={({ field }) => (
-          <div className="flex items-center gap-2 lg:col-span-2">
+          <div className="flex gap-[5px] lg:col-span-2">
             <input
               type="checkbox"
               id="no_address"
               checked={field.value || false}
               onChange={(event) => field.onChange(event.target.checked)}
               disabled={readOnly}
-              className="size-[12px] shrink-0 border border-(--black-color) accent-(--primary-color) disabled:opacity-60"
+              className="size-[15px] border border-(--black-color) accent-(--primary-color) checked:accent-(--primary-color) disabled:opacity-60"
             />
             <label
               htmlFor="no_address"
-              className={readOnly ? "cursor-default" : "cursor-pointer"}
+              className={`body-text ${readOnly ? "cursor-default" : "cursor-pointer"}`}
             >
               {`I don't have a location to present during GLUE, please provide me one`}
             </label>

@@ -7,6 +7,7 @@ import {
   loadOrganizerProfiles,
   type OrganizerProfile,
 } from "@/lib/participants/load-organizer-profiles";
+import { fetchParticipantCategories } from "@/lib/participants/participant-categories";
 import type { TourStatus } from "@/lib/participants/exhibitor-visibility";
 import type { EventType } from "@/schemas/eventSchemas";
 import type { ProgramListItem } from "./program-types";
@@ -138,6 +139,7 @@ export const loadProgramListItems = async (
       eventDaysMap.has(event.dayId)
   );
 
+  const categories = await fetchParticipantCategories(supabase);
   const tourStatus: TourStatus =
     currentTourStatus === "older" ? "older" : "new";
   const locations = await buildMapLocations(supabase, tourStatus);
@@ -158,11 +160,12 @@ export const loadProgramListItems = async (
     const participantDetails = organizer?.participant_details as Parameters<
       typeof organizerBadgeFieldsFromEmbed
     >[0];
-    const { specialProgram, displayNumber } =
+    const { category, displayNumber } =
       organizerBadgeFieldsFromEmbed(participantDetails);
     const organizerFallback = organizerBadgeFromParticipant(
-      specialProgram,
-      displayNumber
+      category,
+      displayNumber,
+      categories
     );
     const badge = resolveOrganizerBadge(
       event.location_id,

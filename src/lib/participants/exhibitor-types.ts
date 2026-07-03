@@ -1,7 +1,4 @@
-export type ExhibitorType =
-  | "special-program"
-  | "up-to-three-participants"
-  | "hub";
+export type ExhibitorType = string;
 
 export type ExhibitorSortField = "name" | "displayNumber";
 export type ExhibitorSortOrder = "asc" | "desc";
@@ -17,11 +14,7 @@ export type ExhibitorItem = {
   slug?: string;
 };
 
-export type ExhibitorsGroupedResponse = {
-  specialProgram: ExhibitorItem[];
-  upToThreeParticipants: ExhibitorItem[];
-  hubs: ExhibitorItem[];
-};
+export type ExhibitorsGroupedResponse = Record<string, ExhibitorItem[]>;
 
 export type ExhibitorsPageResponse = {
   items: ExhibitorItem[];

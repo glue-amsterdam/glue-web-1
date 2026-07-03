@@ -30,7 +30,7 @@ export const MapInfoStep = ({
   onSubmit,
   onBack,
   defaultValues,
-  submitLabel = "Next Step",
+  submitLabel = "next step",
   termsContent,
 }: MapInfoStepProps) => {
   const [isTermsDialogOpen, setIsTermsDialogOpen] = useState(false);
@@ -77,7 +77,7 @@ export const MapInfoStep = ({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="max-w-[508px] lg:max-w-[1045px] mx-auto pt-[40px] lg:pt-[60px] pb-[15px] lg:pb-[30px]"
+      className="w-full max-w-[508px] lg:max-w-[1045px] mx-auto title-padding pb-[15px] lg:pb-[30px]"
       noValidate
     >
       <MapInfoFields
@@ -91,14 +91,14 @@ export const MapInfoStep = ({
           name="termsAccepted"
           control={control}
           render={({ field }) => (
-            <div className="flex flex-col gap-4">
-              <div className="flex items-start gap-2">
+            <div className="flex flex-col gap-[5px]">
+              <div className="flex gap-[5px]">
                 <input
                   type="checkbox"
                   id="termsAccepted"
                   checked={field.value}
                   onChange={(event) => field.onChange(event.target.checked)}
-                  className="size-[12px] shrink-0 border border-(--black-color) accent-(--primary-color)"
+                  className="size-[15px] border border-(--black-color) accent-(--primary-color) checked:accent-(--primary-color)"
                   aria-invalid={Boolean(errors.termsAccepted)}
                   aria-describedby={
                     errors.termsAccepted ? "termsAccepted-error" : undefined
@@ -106,7 +106,7 @@ export const MapInfoStep = ({
                 />
                 <label
                   htmlFor="termsAccepted"
-                  className="cursor-pointer mini-text-size"
+                  className="cursor-pointer body-text"
                 >
                   I accept the{" "}
                   <button
@@ -125,7 +125,7 @@ export const MapInfoStep = ({
                 <p
                   id="termsAccepted-error"
                   role="alert"
-                  className="text-[12px] text-(--primary-color)"
+                  className="text-[12px] leading-[14px] text-(--primary-color)"
                 >
                   {errors.termsAccepted.message}
                 </p>
@@ -182,11 +182,11 @@ export const MapInfoStep = ({
         </div>
       ) : null}
 
-      <div className="flex justify-between pt-[30px] gap-4">
+      <div className="flex justify-between items-end pt-[30px] gap-4">
         <button
           type="button"
           onClick={onBack}
-          className="base-text-size text-left hover:underline cursor-pointer"
+          className="body-text text-left cursor-pointer"
         >
           Back
         </button>

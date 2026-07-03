@@ -1,14 +1,22 @@
+import type { ParticipantCategory } from "@/lib/participants/participant-categories";
 import {
-  exhibitorTypeBackgroundHex,
-  exhibitorTypeForegroundHex,
+  buildDefaultCategoryColorMap,
   MAP_ROUTE_STOP_BACKGROUND_HEX,
 } from "@/lib/participants/exhibitor-type-styles";
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
+import {
+  getCategoryCssVarNames,
+  getExhibitorStackSlugs,
+} from "@/lib/participants/participant-categories";
 import {
   getMarkerSortKey,
   getRouteMarkerSortKey,
   sortMapLocationsForMarkers,
 } from "@/lib/map/map-filters";
+import {
+  getMapMarkerImageId,
+  type MapPointMarkerVariant,
+} from "@/lib/map/map-point-marker-spec";
 import type { MapLocation, MapRoute } from "@/lib/map/types";
 
 export type MapPointFeatureProperties = {
@@ -21,6 +29,7 @@ export type MapPointFeatureProperties = {
   sortKey: number;
   circleColor: string;
   textColor: string;
+  markerImageId: string;
 };
 
 export type MapPointFeature = {
@@ -39,29 +48,27 @@ export type MapPointFeatureCollection = {
 };
 
 export type MapThemeColors = {
-  hub: string;
-  upToThreeParticipants: string;
-  specialProgram: string;
-  hubFont: string;
-  upToThreeParticipantsFont: string;
-  specialProgramFont: string;
+  categories: Record<string, { bg: string; font: string }>;
   route: string;
   primaryColor: string;
+  categorySlugs: string[];
 };
 
-export const DEFAULT_MAP_THEME_COLORS: MapThemeColors = {
-  hub: exhibitorTypeBackgroundHex.hub,
-  upToThreeParticipants: exhibitorTypeBackgroundHex["up-to-three-participants"],
-  specialProgram: exhibitorTypeBackgroundHex["special-program"],
-  hubFont: exhibitorTypeForegroundHex.hub,
-  upToThreeParticipantsFont:
-    exhibitorTypeForegroundHex["up-to-three-participants"],
-  specialProgramFont: exhibitorTypeForegroundHex["special-program"],
+export const buildMapThemeColors = (
+  categories: ParticipantCategory[],
+  primaryColor = "#10069F"
+): MapThemeColors => ({
+  categories: buildDefaultCategoryColorMap(categories),
   route: MAP_ROUTE_STOP_BACKGROUND_HEX,
-  primaryColor: "#10069F",
-};
+  primaryColor,
+  categorySlugs: getExhibitorStackSlugs(categories),
+});
 
-export const getMapThemeColorsFromDocument = (): MapThemeColors => {
+export const DEFAULT_MAP_THEME_COLORS: MapThemeColors = buildMapThemeColors([]);
+
+export const getMapThemeColorsFromDocument = (
+  categorySlugs: string[] = DEFAULT_MAP_THEME_COLORS.categorySlugs
+): MapThemeColors => {
   if (typeof document === "undefined") {
     return DEFAULT_MAP_THEME_COLORS;
   }
@@ -70,64 +77,42 @@ export const getMapThemeColorsFromDocument = (): MapThemeColors => {
   const read = (varName: string, fallback: string) =>
     style.getPropertyValue(varName).trim() || fallback;
 
+  const categories: Record<string, { bg: string; font: string }> = {};
+
+  for (const slug of categorySlugs) {
+    const { bg, font } = getCategoryCssVarNames(slug);
+    const defaults = DEFAULT_MAP_THEME_COLORS.categories[slug];
+    categories[slug] = {
+      bg: read(bg, defaults?.bg ?? "#000000"),
+      font: read(font, defaults?.font ?? "#ffffff"),
+    };
+  }
+
   return {
-    hub: read("--hub-color", DEFAULT_MAP_THEME_COLORS.hub),
-    upToThreeParticipants: read(
-      "--up-to-three-participants-color",
-      DEFAULT_MAP_THEME_COLORS.upToThreeParticipants
-    ),
-    specialProgram: read(
-      "--special-program-color",
-      DEFAULT_MAP_THEME_COLORS.specialProgram
-    ),
-    hubFont: read("--hub-font-color", DEFAULT_MAP_THEME_COLORS.hubFont),
-    upToThreeParticipantsFont: read(
-      "--up-to-three-participants-font-color",
-      DEFAULT_MAP_THEME_COLORS.upToThreeParticipantsFont
-    ),
-    specialProgramFont: read(
-      "--special-program-font-color",
-      DEFAULT_MAP_THEME_COLORS.specialProgramFont
-    ),
+    categories,
     route: MAP_ROUTE_STOP_BACKGROUND_HEX,
     primaryColor: read(
       "--primary-color",
       DEFAULT_MAP_THEME_COLORS.primaryColor
     ),
+    categorySlugs,
   };
 };
 
 const backgroundForType = (
   type: ExhibitorType,
   colors: MapThemeColors
-): string => {
-  switch (type) {
-    case "hub":
-      return colors.hub;
-    case "up-to-three-participants":
-      return colors.upToThreeParticipants;
-    case "special-program":
-      return colors.specialProgram;
-  }
-};
+): string => colors.categories[type]?.bg ?? "#000000";
 
-const fontForType = (type: ExhibitorType, colors: MapThemeColors): string => {
-  switch (type) {
-    case "hub":
-      return colors.hubFont;
-    case "up-to-three-participants":
-      return colors.upToThreeParticipantsFont;
-    case "special-program":
-      return colors.specialProgramFont;
-  }
-};
+const fontForType = (type: ExhibitorType, colors: MapThemeColors): string =>
+  colors.categories[type]?.font ?? "#ffffff";
 
 export type RouteStopMarkerColors = {
   backgroundColor: string;
   color: string;
 };
 
-/** Resolved fill/text colors for a route stop marker (canvas, PDF, GeoJSON). */
+/** Resolved fill/text colors for a route stop marker (PDF, route list). */
 export const getRouteStopMarkerColors = (
   participantType: ExhibitorType | null,
   colors: MapThemeColors
@@ -155,13 +140,15 @@ const toPointFeature = (
   memberCount: number,
   label: string,
   sortKey: number,
-  colors: MapThemeColors
+  colors: MapThemeColors,
+  variant: MapPointMarkerVariant
 ): MapPointFeature => {
   const markerColors =
     type === "route"
       ? getRouteStopMarkerColors(null, colors)
       : getRouteStopMarkerColors(type, colors);
   const { backgroundColor: circleColor, color: textColor } = markerColors;
+  const resolvedLabel = label.trim() || " ";
 
   return {
     type: "Feature",
@@ -176,17 +163,19 @@ const toPointFeature = (
       type,
       name,
       memberCount,
-      label,
+      label: resolvedLabel,
       sortKey,
       circleColor,
       textColor,
+      markerImageId: getMapMarkerImageId(type, resolvedLabel, variant),
     },
   };
 };
 
 export const buildLocationsGeoJSON = (
   locations: MapLocation[],
-  colors: MapThemeColors = DEFAULT_MAP_THEME_COLORS
+  colors: MapThemeColors = DEFAULT_MAP_THEME_COLORS,
+  variant: MapPointMarkerVariant = "desktop"
 ): MapPointFeatureCollection => {
   const sorted = sortMapLocationsForMarkers(locations);
 
@@ -203,7 +192,8 @@ export const buildLocationsGeoJSON = (
         location.memberCount,
         location.displayNumber ?? "",
         getMarkerSortKey(location, index),
-        colors
+        colors,
+        variant
       )
     ),
   };
@@ -212,7 +202,8 @@ export const buildLocationsGeoJSON = (
 export const buildRouteStopsGeoJSON = (
   route: MapRoute,
   locations: MapLocation[],
-  colors: MapThemeColors = DEFAULT_MAP_THEME_COLORS
+  colors: MapThemeColors = DEFAULT_MAP_THEME_COLORS,
+  variant: MapPointMarkerVariant = "desktop"
 ): MapPointFeatureCollection => {
   const locationById = new Map(locations.map((loc) => [loc.id, loc]));
 
@@ -233,7 +224,8 @@ export const buildRouteStopsGeoJSON = (
           location.memberCount,
           String(routeStep),
           getMarkerSortKey(location, routeStep),
-          colors
+          colors,
+          variant
         );
       }
 
@@ -247,7 +239,8 @@ export const buildRouteStopsGeoJSON = (
         1,
         String(routeStep),
         getRouteMarkerSortKey(routeStep),
-        colors
+        colors,
+        variant
       );
     });
 

@@ -22,7 +22,7 @@ export const buildExhibitorPersonJsonLd = (
 
   return {
     "@context": "https://schema.org",
-    "@type": exhibitor.type === "special-program" ? "Organization" : "Person",
+    "@type": exhibitor.type !== "standard" ? "Organization" : "Person",
     name: exhibitor.name,
     description: stripHtmlTags(exhibitor.description ?? ""),
     image: exhibitor.imageUrl,

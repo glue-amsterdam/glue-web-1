@@ -18,6 +18,7 @@ type ExhibitorListProps = {
   ) => void;
   categoryType: ExhibitorsFilterType;
   variant?: "sidebar" | "panel";
+  itemsAlign?: "center" | "start";
   className?: string;
 };
 
@@ -35,15 +36,17 @@ const ExhibitorList = ({
   onLocationSelect,
   categoryType,
   variant = "sidebar",
+  itemsAlign = "center",
   className,
 }: ExhibitorListProps) => {
   const listButtonClassName = cn(
-    "lg:px-0 w-full text-left flex items-start gap-[15px] cursor-pointer",
+    "lg:px-0 w-full text-left flex gap-[15px] cursor-pointer",
+    itemsAlign === "start" ? "items-start" : "items-center",
     variant === "panel" && "py-[10px]"
   );
 
-  const memberButtonClassName = cn(
-    "w-full text-left flex items-start gap-[15px] cursor-pointer pl-[39px]",
+  const nameButtonClassName = cn(
+    "w-full text-left truncate lg:max-w-[237px] cursor-pointer",
     variant === "panel" && "py-[2px]"
   );
 
@@ -86,56 +89,52 @@ const ExhibitorList = ({
           : [];
 
         return (
-          <li key={location.id} className="flex flex-col gap-[8px]">
-            <button
-              type="button"
-              onClick={() => onLocationSelect(location.id)}
-              aria-pressed={isSelected}
-              className={listButtonClassName}
-            >
+          <li key={location.id}>
+            <div className={listButtonClassName}>
               <RoundedNumber
                 type={location.type}
                 participant_n={displayNumber}
               />
-              <p className="truncate lg:max-w-[237px]">{location.name}</p>
-            </button>
-            {hubMembers.length > 0 && (
-              <ul
-                className="text-(--black-color) list-none flex flex-col gap-[8px]"
-                aria-label="Hub members"
-              >
-                {hubMembers.map((member) => {
-                  const memberKey = getHubMemberSelectionKey(member);
-                  const isMemberSelected = selectedLocation === location.id;
-                  const memberDisplayNumber = member.displayNumber ?? " ";
-                  const memberType = member.type ?? location.type;
+              <div className="flex min-w-0 flex-1 flex-col">
+                <button
+                  type="button"
+                  onClick={() => onLocationSelect(location.id)}
+                  aria-pressed={isSelected}
+                  className={nameButtonClassName}
+                >
+                  {location.name}
+                </button>
+                {hubMembers.length > 0 && (
+                  <ul
+                    className="text-(--black-color) list-none flex flex-col"
+                    aria-label="Hub members"
+                  >
+                    {hubMembers.map((member) => {
+                      const memberKey = getHubMemberSelectionKey(member);
+                      const isMemberSelected = selectedLocation === location.id;
 
-                  return (
-                    <li key={member.userId ?? member.slug ?? member.name}>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onLocationSelect(location.id, {
-                            ...(memberKey ? { memberUserId: memberKey } : {}),
-                          })
-                        }
-                        aria-pressed={isMemberSelected}
-                        aria-label={`Select ${member.name}`}
-                        className={memberButtonClassName}
-                      >
-                        <RoundedNumber
-                          type={memberType}
-                          participant_n={memberDisplayNumber}
-                        />
-                        <span className="truncate lg:max-w-[237px]">
-                          {member.name}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+                      return (
+                        <li key={member.userId ?? member.slug ?? member.name}>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onLocationSelect(location.id, {
+                                ...(memberKey ? { memberUserId: memberKey } : {}),
+                              })
+                            }
+                            aria-pressed={isMemberSelected}
+                            aria-label={`Select ${member.name}`}
+                            className={nameButtonClassName}
+                          >
+                            {member.name}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            </div>
           </li>
         );
       })}

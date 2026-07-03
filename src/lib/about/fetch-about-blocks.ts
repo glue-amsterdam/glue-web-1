@@ -164,7 +164,6 @@ export const fetchAboutArchiveBlock = async (
       description: block.description ?? fixture.description,
       years: fixture.years ?? [],
       default_year: fixture.default_year,
-      default_section: fixture.default_section,
     };
   }
 

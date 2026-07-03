@@ -1,10 +1,10 @@
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
+import type { ParticipantCategory } from "@/lib/participants/participant-categories";
+import { classifyCategory } from "@/lib/participants/participant-categories";
 
 export const classifyLocationType = (
   memberCount: number,
-  primarySpecialProgram: boolean
-): ExhibitorType => {
-  if (memberCount > 3) return "hub";
-  if (primarySpecialProgram) return "special-program";
-  return "up-to-three-participants";
-};
+  assignedCategory: string | null | undefined,
+  categories: ParticipantCategory[]
+): ExhibitorType =>
+  classifyCategory(memberCount, assignedCategory, categories);

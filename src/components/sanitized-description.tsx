@@ -12,7 +12,7 @@ export default function SanitizedDescription({ description, className }: Props) 
     const sanitizedContent = useSanitizedHTML(description);
     return (
         <div
-            className={cn("pt-[40px] lg:max-w-(--paragraph-max-width) base-text-size", className)}
+            className={cn("pt-[40px] lg:max-w-(--paragraph-max-width) base-text-size post-content post-content-tight", className)}
             dangerouslySetInnerHTML={{ __html: sanitizedContent }}
         />
     );

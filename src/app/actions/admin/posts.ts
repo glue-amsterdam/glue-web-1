@@ -13,7 +13,7 @@ import {
   collectPostMediaUrls,
   syncPostMedia,
 } from "@/lib/posts/sync-post-media";
-import { rewriteHtmlMediaToKeys } from "@/lib/media/media-url";
+import { rewriteHtmlMediaToKeys, toMediaKey } from "@/lib/media/media-url";
 import { postCreateSchema, postPatchSchema } from "@/schemas/postSchema";
 import { z } from "zod";
 
@@ -71,6 +71,7 @@ export async function patchPost(
     author?: string | null;
     keywords?: string[];
     content_html?: string;
+    thumbnail?: string | null;
     status?: "draft" | "published";
   }
 ) {
@@ -105,6 +106,27 @@ export async function patchPost(
     updateRow.content_html = nextContentHtmlKeys;
   }
   if (validated.status !== undefined) updateRow.status = validated.status;
+
+  if (validated.thumbnail !== undefined) {
+    const nextThumbnailKey =
+      validated.thumbnail === null
+        ? null
+        : toMediaKey(validated.thumbnail) ?? validated.thumbnail;
+
+    if (
+      nextThumbnailKey &&
+      existing.thumbnail &&
+      nextThumbnailKey !== existing.thumbnail
+    ) {
+      await deleteStoredMediaUrls(supabase, [existing.thumbnail]);
+    }
+
+    if (nextThumbnailKey === null && existing.thumbnail) {
+      await deleteStoredMediaUrls(supabase, [existing.thumbnail]);
+    }
+
+    updateRow.thumbnail = nextThumbnailKey;
+  }
 
   const { error: updateError } = await supabase
     .from("posts")
@@ -148,7 +170,10 @@ export async function removePost(id: string) {
     throw new Error("Post not found");
   }
 
-  const mediaUrls = collectPostMediaUrls(existing.media);
+  const mediaUrls = [
+    ...collectPostMediaUrls(existing.media),
+    existing.thumbnail,
+  ];
   await deleteStoredMediaUrls(supabase, mediaUrls);
 
   const { error } = await supabase.from("posts").delete().eq("id", id);

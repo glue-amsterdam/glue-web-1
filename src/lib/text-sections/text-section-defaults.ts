@@ -104,7 +104,7 @@ export const TEXT_SECTION_DEFAULTS: Record<TextSectionSlug, TextSectionData> = {
       "GLUE is free and open to the public. However, you must register to access all the information on our website. And for certain events, you must sign up in advance. ",
     showButton: true,
     buttonLabel: "sign up",
-    buttonLink: "/sign-up",
+    buttonLink: "/account",
     sectionId: "visit-sign up-section",
   },
   "visit-discover": {
@@ -152,8 +152,20 @@ export const TEXT_SECTION_DEFAULTS: Record<TextSectionSlug, TextSectionData> = {
     buttonLink: null,
     sectionId: "plans-selection-section",
   },
-  "sign-up-intro": {
-    slug: "sign-up-intro",
+  "sign-up-intro-restricted": {
+    slug: "sign-up-intro-restricted",
+    adminGroup: "sign-up",
+    variant: "intro",
+    title: "Sign Up",
+    description:
+      "You must register to access this information. Registering does not commit you to anything. GLUE is free, so there is no charge. ",
+    showButton: false,
+    buttonLabel: null,
+    buttonLink: null,
+    sectionId: "sign-up-section",
+  },
+  "sign-up-intro-visitor": {
+    slug: "sign-up-intro-visitor",
     adminGroup: "sign-up",
     variant: "intro",
     title: "Sign Up",

@@ -5,7 +5,7 @@ export type ParticipantDetailRow = {
   slug: string;
   status: string;
   is_active: boolean;
-  special_program: boolean;
+  category: string;
   reactivation_requested: boolean;
   reactivation_status: string | null;
   display_name: string | null;
@@ -69,7 +69,7 @@ export const fetchAdminUserEnrichment = async (
               "slug",
               "status",
               "is_active",
-              "special_program",
+              "category",
               "reactivation_requested",
               "reactivation_status",
               "display_name",

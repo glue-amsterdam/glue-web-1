@@ -16,6 +16,8 @@ type BottomFooterProps = {
   aboutLinks: FooterAboutLink[];
 };
 
+const blogLink: FooterLink = { title: "Blog", link: "/posts" };
+
 const navLinks: FooterLink[] = [
   { title: "Home", link: "/" },
   { title: "About", link: "/about" },
@@ -57,7 +59,7 @@ const buildSocialLinks = (mainLinks: LinkItem[]): FooterLink[] =>
 function BottomFooter({ mainLinks, aboutLinks }: BottomFooterProps) {
   const pathname = usePathname();
   const socialLinks = buildSocialLinks(mainLinks);
-  const helpLinks = [...aboutLinks, ...fixedHelpLinks];
+  const helpLinks = [blogLink, ...aboutLinks, ...fixedHelpLinks];
   const isHome = pathname === "/";
 
   const mobileColumns = [
@@ -118,7 +120,7 @@ function BottomFooter({ mainLinks, aboutLinks }: BottomFooterProps) {
                 <ul className="flex flex-col gap-[15px] lg:gap-[20px]">
                   {column.map((link) => (
                     <Link key={link.title} href={link.link}>
-                      <li className="text-[12px] leading-[12px] lg:text-[19px] lg:leading-[25px] hover:underline">
+                      <li className="footer-text">
                         {link.title}
                       </li>
                     </Link>

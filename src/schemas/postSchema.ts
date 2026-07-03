@@ -34,6 +34,7 @@ export const postSchema = z.object({
   author: z.string().nullable(),
   keywords: z.array(z.string()),
   content_html: z.string(),
+  thumbnail: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -51,6 +52,7 @@ export const postPatchSchema = z.object({
   author: z.string().nullable().optional(),
   keywords: z.array(z.string()).optional(),
   content_html: z.string().optional(),
+  thumbnail: z.string().nullable().optional(),
   status: z.enum(POST_STATUSES).optional(),
 });
 
@@ -73,6 +75,7 @@ export const publicPostSummarySchema = z.object({
   author: z.string().nullable(),
   keywords: z.array(z.string()),
   excerpt: z.string(),
+  cover_image_url: z.string().url().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
 });

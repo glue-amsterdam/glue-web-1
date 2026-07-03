@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BottomBlock from "@/components/bottom-block";
 import HeadlineWCross from "@/components/headline-w-cross";
-import MainContainer from "@/components/main-container";
+import StaggerEnterContainer from "@/components/stagger-enter-container";
 import PostContent from "@/components/posts/post-content";
 import { config } from "@/config";
 import { getCachedPublishedPostBySlug } from "@/lib/posts/cached-public-posts";
@@ -24,11 +24,11 @@ const formatPostDate = (value: string): string => {
     return value;
   }
 
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(date);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}.${month}.${year}`;
 };
 
 export const generateMetadata = async ({
@@ -90,7 +90,7 @@ export default async function PostDetailPage({ params }: PageProps) {
 
   return (
     <main id="post-detail-page">
-      <MainContainer className="stagger-enter">
+      <StaggerEnterContainer variant="enter">
         <nav className="sr-only" aria-label="Breadcrumb">
           <ol>
             <li>
@@ -111,23 +111,20 @@ export default async function PostDetailPage({ params }: PageProps) {
             closeFallbackHref="/posts"
             preferCloseFallback
           />
-
-          <p className="base-text-size pt-[20px] text-(--black-color)/70">
-            {post.author ? (
-              <span>
-                By {post.author}
-                {" · "}
-              </span>
-            ) : null}
-            <time dateTime={post.created_at}>
-              {formatPostDate(post.created_at)}
-            </time>
-          </p>
-          <PostContent html={post.content_html} />
-
+          <div className="max-w-[830px] mx-auto">
+            <div className="body-text title-padding text-(--black-color)">
+              <p>
+                <time dateTime={post.created_at}>
+                  {formatPostDate(post.created_at)},
+                </time>
+              </p>
+              {post.author ? <p>By {post.author}</p> : null}
+            </div>
+            <PostContent html={post.content_html} />
+          </div>
         </section>
         <BottomBlock />
-      </MainContainer>
+      </StaggerEnterContainer>
     </main>
   );
 }

@@ -4,13 +4,17 @@ import type { TextSectionSlug } from "@/schemas/textSectionSchema";
 
 type Props = {
   slug: TextSectionSlug;
+  shouldGrid?: boolean;
+  bodyClassName?: "body-label" | "body-text";
 };
 
-const CmsTextSection = async ({ slug }: Props) => {
+const CmsTextSection = async ({ slug, shouldGrid = false, bodyClassName }: Props) => {
   const section = await getCachedTextSection(slug);
 
   return (
     <TextSectionBlock
+      bodyClassName={bodyClassName}
+      shouldGrid={shouldGrid}
       button={section.showButton}
       description={section.description}
       title={section.title}

@@ -3,7 +3,8 @@ import {
 } from "@/lib/seo/build-entity-metadata";
 import { sanitizePostHtml, stripHtmlTags } from "@/lib/sanitize-html";
 import { normalizePostImagesForDisplay } from "@/lib/posts/normalize-post-html";
-import { rewriteHtmlKeysToUrls, toMediaUrl } from "@/lib/media/media-url";
+import { rewriteHtmlKeysToUrls, toMediaKey, toMediaUrl } from "@/lib/media/media-url";
+import { extractMediaFromHtml } from "@/lib/posts/extract-media-from-html";
 import type { PostMedia, PublicPost, PublicPostSummary } from "@/schemas/postSchema";
 import type {
   PostData,
@@ -20,6 +21,7 @@ type PostDbRow = {
   author: string | null;
   keywords: string[];
   content_html: string;
+  thumbnail: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -44,6 +46,7 @@ const mapPostFromRow = (row: PostDbRow): PostData => ({
   author: row.author,
   keywords: row.keywords ?? [],
   contentHtml: row.content_html,
+  thumbnail: row.thumbnail ?? null,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });
@@ -90,6 +93,7 @@ const mapPostToApiResponse = (post: PostData) => ({
   author: post.author,
   keywords: post.keywords,
   content_html: post.contentHtml,
+  thumbnail: toMediaUrl(post.thumbnail) ?? null,
   created_at: post.createdAt,
   updated_at: post.updatedAt,
 });
@@ -110,6 +114,52 @@ export const mapPostSummaryToApiResponse = (summary: PostSummaryData) => ({
 const buildPostExcerpt = (contentHtml: string): string =>
   truncateMetaDescription(stripHtmlTags(contentHtml));
 
+const extractCoverImageUrl = (contentHtml: string): string | null => {
+  const htmlWithUrls = rewriteHtmlKeysToUrls(contentHtml);
+  const firstImage = extractMediaFromHtml(htmlWithUrls).find(
+    (item) => item.imageUrl
+  );
+  if (!firstImage?.imageUrl) {
+    return null;
+  }
+  return toMediaUrl(firstImage.imageUrl) ?? null;
+};
+
+const resolveCoverImageUrl = (
+  thumbnail: string | null | undefined,
+  contentHtml: string,
+  postMedia: Array<{ image_url: string | null; created_at: string }> | null
+): string | null => {
+  if (thumbnail) {
+    return toMediaUrl(thumbnail) ?? null;
+  }
+
+  const firstMediaUrl = [...(postMedia ?? [])]
+    .filter((item) => item.image_url)
+    .sort((a, b) => a.created_at.localeCompare(b.created_at))[0]?.image_url;
+
+  if (firstMediaUrl) {
+    return toMediaUrl(firstMediaUrl) ?? null;
+  }
+
+  return extractCoverImageUrl(contentHtml);
+};
+
+type HomePostDbRow = PostDbRow & {
+  post_media: Array<{ image_url: string | null; created_at: string }> | null;
+};
+
+export const mapHomePostSummaryFromRow = (
+  row: HomePostDbRow
+): PublicPostSummaryData => ({
+  ...mapPublicPostSummaryFromRow(row),
+  coverImageUrl: resolveCoverImageUrl(
+    row.thumbnail,
+    row.content_html,
+    row.post_media
+  ),
+});
+
 export const mapPublicPostSummaryFromRow = (
   row: PostDbRow
 ): PublicPostSummaryData => ({
@@ -119,6 +169,7 @@ export const mapPublicPostSummaryFromRow = (
   author: row.author,
   keywords: row.keywords ?? [],
   excerpt: buildPostExcerpt(row.content_html),
+  coverImageUrl: resolveCoverImageUrl(row.thumbnail, row.content_html, null),
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });
@@ -132,6 +183,7 @@ export const mapPublicPostSummaryToApiResponse = (
   author: summary.author,
   keywords: summary.keywords,
   excerpt: summary.excerpt,
+  cover_image_url: summary.coverImageUrl,
   created_at: summary.createdAt,
   updated_at: summary.updatedAt,
 });
@@ -147,6 +199,7 @@ export const mapPublicPostWithMediaToApiResponse = (
     author: post.author,
     keywords: post.keywords,
     content_html: post.contentHtml,
+    thumbnail: post.thumbnail,
     created_at: post.createdAt,
     updated_at: post.updatedAt,
   })),

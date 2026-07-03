@@ -5,6 +5,7 @@ import type {
 } from "@/lib/participants/exhibitor-types";
 import { getExhibitorsPage } from "@/lib/participants/get-exhibitors-page";
 import { parseExhibitorsQuery } from "@/lib/participants/exhibitors-query";
+import { fetchParticipantCategories, getValidFilterSlugs } from "@/lib/participants/participant-categories";
 import { buildExhibitorsSearchParams } from "@/lib/participants/exhibitors-url";
 import { createPublicSupabaseClient } from "@/utils/supabase/public";
 
@@ -13,7 +14,9 @@ export const EXHIBITORS_PAGE_CACHE_TAG = "exhibitors-page";
 const fetchExhibitorsPageCached = unstable_cache(
   async (queryKey: string): Promise<ExhibitorsPageResponse> => {
     const supabase = createPublicSupabaseClient();
-    const query = parseExhibitorsQuery(new URLSearchParams(queryKey));
+    const categories = await fetchParticipantCategories(supabase);
+    const validSlugs = getValidFilterSlugs(categories);
+    const query = parseExhibitorsQuery(new URLSearchParams(queryKey), validSlugs);
     return getExhibitorsPage(supabase, query);
   },
   [EXHIBITORS_PAGE_CACHE_TAG],

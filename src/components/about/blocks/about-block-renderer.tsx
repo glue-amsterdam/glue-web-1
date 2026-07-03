@@ -1,5 +1,5 @@
 import { ABOUT_BLOCK_IDS, type AboutBlock } from "@/schemas/aboutPageSchema";
-import ArchiveBlockView from "./archive-block";
+import ArchiveBlockView from "@/components/archive/archive-block";
 import FaqBlockView from "./faq-block";
 import NewsletterBlockView from "./newsletter-block";
 import TeamBlock from "./team-block";

@@ -14,12 +14,12 @@ const ProgramCard = ({ event }: Props) => {
   const href = getProgramLink(event.eventId);
 
   const content = (
-    <article className="max-w-[400px] base-text-size border-t lg:border-t-2 border-(--black-color) pt-[15px] overflow-hidden mx-auto">
+    <article className="max-w-[400px] body-text border-t lg:border-t-2 border-(--black-color) pt-[15px] overflow-hidden mx-auto">
       <div className="flex items-start">
         <div className="flex items-start gap-[20px]">
           <RoundedNumber
             type={event.organizer.type}
-            participant_n={" "}
+            participant_n={event.organizer.displayNumber || " "}
           />
           <div>
             <p>{event.date.label}</p>
@@ -28,13 +28,13 @@ const ProgramCard = ({ event }: Props) => {
               : ""}</p>
             <p>{event.type}</p>
 
-            <div className="pt-[15px] w-full">
+            <div className="program-card-padding w-full">
               <ProgramImage src={event.eventImg} alt={event.name} />
             </div>
-            <h2 className="pt-[15px]">
+            <h2 className="program-card-padding versal-body-text">
               {event.name.toUpperCase()}
             </h2>
-            <p className="text-[13px] text-(--black-color) truncate">
+            <p className="body-text text-(--black-color) truncate">
               {event.organizer.userName}
               {event.coOrganizers.length > 0 &&
                 ` x ${event.coOrganizers.map((c) => c.userName).join("x ")}`}

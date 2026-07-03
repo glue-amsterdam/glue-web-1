@@ -21,8 +21,8 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { RichTextEditor } from "@/components/editor";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from "lucide-react";
 
 const yearFormSchema = z.object({
@@ -332,12 +332,10 @@ export const ArchiveYearEditor = ({
             <FormItem>
               <FormLabel>Text Description</FormLabel>
               <FormControl>
-                <Textarea
-                  {...field}
+                <RichTextEditor
                   value={field.value ?? ""}
-                  rows={3}
-                  disabled={isBusy}
-                  aria-label="Text description"
+                  onChange={field.onChange}
+                  readOnly={isBusy}
                 />
               </FormControl>
             </FormItem>

@@ -3,11 +3,15 @@ import {
   getListVisibleCount,
   LIST_VISIBLE_PARAM,
 } from "@/lib/list-page-session-cache";
+import { parseMapFilterType } from "@/lib/map/map-url";
 import { parseExhibitorsQuery } from "@/lib/participants/exhibitors-query";
 import {
   EXHIBITORS_PAGE_SIZE,
   type ExhibitorsFilters,
+  type ExhibitorsFilterType,
 } from "@/lib/participants/exhibitors-filters";
+import { getValidFilterSlugs } from "@/lib/participants/participant-categories";
+import { DEFAULT_PARTICIPANT_CATEGORIES } from "@/lib/participants/participant-categories";
 
 export const buildExhibitorsSearchParams = (
   params: ExhibitorsQueryParams,
@@ -45,13 +49,28 @@ export const filtersToQueryParams = (
   q: filters.q.trim() || undefined,
 });
 
+const parseExhibitorsFilterType = (
+  searchParams: URLSearchParams,
+  validSlugs: string[]
+): ExhibitorsFilterType => {
+  const raw = searchParams.get("type");
+  if (!raw) return "all";
+  return parseMapFilterType(raw, validSlugs);
+};
+
 export const searchParamsToFilters = (
   searchParams: URLSearchParams,
+  validSlugs: string[] = getValidFilterSlugs(DEFAULT_PARTICIPANT_CATEGORIES)
 ): ExhibitorsFilters => {
-  const parsed = parseExhibitorsQuery(searchParams);
+  const parsed = parseExhibitorsQuery(
+    searchParams,
+    validSlugs.length > 0
+      ? validSlugs
+      : getValidFilterSlugs(DEFAULT_PARTICIPANT_CATEGORIES)
+  );
 
   return {
-    type: parsed.type ?? "all",
+    type: parseExhibitorsFilterType(searchParams, validSlugs),
     sort: parsed.sort,
     order: parsed.order,
     q: parsed.q ?? "",
@@ -88,6 +107,35 @@ export const buildExhibitorsPageUrl = (
 export const getExhibitorsVisibleCount = (
   searchParams: URLSearchParams,
 ): number => getListVisibleCount(searchParams, EXHIBITORS_PAGE_SIZE);
+
+/** True when the URL still carries `type` but filters resolve to "all". */
+export const shouldCleanExhibitorsTypeParam = (
+  searchParams: URLSearchParams,
+  filters: ExhibitorsFilters,
+): boolean => filters.type === "all" && searchParams.has("type");
+
+export const getExhibitorsUrlCleanupTarget = (
+  pathname: string,
+  searchParams: URLSearchParams,
+  filters: ExhibitorsFilters,
+  visibleCount = getExhibitorsVisibleCount(searchParams),
+): string | null => {
+  if (!shouldCleanExhibitorsTypeParam(searchParams, filters)) {
+    return null;
+  }
+
+  const cleanedUrl = buildExhibitorsPageUrl(pathname, filters, visibleCount);
+  const currentQuery = searchParams.toString();
+  const cleanedQuery = cleanedUrl.includes("?")
+    ? cleanedUrl.slice(cleanedUrl.indexOf("?") + 1)
+    : "";
+
+  if (currentQuery === cleanedQuery) {
+    return null;
+  }
+
+  return cleanedUrl;
+};
 
 export const recordToSearchParams = (
   params: Record<string, string | string[] | undefined>,

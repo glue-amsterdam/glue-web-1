@@ -1,4 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { classifyLocationType } from "@/lib/map/classify-location-type";
+import {
+  fetchParticipantCategories,
+  type ParticipantCategory,
+} from "@/lib/participants/participant-categories";
 import type { ExhibitorType } from "./exhibitor-types";
 import {
   ExhibitorNotFoundError,
@@ -25,7 +30,7 @@ type ParticipantRow = {
 type MemberParticipantRow = {
   user_id: string;
   slug: string;
-  special_program: boolean;
+  category: string;
   display_number: string | null;
   display_name: string | null;
 };
@@ -53,9 +58,10 @@ const ensureArray = <T>(value: T | T[] | null | undefined): T[] => {
   return Array.isArray(value) ? value : [value];
 };
 
-const getParticipantType = (specialProgram: boolean): ExhibitorType => {
-  return specialProgram ? "special-program" : "up-to-three-participants";
-};
+const getParticipantType = (
+  category: string,
+  categories: ParticipantCategory[]
+): ExhibitorType => classifyLocationType(1, category, categories);
 
 const buildImageMap = (images: ImageRow[]): Map<string, string> => {
   const map = new Map<string, string>();
@@ -114,6 +120,8 @@ export const getExhibitorHubById = async (
   supabase: SupabaseClient,
   hubId: string
 ): Promise<ExhibitorHubDetail> => {
+  const categories = await fetchParticipantCategories(supabase);
+
   const { data: hub, error: hubError } = await supabase
     .from("hubs")
     .select(
@@ -194,7 +202,7 @@ export const getExhibitorHubById = async (
       `
         user_id,
         slug,
-        special_program,
+        category,
         display_number,
         display_name
       `
@@ -228,7 +236,7 @@ export const getExhibitorHubById = async (
     console.error("Error fetching hub member images:", imagesError);
   }
 
-  const placeholderUrl = getParticipantPlaceholderUrl(supabase);
+  const placeholderUrl = await getParticipantPlaceholderUrl(supabase);
   const imageMap = buildImageMap((imagesData as ImageRow[]) ?? []);
 
   const members: ExhibitorHubMember[] = [];
@@ -245,7 +253,7 @@ export const getExhibitorHubById = async (
       name: getParticipantDisplayName(details),
       imageUrl: imageMap.get(userId) ?? placeholderUrl,
       displayNumber: details.display_number,
-      type: getParticipantType(details.special_program),
+      type: getParticipantType(details.category, categories),
     });
   }
 
@@ -253,8 +261,11 @@ export const getExhibitorHubById = async (
     throw new ExhibitorNotFoundError();
   }
 
-  const hubType: ExhibitorType =
-    eligibleMemberIds.size > 3 ? "hub" : "up-to-three-participants";
+  const hubType = classifyLocationType(
+    eligibleMemberIds.size,
+    hostDetails.category,
+    categories
+  );
 
   const { data: mapInfo, error: mapInfoError } = await supabase
     .from("map_info")

@@ -15,6 +15,8 @@ import {
 import { revalidateMainLinksCache } from "@/lib/main/revalidate-main-links-cache";
 import { revalidatePressKitLinksCache } from "@/lib/main/revalidate-press-kit-links-cache";
 import { revalidateSiteThemeCache } from "@/lib/main/revalidate-site-theme-cache";
+import { getParticipantPlaceholderUrlFresh } from "@/lib/participants/get-participant-placeholder-url";
+import { revalidateParticipantPlaceholderCache } from "@/lib/participants/revalidate-participant-placeholder-cache";
 import { requireAdmin } from "@/lib/admin/require-admin";
 import type {
   MainColorsFormData,
@@ -88,4 +90,10 @@ export async function removePressKitLink(id: string) {
   await requireAdmin();
   await deletePressKitLink(id);
   revalidatePressKitLinksCache();
+}
+
+export async function notifyParticipantPlaceholderUpdated(): Promise<string> {
+  const supabase = await requireAdmin();
+  revalidateParticipantPlaceholderCache();
+  return getParticipantPlaceholderUrlFresh(supabase);
 }

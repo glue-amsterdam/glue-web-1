@@ -38,10 +38,9 @@ export const ParticipantExtraDataStep = ({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="max-w-[508px] lg:max-w-[1045px] mx-auto pt-[40px] lg:pt-[60px] pb-[30px] "
+      className="max-w-[508px] lg:max-w-[1045px] mx-auto title-padding pb-[30px] w-full"
       noValidate
     >
-      <h1 className="title-text pb-[30px] uppercase">Participant Information</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-[15px] lg:gap-[30px]">
         <Controller
           name="glue_communication_email"
@@ -55,8 +54,7 @@ export const ParticipantExtraDataStep = ({
               value={typeof field.value === "string" ? field.value : ""}
               onChange={field.onChange}
               error={errors.glue_communication_email?.message}
-              placeholder="Enter email for practical GLUE communication"
-              description="This email will be used for practical GLUE communication"
+              description="Used for practical GLUE communication"
             />
           )}
         />
@@ -72,8 +70,7 @@ export const ParticipantExtraDataStep = ({
                 field.onChange(value.split(",").map((s) => s.trim()))
               }
               error={errors.phone_numbers?.message}
-              placeholder="Enter phone numbers separated by commas"
-              description="Enter phone numbers separated by commas (max 3)"
+              description="Enter separated  by commas (max 3)"
             />
           )}
         />
@@ -82,15 +79,14 @@ export const ParticipantExtraDataStep = ({
           control={control}
           render={({ field }) => (
             <ParticipateFormField
-              label="Visible Email(s)"
+              label="Public Email(s)"
               name="visible_emails"
               value={field.value?.join(", ") || ""}
               onChange={(value) =>
                 field.onChange(value.split(",").map((s) => s.trim()))
               }
               error={errors.visible_emails?.message}
-              placeholder="Enter visible emails separated by commas"
-              description="Enter visible email addresses separated by commas (max 3)"
+              description="Enter separated by commas (max 3)"
             />
           )}
         />
@@ -99,27 +95,23 @@ export const ParticipantExtraDataStep = ({
           control={control}
           render={({ field }) => (
             <ParticipateFormField
-              label="Visible Website(s)"
+              label="Website(s)"
               name="visible_websites"
               value={field.value?.join(", ") || ""}
               onChange={(value) =>
                 field.onChange(value.split(",").map((s) => s.trim()))
               }
               error={errors.visible_websites?.message}
-              placeholder="Enter visible websites separated by commas"
-              description="Enter visible websites separated by commas (max 3)"
+              description="Enter separated by commas (max 3)"
             />
           )}
         />
-
-        <p className="base-text-size lg:col-span-2">Social Media</p>
-
         <Controller
           name="social_media.facebookLink"
           control={control}
           render={({ field }) => (
             <ParticipateFormField
-              label="Facebook Link"
+              label="Facebook"
               name="social_media.facebookLink"
               value={field.value || ""}
               onChange={field.onChange}
@@ -135,7 +127,7 @@ export const ParticipantExtraDataStep = ({
           control={control}
           render={({ field }) => (
             <ParticipateFormField
-              label="LinkedIn Link"
+              label="LinkedIn"
               name="social_media.linkedinLink"
               value={field.value || ""}
               onChange={field.onChange}
@@ -151,7 +143,7 @@ export const ParticipantExtraDataStep = ({
           control={control}
           render={({ field }) => (
             <ParticipateFormField
-              label="Instagram Link"
+              label="Instagram"
               name="social_media.instagramLink"
               value={field.value || ""}
               onChange={field.onChange}
@@ -168,11 +160,11 @@ export const ParticipantExtraDataStep = ({
         <button
           type="button"
           onClick={onBack}
-          className="base-text-size text-left hover:underline cursor-pointer"
+          className="body-text text-left hover:underline cursor-pointer"
         >
           Back
         </button>
-        <BigButton as="submit" label="Next Step" mode="navbar" />
+        <BigButton as="submit" label="next step" mode="navbar" />
       </div>
     </form>
   );

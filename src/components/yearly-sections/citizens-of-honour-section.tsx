@@ -30,7 +30,7 @@ const CitizensOfHonourSection = ({
   const HeadingTag = headingLevel;
 
   return (
-    <section id={sectionId} className={cn(hasPadding ? "main-padding" : "mini-padding")}>
+    <section id={sectionId} className={cn(hasPadding ? "main-padding" : "p-0")}>
       <HeadingTag className="title-text border-t lg:border-t-2 border-(--black-color) pt-[15px] lg:pt-[30px]">
         {title.toUpperCase()}
       </HeadingTag>
