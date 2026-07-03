@@ -19,7 +19,7 @@ export type ResponsiveImageStyle = {
   maxWidth: string;
   height: string;
   maxHeight: string;
-  objectFit: string;
+  objectFit: "contain";
 };
 
 export const getResponsiveImageStyleObject = (
