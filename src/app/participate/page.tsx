@@ -1,11 +1,12 @@
 import BottomBlock from '@/components/bottom-block';
 import CmsIntroSection from '@/components/cms/cms-intro-section';
 import CmsTextSection from '@/components/cms/cms-text-section';
-import MainContainer from '@/components/main-container'
+import StaggerEnterContainer from "@/components/stagger-enter-container";
 import ParticipatePlanCardView from '@/components/participate/participate-plan-card';
 import Separator from '@/components/separator';
 import YearNumbersSection from '@/components/yearly-sections/year-numbers-section';
 import { participateMetadata } from '@/lib/metadata';
+import { parseEmailParam } from '@/lib/auth/post-auth-redirect';
 import { getParticipationEligibility } from '@/lib/participate/get-participation-eligibility';
 import { getCachedParticipatePageData } from '@/lib/participate/get-participate-plans';
 import { getCachedLatestYearNumbers } from '@/lib/year-numbers/cached-year-numbers';
@@ -38,12 +39,12 @@ const ParticipationBlockedNotice = ({
             className="col-span-full rounded-md border border-(--black-color)/15 bg-(--white-color) px-4 py-5"
             role="status"
         >
-            <p className="base-text-size">{message}</p>
+            <p className="body-text">{message}</p>
             {dashboardHref ? (
                 <p className="pt-[20px]">
                     <Link
                         href={dashboardHref}
-                        className="base-text-size underline hover:no-underline"
+                        className="body-text underline hover:no-underline"
                     >
                         Go to your dashboard
                     </Link>
@@ -56,9 +57,15 @@ const ParticipationBlockedNotice = ({
 async function Page({
     searchParams,
 }: {
-    searchParams: Promise<{ intent?: string }>;
+    searchParams: Promise<{ intent?: string; email?: string }>;
 }) {
-    const { intent } = await searchParams;
+    const params = await searchParams;
+    const { intent } = params;
+    const emailSearchParams = new URLSearchParams();
+    if (params.email) {
+        emailSearchParams.set("email", params.email);
+    }
+    const prefilledEmail = parseEmailParam(emailSearchParams);
     const [
         { applicationClosed, closedMessage, basePackage, selectablePlans },
         latestYearNumbers,
@@ -71,7 +78,7 @@ async function Page({
 
     return (
         <main id="participate-page">
-            <MainContainer className='cta-padding stagger-enter'>
+            <StaggerEnterContainer variant="enter" className="cta-padding">
                 <CmsIntroSection slug="participate-intro" />
                 <Separator />
                 {latestYearNumbers.items.length > 0 ? (
@@ -84,7 +91,7 @@ async function Page({
                         <Separator />
                     </>
                 ) : null}
-                <CmsTextSection slug="participate-how-it-works" />
+                <CmsTextSection slug="participate-how-it-works" shouldGrid />
                 <Separator />
                 <CmsTextSection slug="participate-select-plan" />
                 {!eligibility.canSelectPlan && eligibility.blockReason ? (
@@ -95,7 +102,7 @@ async function Page({
                         />
                     </div>
                 ) : null}
-                <ul className="pt-[40px] lg:pt-[60px] grid grid-cols-1 lg:grid-cols-3 gap-[40px] lg:gap-x-[30px] lg:gap-y-[100px]">
+                <ul className="pt-[40px] lg:pt-[60px] grid grid-cols-1 lg:grid-cols-3 lg:items-stretch gap-[40px] lg:gap-x-[30px] lg:gap-y-[100px]">
                     {
                         applicationClosed ?
                             (<>
@@ -113,13 +120,14 @@ async function Page({
                                             variant="selectable"
                                             planSelectionDisabled={!eligibility.canSelectPlan}
                                             disabledReason={eligibility.blockReason}
+                                            email={prefilledEmail}
                                         />
                                     ))}
                                 </>
                             )}
                 </ul>
                 <BottomBlock />
-            </MainContainer>
+            </StaggerEnterContainer>
 
         </main>
     )

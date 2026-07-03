@@ -16,11 +16,20 @@ export default async function SponsorsAdminPage() {
   ]);
 
   return (
-    <div className="rounded-lg bg-white p-4 shadow-md">
-      <AboutSponsorsForm
-        initialHeaderData={sponsorsHeaderData}
-        initialSponsors={sponsorsData}
-      />
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold">Sponsors</h1>
+        <p className="text-sm text-gray-600">
+          Manage partner groups and logos shown in the site footer.
+        </p>
+      </div>
+
+      <div className="rounded-lg bg-white p-4 shadow-md">
+        <AboutSponsorsForm
+          initialHeaderData={sponsorsHeaderData}
+          initialSponsors={sponsorsData}
+        />
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { guardParticipantProfileWrite } from "@/lib/participants/guard-participant-profile-write";
 import { getPlanMaxImagesForUser } from "@/lib/plans/get-plan-max-images-for-user";
+import { toMediaKey, toMediaUrl } from "@/lib/media/media-url";
 import { createClient } from "@/utils/supabase/server";import { NextResponse } from "next/server";
 import { z } from "zod";
 import crypto from "crypto";
@@ -24,7 +25,12 @@ export async function GET(
 
     if (error) throw error;
 
-    return NextResponse.json({ images: data });
+    const images = (data ?? []).map((image) => ({
+      ...image,
+      image_url: toMediaUrl(image.image_url),
+    }));
+
+    return NextResponse.json({ images });
   } catch (error) {
     console.error(`Error fetching profile images for user ${userId}:`, error);
     return NextResponse.json(
@@ -70,7 +76,7 @@ export async function POST(
 
     const newImage = {      id: crypto.randomUUID(),
       user_id: userId,
-      image_url: image_url,
+      image_url: toMediaKey(image_url),
     };
 
     const { error } = await supabase

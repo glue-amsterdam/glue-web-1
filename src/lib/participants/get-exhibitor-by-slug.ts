@@ -1,5 +1,10 @@
 import type { OpenCloseTime } from "@/types/api-visible-user";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { classifyLocationType } from "@/lib/map/classify-location-type";
+import {
+  fetchParticipantCategories,
+  type ParticipantCategory,
+} from "@/lib/participants/participant-categories";
 import type { ExhibitorType } from "./exhibitor-types";
 import {
   ExhibitorNotFoundError,
@@ -7,10 +12,13 @@ import {
   type ExhibitorParticipantDetail,
   type ExhibitorSocialMedia,
 } from "./exhibitor-detail-types";
+import { resolveExhibitorDetailNavigation } from "./exhibitor-detail-navigation";
 import {
   getTourStatus,
+  isParticipantEligibleForExhibitorsList,
   isParticipantPubliclyVisible,
   isParticipantSticky,
+  type TourStatus,
 } from "./exhibitor-visibility";
 import { participantImagesToCarouselSlides } from "./exhibitor-carousel-slides";
 import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
@@ -20,7 +28,7 @@ import { getParticipantPlaceholderUrl } from "./get-participant-placeholder-url"
 type ParticipantRow = {
   user_id: string;
   slug: string;
-  special_program: boolean;
+  category: string;
   display_number: string | null;
   short_description: string | null;
   description: string | null;
@@ -34,8 +42,17 @@ type ParticipantRow = {
   visible_websites: string[] | null;
 };
 
-const getParticipantType = (specialProgram: boolean): ExhibitorType => {
-  return specialProgram ? "special-program" : "up-to-three-participants";
+type HubHostMapContext = {
+  address: string | null;
+  mapInfoId: string | null;
+};
+
+const getParticipantType = async (
+  supabase: SupabaseClient,
+  category: string
+): Promise<ExhibitorType> => {
+  const categories = await fetchParticipantCategories(supabase);
+  return classifyLocationType(1, category, categories);
 };
 
 const normalizeSocialMedia = (
@@ -106,54 +123,97 @@ const resolveHubHostUserId = async (
   return hub?.hub_host_id ?? null;
 };
 
-const resolveHubHostAddress = async (
+const resolveHubHostMapContext = async (
   supabase: SupabaseClient,
-  userId: string
-): Promise<string | null> => {
+  userId: string,
+  tourStatus: TourStatus
+): Promise<HubHostMapContext> => {
   const hubHostUserId = await resolveHubHostUserId(supabase, userId);
   if (!hubHostUserId) {
-    return null;
+    return { address: null, mapInfoId: null };
+  }
+
+  const { data: hostParticipant, error: hostParticipantError } =
+    await supabase
+      .from("participant_details")
+      .select("user_id, is_active, was_active_last_year, status")
+      .eq("user_id", hubHostUserId)
+      .maybeSingle();
+
+  if (hostParticipantError) {
+    console.error("Error fetching hub host participant:", hostParticipantError);
+    return { address: null, mapInfoId: null };
+  }
+
+  if (
+    !hostParticipant ||
+    !isParticipantEligibleForExhibitorsList(
+      hostParticipant,
+      new Set(),
+      tourStatus
+    )
+  ) {
+    return { address: null, mapInfoId: null };
   }
 
   const { data: hostMapInfo, error: hostMapInfoError } = await supabase
     .from("map_info")
-    .select("formatted_address")
+    .select("id, formatted_address, no_address")
     .eq("user_id", hubHostUserId)
     .maybeSingle();
 
   if (hostMapInfoError) {
     console.error("Error fetching hub host map info:", hostMapInfoError);
-    return null;
+    return { address: null, mapInfoId: null };
   }
 
-  if (!hostMapInfo?.formatted_address) {
-    return null;
+  if (!hostMapInfo?.id || hostMapInfo.no_address) {
+    return { address: null, mapInfoId: null };
   }
 
-  return toBaseFormattedAddress(hostMapInfo.formatted_address) || null;
+  return {
+    address: toBaseFormattedAddress(hostMapInfo.formatted_address) || null,
+    mapInfoId: hostMapInfo.id,
+  };
+};
+
+const buildEventsQuery = (
+  supabase: SupabaseClient,
+  userId: string,
+  tourStatus: TourStatus
+) => {
+  let query = supabase
+    .from("events")
+    .select("id, image_url, title")
+    .eq("organizer_id", userId)
+    .eq("event_day_out", false);
+
+  if (tourStatus === "new") {
+    return query.eq("is_last_year_event", false);
+  }
+
+  return query.eq("is_last_year_event", true);
 };
 
 const buildContactInfo = async (
   supabase: SupabaseClient,
   userId: string,
-  participant: ParticipantRow
+  participant: ParticipantRow,
+  tourStatus: TourStatus
 ): Promise<ExhibitorContactInfo> => {
-  const [mapInfoResult, visitingHoursResult, eventsResult, hubHostAddress] =
+  const [mapInfoResult, visitingHoursResult, eventsResult, hubHostMapContext] =
     await Promise.all([
-    supabase
-      .from("map_info")
-      .select("formatted_address, id, no_address")
-      .eq("user_id", userId),
-    supabase
-      .from("visiting_hours")
-      .select("day_id, hours")
-      .eq("user_id", userId),
-    supabase
-      .from("events")
-      .select("id, image_url, title")
-      .eq("organizer_id", userId),
-    resolveHubHostAddress(supabase, userId),
-  ]);
+      supabase
+        .from("map_info")
+        .select("formatted_address, id, no_address")
+        .eq("user_id", userId),
+      supabase
+        .from("visiting_hours")
+        .select("day_id, hours")
+        .eq("user_id", userId),
+      buildEventsQuery(supabase, userId, tourStatus),
+      resolveHubHostMapContext(supabase, userId, tourStatus),
+    ]);
 
   const visitingHours =
     visitingHoursResult.data?.reduce(
@@ -165,7 +225,8 @@ const buildContactInfo = async (
     ) ?? null;
 
   const hasVisitingHours =
-    visitingHours !== null && Object.keys(visitingHours).length > 0;
+    visitingHours !== null &&
+    Object.values(visitingHours).some((times) => times.length > 0);
 
   const mapInfo = (mapInfoResult.data ?? []).map((map) => ({
     ...map,
@@ -174,7 +235,8 @@ const buildContactInfo = async (
 
   return {
     mapInfo,
-    hubHostAddress,
+    hubHostAddress: hubHostMapContext.address,
+    hubHostMapInfoId: hubHostMapContext.mapInfoId,
     phoneNumbers: participant.phone_numbers,
     visibleEmails: participant.visible_emails,
     visibleWebsites: participant.visible_websites,
@@ -194,7 +256,7 @@ export const getExhibitorBySlug = async (
       `
         user_id,
         slug,
-        special_program,
+        category,
         display_number,
         short_description,
         description,
@@ -223,35 +285,41 @@ export const getExhibitorBySlug = async (
   }
 
   const row = data as ParticipantRow;
-  const isSticky = await isParticipantSticky(supabase, row.user_id);
+  const [isSticky, tourStatus] = await Promise.all([
+    isParticipantSticky(supabase, row.user_id),
+    getTourStatus(supabase),
+  ]);
 
   if (row.status === "accepted" && !isSticky) {
-    const tourStatus = await getTourStatus(supabase);
     if (!isParticipantPubliclyVisible(row, tourStatus)) {
       throw new ExhibitorNotFoundError();
     }
   }
 
-  const placeholderUrl = getParticipantPlaceholderUrl(supabase);
+  const placeholderUrl = await getParticipantPlaceholderUrl(supabase);
   const participantName = getParticipantDisplayName(row);
-  const { data: imageData } = await supabase
-    .from("participant_image")
-    .select("id, image_url")
-    .eq("user_id", row.user_id)
-    .order("id", { ascending: true });
+
+  const [imageResult, contactInfo, type] = await Promise.all([
+    supabase
+      .from("participant_image")
+      .select("id, image_url")
+      .eq("user_id", row.user_id)
+      .order("id", { ascending: true }),
+    buildContactInfo(supabase, row.user_id, row, tourStatus),
+    getParticipantType(supabase, row.category),
+  ]);
 
   const carouselSlides = participantImagesToCarouselSlides(
     row.user_id,
     participantName,
-    (imageData ?? []) as { id: string | number; image_url: string }[],
+    (imageResult.data ?? []) as { id: string | number; image_url: string }[],
     placeholderUrl
   );
   const imageUrl = carouselSlides[0]?.imageUrl ?? placeholderUrl;
   const description = row.description?.trim() || null;
-  const contactInfo = await buildContactInfo(supabase, row.user_id, row);
 
-  return {
-    type: getParticipantType(row.special_program),
+  const participantWithoutNavigation = {
+    type,
     slug: row.slug,
     userId: row.user_id,
     name: participantName,
@@ -261,6 +329,16 @@ export const getExhibitorBySlug = async (
     description,
     status: row.status,
     is_sticky: isSticky,
+    is_active: row.is_active,
+    was_active_last_year: row.was_active_last_year,
     contactInfo,
+  };
+
+  return {
+    ...participantWithoutNavigation,
+    navigation: resolveExhibitorDetailNavigation(
+      participantWithoutNavigation,
+      tourStatus
+    ),
   };
 };

@@ -1,5 +1,6 @@
 import { revalidateHomeCitizensCache } from "@/lib/home";
 import { requireAdminToken } from "@/lib/admin/require-admin-token";
+import { toMediaKey, toMediaUrl } from "@/lib/media/media-url";
 import { NextResponse } from "next/server";
 import { citizenSchema } from "@/schemas/citizenSchema";
 import { config } from "@/config";
@@ -23,7 +24,12 @@ export async function GET(
 
     if (error) throw error;
 
-    return NextResponse.json({ citizens: data });
+    const citizens = (data ?? []).map((citizen) => ({
+      ...citizen,
+      image_url: toMediaUrl(citizen.image_url),
+    }));
+
+    return NextResponse.json({ citizens });
   } catch (error) {
     console.error(`Error fetching citizens for year ${year}:`, error);
     return NextResponse.json(
@@ -59,7 +65,7 @@ export async function POST(
       id: citizenId,
       name: validatedData.name,
       description: validatedData.description,
-      image_url: validatedData.image_url,
+      image_url: toMediaKey(validatedData.image_url),
       image_name: validatedData.image_name,
       year,
       section_id: "about-citizens-section",
@@ -78,7 +84,9 @@ export async function POST(
 
     return NextResponse.json({
       message: `Citizen created successfully for year ${year}`,
-      citizen: insertedCitizen,
+      citizen: insertedCitizen
+        ? { ...insertedCitizen, image_url: toMediaUrl(insertedCitizen.image_url) }
+        : insertedCitizen,
     });
   } catch (error) {
     console.error(`Error in POST /admin/about/citizens/${year}:`, error);

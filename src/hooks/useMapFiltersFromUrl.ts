@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMapStore } from "@/app/map/stores/use-map-store";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
+import { useParticipantCategories } from "@/context/ParticipantCategoriesContext";
 import type { MapFilters } from "@/lib/map/map-filters";
 import {
   mergeMapFilters,
@@ -34,9 +35,11 @@ export const useMapFiltersFromUrl = (): UseMapFiltersFromUrlReturn => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const { categorySlugs } = useParticipantCategories();
+
   const urlFilters = useMemo(
-    () => searchParamsToMapFilters(searchParams),
-    [searchParams]
+    () => searchParamsToMapFilters(searchParams, categorySlugs),
+    [searchParams, categorySlugs]
   );
 
   const optimisticFilters = useMapStore((state) => state.optimisticFilters);

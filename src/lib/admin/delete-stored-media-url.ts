@@ -1,49 +1,24 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-
-const parseStoredMediaUrl = (
-  url: string
-): { bucket: string; path: string } | null => {
-  if (!url) {
-    return null;
-  }
-
-  const marker = "/storage/v1/object/public/";
-  const markerIndex = url.indexOf(marker);
-  if (markerIndex === -1) {
-    return null;
-  }
-
-  const bucketAndPath = url.slice(markerIndex + marker.length);
-  const firstSlashIndex = bucketAndPath.indexOf("/");
-  if (firstSlashIndex === -1) {
-    return null;
-  }
-
-  return {
-    bucket: bucketAndPath.slice(0, firstSlashIndex),
-    path: bucketAndPath.slice(firstSlashIndex + 1),
-  };
-};
+import { config } from "@/config";
+import { toMediaKey } from "@/lib/media/media-url";
 
 const deleteStoredMediaUrl = async (
   supabase: SupabaseClient,
-  url: string | null | undefined
+  value: string | null | undefined
 ): Promise<void> => {
-  if (!url) {
-    return;
-  }
-
-  const parsed = parseStoredMediaUrl(url);
-  if (!parsed) {
+  // Stored values are now bucket-relative keys; toMediaKey also tolerates legacy
+  // absolute URLs. Local assets (leading "/") resolve to themselves and are skipped.
+  const key = toMediaKey(value);
+  if (!key || key.startsWith("/") || /^https?:\/\//i.test(key)) {
     return;
   }
 
   const { error } = await supabase.storage
-    .from(parsed.bucket)
-    .remove([parsed.path]);
+    .from(config.bucketName)
+    .remove([key]);
 
   if (error) {
-    console.warn("[delete-stored-media] Failed to delete:", url, error);
+    console.warn("[delete-stored-media] Failed to delete:", value, error);
   }
 };
 

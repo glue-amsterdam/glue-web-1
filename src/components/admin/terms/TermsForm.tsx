@@ -17,9 +17,16 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/editor";
 
+const TALL_EDITOR_CLASS =
+  "min-h-[300px] max-h-[60dvh] lg:h-[400px] overflow-y-auto bg-white text-black w-full p-2 focus:outline-none prose prose-sm max-w-none [&_a]:text-blue-500 [&_a]:underline [&_a]:cursor-pointer";
+
 const termsSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  subtitle: z.string().min(1, "Subtitle is required"),
   content: z.string().min(1, "Terms and conditions content is required"),
 });
 
@@ -76,6 +83,32 @@ export default function TermsForm({ initialData }: TermsFormProps) {
         <h2 className="text-xl font-semibold">General Terms and Conditions</h2>
         <FormField
           control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="subtitle"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Subtitle</FormLabel>
+              <FormControl>
+                <Textarea {...field} rows={3} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="content"
           render={({ field }) => (
             <FormItem>
@@ -83,6 +116,7 @@ export default function TermsForm({ initialData }: TermsFormProps) {
               <FormControl>
                 <RichTextEditor
                   maxLength={8000}
+                  editorClassName={TALL_EDITOR_CLASS}
                   value={field.value || ""}
                   onChange={field.onChange}
                 />
@@ -92,7 +126,7 @@ export default function TermsForm({ initialData }: TermsFormProps) {
           )}
         />
         <SaveChangesButton
-          watchFields={["content"]}
+          watchFields={["title", "subtitle", "content"]}
           className="w-full"
           isSubmitting={isSubmitting}
         />

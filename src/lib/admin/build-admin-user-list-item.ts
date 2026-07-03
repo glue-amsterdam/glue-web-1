@@ -60,7 +60,7 @@ const buildAdminUserListItem = (
     item.participantStatus = participant.status;
     item.participantIsSticky = enrichment.stickyParticipantIds.has(authUser.id);
     item.participantIsActive = participant.is_active;
-    item.participantSpecialProgram = participant.special_program;
+    item.participantCategory = participant.category;
     item.participantReactivationRequested = participant.reactivation_requested;
     item.participantReactivationStatus = participant.reactivation_status;
   }

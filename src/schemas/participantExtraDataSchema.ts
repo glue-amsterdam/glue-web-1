@@ -10,7 +10,7 @@ export const participantExtraDataSchema = z.object({
   visible_emails: z.array(z.string()).max(3, "Only 3 items max").nullable(),
   glue_communication_email: z
     .string()
-    .min(1, "Email for practical GLUE communication is required")
+    .min(1, "Required")
     .email("Please enter a valid email address"),
   visible_websites: z
     .array(z.string())

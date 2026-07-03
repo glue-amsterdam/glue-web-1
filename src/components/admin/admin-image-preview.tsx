@@ -32,7 +32,14 @@ export const AdminImagePreview = ({
       )}
     >
       {src ? (
-        <Image fill src={src} alt={alt} className="object-cover" sizes={sizes} />
+        <Image
+          key={src}
+          fill
+          src={src}
+          alt={alt}
+          className="object-cover"
+          sizes={sizes}
+        />
       ) : (
         <div className="flex h-full w-full items-center justify-center">
           <ImageIcon className="h-12 w-12 text-muted-foreground" />

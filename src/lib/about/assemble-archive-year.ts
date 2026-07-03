@@ -3,8 +3,9 @@ import { fetchCitizensForYear } from "@/lib/home/fetch-citizens-for-year";
 import { hasStickyContent } from "@/lib/home/fetch-sticky-group";
 import { fetchStickyGroupForYear } from "@/lib/home/fetch-sticky-group-for-year";
 import { fetchYearNumbersForYear } from "@/lib/year-numbers/fetch-year-numbers-for-year";
+import { toMediaUrl } from "@/lib/media/media-url";
 import type { ArchiveYearSection } from "@/schemas/aboutPageSchema";
-import { ABOUT_PAGE_FIXTURE } from "./about-page-fixture";
+import { ARCHIVE_FIXTURE_SECTIONS } from "./about-page-fixture";
 
 type ArchiveYearRow = {
   year: number;
@@ -25,13 +26,13 @@ const buildMediaFromRow = (
 
   if (yearRow.media_type === "video" && yearRow.video_src) {
     media.video = {
-      src: yearRow.video_src,
+      src: toMediaUrl(yearRow.video_src) ?? "",
       alt: yearRow.video_alt ?? `GLUE ${yearRow.year}`,
-      poster: yearRow.video_poster ?? "",
+      poster: toMediaUrl(yearRow.video_poster) ?? "",
     };
   } else if (yearRow.media_type === "image" && yearRow.image_src) {
     media.image = {
-      src: yearRow.image_src,
+      src: toMediaUrl(yearRow.image_src) ?? "",
       alt: yearRow.image_alt ?? `GLUE ${yearRow.year}`,
     };
   }
@@ -40,17 +41,7 @@ const buildMediaFromRow = (
 };
 
 const getFixtureSection = (year: number): ArchiveYearSection | null => {
-  const archive = ABOUT_PAGE_FIXTURE.blocks.find((b) => b.id === "archive");
-  if (!archive || archive.id !== "archive") {
-    return null;
-  }
-
-  const section = archive.default_section;
-  if (!section || section.year !== year) {
-    return null;
-  }
-
-  return section;
+  return ARCHIVE_FIXTURE_SECTIONS[year] ?? null;
 };
 
 const buildSectionFromRow = async (

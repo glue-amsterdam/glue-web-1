@@ -1,17 +1,27 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
+import PostsClientPage from "@/app/posts/posts-client-page";
 import BottomBlock from "@/components/bottom-block";
-import MainContainer from "@/components/main-container";
-import PostsList from "@/components/posts/posts-list";
+import PostsSectionIntro from "@/components/home/posts-section/posts-section-intro";
+import StaggerEnterContainer from "@/components/stagger-enter-container";
 import { config } from "@/config";
-import { getCachedPublishedPosts } from "@/lib/posts/cached-public-posts";
+import { fetchPostsPage } from "@/lib/posts/fetch-posts-page";
+import { buildPostsPageQueryParams } from "@/lib/posts/posts-url";
 import { postsMetadata } from "@/lib/metadata";
+import { sanitizeHtml } from "@/lib/sanitize-html";
 import { buildPostsCollectionJsonLd } from "@/lib/seo/build-json-ld";
+import { getCachedTextSection } from "@/lib/text-sections/cached-text-sections";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 export const metadata: Metadata = postsMetadata;
 
 export default async function PostsPage() {
-  const posts = await getCachedPublishedPosts();
-  const structuredData = buildPostsCollectionJsonLd(posts);
+  const [initialData, section] = await Promise.all([
+    fetchPostsPage(buildPostsPageQueryParams(0)),
+    getCachedTextSection("home-posts"),
+  ]);
+  const sanitizedDescription = sanitizeHtml(section.description);
+  const structuredData = buildPostsCollectionJsonLd(initialData.items);
 
   return (
     <main id="posts-page">
@@ -19,7 +29,7 @@ export default async function PostsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <MainContainer className="pt-(--nav-primary-h) stagger-enter">
+      <StaggerEnterContainer variant="enter" className="pt-(--nav-primary-h)">
         <nav className="sr-only" aria-label="Breadcrumb">
           <ol>
             <li>
@@ -29,10 +39,23 @@ export default async function PostsPage() {
           </ol>
         </nav>
         <section id="posts-section">
-          <PostsList posts={posts} />
+          <PostsSectionIntro
+            as="h1"
+            title={section.title}
+            descriptionHtml={sanitizedDescription}
+          />
+          <Suspense
+            fallback={
+              <div className="flex h-full items-center justify-center">
+                <LoadingSpinner />
+              </div>
+            }
+          >
+            <PostsClientPage initialData={initialData} />
+          </Suspense>
         </section>
         <BottomBlock />
-      </MainContainer>
+      </StaggerEnterContainer>
     </main>
   );
 }

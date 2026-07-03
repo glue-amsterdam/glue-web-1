@@ -17,6 +17,7 @@ import {
   visitorRegisterSchema,
   type VisitorParticipantAccountValues,
 } from "@/schemas/visitorSchemas";
+import Link from "next/link";
 
 export type VisitorAccountValues = z.infer<typeof visitorRegisterSchema>;
 
@@ -42,7 +43,7 @@ const defaultAccountValues: VisitorAccountFormState = {
   password: "",
   birthDate: "",
   areaId: "",
-  newsletterSubscribe: true,
+  newsletterSubscribe: false,
 };
 
 const ageRangeOptions = VISITOR_AGE_RANGES.map((range) => ({
@@ -62,7 +63,8 @@ const mapZodFieldErrors = (
 };
 
 type VisitorAccountStepBaseProps = {
-  onBack: () => void;
+  onBack?: () => void;
+  showBackButton?: boolean;
   initialValues?: Partial<VisitorAccountFormState>;
   submitError?: string;
   submitLabel?: string;
@@ -70,6 +72,7 @@ type VisitorAccountStepBaseProps = {
   submitDisabled?: boolean;
   isSubmitting?: boolean;
   loadingMessage?: string;
+  loginHref?: string;
 };
 
 type VisitorAccountStepWithCheckInProps = VisitorAccountStepBaseProps & {
@@ -92,13 +95,15 @@ export const VisitorAccountStep = ({
   workAreas = [],
   onSubmit,
   onBack,
+  showBackButton = true,
   initialValues,
   submitError,
-  submitLabel = "submit application",
-  backLabel = "Already have an account, Login here.",
+  submitLabel = "submit",
+  backLabel = "Back",
   submitDisabled = false,
   isSubmitting = false,
   loadingMessage = "Submitting…",
+  loginHref,
   ...rest
 }: VisitorAccountStepProps) => {
   const requireCheckInFields = rest.requireCheckInFields !== false;
@@ -153,7 +158,7 @@ export const VisitorAccountStep = ({
   if (isSubmitting) {
     return (
       <div
-        className="max-w-[508px] mx-auto pt-[40px] lg:pt-[60px] pb-[15px] lg:pb-[30px]"
+        className="max-w-[508px] mx-auto title-padding pb-[15px] lg:pb-[30px]"
         aria-busy="true"
         aria-live="polite"
       >
@@ -168,14 +173,13 @@ export const VisitorAccountStep = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-[508px] lg:max-w-[1045px] mx-auto pt-[40px] lg:pt-[60px] pb-[15px] lg:pb-[30px]"
+      className="w-full max-w-[508px] lg:max-w-[1045px] mx-auto title-padding pb-[15px] lg:pb-[30px]"
       noValidate
     >
-      <h1 className="title-text pb-[30px]">Create Account</h1>
       {submitError ? (
         <p
           role="alert"
-          className="max-w-[508px] mx-auto pb-[15px] base-text-size text-(--primary-color)"
+          className="max-w-[508px] mx-auto pb-[15px] body-text text-(--primary-color)"
         >
           {submitError}
         </p>
@@ -242,37 +246,47 @@ export const VisitorAccountStep = ({
           </>
         ) : null}
 
-        <div className="flex flex-col gap-4">
-          <div className="flex items-start gap-2">
-            <input
-              type="checkbox"
-              id="newsletterSubscribe"
-              checked={values.newsletterSubscribe}
-              onChange={(event) => handleNewsletterChange(event.target.checked)}
-              className="size-[12px] shrink-0 border border-(--black-color) accent-(--primary-color)"
-            />
-            <label
-              htmlFor="newsletterSubscribe"
-              className="cursor-pointer mini-text-size"
-            >
-              Subscribe to newsletter
-            </label>
-          </div>
+
+        <div className="flex gap-[5px]">
+          <input
+            type="checkbox"
+            id="newsletterSubscribe"
+            checked={values.newsletterSubscribe}
+            onChange={(event) => handleNewsletterChange(event.target.checked)}
+            className="size-[15px] border border-(--black-color) accent-(--primary-color) checked:accent-(--primary-color)"
+          />
+          <label
+            htmlFor="newsletterSubscribe"
+            className="cursor-pointer body-text"
+          >
+            Subscribe to newsletter
+          </label>
         </div>
       </div>
 
-      <div className="flex justify-between pt-[30px] gap-4">
-        <button
-          type="button"
-          onClick={onBack}
-          className={
-            backLabel.includes("Login")
-              ? "base-text-size text-left max-w-[155px] lg:max-w-none hover:underline cursor-pointer"
-              : "base-text-size text-left hover:underline cursor-pointer"
-          }
-        >
-          {backLabel}
-        </button>
+
+      <div
+        className={
+          loginHref || (showBackButton && onBack)
+            ? "flex justify-between items-end pt-[30px] gap-4"
+            : "flex justify-end pt-[30px] gap-4"
+        }
+      >
+        {loginHref ? (
+          <p className="body-text max-w-[160px] lg:max-w-none">
+            <Link href={loginHref} className="">
+              Already have an account? Log in here.
+            </Link>
+          </p>
+        ) : showBackButton && onBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="body-text text-left cursor-pointer"
+          >
+            {backLabel}
+          </button>
+        ) : null}
         <BigButton
           as="submit"
           label={submitLabel}

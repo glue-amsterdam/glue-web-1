@@ -1,6 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
-import { classifyLocationType } from "./classify-location-type";
+import {
+  DEFAULT_PARTICIPANT_CATEGORIES,
+  classifyCategory,
+} from "@/lib/participants/participant-categories";
 import type {
   MapLocation,
   MapLocationDetailMember,
@@ -50,7 +53,14 @@ const legacyType = (
   memberCount: number
 ): ExhibitorType => {
   if (location.is_hub || memberCount > 3) return "hub";
-  return classifyLocationType(memberCount, location.is_special_program);
+  const assignedCategory = location.is_special_program
+    ? "special-program"
+    : "standard";
+  return classifyCategory(
+    memberCount,
+    assignedCategory,
+    DEFAULT_PARTICIPANT_CATEGORIES
+  );
 };
 
 const buildLegacyHubMembers = (

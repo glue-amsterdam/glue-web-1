@@ -1,5 +1,9 @@
 import { z } from "zod";
 import { invoiceDataTypeSchema } from "@/schemas/invoiceSchemas";
+import {
+  mapInfoFieldsFromData,
+  refineMapInfoLocation,
+} from "@/schemas/mapInfoSchemas";
 import { participantExtraDataSchema } from "@/schemas/participantExtraDataSchema";
 
 const emptyToNull = (val: unknown) => (val === "" ? null : val);
@@ -40,14 +44,19 @@ export const reactivationNotesSchema = z
 
 export type ReactivationNotes = z.infer<typeof reactivationNotesSchema>;
 
-/** Stricter schema for new reactivation request submissions (plan required). */
-export const reactivationRequestSubmissionSchema =
+export const reactivationRequestSubmissionFieldsSchema =
   reactivationNotesSchema.extend({
     plan_id: z.string().min(1, "You must select a plan"),
     termsAccepted: z.boolean().refine((val) => val === true, {
       message: "You must accept the General terms and conditions",
     }),
   });
+
+/** Stricter schema for new reactivation request submissions (plan required). */
+export const reactivationRequestSubmissionSchema =
+  reactivationRequestSubmissionFieldsSchema.superRefine((data, ctx) =>
+    refineMapInfoLocation(mapInfoFieldsFromData(data), ctx)
+  );
 
 export type ReactivationRequestSubmission = z.infer<
   typeof reactivationRequestSubmissionSchema
@@ -70,7 +79,7 @@ export const participantDetailsSchema = z.object({
     .max(5000, "Description must be less than 5000 characters")
     .nullable(),
   slug: z.string().min(1, "Slug is required"),
-  special_program: z.boolean(),
+  category: z.string().min(1, "Category is required"),
   status: z.enum(["pending", "accepted", "declined"]),
   is_active: z.boolean(),
   reactivation_requested: z.boolean(),

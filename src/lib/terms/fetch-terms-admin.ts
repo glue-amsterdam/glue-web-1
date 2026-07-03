@@ -1,10 +1,16 @@
-import { TERMS_CACHE_TAG } from "@/lib/terms/get-cached-terms";
+import {
+  DEFAULT_TERMS_SUBTITLE,
+  DEFAULT_TERMS_TITLE,
+  TERMS_CACHE_TAG,
+} from "@/lib/terms/get-cached-terms";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 export const termsSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  subtitle: z.string().min(1, "Subtitle is required"),
   content: z.string().min(1, "Terms and conditions content is required"),
 });
 
@@ -12,6 +18,12 @@ export type TermsData = z.infer<typeof termsSchema> & { id?: string };
 
 const DEFAULT_TERMS_CONTENT =
   "<p>Terms and conditions content will be displayed here.</p>";
+
+const DEFAULT_TERMS_DATA: TermsData = {
+  title: DEFAULT_TERMS_TITLE,
+  subtitle: DEFAULT_TERMS_SUBTITLE,
+  content: DEFAULT_TERMS_CONTENT,
+};
 
 export const fetchTerms = async (
   supabase?: SupabaseClient
@@ -24,12 +36,17 @@ export const fetchTerms = async (
 
   if (error) {
     if (error.code === "PGRST116" || error.code === "42P01") {
-      return { content: DEFAULT_TERMS_CONTENT };
+      return DEFAULT_TERMS_DATA;
     }
     throw error;
   }
 
-  return data ?? { content: "" };
+  return {
+    title: data?.title ?? DEFAULT_TERMS_TITLE,
+    subtitle: data?.subtitle ?? DEFAULT_TERMS_SUBTITLE,
+    content: data?.content ?? "",
+    id: data?.id,
+  };
 };
 
 export const upsertTerms = async (
@@ -49,6 +66,8 @@ export const upsertTerms = async (
     const { data, error } = await client
       .from("terms_and_conditions")
       .update({
+        title: validatedData.title,
+        subtitle: validatedData.subtitle,
         content: validatedData.content,
         updated_at: new Date().toISOString(),
       })
@@ -66,6 +85,8 @@ export const upsertTerms = async (
   const { data, error } = await client
     .from("terms_and_conditions")
     .insert({
+      title: validatedData.title,
+      subtitle: validatedData.subtitle,
       content: validatedData.content,
       updated_at: new Date().toISOString(),
     })

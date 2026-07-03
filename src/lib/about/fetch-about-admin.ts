@@ -1,6 +1,7 @@
 import { HOME_EXHIBITORS_HEADER_CACHE_TAG } from "@/lib/participants/fetch-home-exhibitors-header";
 import { revalidateHomeStickyCache, revalidateHomeCitizensCache } from "@/lib/home";
 import { revalidateSponsorsCache } from "@/lib/about/revalidate-sponsors-cache";
+import { ensureSponsorTypeIds } from "@/lib/about/sponsor-type-utils";
 import { participantsSectionSchema } from "@/schemas/participantsAdminSchema";
 import { curatedMembersSectionSchema } from "@/schemas/curatedSchema";
 import {
@@ -11,6 +12,7 @@ import {
 } from "@/schemas/sponsorsSchema";
 import { createClient } from "@/utils/supabase/server";
 import { config } from "@/config";
+import { toMediaKey, toMediaUrl } from "@/lib/media/media-url";
 import { revalidatePath, revalidateTag } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CitizensSectionHeader } from "@/schemas/citizenSchema";
@@ -159,7 +161,10 @@ export const fetchAboutSponsors = async (
     throw error;
   }
 
-  return data ?? [];
+  return (data ?? []).map((sponsor) => ({
+    ...sponsor,
+    image_url: toMediaUrl(sponsor.image_url) ?? "",
+  }));
 };
 
 export const fetchAboutSponsorsHeader = async (
@@ -176,7 +181,10 @@ export const fetchAboutSponsorsHeader = async (
     throw error;
   }
 
-  return data;
+  return {
+    ...data,
+    sponsors_types: ensureSponsorTypeIds(data.sponsors_types ?? []),
+  };
 };
 
 export const updateAboutSponsorsHeader = async (
@@ -184,7 +192,10 @@ export const updateAboutSponsorsHeader = async (
   supabase?: SupabaseClient
 ) => {
   const client = supabase ?? (await createClient());
-  const validatedData = sponsorsHeaderSchema.parse(input);
+  const validatedData = sponsorsHeaderSchema.parse({
+    ...input,
+    sponsors_types: ensureSponsorTypeIds(input.sponsors_types),
+  });
 
   const { data, error } = await client
     .from("about_sponsors_header")
@@ -204,7 +215,10 @@ export const updateAboutSponsorsHeader = async (
 
   revalidateSponsorsCache();
 
-  return data;
+  return {
+    ...data,
+    sponsors_types: ensureSponsorTypeIds(data.sponsors_types ?? []),
+  };
 };
 
 export const createAboutSponsor = async (
@@ -220,7 +234,7 @@ export const createAboutSponsor = async (
       name: validatedData.name,
       website: validatedData.website,
       sponsor_type: validatedData.sponsor_type,
-      image_url: validatedData.image_url,
+      image_url: toMediaKey(validatedData.image_url),
     })
     .select()
     .single();
@@ -231,7 +245,7 @@ export const createAboutSponsor = async (
 
   revalidateSponsorsCache();
 
-  return data;
+  return data ? { ...data, image_url: toMediaUrl(data.image_url) } : data;
 };
 
 export const updateAboutSponsor = async (
@@ -251,18 +265,10 @@ export const updateAboutSponsor = async (
     throw fetchError;
   }
 
-  if (
-    currentSponsor &&
-    validatedData.image_url !== currentSponsor.image_url
-  ) {
-    const oldImagePath = new URL(currentSponsor.image_url).pathname
-      .split("/")
-      .pop();
-    if (oldImagePath) {
-      await client.storage
-        .from(config.bucketName)
-        .remove([`about/sponsors/${oldImagePath}`]);
-    }
+  const currentKey = toMediaKey(currentSponsor?.image_url);
+  const nextKey = toMediaKey(validatedData.image_url);
+  if (currentKey && currentKey !== nextKey) {
+    await client.storage.from(config.bucketName).remove([currentKey]);
   }
 
   const { data, error } = await client
@@ -271,7 +277,7 @@ export const updateAboutSponsor = async (
       name: validatedData.name,
       website: validatedData.website,
       sponsor_type: validatedData.sponsor_type,
-      image_url: validatedData.image_url,
+      image_url: nextKey,
     })
     .eq("id", validatedData.id)
     .select()
@@ -283,7 +289,7 @@ export const updateAboutSponsor = async (
 
   revalidateSponsorsCache();
 
-  return data;
+  return data ? { ...data, image_url: toMediaUrl(data.image_url) } : data;
 };
 
 export const deleteAboutSponsor = async (
@@ -302,14 +308,10 @@ export const deleteAboutSponsor = async (
     throw fetchError;
   }
 
-  if (sponsorData?.image_url) {
+  const sponsorKey = toMediaKey(sponsorData?.image_url);
+  if (sponsorKey) {
     try {
-      const imageUrl = new URL(sponsorData.image_url);
-      const pathParts = imageUrl.pathname.split("/");
-      const imagePath = pathParts[pathParts.length - 1];
-      await client.storage
-        .from(config.bucketName)
-        .remove([`about/sponsors/${imagePath}`]);
+      await client.storage.from(config.bucketName).remove([sponsorKey]);
     } catch {
       // Continue with sponsor deletion even if image deletion fails
     }
@@ -355,7 +357,7 @@ export const fetchAboutCarouselAdmin = async (supabase?: SupabaseClient) => {
     text_color: carouselData.text_color,
     slides: (slides ?? []).map((slide) => ({
       id: slide.id,
-      image_url: slide.image_url,
+      image_url: toMediaUrl(slide.image_url) ?? "",
       image_name: slide.image_name,
     })),
   };

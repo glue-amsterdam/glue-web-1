@@ -10,7 +10,7 @@ export const fetchPostSummaries = async (
 ): Promise<PostSummaryData[]> => {
   const { data, error } = await supabase
     .from("posts")
-    .select("id, title, status, created_at, slug, author, keywords, content_html, updated_at")
+    .select("id, title, status, created_at, slug, author, keywords, content_html, thumbnail, updated_at")
     .order("created_at", { ascending: false });
 
   if (error) {

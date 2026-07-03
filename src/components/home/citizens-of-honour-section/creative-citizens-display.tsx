@@ -6,7 +6,7 @@ import { useCyclicIndex } from "@/hooks/useCyclicIndex";
 import CreativeCitizensContentDesktop from "./creative-citizens-content-desktop";
 import CreativeCitizensContentMobile from "./creative-citizens-content-mobile";
 
-const AUTOPLAY_DELAY_MS = 6000;
+const AUTOPLAY_DELAY_MS = 3000;
 
 type Props = {
   description: string;
@@ -25,6 +25,7 @@ const CreativeCitizensDisplay = ({
     handleMouseEnter,
     handleMouseLeave,
     handleSelect,
+    handleAdvance,
   } = useCyclicIndex({
     itemCount: citizens.length,
     delayMs: AUTOPLAY_DELAY_MS,
@@ -39,7 +40,7 @@ const CreativeCitizensDisplay = ({
 
   return (
     <article
-      className="pt-[40px] lg:pt-[60px]"
+      className="title-padding"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -61,6 +62,7 @@ const CreativeCitizensDisplay = ({
           hasMultiple={hasMultiple}
           currentIndex={currentIndex}
           handleSelect={handleSelect}
+          handleAdvance={handleAdvance}
           citizens={citizens}
           archiveYear={archiveYear}
         />
@@ -71,6 +73,7 @@ const CreativeCitizensDisplay = ({
           hasMultiple={hasMultiple}
           currentIndex={currentIndex}
           handleSelect={handleSelect}
+          handleAdvance={handleAdvance}
           citizens={citizens}
           archiveYear={archiveYear}
         />

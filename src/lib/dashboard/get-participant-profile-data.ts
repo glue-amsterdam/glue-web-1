@@ -3,6 +3,7 @@ import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
 import type { PlanType } from "@/schemas/plansSchema";
 import type { VisitingHoursDays } from "@/schemas/visitingHoursSchema";
 import { getPlanMaxImagesForUser } from "@/lib/plans/get-plan-max-images-for-user";
+import { toMediaUrl } from "@/lib/media/media-url";
 import { createClient } from "@/utils/supabase/server";
 
 export type ProfileImageRow = {
@@ -59,7 +60,10 @@ export const getParticipantProfileData = async (
     participantDetails: participantDetailsRes.data ?? null,
     visitingHours: visitingHoursRes.data ?? [],
     invoiceData: invoiceDataRes.data ?? null,
-    profileImages: profileImagesRes.data ?? [],
+    profileImages: (profileImagesRes.data ?? []).map((image) => ({
+      ...image,
+      image_url: toMediaUrl(image.image_url) ?? "",
+    })),
     planMaxImages,
     plans: (plansRes.data ?? []) as PlanType[],
   };

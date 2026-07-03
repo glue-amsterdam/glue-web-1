@@ -79,11 +79,6 @@ export const buildHubMapSelectionFallbackIndex = (
       if (member.ownMapInfoId) {
         setFallbackEntry(fallback, member.ownMapInfoId, hubLocation, member);
       }
-
-      const memberLocationId = member.locationId ?? hubLocation.id;
-      if (memberLocationId !== hubLocation.id) {
-        setFallbackEntry(fallback, memberLocationId, hubLocation, member);
-      }
     }
   }
 

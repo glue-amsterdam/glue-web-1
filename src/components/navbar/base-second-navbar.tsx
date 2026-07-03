@@ -20,6 +20,7 @@ type FilterButtonProps<TFilterId extends string> = {
     panelId: string;
     label: string;
     isActive?: boolean;
+    isOpen?: boolean;
     onToggle: (filter: TFilterId) => void;
     onKeyDown: (
         event: KeyboardEvent<HTMLButtonElement>,
@@ -35,7 +36,7 @@ const LabelWithPlusButton = ({
     isOpen: boolean;
 }) => (
     <div className="flex gap-[10px] lg:gap-[15px] items-center">
-        <p className="text-[15px] leading-[15px] lg:text-[19px] lg:leading-[25px]">
+        <p className="body-text">
             {label}
         </p>
         <span>
@@ -50,10 +51,11 @@ export const FilterButton = <TFilterId extends string>({
     panelId,
     label,
     isActive = false,
+    isOpen: isOpenOverride,
     onToggle,
     onKeyDown,
 }: FilterButtonProps<TFilterId>) => {
-    const isOpen = openFilter === filterId;
+    const isOpen = isOpenOverride ?? openFilter === filterId;
 
     return (
         <button
@@ -103,7 +105,7 @@ const BaseSecondNavbar = forwardRef<HTMLDivElement, BaseSecondNavbarProps>(
                     onKeyDown={onSearchKeyDown}
                     placeholder="Search"
                     aria-label={searchAriaLabel}
-                    className="base-text-size h-[20px] lg:h-[30px] max-w-[170px] lg:max-w-[300px] placeholder:text-[15px] placeholder:leading-[15px] lg:placeholder:text-[19px] lg:placeholder:leading-[25px] placeholder:text-[var(--gray-color)] border-b lg:border-b-2 border-[var(--black-color)] focus:outline-none focus:ring-0"
+                    className="navbar-search-input base-text-size h-[20px] lg:h-[30px] max-w-[170px] lg:max-w-[300px] placeholder:body-text placeholder:text-[var(--gray-color)] border-b lg:border-b-2 border-[var(--black-color)] focus:outline-none focus:ring-0"
                 />
                 {searchAfter}
             </div>

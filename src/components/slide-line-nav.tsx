@@ -8,10 +8,10 @@ type SlideLineNavProps = {
   currentIndex: number;
   onSelect: (index: number) => void;
   ariaLabel: string;
-  size?: "default" | "compact";
+  size?: "default" | "compact" | "desktop";
 };
 
-const getNavClassName = (size: "default" | "compact") => {
+const getNavClassName = (size: "default" | "compact" | "desktop") => {
   if (size === "compact") {
     return "flex justify-center w-full flex-wrap gap-[6px] pt-[10px]";
   }
@@ -21,13 +21,20 @@ const getNavClassName = (size: "default" | "compact") => {
 
 const getLineButtonClassName = (
   isActive: boolean,
-  size: "default" | "compact"
+  size: "default" | "compact" | "desktop"
 ) => {
   const base =
     "h-2 shrink-0 cursor-pointer border-0 border-[var(--black-color)] bg-transparent p-0";
 
   if (size === "compact") {
-    return `${base} w-[36px] ${isActive ? "border-b-[2px]" : "border-b-[1px]"}`;
+    return `${base} w-[36px] ${isActive ? "border-b-[3px]" : "border-b-[1px]"}`;
+  }
+
+  if (size === "desktop") {
+    return `${base} w-[90px] lg:w-[150px] ${isActive
+      ? "border-b-[3px] lg:border-b-[4px]"
+      : "border-b-[1px] lg:border-b-[2px]"
+      }`;
   }
 
   return `${base} w-[90px] lg:w-[150px] ${isActive

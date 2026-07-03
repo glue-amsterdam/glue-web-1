@@ -24,7 +24,7 @@ export const getBigButtonClassName = ({
     fontSize === "small"
       ? "text-[10px] leading-[10px]"
       : fontSize === "base"
-        ? "text-[15px] lg:text-[19px] leading-[21px] lg:leading-[19px]"
+        ? "body-text lg:button-text"
         : "";
 
   const modeClass =

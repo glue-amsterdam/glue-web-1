@@ -8,7 +8,13 @@ export default async function TermsPage() {
 
   return (
     <div className="flex flex-col gap-4 rounded-lg bg-white p-4 shadow-md">
-      <TermsForm initialData={{ content: termsData.content }} />
+      <TermsForm
+        initialData={{
+          title: termsData.title,
+          subtitle: termsData.subtitle,
+          content: termsData.content,
+        }}
+      />
     </div>
   );
 }

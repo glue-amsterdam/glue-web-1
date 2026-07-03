@@ -13,7 +13,7 @@ const CmsIntroSection = async ({ slug }: Props) => {
   return (
     <section id={section.sectionId}>
       <h1 className="title-text">{section.title.toUpperCase()}</h1>
-      <p className="pt-[40px] base-text-size lg:max-w-(--paragraph-max-width)">
+      <p className="title-padding body-label lg:max-w-(--paragraph-max-width)">
         {section.description}
       </p>
     </section>

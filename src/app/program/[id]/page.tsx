@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BottomBlock from "@/components/bottom-block";
-import MainContainer from "@/components/main-container";
+import StaggerEnterContainer from "@/components/stagger-enter-container";
 import ProgramDetailView from "@/components/program/program-detail-view";
 import { config } from "@/config";
 import { fetchProgramDetail } from "@/lib/program/fetch-program-detail";
@@ -63,7 +63,7 @@ export default async function ProgramEventPage({ params }: PageProps) {
 
     return (
       <main id="program-detail-page">
-        <MainContainer className="stagger-enter-fade">
+        <StaggerEnterContainer variant="fade">
           <nav className="sr-only" aria-label="Breadcrumb">
             <ol>
               <li>
@@ -77,7 +77,7 @@ export default async function ProgramEventPage({ params }: PageProps) {
           </nav>
           <ProgramDetailView event={event} />
           <BottomBlock />
-        </MainContainer>
+        </StaggerEnterContainer>
       </main>
     );
   } catch (error) {

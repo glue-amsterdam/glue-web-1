@@ -5,7 +5,7 @@ import { loadHomePageData } from "@/lib/home/load-home-page-data";
 import { getCachedMainLinks } from "@/lib/main/get-main-links";
 import { getOrganizationSameAs } from "@/lib/seo/organization-same-as";
 
-import MainContainer from "@/components/main-container";
+import StaggerEnterContainer from "@/components/stagger-enter-container";
 import Hero from "@/components/home/hero-section/hero";
 import ExhibitorsHome from "@/components/home/exhibitors-section/exhibitors-home";
 import CreativeCitizensOfHonour from "@/components/home/citizens-of-honour-section/creative-citizens-of-honour";
@@ -15,6 +15,7 @@ import HomePostsSection from "@/components/home/posts-section/home-posts-section
 import BottomBlock from "@/components/bottom-block";
 import Separator from "@/components/separator";
 
+/** Must match PUBLIC_MEDIA_CACHE_REVALIDATE_SECONDS (segment config requires a literal). */
 export const revalidate = 2_592_000;
 
 const buildHomeStructuredData = (sameAs: string[]) => ({
@@ -54,7 +55,7 @@ export default async function Page() {
 
   return (
     <main id="main-content" className="first-padding">
-      <MainContainer className="stagger-enter">
+      <StaggerEnterContainer variant="enter">
         <Hero
           videoUrl={homeHeroData.videoUrl}
           posterUrl={homeHeroData.posterUrl}
@@ -75,7 +76,7 @@ export default async function Page() {
         <HomePostsSection />
 
         <BottomBlock />
-      </MainContainer>
+      </StaggerEnterContainer>
     </main>
   );
 }

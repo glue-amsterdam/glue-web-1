@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useMediaQuery } from "@/hooks/userMediaQuery";
 import {
   Accordion,
   AccordionContent,
@@ -33,7 +34,7 @@ const FaqItemContent = ({ sanitizedAnswer }: { sanitizedAnswer: string }) => {
 
   return (
     <div
-      className="base-text-size"
+      className="body-text post-content"
       dangerouslySetInnerHTML={{ __html: sanitizedAnswer }}
     />
   );
@@ -48,19 +49,21 @@ const FaqItemTrigger = ({
 }) => (
   <AccordionTrigger
     hideIcon
-    className="group base-text-size main-boder-top hover:no-underline py-[15px]"
+    className="group versal-body-text main-boder-top lg:border-0 hover:no-underline py-[15px] lg:pointer-events-none"
   >
     <div className="flex w-full flex-1 flex-col">
       <div className="flex w-full items-start justify-between gap-3">
         <span
           id={`${itemId}-question`}
-          className="base-text-size text-left"
+          className="versal-body-text text-left"
           role="heading"
           aria-level={3}
         >
           {item.question.toUpperCase()}
         </span>
-        <AccordionPlusCrossIcon />
+        <span className="lg:hidden">
+          <AccordionPlusCrossIcon />
+        </span>
       </div>
     </div>
   </AccordionTrigger>
@@ -68,6 +71,24 @@ const FaqItemTrigger = ({
 
 const FaqBlockClient = ({ block, sanitized }: Props) => {
   const [openIds, setOpenIds] = useState<string[]>([]);
+  const isLargeScreen = useMediaQuery("(min-width: 1024px)");
+  const allItemIds = useMemo(
+    () => block.items.map((item, index) => getFaqItemId(item, index)),
+    [block.items]
+  );
+
+  useEffect(() => {
+    if (isLargeScreen) {
+      setOpenIds(allItemIds);
+    }
+  }, [isLargeScreen, allItemIds]);
+
+  const handleValueChange = (value: string[]) => {
+    if (isLargeScreen) {
+      return;
+    }
+    setOpenIds(value);
+  };
 
   if (!block.is_visible) {
     return null;
@@ -86,10 +107,10 @@ const FaqBlockClient = ({ block, sanitized }: Props) => {
       ) : null}
       <Accordion
         type="multiple"
-        className="w-full pt-[40px] lg:grid lg:grid-cols-2 lg:gap-x-[30px] lg:gap-y-[60px]"
+        className="w-full title-padding lg:grid lg:grid-cols-2 lg:gap-x-[30px] lg:gap-y-[60px]"
         aria-label={block.title}
-        value={openIds}
-        onValueChange={setOpenIds}
+        value={isLargeScreen ? allItemIds : openIds}
+        onValueChange={handleValueChange}
       >
         {block.items.map((item, index) => {
           const itemId = getFaqItemId(item, index);
@@ -98,7 +119,7 @@ const FaqBlockClient = ({ block, sanitized }: Props) => {
             <AccordionItem key={itemId} value={itemId} className="border-b-0">
               <FaqItemTrigger item={item} itemId={itemId} />
               <AccordionContent
-                className="pt-[30px]"
+                className="pt-[15px]"
                 aria-labelledby={`${itemId}-question`}
               >
                 <FaqItemContent sanitizedAnswer={sanitized.answers[index] ?? ""} />

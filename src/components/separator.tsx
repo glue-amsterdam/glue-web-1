@@ -1,10 +1,13 @@
+import { cn } from '@/lib/utils';
 import React from 'react'
 
-type Props = {}
+type Props = {
+    noBorderBottom?: boolean;
+}
 
-function Separator({ }: Props) {
+function Separator({ noBorderBottom }: Props) {
     return (
-        <div className='main-boder-bottom main-padding' aria-hidden="true" />
+        <div className={cn('main-padding', noBorderBottom ? 'border-b-0' : 'main-boder-bottom')} aria-hidden="true" />
     )
 }
 

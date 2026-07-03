@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const sponsorTypeSchema = z.object({
+  id: z.string().min(1, "Sponsor type id cannot be empty"),
   label: z.string().min(1, "Sponsor type cannot be empty"),
 });
 

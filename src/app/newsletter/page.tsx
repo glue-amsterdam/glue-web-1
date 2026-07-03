@@ -1,7 +1,7 @@
 "use client";
 
 
-import CrossButton from '@/components/cross-button';
+import StaggerEnterContainer from "@/components/stagger-enter-container";
 import HeadlineWCross from '@/components/headline-w-cross';
 import MainContainer from '@/components/main-container';
 import NewsletterForm from '@/components/newsletter/newsletter-form';
@@ -17,11 +17,11 @@ function Page() {
     return (
         <main id="newsletter-page" className="first-padding pb-[65px] md:pb-[105px]">
             <MainContainer>
-                <section id="newsletter-section" className="stagger-enter">
+                <StaggerEnterContainer as="section" variant="enter" id="newsletter-section">
                     <HeadlineWCross title={pageTexts.title} />
                     <p className="sr-only">{pageTexts.description}</p>
                     <NewsletterForm />
-                </section>
+                </StaggerEnterContainer>
             </MainContainer>
         </main>
     );

@@ -7,7 +7,6 @@ import {
   getCachedAboutMissionBlock,
   getCachedAboutPressBlock,
   getCachedAboutTeamBlock,
-  getCachedArchiveYear,
 } from "./cached-about-data";
 import { buildFooterAboutLinks, buildNavbar } from "./build-navbar";
 import type { FooterAboutLink } from "./build-navbar";
@@ -16,8 +15,6 @@ import { ABOUT_BLOCK_IDS } from "@/schemas/aboutPageSchema";
 import {
   type AboutBlock,
   type AboutPageData,
-  type ArchiveBlock,
-  type ArchiveYearSection,
   type NewsletterBlock,
 } from "@/schemas/aboutPageSchema";
 import { aboutPageSchema } from "@/schemas/aboutPageSchema";
@@ -147,36 +144,11 @@ export const loadAboutPageData = async (): Promise<AboutPageData> => {
     loadAboutSection("block-display-order", getCachedAboutBlockDisplayOrder, []),
   ]);
 
-  const archive = { ...archiveBlock } as ArchiveBlock;
-
-  if (archive.is_visible && archive.years.length > 0) {
-    const sectionResults = await Promise.all(
-      archive.years.map((year) =>
-        loadAboutSection(
-          `archive-year-${year}`,
-          () => getCachedArchiveYear(year),
-          null
-        )
-      )
-    );
-
-    const preloadedSections = sectionResults.filter(
-      (section): section is ArchiveYearSection => section != null
-    );
-
-    archive.preloaded_sections = preloadedSections;
-
-    const defaultYear = archive.default_year ?? archive.years[0];
-    archive.default_section =
-      preloadedSections.find((section) => section.year === defaultYear) ??
-      preloadedSections[0];
-  }
-
   const blocksById = new Map<string, AboutBlock>([
     [ABOUT_BLOCK_IDS.TEAM, teamBlock],
     [ABOUT_BLOCK_IDS.FOUNDATION, foundationBlock],
     [ABOUT_BLOCK_IDS.PRESS, pressBlock],
-    [ABOUT_BLOCK_IDS.ARCHIVE, archive],
+    [ABOUT_BLOCK_IDS.ARCHIVE, archiveBlock],
     [ABOUT_BLOCK_IDS.FAQ, faqBlock],
     [ABOUT_BLOCK_IDS.MISSION, missionBlock],
   ]);

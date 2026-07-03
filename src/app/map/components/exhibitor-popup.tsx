@@ -15,6 +15,7 @@ import { buildExhibitorFooterSlides, findExhibitorSlideIndex } from "@/lib/map/e
 import { buildGoogleMapsSearchUrl } from "@/lib/map/utils";
 import BigButton from "@/components/big-button";
 import SlideLineNav from "@/components/slide-line-nav";
+import PreloadedImageStack from "@/components/preloaded-image-stack";
 
 type ExhibitorPopUpProps = {
   location: MapLocation;
@@ -54,6 +55,7 @@ const ExhibitorPopUp = ({
     handleMouseEnter,
     handleMouseLeave,
     handleSelect,
+    handleAdvance,
   } = useCyclicIndex({
     itemCount: slides.length,
     delayMs: 3000,
@@ -117,6 +119,21 @@ const ExhibitorPopUp = ({
             <div className="h-full w-full flex items-center justify-center">
               <LoadingSpinner />
             </div>
+          ) : hasMultiple ? (
+            <PreloadedImageStack
+              slides={slides.map((slide) => ({
+                id: slide.id,
+                src: slide.imageUrl ?? null,
+                alt: `Image of ${slide.name}`,
+              }))}
+              currentIndex={currentIndex}
+              onAdvance={hasMultiple ? handleAdvance : undefined}
+              className="relative h-full w-full"
+              sizes="(max-width: 768px) 100vw, 33vw"
+              objectFit="contain"
+              objectPosition="center"
+              fullWidth
+            />
           ) : currentSlide.imageUrl ? (
 
             <Image

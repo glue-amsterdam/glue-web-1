@@ -42,21 +42,6 @@ export const siteThemeColorsSchema = z.object({
   backgroundColor: hexColorSchema.min(1, "Background color is required"),
   blackColor: hexColorSchema.min(1, "Black color is required"),
   whiteColor: hexColorSchema.min(1, "White color is required"),
-  upToThreeParticipantsColor: hexColorSchema.min(
-    1,
-    "Up to three participants color is required"
-  ),
-  hubColor: hexColorSchema.min(1, "Hub color is required"),
-  specialProgramColor: hexColorSchema.min(1, "Special program color is required"),
-  hubFontColor: hexColorSchema.min(1, "Hub font color is required"),
-  upToThreeParticipantsFontColor: hexColorSchema.min(
-    1,
-    "Up to three participants font color is required"
-  ),
-  specialProgramFontColor: hexColorSchema.min(
-    1,
-    "Special program font color is required"
-  ),
 });
 
 export const mainColorsFormSchema = homeBackgroundColorsSchema.merge(

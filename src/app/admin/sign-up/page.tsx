@@ -24,12 +24,33 @@ export default async function SignUpAdminPage() {
   return (
     <div className="space-y-10">
       <section className="border-t pt-8">
-        <h2 className="title-text mb-4">Sign Up Page</h2>
+        <h2 className="title-text mb-4">Restricted sign up</h2>
+        <p className="body-text mb-4 text-muted-foreground">
+          Shown when signupSource=restricted (map, program, exhibitors).
+        </p>
         <TextSectionAdminForm
-          slug="sign-up-intro"
-          sectionTitle="Sign Up Page"
+          slug="sign-up-intro-restricted"
+          sectionTitle="Restricted sign up"
           plainDescription
-          initialData={getTextSectionBySlug(signUpTextSections, "sign-up-intro")}
+          initialData={getTextSectionBySlug(
+            signUpTextSections,
+            "sign-up-intro-restricted"
+          )}
+        />
+      </section>
+      <section className="border-t pt-8">
+        <h2 className="title-text mb-4">Visitor sign up</h2>
+        <p className="body-text mb-4 text-muted-foreground">
+          Shown when signupSource=visitor or when no signupSource is set.
+        </p>
+        <TextSectionAdminForm
+          slug="sign-up-intro-visitor"
+          sectionTitle="Visitor sign up"
+          plainDescription
+          initialData={getTextSectionBySlug(
+            signUpTextSections,
+            "sign-up-intro-visitor"
+          )}
         />
       </section>
     </div>

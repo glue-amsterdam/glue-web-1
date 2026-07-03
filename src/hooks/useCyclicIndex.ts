@@ -86,6 +86,11 @@ export const useCyclicIndex = ({
     [startAutoplay]
   );
 
+  const handleAdvance = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % itemCount);
+    startAutoplay();
+  }, [itemCount, startAutoplay]);
+
   return {
     currentIndex,
     setCurrentIndex,
@@ -93,5 +98,6 @@ export const useCyclicIndex = ({
     handleMouseEnter,
     handleMouseLeave,
     handleSelect,
+    handleAdvance,
   };
 };

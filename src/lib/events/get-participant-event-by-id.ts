@@ -1,5 +1,6 @@
 import { cache } from "react";
 import type { EventType } from "@/schemas/eventsSchemas";
+import { toMediaUrl } from "@/lib/media/media-url";
 import { createClient } from "@/utils/supabase/server";
 
 export const getParticipantEventById = cache(async (
@@ -32,7 +33,7 @@ export const getParticipantEventById = cache(async (
     id: event.id,
     title: event.title,
     organizer_id: event.organizer_id,
-    image_url: event.image_url ?? "",
+    image_url: toMediaUrl(event.image_url) ?? "",
     start_time: event.start_time,
     end_time: event.end_time,
     type: event.type,

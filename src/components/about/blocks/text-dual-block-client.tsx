@@ -54,29 +54,32 @@ const TextDualBlockClient = ({
           dangerouslySetInnerHTML={{ __html: sanitized.description }}
         />
       ) : null}
-      <div className="pt-[40px] max-w-[1045px] mx-auto">
+      <div className="title-padding max-w-[1045px] mx-auto">
         <AboutBlockImage
           src={block.media.image.src}
           alt={block.media.image.alt}
           fallbackAlt={block.title}
-          className="max-w-[723px] pt-[40px] lg:max-w-[1045px] max-h-[360px] lg:max-h-[674px]"
+          className="max-w-[723px] lg:max-w-[1045px] max-h-[360px] lg:max-h-[674px]"
         />
         <div
           className={cn(
-            "pt-[40px] base-text-size",
+            "title-padding base-text-size",
             flex && "lg:flex lg:gap-[40px]",
             grid && "lg:grid lg:grid-cols-2 lg:gap-[30px]"
           )}
         >
           {block.text_block_1 ? (
             <div
-              className={cn(flex && `max-w-[${maxWidth}] w-full`)}
+              className={cn(
+                "post-content post-content-tight",
+                flex && `max-w-[${maxWidth}] w-full`
+              )}
               dangerouslySetInnerHTML={{ __html: sanitized.textBlock1 }}
             />
           ) : null}
           {block.text_block_2 ? (
             <div
-              className="pt-[40px] lg:pt-0"
+              className="pt-[40px] lg:pt-0 post-content post-content-tight"
               dangerouslySetInnerHTML={{ __html: sanitized.textBlock2 }}
             />
           ) : null}

@@ -1,12 +1,18 @@
 "use client";
 
-import { useCallback, useId } from "react";
+import { useCallback, useId, useMemo, useRef } from "react";
 import { EVENT_TYPES } from "@/constants";
 import { useEventsDays } from "@/context/MainContext";
 import { useDebouncedUrlSearch } from "@/hooks/useDebouncedUrlSearch";
+import { useDesktopListFilterPanel } from "@/hooks/useDesktopListFilterPanel";
+import { useFilterPanelHeight } from "@/hooks/useFilterPanelHeight";
 import { useProgramFiltersFromUrl } from "@/hooks/useProgramFiltersFromUrl";
-import { useFilterPanel } from "@/hooks/useFilterPanel";
-import type { ProgramFilterType } from "@/lib/program/program-filters";
+import { cn } from "@/lib/utils";
+import {
+  DEFAULT_PROGRAM_FILTERS,
+  type ProgramFilterType,
+  type ProgramFilters,
+} from "@/lib/program/program-filters";
 import BaseSecondNavbar, { FilterButton } from "./base-second-navbar";
 import { FilterDropdownPanel } from "./filter-dropdown-panel";
 
@@ -19,6 +25,16 @@ const formatEventType = (type: string): string =>
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+
+const isDateFilterActive = (filters: ProgramFilters) => filters.day !== "all";
+
+const isTypeFilterActive = (filters: ProgramFilters) => filters.type !== "all";
+
+const getActiveFilterId = (filters: ProgramFilters): ProgramFilterId | null => {
+  if (isDateFilterActive(filters)) return "date";
+  if (isTypeFilterActive(filters)) return "type";
+  return null;
+};
 
 const ProgramNavbar = () => {
   const { filters, updateFilters } = useProgramFiltersFromUrl();
@@ -39,24 +55,83 @@ const ProgramNavbar = () => {
     debounceMs: SEARCH_DEBOUNCE_MS,
   });
 
+  const activeFilterId = useMemo(() => getActiveFilterId(filters), [filters]);
+
+  const isFilterActive = useCallback(
+    (filterId: ProgramFilterId) => {
+      if (filterId === "date") return isDateFilterActive(filters);
+      return isTypeFilterActive(filters);
+    },
+    [filters]
+  );
+
+  const handleClearFilter = useCallback(
+    (filterId: ProgramFilterId) => {
+      if (filterId === "date") {
+        updateFilters({ day: DEFAULT_PROGRAM_FILTERS.day });
+        return;
+      }
+
+      updateFilters({ type: DEFAULT_PROGRAM_FILTERS.type });
+    },
+    [updateFilters]
+  );
+
   const {
     openFilter,
     handleFilterToggle,
     handleFilterKeyDown,
-    closeFilter,
-  } = useFilterPanel<ProgramFilterId>();
+    isButtonOpen,
+    afterSelect,
+  } = useDesktopListFilterPanel<ProgramFilterId>({
+    activeFilterId,
+    isFilterActive,
+    onClearFilter: handleClearFilter,
+  });
 
   const datePanelId = useId();
   const typePanelId = useId();
 
+  const datePanelRef = useRef<HTMLDivElement>(null);
+  const typePanelRef = useRef<HTMLDivElement>(null);
+
+  useFilterPanelHeight(
+    datePanelRef,
+    openFilter === "date" && activeFilterId === "date"
+  );
+  useFilterPanelHeight(
+    typePanelRef,
+    openFilter === "type" && activeFilterId === "type"
+  );
+
   const handleDaySelect = (dayId: string) => {
-    updateFilters({ day: dayId });
-    closeFilter();
+    if (dayId === "all") {
+      updateFilters({ day: "all" });
+      afterSelect();
+      return;
+    }
+
+    if (filters.day === dayId && activeFilterId === "date") {
+      return;
+    }
+
+    updateFilters({ day: dayId, type: "all" });
+    afterSelect();
   };
 
   const handleTypeSelect = (type: ProgramFilterType) => {
-    updateFilters({ type });
-    closeFilter();
+    if (type === "all") {
+      updateFilters({ type: "all" });
+      afterSelect();
+      return;
+    }
+
+    if (filters.type === type && activeFilterId === "type") {
+      return;
+    }
+
+    updateFilters({ type, day: "all" });
+    afterSelect();
   };
 
   return (
@@ -76,7 +151,8 @@ const ProgramNavbar = () => {
           openFilter={openFilter}
           panelId={datePanelId}
           label="Date"
-          isActive={filters.day !== "all"}
+          isActive={activeFilterId === "date" && openFilter === "date"}
+          isOpen={isButtonOpen("date")}
           onToggle={handleFilterToggle}
           onKeyDown={handleFilterKeyDown}
         />
@@ -85,66 +161,69 @@ const ProgramNavbar = () => {
           openFilter={openFilter}
           panelId={typePanelId}
           label="Event type"
-          isActive={filters.type !== "all"}
+          isActive={activeFilterId === "type" && openFilter === "type"}
+          isOpen={isButtonOpen("type")}
           onToggle={handleFilterToggle}
           onKeyDown={handleFilterKeyDown}
         />
       </BaseSecondNavbar>
 
       <FilterDropdownPanel<ProgramFilterId>
+        ref={datePanelRef}
         filterId="date"
         openFilter={openFilter}
         panelId={datePanelId}
         ariaLabel="Date options"
         className="py-[30px] lg:py-[25px] gap-[15px] lg:gap-[40px] min-h-[80px] lg:h-[81px]"
       >
-        <button
-          type="button"
-          aria-pressed={filters.day === "all"}
-          onClick={() => handleDaySelect("all")}
-          className="text-left base-text-size cursor-pointer"
-        >
-          All
-        </button>
-        {eventsDays.map((day) => (
-          <button
-            key={day.dayId}
-            type="button"
-            aria-pressed={filters.day === day.dayId}
-            onClick={() => handleDaySelect(day.dayId)}
-            className="text-left base-text-size cursor-pointer"
-          >
-            {day.label}
-          </button>
-        ))}
+        {eventsDays.map((day) => {
+          const isSelected =
+            activeFilterId === "date" && filters.day === day.dayId;
+
+          return (
+            <button
+              key={day.dayId}
+              type="button"
+              aria-pressed={isSelected}
+              onClick={() => handleDaySelect(day.dayId)}
+              className={cn(
+                "text-left base-text-size cursor-pointer",
+                isSelected && "text-(--primary-color)"
+              )}
+            >
+              {day.label}
+            </button>
+          );
+        })}
       </FilterDropdownPanel>
 
       <FilterDropdownPanel<ProgramFilterId>
+        ref={typePanelRef}
         filterId="type"
         openFilter={openFilter}
         panelId={typePanelId}
         ariaLabel="Event type options"
         className="py-[30px] lg:py-[25px] gap-[15px] lg:gap-[40px] min-h-[80px] lg:h-[81px]"
       >
-        <button
-          type="button"
-          aria-pressed={filters.type === "all"}
-          onClick={() => handleTypeSelect("all")}
-          className="text-left base-text-size cursor-pointer"
-        >
-          All
-        </button>
-        {EVENT_TYPES.map((eventType) => (
-          <button
-            key={eventType}
-            type="button"
-            aria-pressed={filters.type === eventType}
-            onClick={() => handleTypeSelect(eventType)}
-            className="text-left base-text-size cursor-pointer"
-          >
-            {formatEventType(eventType)}
-          </button>
-        ))}
+        {EVENT_TYPES.map((eventType) => {
+          const isSelected =
+            activeFilterId === "type" && filters.type === eventType;
+
+          return (
+            <button
+              key={eventType}
+              type="button"
+              aria-pressed={isSelected}
+              onClick={() => handleTypeSelect(eventType)}
+              className={cn(
+                "text-left base-text-size cursor-pointer",
+                isSelected && "text-(--primary-color)"
+              )}
+            >
+              {formatEventType(eventType)}
+            </button>
+          );
+        })}
       </FilterDropdownPanel>
     </section>
   );

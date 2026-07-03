@@ -4,18 +4,13 @@ import type {
   ExhibitorType,
   ParsedExhibitorsQuery,
 } from "./exhibitor-types";
+import { normalizeCategorySlug } from "./participant-categories";
 
 const DEFAULT_LIMIT = 30;
 const MAX_LIMIT = 100;
 const DEFAULT_OFFSET = 0;
 const DEFAULT_SORT: ExhibitorSortField = "displayNumber";
 const DEFAULT_ORDER: ExhibitorSortOrder = "asc";
-
-const VALID_TYPES: ExhibitorType[] = [
-  "special-program",
-  "up-to-three-participants",
-  "hub",
-];
 
 const VALID_SORT_FIELDS: ExhibitorSortField[] = ["name", "displayNumber"];
 const VALID_ORDERS: ExhibitorSortOrder[] = ["asc", "desc"];
@@ -56,16 +51,21 @@ const parseOffset = (value: string | null): number => {
   return parsed ?? DEFAULT_OFFSET;
 };
 
-const parseType = (value: string | null): ExhibitorType | undefined => {
-  if (value === null || value === "") return undefined;
+const parseType = (
+  value: string | null,
+  validSlugs: string[]
+): ExhibitorType | undefined => {
+  if (value === null) return undefined;
 
-  if (!VALID_TYPES.includes(value as ExhibitorType)) {
-    throw new ExhibitorsQueryError(
-      `Invalid type: must be one of ${VALID_TYPES.join(", ")}`
-    );
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === "all") return undefined;
+
+  const normalized = normalizeCategorySlug(trimmed);
+  if (!validSlugs.includes(normalized)) {
+    return undefined;
   }
 
-  return value as ExhibitorType;
+  return normalized;
 };
 
 const parseSort = (value: string | null): ExhibitorSortField => {
@@ -100,11 +100,12 @@ const parseSearch = (value: string | null): string | undefined => {
 };
 
 export const parseExhibitorsQuery = (
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
+  validSlugs: string[]
 ): ParsedExhibitorsQuery => {
   const limit = parseLimit(searchParams.get("limit"));
   const offset = parseOffset(searchParams.get("offset"));
-  const type = parseType(searchParams.get("type"));
+  const type = parseType(searchParams.get("type"), validSlugs);
   const sort = parseSort(searchParams.get("sort"));
   const order = parseOrder(searchParams.get("order"));
   const q = parseSearch(searchParams.get("q"));

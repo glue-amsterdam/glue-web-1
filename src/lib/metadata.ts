@@ -316,6 +316,15 @@ export const loginMetadata: Metadata = buildPageMetadata({
   keywords: ["GLUE", config.cityName, "login", "sign in", "design routes"],
 });
 
+// ACCOUNT PAGE METADATA
+export const accountMetadata: Metadata = buildPageMetadata({
+  path: "/account",
+  title: `GLUE ${config.cityName} | Account`,
+  description: "Create or access your GLUE account.",
+  keywords: ["GLUE", config.cityName, "account", "sign up", "register"],
+  robots: NOINDEX_ROBOTS,
+});
+
 // PARTICIPATE APPLY PAGE METADATA
 export const participateApplyMetadata: Metadata = buildPageMetadata({
   path: "/participate/apply",

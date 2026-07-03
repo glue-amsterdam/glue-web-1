@@ -14,6 +14,7 @@ export const toDisplayPropsFromParticipant = (
   displayLabel: participant.displayNumber ?? " ",
   description: participant.description,
   contactInfo: participant.contactInfo,
+  navigation: participant.navigation,
 });
 
 export { hubMembersToCarouselSlides } from "./exhibitor-carousel-slides";

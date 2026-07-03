@@ -4,16 +4,23 @@ import {
   ExhibitorsQueryError,
   parseExhibitorsQuery,
 } from "@/lib/participants/exhibitors-query";
+import {
+  fetchParticipantCategories,
+  getValidFilterSlugs,
+} from "@/lib/participants/participant-categories";
 import { createPublicSupabaseClient } from "@/utils/supabase/public";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
+    const supabase = createPublicSupabaseClient();
+    const categories = await fetchParticipantCategories(supabase);
+    const validSlugs = getValidFilterSlugs(categories);
 
     let query;
     try {
-      query = parseExhibitorsQuery(searchParams);
+      query = parseExhibitorsQuery(searchParams, validSlugs);
     } catch (error) {
       if (error instanceof ExhibitorsQueryError) {
         return NextResponse.json({ error: error.message }, { status: 400 });
@@ -21,7 +28,6 @@ export async function GET(request: Request) {
       throw error;
     }
 
-    const supabase = createPublicSupabaseClient();
     const response = await getExhibitorsPage(supabase, query);
 
     return NextResponse.json(response);

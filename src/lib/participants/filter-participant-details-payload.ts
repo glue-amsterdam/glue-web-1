@@ -15,7 +15,7 @@ const MOD_ONLY_DEFAULTS: Pick<
   ParticipantDetails,
   | "plan_id"
   | "plan_type"
-  | "special_program"
+  | "category"
   | "status"
   | "is_active"
   | "reactivation_requested"
@@ -30,7 +30,7 @@ const MOD_ONLY_DEFAULTS: Pick<
 > = {
   plan_id: null,
   plan_type: null,
-  special_program: false,
+  category: "standard",
   status: "pending",
   is_active: true,
   reactivation_requested: false,

@@ -5,17 +5,23 @@ import type {
   ExhibitorType,
 } from "./exhibitor-types";
 import {
+  classifyCategory,
+  fetchParticipantCategories,
+} from "./participant-categories";
+import { createEmptyGroupedExhibitors } from "./flatten-exhibitors";
+import {
   getStickyParticipantIds,
   getTourStatus,
   isParticipantEligibleForExhibitorsList,
 } from "./exhibitor-visibility";
 import { getParticipantDisplayName } from "./get-participant-display-name";
 import { getParticipantPlaceholderUrl } from "./get-participant-placeholder-url";
+import { toMediaUrl } from "@/lib/media/media-url";
 
 type ParticipantRow = {
   user_id: string;
   slug: string;
-  special_program: boolean;
+  category: string;
   display_number: string | null;
   is_active: boolean;
   was_active_last_year: boolean;
@@ -49,7 +55,7 @@ const buildImageMap = (images: ImageRow[]): Map<string, string> => {
   const map = new Map<string, string>();
   for (const image of images) {
     if (!map.has(image.user_id)) {
-      map.set(image.user_id, image.image_url);
+      map.set(image.user_id, toMediaUrl(image.image_url) ?? image.image_url);
     }
   }
   return map;
@@ -82,45 +88,53 @@ const getEligibleHubMemberIds = (
   return memberIds;
 };
 
+const pushToGroup = (
+  grouped: ExhibitorsGroupedResponse,
+  type: ExhibitorType,
+  item: ExhibitorItem
+): void => {
+  if (!grouped[type]) {
+    grouped[type] = [];
+  }
+  grouped[type].push(item);
+};
+
 const buildParticipantItem = (
   participant: ParticipantRow,
+  type: ExhibitorType,
   imageMap: Map<string, string>,
   placeholderUrl: string
-): ExhibitorItem => {
-  const type: ExhibitorType = participant.special_program
-    ? "special-program"
-    : "up-to-three-participants";
-
-  return {
-    type,
-    name: getParticipantDisplayName(participant),
-    imageUrl: getImageUrl(imageMap, participant.user_id, placeholderUrl),
-    displayNumber: participant.display_number,
-    hubDisplayNumber: null,
-    userId: participant.user_id,
-    slug: participant.slug,
-  };
-};
+): ExhibitorItem => ({
+  type,
+  name: getParticipantDisplayName(participant),
+  imageUrl: getImageUrl(imageMap, participant.user_id, placeholderUrl),
+  displayNumber: participant.display_number,
+  hubDisplayNumber: null,
+  userId: participant.user_id,
+  slug: participant.slug,
+});
 
 const buildHubItem = (
   hub: HubRow,
   hubType: ExhibitorType,
   imageMap: Map<string, string>,
   placeholderUrl: string
-): ExhibitorItem => {
-  return {
-    type: hubType,
-    name: hub.name,
-    imageUrl: getImageUrl(imageMap, hub.hub_host_id, placeholderUrl),
-    displayNumber: null,
-    hubDisplayNumber: hub.display_number,
-    hubId: hub.id,
-  };
-};
+): ExhibitorItem => ({
+  type: hubType,
+  name: hub.name,
+  imageUrl: getImageUrl(imageMap, hub.hub_host_id, placeholderUrl),
+  displayNumber: null,
+  hubDisplayNumber: hub.display_number,
+  hubId: hub.id,
+});
 
 export const getExhibitors = async (
   supabase: SupabaseClient
 ): Promise<ExhibitorsGroupedResponse> => {
+  const categories = await fetchParticipantCategories(supabase);
+  const categorySlugs = categories.map((c) => c.slug);
+  const grouped = createEmptyGroupedExhibitors(categorySlugs);
+
   const [
     currentTourStatus,
     stickyIds,
@@ -136,7 +150,7 @@ export const getExhibitors = async (
         `
         user_id,
         slug,
-        special_program,
+        category,
         display_number,
         is_active,
         was_active_last_year,
@@ -169,7 +183,7 @@ export const getExhibitors = async (
   }
 
   const imageMap = buildImageMap((imagesResult.data as ImageRow[]) ?? []);
-  const placeholderUrl = getParticipantPlaceholderUrl(supabase);
+  const placeholderUrl = await getParticipantPlaceholderUrl(supabase);
 
   const participants = (participantsResult.data as ParticipantRow[]) ?? [];
   const eligibleParticipants = participants.filter((participant) =>
@@ -184,19 +198,15 @@ export const getExhibitors = async (
     eligibleParticipants.map((participant) => participant.user_id)
   );
 
-  const specialProgram: ExhibitorItem[] = [];
-  const upToThreeParticipants: ExhibitorItem[] = [];
-  const hubs: ExhibitorItem[] = [];
-
   for (const participant of eligibleParticipants) {
-    const item = buildParticipantItem(participant, imageMap, placeholderUrl);
-
-    if (item.type === "special-program") {
-      specialProgram.push(item);
-      continue;
-    }
-
-    upToThreeParticipants.push(item);
+    const type = classifyCategory(1, participant.category, categories);
+    const item = buildParticipantItem(
+      participant,
+      type,
+      imageMap,
+      placeholderUrl
+    );
+    pushToGroup(grouped, type, item);
   }
 
   const hubRows = (hubsResult.data as HubRow[]) ?? [];
@@ -212,21 +222,17 @@ export const getExhibitors = async (
 
     if (memberCount === 0) continue;
 
-    const hubType: ExhibitorType =
-      memberCount > 3 ? "hub" : "up-to-three-participants";
+    const hostParticipant = eligibleParticipants.find(
+      (p) => p.user_id === hub.hub_host_id
+    );
+    const hubType = classifyCategory(
+      memberCount,
+      hostParticipant?.category,
+      categories
+    );
     const hubItem = buildHubItem(hub, hubType, imageMap, placeholderUrl);
-
-    if (hubType === "hub") {
-      hubs.push(hubItem);
-      continue;
-    }
-
-    upToThreeParticipants.push(hubItem);
+    pushToGroup(grouped, hubType, hubItem);
   }
 
-  return {
-    specialProgram,
-    upToThreeParticipants,
-    hubs,
-  };
+  return grouped;
 };

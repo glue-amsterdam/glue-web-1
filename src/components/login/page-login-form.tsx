@@ -12,6 +12,7 @@ import { fetchNavbarIdentity } from "@/lib/users/fetch-navbar-identity";
 import { redirectToDashboardHome } from "@/lib/users/redirect-to-dashboard-home";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import {
+  parseEmailParam,
   parseReturnToParam,
   resolvePostAuthRedirect,
 } from "@/lib/auth/post-auth-redirect";
@@ -28,13 +29,14 @@ const resetPasswordSchema = z.object({
 type LoginFieldName = keyof z.infer<typeof loginSchema>;
 type ResetFieldName = keyof z.infer<typeof resetPasswordSchema>;
 
-const formWrapperClassName = "pt-[100px] w-full lg:max-w-[508px] lg:mx-auto";
+const formWrapperClassName = "title-padding w-full lg:max-w-[508px] lg:mx-auto";
 
 const PageLoginForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasRedirectedRef = useRef(false);
   const returnTo = parseReturnToParam(searchParams);
+  const prefilledEmail = parseEmailParam(searchParams);
 
   const { user, isLoading: isAuthLoading, login, loginError, clearLoginError } =
     useAuth();
@@ -60,6 +62,12 @@ const PageLoginForm = () => {
   );
   const [resetSubmitError, setResetSubmitError] = useState<string | null>(null);
   const [memberEmail, setMemberEmail] = useState("");
+
+  useEffect(() => {
+    if (prefilledEmail) {
+      setMemberEmail(prefilledEmail);
+    }
+  }, [prefilledEmail]);
 
   useEffect(() => {
     if (isAuthLoading || !user || hasRedirectedRef.current) {
@@ -235,7 +243,7 @@ const PageLoginForm = () => {
             setResetSuccessMessage(null);
             setResetFieldErrors({});
           }}
-          className="base-text-size cursor-pointer"
+          className="body-text cursor-pointer"
           aria-label="Back to log in form"
         >
           Back
@@ -247,7 +255,7 @@ const PageLoginForm = () => {
           className="pt-[40px] flex flex-col gap-[15px] md:gap-[30px]"
           noValidate
         >
-          <p className="base-text-size lg:max-w-(--paragraph-max-width)">
+          <p className="body-text lg:max-w-(--paragraph-max-width)">
             Enter your email to receive a password reset link.
           </p>
 
@@ -261,11 +269,11 @@ const PageLoginForm = () => {
           />
 
           {resetSuccessMessage ? (
-            <p role="status" className="base-text-size]">
+            <p role="status" className="body-text]">
               {resetSuccessMessage}
             </p>
           ) : resetSubmitError ? (
-            <p role="alert" className="base-text-size]">
+            <p role="alert" className="body-text]">
               {resetSubmitError}
             </p>
           ) : null}
@@ -297,20 +305,20 @@ const PageLoginForm = () => {
           <p className="sr-only">Log in to your account</p>
 
           {loginError ? (
-            <p role="alert" className="base-text-size]">
+            <p role="alert" className="body-text]">
               {loginError}
             </p>
           ) : null}
 
           {cookieError ? (
             <div role="alert" className="flex flex-col gap-[10px]">
-              <p className="base-text-size">
+              <p className="body-text">
                 {cookieError}
               </p>
               <button
                 type="button"
                 onClick={() => setIsCookieSettingsOpen(true)}
-                className="base-text-size text-left hover:underline"
+                className="body-text text-left hover:underline"
                 aria-label="Open cookie settings"
               >
                 Change cookie settings
@@ -342,7 +350,7 @@ const PageLoginForm = () => {
             <button
               type="button"
               onClick={() => setIsResetPasswordOpen(true)}
-              className="base-text-size hover:underline text-right cursor-pointer"
+              className="body-text hover:underline text-right cursor-pointer"
               aria-label="Forgot your password"
             >
               Forgot your password?

@@ -17,6 +17,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     title: "Web Management",
     links: [
       { name: "Base Data", href: "/admin/main" },
+      { name: "Participant Categories", href: "/admin/participant-categories" },
       { name: "Home", href: "/admin/home" },
       { name: "Visit", href: "/admin/visit" },
       { name: "Participate", href: "/admin/participate" },
@@ -34,6 +35,9 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { name: "Blog", href: "/admin/posts" },
       { name: "Program", href: "/admin/events" },
       { name: "Terms and Conditions", href: "/admin/terms" },
+      { name: "Contact", href: "/admin/contact" },
+      { name: "Privacy Policy", href: "/admin/privacy-policy" },
+      { name: "Imprint", href: "/admin/imprint" },
       { name: "Sign Up", href: "/admin/sign-up" },
       { name: "Sponsors", href: "/admin/sponsors" },
     ],
@@ -120,6 +124,18 @@ export const getAdminPageTitle = (
 ): string => {
   if (pathname === "/admin") return "Admin Panel";
   if (pathname === "/admin/posts/new") return "New Post";
+  if (pathname === "/admin/participant-categories/new") {
+    return "New category";
+  }
+  if (
+    pathname.startsWith("/admin/participant-categories/") &&
+    pathname !== "/admin/participant-categories/new"
+  ) {
+    return "Edit category";
+  }
+  if (pathname === "/admin/participant-categories") {
+    return "Participant Categories";
+  }
   if (/^\/admin\/posts\/[^/]+$/.test(pathname) && pathname !== "/admin/posts/new") {
     return "Edit Post";
   }

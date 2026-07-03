@@ -1,9 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { toMediaUrl } from "@/lib/media/media-url";
 import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
 import {
   loadOrganizerProfiles,
   type OrganizerProfile,
 } from "@/lib/participants/load-organizer-profiles";
+import { fetchParticipantCategories } from "@/lib/participants/participant-categories";
 import type { TourStatus } from "@/lib/participants/exhibitor-visibility";
 import type { EventType } from "@/schemas/eventSchemas";
 import type { ProgramDetail } from "./program-types";
@@ -104,17 +106,19 @@ export const getProgramDetail = async (
     ? organizerProfiles.get(event.organizer_id)
     : undefined;
 
+  const categories = await fetchParticipantCategories(supabase);
   const tourStatus: TourStatus =
     currentTourStatus === "older" ? "older" : "new";
 
   const participantDetails = organizer?.participant_details as Parameters<
     typeof organizerBadgeFieldsFromEmbed
   >[0];
-  const { specialProgram, displayNumber } =
+  const { category, displayNumber } =
     organizerBadgeFieldsFromEmbed(participantDetails);
   const organizerFallback = organizerBadgeFromParticipant(
-    specialProgram,
-    displayNumber
+    category,
+    displayNumber,
+    categories
   );
   const badge = await resolveLocationOrganizerBadge(
     supabase,
@@ -126,7 +130,7 @@ export const getProgramDetail = async (
   const detail: ProgramDetail = {
     eventId: event.id,
     name: event.title,
-    eventImg: event.image_url || "",
+    eventImg: toMediaUrl(event.image_url) || "",
     description: event.description || "",
     type: (event.type || "Other") as EventType,
     date: {

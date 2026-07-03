@@ -8,6 +8,7 @@ export type PostData = {
   author: string | null;
   keywords: string[];
   contentHtml: string;
+  thumbnail: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -30,6 +31,7 @@ export type PublicPostSummaryData = {
   author: string | null;
   keywords: string[];
   excerpt: string;
+  coverImageUrl: string | null;
   createdAt: string;
   updatedAt: string;
 };

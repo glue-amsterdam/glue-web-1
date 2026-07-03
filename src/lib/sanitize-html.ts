@@ -23,7 +23,7 @@ const POST_HTML_ALLOWED_TAGS = [
 
 const POST_HTML_ALLOWED_ATTRIBUTES: sanitizeHtmlLib.IOptions["allowedAttributes"] = {
   a: ["href", "target", "rel"],
-  img: ["src", "alt", "width", "height", "style", "class"],
+  img: ["src", "alt", "width", "height", "style", "class", "data-align"],
   video: ["src", "controls", "width", "height", "style", "class"],
   span: ["style", "class", "data-align"],
   div: ["style", "class", "data-align"],
@@ -47,6 +47,7 @@ const GENERAL_ALLOWED_ATTRIBUTES: sanitizeHtmlLib.IOptions["allowedAttributes"] 
   ...sanitizeHtmlLib.defaults.allowedAttributes,
   img: ["src", "alt", "width", "height", "style", "class"],
   video: ["src", "controls", "width", "height", "style", "class"],
+  hr: ["data-glue-grid-item"],
 };
 
 export const sanitizeHtml = (html: string): string => {

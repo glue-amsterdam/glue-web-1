@@ -1,5 +1,6 @@
 import type { AboutPageData } from "@/schemas/aboutPageSchema";
 import AboutNavbar from "@/components/navbar/about-navbar";
+import StaggerEnterContainer from "@/components/stagger-enter-container";
 import MainContainer from "@/components/main-container";
 import AboutBlockRenderer from "./about-block-renderer";
 import { config } from "@/config";
@@ -24,7 +25,7 @@ const AboutPageView = ({ data }: Props) => {
         </div>
       ) : null}
       <main id="about" className="pt-[122px]">
-        <MainContainer className="stagger-enter-fade">
+        <StaggerEnterContainer variant="fade">
           <h1 className="sr-only">About GLUE {config.cityName}</h1>
           <p className="sr-only">
             Meet the GLUE {config.cityName} team, learn about the GLUE Foundation,
@@ -34,7 +35,7 @@ const AboutPageView = ({ data }: Props) => {
             <AboutBlockRenderer key={block.id} block={block} />
           ))}
           <BottomBlock />
-        </MainContainer>
+        </StaggerEnterContainer>
       </main>
     </>
   );

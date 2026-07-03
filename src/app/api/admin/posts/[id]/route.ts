@@ -8,6 +8,7 @@ import {
   collectPostMediaUrls,
   syncPostMedia,
 } from "@/lib/posts/sync-post-media";
+import { rewriteHtmlMediaToKeys, toMediaKey } from "@/lib/media/media-url";
 import { postPatchSchema } from "@/schemas/postSchema";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -81,6 +82,12 @@ export async function PATCH(request: Request, context: RouteContext) {
       slug: nextSlug,
     };
 
+    // Persist bucket-relative keys inside the rich-text HTML.
+    const nextContentHtmlKeys =
+      validated.content_html !== undefined
+        ? rewriteHtmlMediaToKeys(validated.content_html)
+        : undefined;
+
     if (validated.title !== undefined) {
       updateRow.title = validated.title;
     }
@@ -90,11 +97,31 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (validated.keywords !== undefined) {
       updateRow.keywords = validated.keywords;
     }
-    if (validated.content_html !== undefined) {
-      updateRow.content_html = validated.content_html;
+    if (nextContentHtmlKeys !== undefined) {
+      updateRow.content_html = nextContentHtmlKeys;
     }
     if (validated.status !== undefined) {
       updateRow.status = validated.status;
+    }
+    if (validated.thumbnail !== undefined) {
+      const nextThumbnailKey =
+        validated.thumbnail === null
+          ? null
+          : toMediaKey(validated.thumbnail) ?? validated.thumbnail;
+
+      if (
+        nextThumbnailKey &&
+        existing.thumbnail &&
+        nextThumbnailKey !== existing.thumbnail
+      ) {
+        await deleteStoredMediaUrls(auth.supabase, [existing.thumbnail]);
+      }
+
+      if (nextThumbnailKey === null && existing.thumbnail) {
+        await deleteStoredMediaUrls(auth.supabase, [existing.thumbnail]);
+      }
+
+      updateRow.thumbnail = nextThumbnailKey;
     }
 
     const { error: updateError } = await auth.supabase
@@ -106,11 +133,11 @@ export async function PATCH(request: Request, context: RouteContext) {
       throw updateError;
     }
 
-    if (validated.content_html !== undefined) {
+    if (nextContentHtmlKeys !== undefined) {
       await syncPostMedia(
         auth.supabase,
         id,
-        validated.content_html,
+        nextContentHtmlKeys,
         existing.media.map((item) => ({
           image_url: item.image_url,
           video_url: item.video_url,
@@ -164,12 +191,15 @@ export async function DELETE(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    const mediaUrls = collectPostMediaUrls(
-      existing.media.map((item) => ({
-        image_url: item.image_url,
-        video_url: item.video_url,
-      }))
-    );
+    const mediaUrls = [
+      ...collectPostMediaUrls(
+        existing.media.map((item) => ({
+          image_url: item.image_url,
+          video_url: item.video_url,
+        }))
+      ),
+      existing.thumbnail,
+    ];
 
     const { error: deleteError } = await auth.supabase
       .from("posts")

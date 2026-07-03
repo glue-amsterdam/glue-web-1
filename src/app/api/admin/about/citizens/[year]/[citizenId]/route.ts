@@ -1,5 +1,6 @@
 import { revalidateHomeCitizensCache } from "@/lib/home";
 import { requireAdminToken } from "@/lib/admin/require-admin-token";
+import { toMediaKey, toMediaUrl } from "@/lib/media/media-url";
 import { NextResponse } from "next/server";
 import { citizenSchema } from "@/schemas/citizenSchema";
 import { config } from "@/config";
@@ -24,7 +25,9 @@ export async function GET(
 
     if (error) throw error;
 
-    return NextResponse.json({ citizen: data });
+    return NextResponse.json({
+      citizen: data ? { ...data, image_url: toMediaUrl(data.image_url) } : data,
+    });
   } catch (error) {
     console.error(
       `Error fetching citizen ${citizenId} for year ${year}:`,
@@ -68,7 +71,7 @@ export async function PUT(
       id: citizenId,
       name: validatedData.name,
       description: validatedData.description,
-      image_url: validatedData.image_url,
+      image_url: toMediaKey(validatedData.image_url),
       image_name: validatedData.image_name,
       year,
       section_id: "about-citizens-section",
@@ -84,34 +87,27 @@ export async function PUT(
 
     if (updateError) throw updateError;
 
-    // Handle image deletion if image changed
-    if (
-      existingCitizen?.image_url &&
-      existingCitizen.image_url !== validatedData.image_url
-    ) {
+    // Handle image deletion if image changed. Stored values are bucket-relative
+    // keys; the incoming URL is normalized to a key for an accurate comparison.
+    const existingKey = toMediaKey(existingCitizen?.image_url);
+    const nextKey = toMediaKey(validatedData.image_url);
+    if (existingKey && existingKey !== nextKey) {
       try {
-        const url = new URL(existingCitizen.image_url);
-        const pathParts = url.pathname.split("/");
-        const filename = pathParts[pathParts.length - 1];
-        const filePath = `about/citizens/${year}/${filename}`;
-
-        console.log(`Attempting to delete old image: ${filePath}`);
-
         const { error: storageError } = await auth.supabase.storage
           .from(config.bucketName)
-          .remove([filePath]);
+          .remove([existingKey]);
 
         if (storageError) {
           console.error(
-            `Failed to delete old image: ${filePath}`,
+            `Failed to delete old image: ${existingKey}`,
             storageError
           );
         } else {
-          console.log(`Successfully deleted old image: ${filePath}`);
+          console.log(`Successfully deleted old image: ${existingKey}`);
         }
       } catch (error) {
         console.error(
-          `Error processing old image deletion: ${existingCitizen.image_url}`,
+          `Error processing old image deletion: ${existingKey}`,
           error
         );
       }
@@ -121,7 +117,9 @@ export async function PUT(
 
     return NextResponse.json({
       message: `Citizen ${citizenId} for year ${year} updated successfully`,
-      citizen: updatedCitizen,
+      citizen: updatedCitizen
+        ? { ...updatedCitizen, image_url: toMediaUrl(updatedCitizen.image_url) }
+        : updatedCitizen,
     });
   } catch (error) {
     console.error(
@@ -165,28 +163,22 @@ export async function DELETE(
 
     if (deleteError) throw deleteError;
 
-    // Delete image from storage if exists
-    if (citizen?.image_url) {
+    // Delete image from storage if exists (stored value is a bucket-relative key).
+    const citizenKey = toMediaKey(citizen?.image_url);
+    if (citizenKey) {
       try {
-        const url = new URL(citizen.image_url);
-        const pathParts = url.pathname.split("/");
-        const filename = pathParts[pathParts.length - 1];
-        const filePath = `about/citizens/${year}/${filename}`;
-
-        console.log(`Attempting to delete image: ${filePath}`);
-
         const { error: storageError } = await auth.supabase.storage
           .from(config.bucketName)
-          .remove([filePath]);
+          .remove([citizenKey]);
 
         if (storageError) {
-          console.error(`Failed to delete image: ${filePath}`, storageError);
+          console.error(`Failed to delete image: ${citizenKey}`, storageError);
         } else {
-          console.log(`Successfully deleted image: ${filePath}`);
+          console.log(`Successfully deleted image: ${citizenKey}`);
         }
       } catch (error) {
         console.error(
-          `Error processing image deletion: ${citizen.image_url}`,
+          `Error processing image deletion: ${citizenKey}`,
           error
         );
       }

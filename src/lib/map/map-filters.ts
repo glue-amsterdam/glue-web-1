@@ -3,13 +3,6 @@ import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
 import type { MapLocation, MapLocationDetailMember, MapRoute } from "@/lib/map/types";
 import { getMapLocationMarkerStackTier } from "./map-location-display";
 
-/** Lower = behind; higher = on top (Mapbox circle/symbol sort-key). */
-export const MARKER_STACK_ORDER: Record<ExhibitorType, number> = {
-  hub: 0,
-  "up-to-three-participants": 1,
-  "special-program": 2,
-};
-
 const MARKER_STACK_ORDER_ROUTE = 0;
 
 export const getMarkerSortKey = (location: MapLocation, index: number): number => {
@@ -108,6 +101,7 @@ export const flattenHubMembersForAllList = (
   const result: MapLocation[] = [];
   const seenMemberUserIds = new Set<string>();
   const hubMemberSlugs = new Set<string>();
+  const hubMemberOwnLocationSlugs = new Set<string>();
 
   for (const location of locations) {
     if (!location.hubId) continue;
@@ -116,17 +110,21 @@ export const flattenHubMembersForAllList = (
       const memberSlug = member.slug?.trim();
       if (memberSlug) {
         hubMemberSlugs.add(memberSlug);
+        const memberLocationId = member.locationId ?? location.id;
+        if (memberLocationId !== location.id) {
+          hubMemberOwnLocationSlugs.add(memberSlug);
+        }
       }
     }
   }
 
   const isRedundantSoloListEntry = (location: MapLocation): boolean => {
     const slug = location.slug?.trim();
-    if (slug && hubMemberSlugs.has(slug)) {
-      return true;
+    if (!slug || !hubMemberSlugs.has(slug)) {
+      return false;
     }
 
-    return false;
+    return !hubMemberOwnLocationSlugs.has(slug);
   };
 
   const getMatchingMembers = (location: MapLocation) => {
@@ -147,6 +145,11 @@ export const flattenHubMembersForAllList = (
     location: MapLocation,
     member: MapLocationDetailMember
   ) => {
+    const memberLocationId = member.locationId ?? location.id;
+    if (memberLocationId !== location.id) {
+      return;
+    }
+
     const memberUserId = member.userId ?? member.slug ?? member.name;
     if (seenMemberUserIds.has(memberUserId)) {
       return;
@@ -253,12 +256,11 @@ export const filterMapLocationsForList = (
   return result;
 };
 
-/** Map markers ignore category (`type`); only search (`q`) narrows visible dots. */
+/** Map markers: category (`type`) and search (`q`) narrow visible dots. */
 export const filterMapLocationsForMap = (
   locations: MapLocation[],
   filters: Pick<MapFilters, "type" | "q">
-): MapLocation[] =>
-  filterMapLocations(locations, { type: "all", q: filters.q });
+): MapLocation[] => filterMapLocations(locations, filters);
 
 export const filterMapRoutes = (routes: MapRoute[], q: string): MapRoute[] => {
   const query = q.trim().toLowerCase();
@@ -281,3 +283,7 @@ export const sortMapLocationsForMarkers = (
     (a, b) =>
       getMapLocationMarkerStackTier(a) - getMapLocationMarkerStackTier(b)
   );
+
+export const buildRouteStopStackTypes = (
+  categorySlugs: string[]
+): (ExhibitorType | "route")[] => [...categorySlugs, "route"];

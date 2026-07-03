@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import ProgramClientPage from "@/app/program/program-client-page";
 import BottomBlock from "@/components/bottom-block";
+import StaggerEnterContainer from "@/components/stagger-enter-container";
 import MainContainer from "@/components/main-container";
 import { config } from "@/config";
 import { getCachedEventHeaderTitle } from "@/lib/events/cached-event-header-title";
@@ -34,7 +35,7 @@ export default async function Page({ searchParams }: PageProps) {
   return (
     <main id="program-page" className="pt-(--nav-total-h)">
       <MainContainer>
-        <h1 className="title-text lg:absolute pt-[15px] sr-only lg:not-sr-only translate-y-[15px]">
+        <h1 className="sr-only">
           {header.header_title.toUpperCase()}
         </h1>
       </MainContainer>
@@ -42,7 +43,10 @@ export default async function Page({ searchParams }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <MainContainer className="pt-[40px] lg:pt-[calc(var(--nav-secondary-h)-3px)] stagger-enter-fade">
+      <StaggerEnterContainer
+        variant="fade"
+        className="pt-[40px] lg:pt-[calc(var(--nav-secondary-h)-3px)] mt-(--filter-panel-open-h) lg:mt-0 transition-[margin] duration-200 ease-out"
+      >
         <section id="program-section">
           <p className="sr-only">
             Browse the program of GLUE {config.cityName} design route events.
@@ -55,7 +59,7 @@ export default async function Page({ searchParams }: PageProps) {
           </Suspense>
         </section>
         <BottomBlock />
-      </MainContainer>
+      </StaggerEnterContainer>
     </main>
   );
 }

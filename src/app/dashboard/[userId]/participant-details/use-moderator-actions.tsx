@@ -28,7 +28,7 @@ type UseModeratorActionsParams = {
 
 export const MODERATOR_WATCH_FIELDS = [
   "status",
-  "special_program",
+  "category",
   "is_active",
   "display_number",
   "reactivation_requested",

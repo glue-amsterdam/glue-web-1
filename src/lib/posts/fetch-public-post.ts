@@ -1,14 +1,16 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
+  mapHomePostSummaryFromRow,
   mapPostWithMediaFromRow,
   mapPublicPostSummaryFromRow,
 } from "./map-post-row";
 import type { PublicPostSummaryData, PostWithMediaData } from "./types";
 
-export const HOME_POSTS_LIMIT = 6;
+export const HOME_POSTS_LIMIT = 3;
+export const HOME_POSTS_MOBILE_COUNT = 1;
 
 const POST_SUMMARY_SELECT =
-  "id, title, slug, status, author, keywords, content_html, created_at, updated_at";
+  "id, title, slug, status, author, keywords, content_html, thumbnail, created_at, updated_at";
 
 export const fetchPublishedPostSummaries = async (
   supabase: SupabaseClient
@@ -26,22 +28,44 @@ export const fetchPublishedPostSummaries = async (
   return (data ?? []).map(mapPublicPostSummaryFromRow);
 };
 
+const POST_HOME_SELECT =
+  "id, title, slug, status, author, keywords, content_html, thumbnail, created_at, updated_at, post_media ( image_url, created_at )";
+
 export const fetchPublishedPostSummariesForHome = async (
   supabase: SupabaseClient,
   limit = HOME_POSTS_LIMIT
 ): Promise<PublicPostSummaryData[]> => {
-  const { data, error } = await supabase
+  const page = await fetchPublishedPostSummariesPage(supabase, limit, 0);
+  return page.items;
+};
+
+export type PublishedPostSummariesPage = {
+  items: PublicPostSummaryData[];
+  total: number;
+};
+
+export const fetchPublishedPostSummariesPage = async (
+  supabase: SupabaseClient,
+  limit: number,
+  offset: number
+): Promise<PublishedPostSummariesPage> => {
+  const { data, error, count } = await supabase
     .from("posts")
-    .select(POST_SUMMARY_SELECT)
+    .select(POST_HOME_SELECT, { count: "exact" })
     .eq("status", "published")
-    .order("title", { ascending: true })
-    .limit(limit);
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
 
   if (error) {
     throw error;
   }
 
-  return (data ?? []).map(mapPublicPostSummaryFromRow);
+  const items = (data ?? []).map(mapHomePostSummaryFromRow);
+
+  return {
+    items,
+    total: count ?? items.length,
+  };
 };
 
 export const fetchPublishedPostBySlug = async (

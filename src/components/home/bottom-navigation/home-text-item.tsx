@@ -7,15 +7,17 @@ type HomeTextItemProps = {
   item: HomeTextItem;
   className?: string;
   defaultColorClassName?: string;
+  mode?: "marquee" | "footer";
 };
 
 const HomeTextItemDisplay = ({
   item,
   className,
   defaultColorClassName,
+  mode = "footer",
 }: HomeTextItemProps) => {
   const style = item.color ? { color: item.color } : undefined;
-  const mergedClassName = cn(defaultColorClassName, className);
+  const mergedClassName = cn(defaultColorClassName, className, mode === "marquee" ? "navigation" : "date-and-subline");
 
   if (item.href) {
     const isExternal = item.href.startsWith("http");

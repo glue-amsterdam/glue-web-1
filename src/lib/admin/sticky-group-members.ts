@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { chunkArray } from "@/lib/admin/chunk-array";
+import { toMediaUrl } from "@/lib/media/media-url";
 import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 import { getVisitorDisplayName } from "@/lib/visitor/display-name";
 import type { StickyGroupMemberInput } from "@/types/sticky-member";
@@ -144,7 +145,7 @@ export const buildStickyGroupMemberApiRows = async (
       }
 
       for (const image of imagesResult.data ?? []) {
-        imageByUserId.set(image.user_id, image.image_url);
+        imageByUserId.set(image.user_id, toMediaUrl(image.image_url) ?? "");
       }
 
       for (const visitor of visitorsResult.data ?? []) {

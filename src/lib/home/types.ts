@@ -27,7 +27,7 @@ export type HomeCitizensData = {
   citizens: ClientCitizen[];
 };
 
-export const HOME_HERO_REVALIDATE_SECONDS = 2_592_000;
+export { PUBLIC_MEDIA_CACHE_REVALIDATE_SECONDS as HOME_HERO_REVALIDATE_SECONDS } from "@/lib/media/public-media-cache";
 
 export type HomeHeroData = {
   id: string | null;

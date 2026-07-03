@@ -1,3 +1,4 @@
+import { toMediaUrl } from "@/lib/media/media-url";
 import type { ExhibitorHubMember } from "./exhibitor-detail-types";
 
 export type ExhibitorCarouselSlide = {
@@ -36,7 +37,7 @@ export const participantImagesToCarouselSlides = (
       {
         id: String(images[0].id),
         label: name,
-        imageUrl: images[0].image_url,
+        imageUrl: toMediaUrl(images[0].image_url) ?? placeholderUrl,
       },
     ];
   }
@@ -44,6 +45,6 @@ export const participantImagesToCarouselSlides = (
   return images.map((image, index) => ({
     id: String(image.id),
     label: `${name} — image ${index + 1}`,
-    imageUrl: image.image_url,
+    imageUrl: toMediaUrl(image.image_url) ?? placeholderUrl,
   }));
 };

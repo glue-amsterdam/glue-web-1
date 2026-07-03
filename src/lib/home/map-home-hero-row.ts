@@ -1,3 +1,4 @@
+import { toMediaKey, toMediaUrl } from "@/lib/media/media-url";
 import type { HomeHeroData } from "./types";
 
 type HomeHeroDbRow = {
@@ -10,8 +11,8 @@ type HomeHeroDbRow = {
 export const mapHomeHeroFromRow = (row: HomeHeroDbRow): HomeHeroData => ({
   id: row.id,
   description: row.description,
-  videoUrl: row.video_url,
-  posterUrl: row.poster_url,
+  videoUrl: toMediaUrl(row.video_url) ?? "",
+  posterUrl: toMediaUrl(row.poster_url) ?? "",
 });
 
 export const mapHomeHeroToRow = (hero: {
@@ -22,7 +23,7 @@ export const mapHomeHeroToRow = (hero: {
 }) => ({
   ...(hero.id ? { id: hero.id } : {}),
   description: hero.description,
-  video_url: hero.video_url,
-  poster_url: hero.poster_url,
+  video_url: toMediaKey(hero.video_url) ?? "",
+  poster_url: toMediaKey(hero.poster_url) ?? "",
   updated_at: new Date().toISOString(),
 });

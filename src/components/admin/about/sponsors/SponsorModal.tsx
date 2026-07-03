@@ -42,6 +42,7 @@ export default function SponsorModal({
         <SponsorForm
           initialData={sponsor}
           sponsorTypes={sponsorTypes}
+          variant="plain"
           onSponsorUpdated={handleSponsorUpdated}
         />
       </DialogContent>

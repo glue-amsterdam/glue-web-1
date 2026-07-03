@@ -38,7 +38,7 @@ const getNumericAttr = (tag: string, attr: "width" | "height"): number | null =>
 };
 
 const buildImgItem = (tag: string): ExtractedMediaItem | null => {
-  const src = getAttr(tag, "src");
+  const src = getAttr(tag, "src") ?? getAttr(tag, "link");
   if (!src) return null;
 
   const style = getAttr(tag, "style");

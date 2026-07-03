@@ -6,6 +6,7 @@ import {
   membersToInsertRows,
   validateStickyGroupMembers,
 } from "@/lib/admin/sticky-group-members";
+import { toMediaKey } from "@/lib/media/media-url";
 import type { StickyGroupMemberInput } from "@/types/sticky-member";
 
 type StickyGroupBody = {
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
       .from("sticky_groups")
       .insert({
         year,
-        group_photo_url,
+        group_photo_url: toMediaKey(group_photo_url),
         title: title ?? "",
         description: description ?? "",
         additional_members_text: additional_members_text ?? "",

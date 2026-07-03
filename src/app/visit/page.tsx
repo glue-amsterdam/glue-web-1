@@ -1,7 +1,7 @@
 import BottomBlock from "@/components/bottom-block";
 import CmsTextSection from "@/components/cms/cms-text-section";
 import CmsIntroSection from "@/components/cms/cms-intro-section";
-import MainContainer from "@/components/main-container";
+import StaggerEnterContainer from "@/components/stagger-enter-container";
 import Separator from "@/components/separator";
 import { visitMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
@@ -14,18 +14,18 @@ export const revalidate = 5_184_000;
 const Page = () => {
   return (
     <main id="visit-page">
-      <MainContainer className="cta-padding stagger-enter">
+      <StaggerEnterContainer variant="enter" className="cta-padding">
         <CmsIntroSection slug="visit-intro" />
         <Separator />
         <CmsTextSection slug="visit-sign-up" />
         <Separator />
         <CmsTextSection slug="alternatives-unexpected" />
         <Separator />
-        <CmsTextSection slug="visit-discover" />
+        <CmsTextSection slug="visit-discover" bodyClassName="body-text" />
         <Separator />
         <CmsTextSection slug="newsletter" />
         <BottomBlock />
-      </MainContainer>
+      </StaggerEnterContainer>
     </main>
   );
 };

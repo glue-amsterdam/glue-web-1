@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sponsor, sponsorSchema, SponsorType } from "@/schemas/sponsorsSchema";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import {
@@ -30,10 +30,13 @@ import {
   createUploadProgressHandler,
   type UploadState,
 } from "@/components/image-upload-overlay";
+import { sponsorMatchesType } from "@/lib/about/sponsor-type-utils";
 
 interface SponsorFormProps {
   initialData?: Sponsor;
   sponsorTypes: SponsorType[];
+  defaultTypeId?: string;
+  variant?: "card" | "plain";
   onSponsorAdded?: () => void;
   onSponsorUpdated?: () => void;
 }
@@ -41,6 +44,8 @@ interface SponsorFormProps {
 export default function SponsorForm({
   initialData,
   sponsorTypes,
+  defaultTypeId,
+  variant = "card",
   onSponsorAdded,
   onSponsorUpdated,
 }: SponsorFormProps) {
@@ -56,7 +61,7 @@ export default function SponsorForm({
     defaultValues: initialData || {
       name: "",
       website: "",
-      sponsor_type: "",
+      sponsor_type: defaultTypeId || sponsorTypes[0]?.id || "",
       image_url: "",
     },
   });
@@ -69,6 +74,28 @@ export default function SponsorForm({
     watch,
     reset,
   } = methods;
+
+  useEffect(() => {
+    if (!initialData?.sponsor_type) {
+      return;
+    }
+
+    const hasMatchingId = sponsorTypes.some((type) =>
+      sponsorMatchesType(initialData.sponsor_type, type)
+    );
+
+    if (hasMatchingId) {
+      return;
+    }
+
+    const matchByLabel = sponsorTypes.find(
+      (type) => type.label === initialData.sponsor_type
+    );
+
+    if (matchByLabel) {
+      setValue("sponsor_type", matchByLabel.id, { shouldDirty: false });
+    }
+  }, [initialData, sponsorTypes, setValue]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -114,8 +141,9 @@ export default function SponsorForm({
 
       toast({
         title: `Sponsor ${initialData ? "updated" : "added"}`,
-        description: `The sponsor has been successfully ${initialData ? "updated" : "added"
-          }.`,
+        description: `The sponsor has been successfully ${
+          initialData ? "updated" : "added"
+        }.`,
       });
 
       if (initialData && onSponsorUpdated) {
@@ -130,8 +158,9 @@ export default function SponsorForm({
       console.error("Form submission error:", error);
       toast({
         title: "Error",
-        description: `Failed to ${initialData ? "update" : "add"
-          } sponsor. Please try again.`,
+        description: `Failed to ${
+          initialData ? "update" : "add"
+        } sponsor. Please try again.`,
         variant: "destructive",
       });
     } finally {
@@ -141,108 +170,111 @@ export default function SponsorForm({
   };
 
   const imageUrl = watch("image_url");
+  const selectedTypeId = watch("sponsor_type");
   const pendingFile = watch("file");
   const isBusy = isSubmitting || uploadState !== null;
+
+  const formContent = (
+    <FormProvider {...methods}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div>
+          <Label htmlFor="name">Partner name</Label>
+          <Input id="name" {...register("name")} />
+          {errors.name && (
+            <p className="text-red-500">{errors.name.message}</p>
+          )}
+        </div>
+
+        <div>
+          <Label htmlFor="website">Website</Label>
+          <Input id="website" {...register("website")} />
+          {errors.website && (
+            <p className="text-red-500">{errors.website.message}</p>
+          )}
+        </div>
+
+        <div>
+          <Label htmlFor="sponsor_type">Partner group</Label>
+          <Select
+            value={selectedTypeId}
+            onValueChange={(value) =>
+              setValue("sponsor_type", value, { shouldDirty: true })
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a partner group" />
+            </SelectTrigger>
+            <SelectContent>
+              {sponsorTypes.map((type) => (
+                <SelectItem key={type.id} value={type.id}>
+                  {type.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.sponsor_type && (
+            <p className="text-red-500">{errors.sponsor_type.message}</p>
+          )}
+        </div>
+
+        <div>
+          <Label>Logo</Label>
+          <AdminImagePreview
+            src={imageUrl}
+            alt="Sponsor logo"
+            uploadState={uploadState}
+            aspectClassName="h-52 w-full"
+          />
+          {pendingFile && !uploadState && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              New file selected — save to apply
+            </p>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-2 w-full"
+            disabled={isBusy}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {imageUrl ? "Change logo" : "Upload logo"}
+          </Button>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            ref={fileInputRef}
+            className="hidden"
+            disabled={isBusy}
+          />
+          {errors.image_url && (
+            <p className="text-red-500">{errors.image_url.message}</p>
+          )}
+        </div>
+
+        <SaveChangesButton
+          watchFields={["name", "website", "sponsor_type", "image_url"]}
+          isSubmitting={isSubmitting}
+        >
+          {isSubmitting ? "Saving..." : "Save partner"}
+        </SaveChangesButton>
+      </form>
+    </FormProvider>
+  );
+
+  if (variant === "plain") {
+    return formContent;
+  }
 
   return (
     <Card className="w-full max-w-2xl">
       <CardHeader>
         <CardTitle>
-          {initialData ? "Edit Sponsor" : "Add New Sponsor"}
+          {initialData ? "Edit partner" : "Add new partner"}
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div>
-              <Label htmlFor="name">Sponsor Name</Label>
-              <Input id="name" {...register("name")} />
-              {errors.name && (
-                <p className="text-red-500">{errors.name.message}</p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="website">Website</Label>
-              <Input id="website" {...register("website")} />
-              {errors.website && (
-                <p className="text-red-500">{errors.website.message}</p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="sponsor_type">Sponsor Type</Label>
-              <Select
-                onValueChange={(value) => setValue("sponsor_type", value)}
-                defaultValue={initialData?.sponsor_type || ""}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a sponsor type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sponsorTypes.map((type) => (
-                    <SelectItem key={type.label} value={type.label}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.sponsor_type && (
-                <p className="text-red-500">{errors.sponsor_type.message}</p>
-              )}
-            </div>
-
-            <div>
-              <Label>Logo</Label>
-              <AdminImagePreview
-                src={imageUrl}
-                alt="Sponsor logo"
-                uploadState={uploadState}
-                aspectClassName="h-52 w-full"
-              />
-              {pendingFile && !uploadState && (
-                <p className="mt-2 text-sm text-muted-foreground">
-                  New file selected — save to apply
-                </p>
-              )}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="mt-2 w-full"
-                disabled={isBusy}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {imageUrl ? "Change Logo" : "Upload Logo"}
-              </Button>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                ref={fileInputRef}
-                className="hidden"
-                disabled={isBusy}
-              />
-              {errors.image_url && (
-                <p className="text-red-500">{errors.image_url.message}</p>
-              )}
-            </div>
-
-            <SaveChangesButton
-              watchFields={[
-                "name",
-                "website",
-                "sponsor_type",
-                "image_url",
-                "alt",
-              ]}
-              isSubmitting={isSubmitting}
-            >
-              {isSubmitting ? "Saving..." : "Save Sponsor"}
-            </SaveChangesButton>
-          </form>
-        </FormProvider>
-      </CardContent>
+      <CardContent>{formContent}</CardContent>
     </Card>
   );
 }

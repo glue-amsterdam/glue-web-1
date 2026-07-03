@@ -3,9 +3,9 @@ import { createPublicSupabaseClient } from "@/utils/supabase/public";
 import { fetchLatestStickyGroup } from "./fetch-sticky-group";
 import { fetchLatestYearCitizens } from "./fetch-citizens";
 import { fetchHomeHero } from "./fetch-home-hero";
+import { PUBLIC_MEDIA_CACHE_REVALIDATE_SECONDS } from "@/lib/media/public-media-cache";
 import {
   HOME_CITIZENS_CACHE_TAG,
-  HOME_HERO_REVALIDATE_SECONDS,
   HOME_STICKY_CACHE_TAG,
   HOME_VIDEO_CACHE_TAG,
   type HomeCitizensData,
@@ -39,6 +39,6 @@ export const getCachedHomeHero = unstable_cache(
   [HOME_VIDEO_CACHE_TAG],
   {
     tags: [HOME_VIDEO_CACHE_TAG],
-    revalidate: HOME_HERO_REVALIDATE_SECONDS,
+    revalidate: PUBLIC_MEDIA_CACHE_REVALIDATE_SECONDS,
   }
 );

@@ -29,10 +29,10 @@ function PartnersSection({ groups }: PartnersSectionProps) {
     }, [groups.length, isLgOrUp]);
 
     if (groups.length === 0) {
-        return <p className="pt-[40px] text-sm">No sponsors to display.</p>;
+        return <p className="title-padding text-sm">No sponsors to display.</p>;
     }
     return (
-        <div className="pt-[40px] lg:grid lg:grid-cols-4 gap-[30px]" aria-live={isLgOrUp ? undefined : "polite"}>
+        <div className="title-padding flex gap-x-[80px] flex-wrap gap-y-[60px]" aria-live={isLgOrUp ? undefined : "polite"}>
             {isLgOrUp
                 ? groups.map((group) => (
                     <PartnersGroup key={group.label} group={group} />

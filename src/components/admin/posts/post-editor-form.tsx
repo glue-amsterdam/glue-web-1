@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useAutosave } from "@/hooks/useAutosave";
 import { PostRichTextEditor } from "./post-rich-text-editor";
+import PostThumbnailField from "./post-thumbnail-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -283,6 +284,11 @@ const PostEditorForm = ({ initialData }: PostEditorFormProps) => {
             placeholder="design, milan, glue"
           />
         </div>
+
+        <PostThumbnailField
+          postId={initialData.id}
+          initialThumbnail={initialData.thumbnail}
+        />
 
         <div className="grid gap-2">
           <Label>Content</Label>

@@ -1,4 +1,5 @@
 import { EVENT_TYPES } from "@/constants";
+import { toMediaKey } from "@/lib/media/media-url";
 import { z } from "zod";
 
 const eventFieldsSchema = z.object({
@@ -113,7 +114,7 @@ export type EventDbPayload = {
 export const toEventDbPayload = (data: EventPersistInput): EventDbPayload => ({
   title: data.title,
   organizer_id: data.organizer_id,
-  image_url: data.image_url,
+  image_url: toMediaKey(data.image_url) ?? "",
   start_time: data.start_time,
   end_time: data.end_time,
   type: data.type,

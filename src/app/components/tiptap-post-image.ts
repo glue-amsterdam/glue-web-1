@@ -127,7 +127,7 @@ export const PostImage = Image.extend<PostImageOptions>({
   renderHTML({ node }) {
     const { src, alt, maxWidth, align, href } = node.attrs;
     const imgAttrs = mergeAttributes(this.options.HTMLAttributes, {
-      class: "post-image rounded-md",
+      class: "post-image",
       "data-align": align as PostImageAlign,
       style: buildResponsiveImageStyle((maxWidth as string) || "600px"),
       src,

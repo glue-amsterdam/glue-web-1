@@ -2,15 +2,16 @@ import PlusButtonMobile from "@/components/icons/plus-button-mobile";
 import PlusIconDesktop from "@/components/icons/plus-icon-desktop";
 import CrossRotatedMobile from "@/components/icons/cross-rotated-mobile";
 import CrossRotatedDesktop from "@/components/icons/cross-rotated-desktop";
+import PlusIconBig from "./plus-icon-big";
 
-const AccordionPlusCrossIcon = () => (
+const AccordionPlusCrossIcon = ({ mode = "normal" }: { mode?: "big" | "normal" }) => (
   <span aria-hidden="true" className="shrink-0">
     <span className="block group-data-[state=open]:hidden">
       <span className="lg:hidden">
         <PlusButtonMobile />
       </span>
       <span className="hidden lg:block">
-        <PlusIconDesktop />
+        {mode === "big" ? <PlusIconBig /> : <PlusIconDesktop />}
       </span>
     </span>
     <span className="hidden group-data-[state=open]:block">

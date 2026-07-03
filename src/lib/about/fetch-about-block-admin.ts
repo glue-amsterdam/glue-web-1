@@ -1,5 +1,6 @@
 import { ABOUT_BLOCK_IDS } from "@/schemas/aboutPageSchema";
 import { revalidateAboutBlockCache } from "@/lib/about/revalidate-about-cache";
+import { toMediaKey, toMediaUrl } from "@/lib/media/media-url";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
@@ -90,7 +91,9 @@ export const fetchAboutBlockAdmin = async (
 
   return {
     block,
-    media,
+    media: media
+      ? { ...media, image_src: toMediaUrl(media.image_src) }
+      : media,
     text,
     members: members ?? [],
     items: faqItems,
@@ -121,7 +124,7 @@ export const updateAboutBlock = async (
   if (validated.image_src) {
     await supabase.from("about_block_media").upsert({
       block_id: id,
-      image_src: validated.image_src,
+      image_src: toMediaKey(validated.image_src),
       image_alt: validated.image_alt ?? validated.title,
     });
   }

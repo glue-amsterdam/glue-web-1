@@ -1,4 +1,5 @@
 import { config } from "@/config";
+import { toMediaUrl } from "@/lib/media/media-url";
 import { validateEventWrite } from "@/lib/events/validate-event-write";
 import {
   loadOrganizerProfiles,
@@ -146,7 +147,7 @@ export async function GET(
       startTime: event.start_time || "",
       endTime: event.end_time || "",
       thumbnail: {
-        image_url: event.image_url || "",
+        image_url: toMediaUrl(event.image_url) || "",
         alt: `${event.title} - event from GLUE design routes in ${config.cityName}`,
       },
       organizer: {

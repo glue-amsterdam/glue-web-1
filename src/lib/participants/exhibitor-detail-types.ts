@@ -20,10 +20,19 @@ export type ExhibitorEventSummary = {
   title: string;
 };
 
+export type ExhibitorDetailNavigation = {
+  showMap: boolean;
+  showEvents: boolean;
+  mapHref: string | null;
+  eventsHref: string | null;
+};
+
 export type ExhibitorContactInfo = {
   mapInfo: ExhibitorMapInfo[];
   /** Hub host street address when the participant belongs to a hub. */
   hubHostAddress?: string | null;
+  /** map_info id of the hub host when the participant belongs to an eligible hub. */
+  hubHostMapInfoId?: string | null;
   phoneNumbers: string[] | null;
   visibleEmails: string[] | null;
   visibleWebsites: string[] | null;
@@ -44,7 +53,10 @@ export type ExhibitorParticipantDetail = {
   description: string | null;
   status: string;
   is_sticky: boolean;
+  is_active: boolean;
+  was_active_last_year: boolean;
   contactInfo: ExhibitorContactInfo;
+  navigation: ExhibitorDetailNavigation;
 };
 
 export type ExhibitorHubMember = {

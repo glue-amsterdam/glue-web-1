@@ -1,10 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Allow tunnel URLs (ngrok, Cloudflare, etc.) to load dev assets from mobile/other devices.
+  allowedDevOrigins: [
+    "*.ngrok-free.dev",
+    "*.ngrok-free.app",
+    "*.ngrok.io",
+    "*.ngrok.app",
+    "*.trycloudflare.com",
+  ],
   reactStrictMode: true,
   experimental: {
     optimizePackageImports: [
       "lucide-react",
-      "framer-motion",
       "@radix-ui/react-icons",
     ],
   },
@@ -84,6 +91,13 @@ const nextConfig = {
           : "localhost",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: process.env.NEXT_PUBLIC_MEDIA_BASE_URL
+          ? new URL(process.env.NEXT_PUBLIC_MEDIA_BASE_URL).hostname
+          : "localhost",
+        pathname: "/**",
+      }
     ],
     minimumCacheTTL: 2678400,
     formats: ["image/avif", "image/webp"],

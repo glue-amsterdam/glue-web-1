@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { forwardRef, type ReactNode, type Ref } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -10,28 +10,41 @@ type FilterDropdownPanelProps<TFilterId extends string> = {
     openFilter: TFilterId | null;
     panelId: string;
     ariaLabel: string;
+    variant?: "picker" | "pinned";
     className?: string;
     children: ReactNode;
 };
 
-export const FilterDropdownPanel = <TFilterId extends string>({
-    filterId,
-    openFilter,
-    panelId,
-    ariaLabel,
-    className,
-    children,
-}: FilterDropdownPanelProps<TFilterId>) => {
+const FilterDropdownPanelInner = <TFilterId extends string>(
+    {
+        filterId,
+        openFilter,
+        panelId,
+        ariaLabel,
+        variant = "picker",
+        className,
+        children,
+    }: FilterDropdownPanelProps<TFilterId>,
+    ref: Ref<HTMLDivElement>
+) => {
     if (openFilter !== filterId) return null;
 
     return (
         <div
+            ref={ref}
             id={panelId}
             role="group"
             aria-label={ariaLabel}
+            aria-live={variant === "pinned" ? "polite" : undefined}
             className={cn(filterDropdownPanelClassName, className)}
         >
             {children}
         </div>
     );
 };
+
+export const FilterDropdownPanel = forwardRef(FilterDropdownPanelInner) as <
+    TFilterId extends string
+>(
+    props: FilterDropdownPanelProps<TFilterId> & { ref?: Ref<HTMLDivElement> }
+) => ReturnType<typeof FilterDropdownPanelInner>;

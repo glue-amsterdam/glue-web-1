@@ -108,8 +108,6 @@ export const archiveBlockSchema = z.object({
   is_visible: z.boolean(),
   years: z.array(z.number()),
   default_year: z.number().optional(),
-  default_section: archiveYearSectionSchema.optional(),
-  preloaded_sections: z.array(archiveYearSectionSchema).optional(),
 });
 
 export const faqItemSchema = z.object({

@@ -1,6 +1,6 @@
 import BottomBlock from "@/components/bottom-block";
 import ExhibitorHubDetailView from "@/components/exhibitors/exhibitor-hub-detail-view";
-import MainContainer from "@/components/main-container";
+import StaggerEnterContainer from "@/components/stagger-enter-container";
 import { config } from "@/config";
 import { ExhibitorNotFoundError } from "@/lib/participants/exhibitor-detail-types";
 import { fetchExhibitorDetailByHubId } from "@/lib/participants/fetch-exhibitor-detail";
@@ -62,7 +62,7 @@ export default async function ExhibitorHubPage({ params }: PageProps) {
 
     return (
       <main id="exhibitor-detail-page">
-        <MainContainer className="stagger-enter-fade">
+        <StaggerEnterContainer variant="fade">
           <nav className="sr-only" aria-label="Breadcrumb">
             <ol>
               <li>
@@ -76,7 +76,7 @@ export default async function ExhibitorHubPage({ params }: PageProps) {
           </nav>
           <ExhibitorHubDetailView hub={hub} />
           <BottomBlock />
-        </MainContainer>
+        </StaggerEnterContainer>
       </main>
     );
   } catch (error) {

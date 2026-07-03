@@ -5,6 +5,10 @@ import type { MapLocation } from "@/lib/map/types";
 import { ensureArray } from "@/lib/map/utils";
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
 import {
+  fetchParticipantCategories,
+  type ParticipantCategory,
+} from "@/lib/participants/participant-categories";
+import {
   getStickyParticipantIds,
   isParticipantEligibleForExhibitorsList,
   type TourStatus,
@@ -16,10 +20,11 @@ export type ProgramOrganizerBadge = {
 };
 
 export const organizerBadgeFromParticipant = (
-  specialProgram: boolean,
-  displayNumber: string | null
+  category: string,
+  displayNumber: string | null,
+  categories: ParticipantCategory[]
 ): ProgramOrganizerBadge => ({
-  type: specialProgram ? "special-program" : "up-to-three-participants",
+  type: classifyLocationType(1, category, categories),
   displayNumber: displayNumber ?? " ",
 });
 
@@ -52,7 +57,7 @@ export const resolveOrganizerBadge = (
 
 type HostParticipantRow = {
   user_id: string;
-  special_program: boolean;
+  category: string;
   display_number: string | null;
   is_active: boolean;
   was_active_last_year: boolean;
@@ -84,6 +89,8 @@ export const resolveLocationOrganizerBadge = async (
     return organizerFallback;
   }
 
+  const categories = await fetchParticipantCategories(supabase);
+
   const { data: mapInfo, error: mapInfoError } = await supabase
     .from("map_info")
     .select("id, user_id")
@@ -98,7 +105,7 @@ export const resolveLocationOrganizerBadge = async (
     supabase
       .from("participant_details")
       .select(
-        "user_id, special_program, display_number, is_active, was_active_last_year, status"
+        "user_id, category, display_number, is_active, was_active_last_year, status"
       )
       .eq("user_id", mapInfo.user_id)
       .eq("status", "accepted")
@@ -153,14 +160,14 @@ export const resolveLocationOrganizerBadge = async (
     const memberCount = getEligibleHubMemberIds(hub, eligibleParticipantIds).size;
     if (memberCount > 0) {
       return {
-        type: classifyLocationType(memberCount, host.special_program),
+        type: classifyLocationType(memberCount, host.category, categories),
         displayNumber: hub.display_number ?? " ",
       };
     }
   }
 
   return {
-    type: classifyLocationType(1, host.special_program),
+    type: classifyLocationType(1, host.category, categories),
     displayNumber: host.display_number ?? " ",
   };
 };

@@ -1,5 +1,6 @@
 import { useEventsDays } from "@/context/MainContext";
 import type { ExhibitorContactInfo } from "@/lib/participants/exhibitor-detail-types";
+import { cn } from "@/lib/utils";
 import { formatUrl } from "@/utils/formatUrl";
 import Link from "next/link";
 
@@ -35,9 +36,29 @@ const ExhibitorDetailInfo = ({ contactInfo }: ExhibitorDetailInfoProps) => {
     socialMedia?.facebookLink ||
     socialMedia?.linkedinLink;
 
+  const hasVisitingHours =
+    visitingHours !== null &&
+    Object.values(visitingHours).some((times) => times.length > 0);
+
+  const visibleMapInfo = mapInfo.filter(
+    (map) => !map.no_address && map.id && map.formatted_address?.trim()
+  );
+
+  const hasAnyInfo =
+    visibleMapInfo.length > 0 ||
+    hasContact ||
+    hasSocial ||
+    hasVisitingHours ||
+    events.length > 0;
+
   return (
-    <div className="flex flex-col gap-[30px] pt-[30px] wrap-break-word">
-      {mapInfo.length > 0 && (
+    <div
+      className={cn(
+        "flex flex-col gap-[30px] wrap-break-word",
+        hasAnyInfo && "pt-[30px]"
+      )}
+    >
+      {visibleMapInfo.length > 0 && (
         <section aria-labelledby="exhibitor-address-heading">
           <h3
             id="exhibitor-address-heading"
@@ -45,8 +66,8 @@ const ExhibitorDetailInfo = ({ contactInfo }: ExhibitorDetailInfoProps) => {
           >
             Address
           </h3>
-          <ul className="">
-            {mapInfo.map((map) => (
+          <ul>
+            {visibleMapInfo.map((map) => (
               <li key={map.id}>
                 <Link
                   href={`/map?place=${map.id}`}
@@ -152,7 +173,7 @@ const ExhibitorDetailInfo = ({ contactInfo }: ExhibitorDetailInfoProps) => {
         </section>
       )}
 
-      {visitingHours && Object.keys(visitingHours).length > 0 && (
+      {hasVisitingHours && (
         <section aria-labelledby="exhibitor-hours-heading">
           <h3
             id="exhibitor-hours-heading"

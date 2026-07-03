@@ -1,4 +1,5 @@
 import type { ExhibitorsFilterType } from "@/lib/participants/exhibitors-filters";
+import { normalizeCategorySlug } from "@/lib/participants/participant-categories";
 import {
   DEFAULT_MAP_FILTERS,
   type MapFilters,
@@ -12,12 +13,21 @@ const VALID_VIEWS: MapViewMode[] = [
   "category",
 ];
 
-const VALID_TYPES: ExhibitorsFilterType[] = [
-  "all",
-  "hub",
-  "up-to-three-participants",
-  "special-program",
-];
+export const parseMapFilterType = (
+  value: string | null,
+  validSlugs: string[]
+): ExhibitorsFilterType => {
+  if (!value || value === "all") {
+    return "all";
+  }
+
+  const normalized = normalizeCategorySlug(value);
+  if (validSlugs.includes(normalized)) {
+    return normalized;
+  }
+
+  return DEFAULT_MAP_FILTERS.type;
+};
 
 const parseView = (value: string | null): MapViewMode => {
   if (value && VALID_VIEWS.includes(value as MapViewMode)) {
@@ -26,18 +36,12 @@ const parseView = (value: string | null): MapViewMode => {
   return DEFAULT_MAP_FILTERS.view;
 };
 
-const parseType = (value: string | null): ExhibitorsFilterType => {
-  if (value && VALID_TYPES.includes(value as ExhibitorsFilterType)) {
-    return value as ExhibitorsFilterType;
-  }
-  return DEFAULT_MAP_FILTERS.type;
-};
-
 export const searchParamsToMapFilters = (
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
+  validSlugs: string[] = []
 ): MapFilters => ({
   view: parseView(searchParams.get("view")),
-  type: parseType(searchParams.get("type")),
+  type: parseMapFilterType(searchParams.get("type"), validSlugs),
   q: searchParams.get("q")?.trim() ?? "",
 });
 

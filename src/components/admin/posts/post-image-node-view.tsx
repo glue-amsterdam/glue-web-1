@@ -37,7 +37,7 @@ export const PostImageNodeView = ({
       alt={alt || ""}
       draggable={false}
       className={cn(
-        "post-image rounded-md",
+        "post-image",
         selected && "ring-2 ring-blue-500 ring-offset-2"
       )}
       style={getResponsiveImageStyleObject(widthStyle)}

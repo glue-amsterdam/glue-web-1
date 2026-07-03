@@ -1,12 +1,9 @@
 import { TERMS_CACHE_TAG } from "@/lib/terms/get-cached-terms";
+import { termsSchema } from "@/lib/terms/fetch-terms-admin";
 import { requireAdminToken } from "@/lib/admin/require-admin-token";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-
-const termsSchema = z.object({
-  content: z.string().min(1, "Terms and conditions content is required"),
-});
 
 export async function PUT(request: Request) {
   try {
@@ -29,6 +26,8 @@ export async function PUT(request: Request) {
       const { data, error } = await auth.supabase
         .from("terms_and_conditions")
         .update({
+          title: validatedData.title,
+          subtitle: validatedData.subtitle,
           content: validatedData.content,
           updated_at: new Date().toISOString(),
         })
@@ -48,6 +47,8 @@ export async function PUT(request: Request) {
     const { data, error } = await auth.supabase
       .from("terms_and_conditions")
       .insert({
+        title: validatedData.title,
+        subtitle: validatedData.subtitle,
         content: validatedData.content,
         updated_at: new Date().toISOString(),
       })

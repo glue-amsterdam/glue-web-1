@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useState, type ReactNode } from "react";
 
 import { useAuth } from "@/context/AuthContext";
-import { SignUpNavLink } from "@/components/sign-up/sign-up-nav-link";
+import { AccountNavLink } from "@/components/account/account-nav-link";
 import { fetchNavbarIdentity } from "@/lib/users/fetch-navbar-identity";
 import type { NavbarIdentity } from "@/lib/users/get-navbar-identity";
 import { getVisitorDataDashboardPath } from "@/lib/users/redirect-to-dashboard-home";
@@ -50,7 +50,7 @@ const Container = ({
   return <div className={cn("flex items-center", className)}>{children}</div>;
 };
 
-const participateLinkClassName =
+const accountLinkClassName =
   "text-[15px] leading-[15px] lg:text-[19px] lg:leading-[25px] text-(--black-color)";
 
 type NavbarClientProps = {
@@ -137,7 +137,7 @@ const Links = ({
           key={item.href}
           href={item.href}
           className={cn(
-            "transition-colors duration-100 text-[15px] leading-[15px] lg:text-[23px] lg:leading-[29px]",
+            "transition-colors duration-100 navigation",
             pathname === item.href
               ? "text-(--primary-color)"
               : "text-(--black-color)"
@@ -150,26 +150,21 @@ const Links = ({
   );
 };
 
-const ParticipateLinks = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
+const AccountNav = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
   if (isAuthenticated) {
     return null;
   }
 
   return (
-    <div className="flex items-center gap-[30px]">
-      <Suspense
-        fallback={
-          <Link href="/sign-up" className={participateLinkClassName}>
-            Sign Up
-          </Link>
-        }
-      >
-        <SignUpNavLink className={participateLinkClassName}>Sign Up</SignUpNavLink>
-      </Suspense>
-      <Link href="/login" className={participateLinkClassName}>
-        Login
-      </Link>
-    </div>
+    <Suspense
+      fallback={
+        <Link href="/account" className={accountLinkClassName}>
+          Account
+        </Link>
+      }
+    >
+      <AccountNavLink className={accountLinkClassName}>Account</AccountNavLink>
+    </Suspense>
   );
 };
 
@@ -178,7 +173,7 @@ export const NavBarClient = ({
   navLinks,
 }: NavbarClientProps) => {
   const pathname = usePathname();
-  const { user, isLoading, navbarIdentity } = useAuth();
+  const { user, navbarIdentity } = useAuth();
   const [liveIdentity, setLiveIdentity] = useState<NavbarIdentity | null>(null);
 
   useEffect(() => {
@@ -209,7 +204,7 @@ export const NavBarClient = ({
   }, [user, initialIdentity, navbarIdentity]);
 
   const isAuthenticated =
-    user !== null || (isLoading && initialIdentity !== null);
+    user !== null || initialIdentity !== null;
   const identity = isAuthenticated
     ? (initialIdentity ?? navbarIdentity ?? liveIdentity)
     : null;
@@ -217,9 +212,8 @@ export const NavBarClient = ({
 
   const showExhibitorsNav = pathname === "/exhibitors";
   const showProgramNav = pathname === "/program";
-  const showParticipateNav =
-    (pathname === "/participate" || pathname === "/") && !isAuthenticated;
-  const showVisitNav = pathname === "/visit" && !isAuthenticated;
+  const showAccountNav =
+    (pathname === "/participate" || pathname === "/visit") && !isAuthenticated;
 
   return (
     <div className="fixed font-normal top-0 w-full z-50 animate-enter-down">
@@ -227,7 +221,7 @@ export const NavBarClient = ({
         <MainContainer>
           <Block className="h-(--nav-primary-h-mobile) lg:h-(--nav-primary-h)">
             <div className="lg:w-[250px]">
-              <LogoWithLink className="size-10 lg:size-[60px] lg:hover:scale-105 lg:transition-all lg:duration-100" />
+              <LogoWithLink className="size-10 lg:size-[60px]" />
             </div>
             <Links className="hidden lg:flex" navLinks={navLinks} />
             <Buttons
@@ -241,17 +235,10 @@ export const NavBarClient = ({
           </Block>
         </MainContainer>
       </nav>
-      {showParticipateNav && (
+      {showAccountNav && (
         <MainContainer>
           <Block className="flex justify-end h-(--nav-secondary-h-mobile) lg:h-(--nav-secondary-h)">
-            <ParticipateLinks isAuthenticated={isAuthenticated} />
-          </Block>
-        </MainContainer>
-      )}
-      {showVisitNav && (
-        <MainContainer>
-          <Block className="flex justify-end h-(--nav-secondary-h-mobile) lg:h-(--nav-secondary-h)">
-            <ParticipateLinks isAuthenticated={isAuthenticated} />
+            <AccountNav isAuthenticated={isAuthenticated} />
           </Block>
         </MainContainer>
       )}

@@ -52,4 +52,5 @@ export const revalidateAboutStickyYearCache = (year: number): void => {
 export const revalidateAboutArchiveYearCache = (year: number): void => {
   revalidateTag(aboutArchiveYearCacheTag(year), "max");
   revalidateAboutPage();
+  revalidatePath(`/about/archive/${year}`);
 };
