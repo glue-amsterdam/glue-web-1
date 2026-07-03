@@ -126,7 +126,7 @@ function NewsletterForm() {
         <form
             onSubmit={handleSubmit}
             id="newsletter-form"
-            className="pt-[80px] max-w-[508px] mx-auto"
+            className="title-padding max-w-[508px] mx-auto"
             noValidate
         >
             <div className="flex flex-col gap-[15px] md:gap-[30px]">
@@ -135,7 +135,7 @@ function NewsletterForm() {
 
                     return (
                         <div className="flex flex-col gap-[10px] relative" key={item.name}>
-                            <label htmlFor={item.name} className="base-text-size flex gap-[5px]">
+                            <label htmlFor={item.name} className="body-text flex gap-[5px]">
                                 {item.label} {item.required ? <span aria-hidden="true">*</span> : null}
                                 {fieldError ? (
                                     <span aria-hidden="true"

@@ -14,7 +14,7 @@ const PostsSectionIntro = ({
       {title.toUpperCase()}
     </Heading>
     <div
-      className="title-padding lg:max-w-(--paragraph-max-width) body-text post-content"
+      className="title-padding lg:max-w-(--paragraph-max-width) body-label post-content"
       dangerouslySetInnerHTML={{ __html: descriptionHtml }}
     />
   </>
