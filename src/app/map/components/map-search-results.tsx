@@ -44,7 +44,7 @@ const MapSearchResults = ({
       role="listbox"
       aria-label="Search results"
       className={cn(
-        "absolute top-full left-0 z-51 w-full overflow-y-auto border-b border-(--black-color) bg-(--white-color) max-h-[300px] flex flex-col justify-center",
+        "absolute top-full left-0 z-51 w-full overflow-y-auto border-b border-(--black-color) bg-(--white-color) max-h-[300px] flex flex-col",
         className
       )}
     >

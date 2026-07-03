@@ -15,7 +15,7 @@ const pageTexts = {
 
 function Page() {
     return (
-        <main id="newsletter-page" className="first-padding pb-[65px] md:pb-[105px]">
+        <main id="newsletter-page" className="terms-and-conditions-padding pb-(--site-footer-h) min-h-dvh flex flex-col">
             <MainContainer>
                 <StaggerEnterContainer as="section" variant="enter" id="newsletter-section">
                     <HeadlineWCross title={pageTexts.title} />

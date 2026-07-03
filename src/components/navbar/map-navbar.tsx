@@ -460,53 +460,55 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
       aria-label="Map filters"
       className="w-full h-(--nav-secondary-h) flex items-center relative overflow-visible border-b lg:border-b-2 border-(--black-color) bg-(--background-color) py-[12px]"
     >
-      <BaseSecondNavbar
-        searchValue={searchValue}
-        onSearchChange={handleSearchChange}
-        onSearchKeyDown={handleSearchKeyDown}
-        searchInputId="map-search-filter"
-        searchAriaLabel="Search exhibitors and routes"
-        searchAfter={
-          showSearchResults ? (
-            <MapSearchResults
-              locations={mapPageStore?.searchFilteredLocations ?? []}
-              routes={canShowRoutesInSearch ? filteredRoutesForList : []}
-              onExhibitorSelect={handleSearchExhibitorSelect}
-              onRouteSelect={handleSearchRouteSelect}
-            />
-          ) : null
-        }
-      >
-        <FilterButton<MapFilterId>
-          filterId="exhibitors"
-          openFilter={openFilter}
-          panelId={exhibitorsPanelId}
-          label="Exhibitors"
-          onToggle={handleExhibitorsToggle}
-          onKeyDown={handleExhibitorsKeyDown}
-        />
-
-        {hasRoutes && (
+      <div className="relative w-full">
+        <BaseSecondNavbar
+          searchValue={searchValue}
+          onSearchChange={handleSearchChange}
+          onSearchKeyDown={handleSearchKeyDown}
+          searchInputId="map-search-filter"
+          searchAriaLabel="Search exhibitors and routes"
+        >
           <FilterButton<MapFilterId>
-            filterId="routes"
+            filterId="exhibitors"
             openFilter={openFilter}
-            panelId={routesPanelId}
-            label="Routes"
-            onToggle={handleRoutesToggle}
-            onKeyDown={handleRoutesKeyDown}
+            panelId={exhibitorsPanelId}
+            label="Exhibitors"
+            onToggle={handleExhibitorsToggle}
+            onKeyDown={handleExhibitorsKeyDown}
+          />
+
+          {hasRoutes && (
+            <FilterButton<MapFilterId>
+              filterId="routes"
+              openFilter={openFilter}
+              panelId={routesPanelId}
+              label="Routes"
+              onToggle={handleRoutesToggle}
+              onKeyDown={handleRoutesKeyDown}
+            />
+          )}
+
+          <FilterButton<MapFilterId>
+            filterId="category"
+            openFilter={openFilter}
+            panelId={categoryPanelId}
+            label="Category"
+            isActive={filters.type !== "all"}
+            onToggle={handleCategoryToggle}
+            onKeyDown={handleCategoryKeyDown}
+          />
+        </BaseSecondNavbar>
+
+        {showSearchResults && (
+          <MapSearchResults
+            locations={mapPageStore?.searchFilteredLocations ?? []}
+            routes={canShowRoutesInSearch ? filteredRoutesForList : []}
+            onExhibitorSelect={handleSearchExhibitorSelect}
+            onRouteSelect={handleSearchRouteSelect}
+            className="top-full inset-x-0 z-60 max-h-[min(300px,calc(100dvh-var(--nav-total-h-mobile)-var(--site-footer-h)-16px))]"
           />
         )}
-
-        <FilterButton<MapFilterId>
-          filterId="category"
-          openFilter={openFilter}
-          panelId={categoryPanelId}
-          label="Category"
-          isActive={filters.type !== "all"}
-          onToggle={handleCategoryToggle}
-          onKeyDown={handleCategoryKeyDown}
-        />
-      </BaseSecondNavbar>
+      </div>
 
       <div
         ref={panelAnchorRef}
