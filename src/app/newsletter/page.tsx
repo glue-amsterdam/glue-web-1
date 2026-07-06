@@ -15,10 +15,10 @@ const pageTexts = {
 
 function Page() {
     return (
-        <main id="newsletter-page" className="terms-and-conditions-padding pb-(--site-footer-h) min-h-dvh flex flex-col">
+        <main id="newsletter-page" className="terms-and-conditions-padding pb-(--site-footer-h) min-h-dvh">
             <MainContainer>
+                <HeadlineWCross title={pageTexts.title} />
                 <StaggerEnterContainer as="section" variant="enter" id="newsletter-section">
-                    <HeadlineWCross title={pageTexts.title} />
                     <p className="sr-only">{pageTexts.description}</p>
                     <NewsletterForm />
                 </StaggerEnterContainer>

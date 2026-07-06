@@ -18,6 +18,10 @@ import {
   type VisitorParticipantAccountValues,
 } from "@/schemas/visitorSchemas";
 import Link from "next/link";
+import {
+  ParticipateTermsAcceptance,
+  TERMS_ACCEPTANCE_ERROR,
+} from "@/components/participate/participate-terms-acceptance";
 
 export type VisitorAccountValues = z.infer<typeof visitorRegisterSchema>;
 
@@ -73,6 +77,9 @@ type VisitorAccountStepBaseProps = {
   isSubmitting?: boolean;
   loadingMessage?: string;
   loginHref?: string;
+  termsContent?: string;
+  termsAccepted?: boolean;
+  onTermsAcceptedChange?: (accepted: boolean) => void;
 };
 
 type VisitorAccountStepWithCheckInProps = VisitorAccountStepBaseProps & {
@@ -104,9 +111,13 @@ export const VisitorAccountStep = ({
   isSubmitting = false,
   loadingMessage = "Submitting…",
   loginHref,
+  termsContent,
+  termsAccepted = false,
+  onTermsAcceptedChange,
   ...rest
 }: VisitorAccountStepProps) => {
   const requireCheckInFields = rest.requireCheckInFields !== false;
+  const showTerms = Boolean(termsContent);
 
   const [values, setValues] = useState<VisitorAccountFormState>({
     ...defaultAccountValues,
@@ -115,6 +126,8 @@ export const VisitorAccountStep = ({
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<keyof VisitorAccountFormState, string>>
   >({});
+  const [termsError, setTermsError] = useState<string | null>(null);
+  const [localTermsAccepted, setLocalTermsAccepted] = useState(termsAccepted);
 
   const workAreaOptions = workAreas.map((area) => ({
     value: area.id,
@@ -123,6 +136,12 @@ export const VisitorAccountStep = ({
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+    setTermsError(null);
+
+    if (showTerms && !localTermsAccepted) {
+      setTermsError(TERMS_ACCEPTANCE_ERROR);
+      return;
+    }
 
     if (requireCheckInFields) {
       const parsed = visitorRegisterSchema.safeParse(values);
@@ -131,6 +150,9 @@ export const VisitorAccountStep = ({
         return;
       }
       setFieldErrors({});
+      if (showTerms) {
+        onTermsAcceptedChange?.(true);
+      }
       (onSubmit as VisitorAccountStepWithCheckInProps["onSubmit"])(parsed.data);
       return;
     }
@@ -143,7 +165,18 @@ export const VisitorAccountStep = ({
       return;
     }
     setFieldErrors({});
+    if (showTerms) {
+      onTermsAcceptedChange?.(true);
+    }
     (onSubmit as VisitorAccountStepWithoutCheckInProps["onSubmit"])(parsed.data);
+  };
+
+  const handleTermsChange = (accepted: boolean) => {
+    setLocalTermsAccepted(accepted);
+    onTermsAcceptedChange?.(accepted);
+    if (accepted) {
+      setTermsError(null);
+    }
   };
 
   const setField =
@@ -158,7 +191,7 @@ export const VisitorAccountStep = ({
   if (isSubmitting) {
     return (
       <div
-        className="max-w-[508px] mx-auto title-padding pb-[15px] lg:pb-[30px]"
+        className="max-w-(--field-max-width) mx-auto title-padding pb-[15px] lg:pb-[30px]"
         aria-busy="true"
         aria-live="polite"
       >
@@ -173,13 +206,13 @@ export const VisitorAccountStep = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full max-w-[508px] lg:max-w-[1045px] mx-auto title-padding pb-[15px] lg:pb-[30px]"
+      className="w-full max-w-(--field-max-width) lg:max-w-[1045px] mx-auto title-padding pb-[15px] lg:pb-[30px]"
       noValidate
     >
       {submitError ? (
         <p
           role="alert"
-          className="max-w-[508px] mx-auto pb-[15px] body-text text-(--primary-color)"
+          className="max-w-(--field-max-width) mx-auto pb-[15px] body-text text-(--primary-color)"
         >
           {submitError}
         </p>
@@ -264,6 +297,17 @@ export const VisitorAccountStep = ({
         </div>
       </div>
 
+      {showTerms && termsContent ? (
+        <div className="flex flex-col gap-4 pt-[15px] lg:pt-[30px]">
+          <ParticipateTermsAcceptance
+            termsContent={termsContent}
+            accepted={localTermsAccepted}
+            onAcceptedChange={handleTermsChange}
+            error={termsError ?? undefined}
+            checkboxId="account-termsAccepted"
+          />
+        </div>
+      ) : null}
 
       <div
         className={

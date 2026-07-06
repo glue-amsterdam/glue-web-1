@@ -483,7 +483,7 @@ export const MapFilterScrollPanel = ({
     const panelBody = (
         <div
             className={cn(
-                "flex w-full flex-col border-t lg:border-t-2 border-b lg:border-b-2 border-(--black-color) bg-(--white-color)",
+                "flex w-full flex-col border-t lg:border-t-2 border-b-0 border-(--black-color) bg-(--white-color)",
                 isRisingSheet && "overflow-hidden",
                 naturalOverflowsViewport &&
                     "overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]"

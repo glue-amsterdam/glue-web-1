@@ -201,6 +201,25 @@ export const classifyCategory = (
   return getDefaultCategory(categories).slug;
 };
 
+/** Hub members inherit the hub color unless they have an assignable category. */
+export const classifyHubMemberCategory = (
+  assignedSlug: string | null | undefined,
+  categories: ParticipantCategory[]
+): ExhibitorType => {
+  const normalized = assignedSlug
+    ? normalizeCategorySlug(assignedSlug)
+    : undefined;
+  const assigned = normalized
+    ? getCategoryBySlug(categories, normalized)
+    : undefined;
+
+  if (assigned?.assignable) {
+    return assigned.slug;
+  }
+
+  return getStructuralCategory(categories).slug;
+};
+
 export const getModeratorCategoryOptions = (
   categories: ParticipantCategory[]
 ): CategoryFilterOption[] => {

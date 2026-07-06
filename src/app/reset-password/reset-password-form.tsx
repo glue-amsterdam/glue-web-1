@@ -33,7 +33,7 @@ const defaultValues: FormData = {
   confirmPassword: "",
 };
 
-const formWrapperClassName = "pt-[100px] w-full lg:max-w-[508px] lg:mx-auto";
+const formWrapperClassName = "pt-[100px] w-full lg:max-w-(--field-max-width) lg:mx-auto";
 
 const mapZodFieldErrors = (
   flat: Partial<Record<string, string[] | undefined>>,

@@ -85,15 +85,21 @@ const ExhibitorFooter = ({
         >
             <MainContainer>
                 <div className="border-t border-(--black-color) px-[20px] pt-[15px] pb-[20px]">
-                    <div className="flex gap-[25px] items-start w-full">
+                    <div className="flex min-w-0 gap-[25px] items-start w-full">
                         <RoundedNumber type={location.type} participant_n={location.displayNumber ?? " "} />
-                        <div className="w-full">
-                            <div className="w-full flex justify-between" aria-live="polite" aria-atomic="true">
-                                <h3 className="truncate ">{displayName.toUpperCase()}</h3>
+                        <div className="min-w-0 flex-1">
+                            <div
+                              className="flex w-full items-start justify-between gap-3"
+                              aria-live="polite"
+                              aria-atomic="true"
+                            >
+                                <h3 className="min-w-0 flex-1 whitespace-normal wrap-break-word">
+                                  {displayName.toUpperCase()}
+                                </h3>
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="cursor-pointer"
+                                    className="shrink-0 cursor-pointer"
                                     aria-label="Close exhibitor details"
                                 >
                                     <CrossRotatedMobile />

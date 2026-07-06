@@ -16,11 +16,16 @@ const ExhibitorsClientPage = ({ initialData, initialFilters }: Props) => {
     items,
     hasMore,
     loading,
+    isRefetching,
     loadingMore,
     error,
     handleLoadMore,
     handleRetry,
   } = useExhibitorsPage(initialData, initialFilters);
+
+  const showGridLoading = loading && items.length === 0;
+  const showEmpty =
+    !loading && !isRefetching && items.length === 0;
 
   return (
     <>
@@ -42,11 +47,11 @@ const ExhibitorsClientPage = ({ initialData, initialFilters }: Props) => {
         <>
           <ExhibitorsGrid
             exhibitors={items}
-            loading={loading && items.length === 0}
+            loading={showGridLoading || isRefetching}
             mode="fullpage"
           />
 
-          {!loading && items.length === 0 && (
+          {showEmpty && (
             <p className="pt-[15px] lg:pt-[30px] base-text-size text-(--black-color)">
               No exhibitors found.
             </p>
@@ -58,7 +63,7 @@ const ExhibitorsClientPage = ({ initialData, initialFilters }: Props) => {
                 as="button"
                 label={loadingMore ? "loading..." : "view more"}
                 mode="big"
-                disabled={loadingMore || loading || !hasMore}
+                disabled={loadingMore || loading || isRefetching || !hasMore}
                 onClick={handleLoadMore}
               />
             </div>

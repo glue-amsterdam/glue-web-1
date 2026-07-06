@@ -6,6 +6,7 @@ import {
 } from "@/lib/participants/exhibitor-visibility";
 import { classifyLocationType } from "./classify-location-type";
 import {
+  classifyHubMemberCategory,
   fetchParticipantCategories,
   type ParticipantCategory,
 } from "@/lib/participants/participant-categories";
@@ -63,7 +64,7 @@ type HubMembershipContext = {
 const getMemberType = (
   category: string,
   categories: ParticipantCategory[]
-): ExhibitorType => classifyLocationType(1, category, categories);
+): ExhibitorType => classifyHubMemberCategory(category, categories);
 
 const resolveMemberMapLocationId = (
   userId: string,
@@ -320,7 +321,9 @@ export const buildMapLocations = async (
       id: mapInfo.id,
       latitude: mapInfo.latitude,
       longitude: mapInfo.longitude,
-      type: classifyLocationType(1, participant.category, categories),
+      type: hubMembershipByUserId.has(participant.user_id)
+        ? classifyHubMemberCategory(participant.category, categories)
+        : classifyLocationType(1, participant.category, categories),
       name: getParticipantDisplayName(participant),
       displayNumber: participant.display_number,
       addressLine: getAddressLine(mapInfo.formatted_address),

@@ -9,7 +9,6 @@ import { ParticipantExtraDataStep } from "@/components/participate/participant-e
 import type { ParticipantExtraDataFormData } from "@/schemas/participantExtraDataSchema";
 import {
   MapInfoStep,
-  type MapInfoStepValues,
 } from "@/components/participate/map-info-step";
 import type { MapInfo } from "@/schemas/mapInfoSchemas";
 import {
@@ -24,6 +23,7 @@ import {
   type VisitorParticipantAccountValues,
 } from "@/schemas/visitorSchemas";
 import MainContainer from "@/components/main-container";
+import HeadlineWCross from "@/components/headline-w-cross";
 import { useToast } from "@/hooks/use-toast";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { getCookieConsent } from "@/app/actions/cookieConsent";
@@ -91,6 +91,8 @@ export const ParticipationWizard = ({
     acceptedTerms: boolean
   ) => {
     setLoading(true);
+    let redirecting = false;
+
     try {
       const response = await fetch("/api/participation/apply", {
         method: "POST",
@@ -132,6 +134,7 @@ export const ParticipationWizard = ({
         title: "Request submitted",
         description: "Your reactivation request has been sent.",
       });
+      redirecting = true;
       router.push("/");
     } catch {
       toast({
@@ -140,26 +143,34 @@ export const ParticipationWizard = ({
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      if (!redirecting) {
+        setLoading(false);
+      }
     }
   };
 
   const submitApplication = async (
-    account?: VisitorParticipantAccountValues
+    account?: VisitorParticipantAccountValues,
+    acceptedTerms?: boolean,
+    invoiceOverride?: InvoiceDataType,
   ) => {
-    if (!invoiceData || !extraData || !mapInfo || !termsAccepted) return;
+    const invoice = invoiceOverride ?? invoiceData;
+    const resolvedTerms = acceptedTerms ?? termsAccepted;
+    if (!invoice || !extraData || !mapInfo || !resolvedTerms) return;
 
     setLoading(true);
+    let redirecting = false;
+
     try {
       const body: Record<string, unknown> = {
         intent,
         plan_id: plan.plan_id,
         plan_type: plan.plan_type,
         plan_label: plan.plan_label,
-        ...invoiceData,
+        ...invoice,
         ...extraData,
         ...mapInfo,
-        termsAccepted,
+        termsAccepted: resolvedTerms,
         ...(account ?? {}),
       };
 
@@ -216,6 +227,7 @@ export const ParticipationWizard = ({
         }
       }
 
+      redirecting = true;
       router.push("/");
     } catch {
       toast({
@@ -224,45 +236,55 @@ export const ParticipationWizard = ({
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      if (!redirecting) {
+        setLoading(false);
+      }
     }
   };
 
-  const handleMapSubmit = (data: MapInfoStepValues) => {
-    const { termsAccepted: acceptedTerms, ...map } = data;
-    setMapInfo(map);
-    setTermsAccepted(acceptedTerms);
+  const handleMapSubmit = (data: MapInfo) => {
+    setMapInfo(data);
+    setStep(3);
+  };
+
+  const handleInvoiceSubmit = (data: InvoiceDataType) => {
+    setInvoiceData(data);
 
     if (hasFinalStep) {
       setStep(4);
       return;
     }
 
+    setTermsAccepted(true);
+
     if (isReactivation) {
-      if (!invoiceData || !extraData) return;
-      void submitReactivation(invoiceData, extraData, map, acceptedTerms);
+      if (!extraData || !mapInfo) return;
+      void submitReactivation(data, extraData, mapInfo, true);
       return;
     }
 
-    void submitApplication();
+    void submitApplication(undefined, true, data);
   };
 
   const handleAccountSubmit = (data: VisitorParticipantAccountValues) => {
+    setTermsAccepted(true);
     setAccountData(data);
-    void submitApplication(data);
+    void submitApplication(data, true);
   };
 
   const handleVisitorCheckInSubmit = () => {
+    setTermsAccepted(true);
+
     if (isReactivation) {
       if (!invoiceData || !extraData || !mapInfo) return;
-      void submitReactivation(invoiceData, extraData, mapInfo, termsAccepted);
+      void submitReactivation(invoiceData, extraData, mapInfo, true);
       return;
     }
 
-    void submitApplication();
+    void submitApplication(undefined, true);
   };
 
-  const mapSubmitLabel = (() => {
+  const invoiceSubmitLabel = (() => {
     if (hasFinalStep) return "next step";
     if (isReactivation) return "submit request";
     return "submit";
@@ -276,12 +298,15 @@ export const ParticipationWizard = ({
     <MainContainer className="terms-and-conditions-padding pb-(--site-footer-h) min-h-dvh flex flex-col">
       {step === 1 && (
         <>
-          <ParticipationPrefilledHint show={sectionStatus.invoice === "complete"} />
-          <h1 className="title-text uppercase">Invoice Information</h1>
-          <InvoiceStep
-            defaultValues={invoiceData ?? undefined}
+          <ParticipationPrefilledHint show={sectionStatus.extra === "complete"} />
+          <HeadlineWCross
+            title="Participant Information"
+            closeFallbackHref={participateBackHref}
+          />
+          <ParticipantExtraDataStep
+            defaultValues={extraData ?? undefined}
             onSubmit={(data) => {
-              setInvoiceData(data);
+              setExtraData(data);
               setStep(2);
             }}
             onBack={handleBack}
@@ -290,38 +315,37 @@ export const ParticipationWizard = ({
       )}
       {step === 2 && (
         <>
-          <ParticipationPrefilledHint show={sectionStatus.extra === "complete"} />
-          <h1 className="title-text uppercase">Participant Information</h1>
-          <ParticipantExtraDataStep
-            defaultValues={extraData ?? undefined}
-            onSubmit={(data) => {
-              setExtraData(data);
-              setStep(3);
-            }}
+          <ParticipationPrefilledHint show={sectionStatus.map === "complete"} />
+          <HeadlineWCross title="Location" closeFallbackHref={participateBackHref} />
+          <MapInfoStep
+            defaultValues={mapInfo ?? undefined}
+            onSubmit={handleMapSubmit}
             onBack={handleBack}
+            submitLabel="next step"
           />
         </>
       )}
       {step === 3 && (
         <>
-          <ParticipationPrefilledHint show={sectionStatus.map === "complete"} />
-          <h1 className="title-text uppercase">Location</h1>
-          <MapInfoStep
-            defaultValues={
-              mapInfo
-                ? { ...mapInfo, termsAccepted }
-                : { termsAccepted }
-            }
-            onSubmit={handleMapSubmit}
+          <ParticipationPrefilledHint show={sectionStatus.invoice === "complete"} />
+          <HeadlineWCross
+            title="Invoice Information"
+            closeFallbackHref={participateBackHref}
+          />
+          <InvoiceStep
+            defaultValues={invoiceData ?? undefined}
+            onSubmit={handleInvoiceSubmit}
             onBack={handleBack}
-            submitLabel={mapSubmitLabel}
-            termsContent={termsContent}
+            submitLabel={invoiceSubmitLabel}
+            termsContent={hasFinalStep ? undefined : termsContent}
+            termsAccepted={termsAccepted}
+            onTermsAcceptedChange={setTermsAccepted}
           />
         </>
       )}
       {step === 4 && showAccountStep && (
         <>
-          <h1 className="title-text uppercase">Sign up</h1>
+          <HeadlineWCross title="Account" closeFallbackHref={participateBackHref} />
           <VisitorAccountStep
             submitLabel="submit"
             requireCheckInFields={false}
@@ -334,25 +358,37 @@ export const ParticipationWizard = ({
             backLabel="Back"
             isSubmitting={loading}
             loadingMessage="Submitting your application…"
+            termsContent={termsContent}
+            termsAccepted={termsAccepted}
+            onTermsAcceptedChange={setTermsAccepted}
           />
         </>
       )}
       {step === 4 && showVisitorCheckInStep && visitorProfileFormValues && (
-        <VisitorCheckInStep
-          workAreas={workAreas}
-          initialProfile={visitorProfileFormValues}
-          onSubmit={handleVisitorCheckInSubmit}
-          onBack={handleBack}
-          submitLabel={
-            isReactivation ? "submit request" : "submit"
-          }
-          isSubmitting={loading}
-          loadingMessage={
-            isReactivation
-              ? "Submitting your reactivation request…"
-              : "Submitting your application…"
-          }
-        />
+        <>
+          <HeadlineWCross
+            title="Check-in profile"
+            closeFallbackHref={participateBackHref}
+          />
+          <VisitorCheckInStep
+            workAreas={workAreas}
+            initialProfile={visitorProfileFormValues}
+            onSubmit={handleVisitorCheckInSubmit}
+            onBack={handleBack}
+            submitLabel={
+              isReactivation ? "submit request" : "submit"
+            }
+            isSubmitting={loading}
+            loadingMessage={
+              isReactivation
+                ? "Submitting your reactivation request…"
+                : "Submitting your application…"
+            }
+            termsContent={termsContent}
+            termsAccepted={termsAccepted}
+            onTermsAcceptedChange={setTermsAccepted}
+          />
+        </>
       )}
       {loading && step !== 4 ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">

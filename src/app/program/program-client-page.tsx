@@ -16,11 +16,16 @@ const ProgramClientPage = ({ initialData, initialFilters }: Props) => {
     items,
     hasMore,
     loading,
+    isRefetching,
     loadingMore,
     error,
     handleLoadMore,
     handleRetry,
   } = useProgramPage(initialData, initialFilters);
+
+  const showGridLoading = loading && items.length === 0;
+  const showEmpty =
+    !loading && !isRefetching && items.length === 0;
 
   return (
     <>
@@ -40,9 +45,12 @@ const ProgramClientPage = ({ initialData, initialFilters }: Props) => {
 
       {!error && (
         <>
-          <ProgramGrid events={items} loading={loading && items.length === 0} />
+          <ProgramGrid
+            events={items}
+            loading={showGridLoading || isRefetching}
+          />
 
-          {!loading && items.length === 0 && (
+          {showEmpty && (
             <p className="pt-[15px] lg:pt-[30px] base-text-size text-[var(--black-color)]">
               No program events found.
             </p>
@@ -54,7 +62,7 @@ const ProgramClientPage = ({ initialData, initialFilters }: Props) => {
                 as="button"
                 label={loadingMore ? "loading..." : "view more"}
                 mode="big"
-                disabled={loadingMore || loading || !hasMore}
+                disabled={loadingMore || loading || isRefetching || !hasMore}
                 onClick={handleLoadMore}
               />
             </div>

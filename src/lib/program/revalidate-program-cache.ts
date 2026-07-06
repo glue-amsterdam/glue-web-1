@@ -1,6 +1,6 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { EVENT_HEADER_CACHE_TAG } from "@/lib/events/fetch-event-header-title";
-import { PROGRAM_PAGE_CACHE_TAG } from "@/lib/program/fetch-program-page";
+import { PROGRAM_PAGE_CACHE_TAG } from "@/lib/program/program-cache-tags";
 
 export const revalidateProgramCache = (): void => {
   revalidateTag(PROGRAM_PAGE_CACHE_TAG, "max");

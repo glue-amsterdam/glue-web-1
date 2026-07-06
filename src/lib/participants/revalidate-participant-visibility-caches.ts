@@ -1,7 +1,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
-import { EXHIBITORS_PAGE_CACHE_TAG } from "@/lib/participants/fetch-exhibitors";
+import { EXHIBITORS_PAGE_CACHE_TAG } from "@/lib/participants/exhibitors-cache-tags";
 import { HOME_EXHIBITORS_RANDOM_CACHE_TAG } from "@/lib/participants/fetch-random-home-exhibitors";
 import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
 

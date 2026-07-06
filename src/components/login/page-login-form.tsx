@@ -29,7 +29,7 @@ const resetPasswordSchema = z.object({
 type LoginFieldName = keyof z.infer<typeof loginSchema>;
 type ResetFieldName = keyof z.infer<typeof resetPasswordSchema>;
 
-const formWrapperClassName = "title-padding w-full lg:max-w-[508px] lg:mx-auto";
+const formWrapperClassName = "title-padding w-full lg:max-w-(--field-max-width) lg:mx-auto";
 
 const PageLoginForm = () => {
   const router = useRouter();

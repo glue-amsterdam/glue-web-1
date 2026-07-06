@@ -29,7 +29,7 @@ export default async function PostsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <StaggerEnterContainer variant="enter" className="pt-(--nav-primary-h)">
+      <StaggerEnterContainer variant="enter" className="terms-and-conditions-padding min-h-dvh">
         <nav className="sr-only" aria-label="Breadcrumb">
           <ol>
             <li>
@@ -39,10 +39,12 @@ export default async function PostsPage() {
           </ol>
         </nav>
         <section id="posts-section">
-          <PostsSectionIntro
-            as="h1"
-            title={section.title}
-            descriptionHtml={sanitizedDescription}
+          <h1 className="title-text">
+            {section.title.toUpperCase()}
+          </h1>
+          <div
+            className="title-padding lg:max-w-(--paragraph-max-width) body-label post-content"
+            dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
           />
           <Suspense
             fallback={

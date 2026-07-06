@@ -4,17 +4,14 @@ import {
   paginateProgram,
   toProgramFilterState,
 } from "./program-filter";
-import { loadProgramListItems } from "./get-program-events";
+import { loadProgramListItemsCached } from "./cached-load-program-items";
 import type { ParsedProgramQuery, ProgramPageResponse } from "./program-types";
 
 export const getProgramPage = async (
-  supabase: SupabaseClient,
+  _supabase: SupabaseClient,
   query: ParsedProgramQuery
 ): Promise<ProgramPageResponse> => {
-  const items = await loadProgramListItems(supabase, {
-    type: query.type,
-    day: query.day,
-  });
+  const items = await loadProgramListItemsCached();
 
   const filtered = applyProgramFilters(
     items,

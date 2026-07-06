@@ -1,12 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { classifyLocationType } from "@/lib/map/classify-location-type";
 import {
+  classifyHubMemberCategory,
   fetchParticipantCategories,
   type ParticipantCategory,
 } from "@/lib/participants/participant-categories";
 import type { ExhibitorType } from "./exhibitor-types";
 import {
   ExhibitorNotFoundError,
+  type ExhibitorEventSummary,
   type ExhibitorHubDetail,
   type ExhibitorHubMember,
 } from "./exhibitor-detail-types";
@@ -14,6 +16,7 @@ import {
   getStickyParticipantIds,
   getTourStatus,
   isParticipantEligibleForExhibitorsList,
+  type TourStatus,
 } from "./exhibitor-visibility";
 import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
 import { getParticipantDisplayName } from "./get-participant-display-name";
@@ -61,7 +64,7 @@ const ensureArray = <T>(value: T | T[] | null | undefined): T[] => {
 const getParticipantType = (
   category: string,
   categories: ParticipantCategory[]
-): ExhibitorType => classifyLocationType(1, category, categories);
+): ExhibitorType => classifyHubMemberCategory(category, categories);
 
 const buildImageMap = (images: ImageRow[]): Map<string, string> => {
   const map = new Map<string, string>();
@@ -282,6 +285,12 @@ export const getExhibitorHubById = async (
     ? toBaseFormattedAddress(mapInfo.formatted_address)
     : null;
 
+  const events = await fetchHubEventsByLocationId(
+    supabase,
+    mapInfoId,
+    tourStatus
+  );
+
   return {
     type: hubType,
     hubId: hubRow.id,
@@ -290,6 +299,38 @@ export const getExhibitorHubById = async (
     description: hubRow.description?.trim() || null,
     mapInfoId,
     formattedAddress,
+    events,
     members,
   };
+};
+
+const fetchHubEventsByLocationId = async (
+  supabase: SupabaseClient,
+  mapInfoId: string | null,
+  tourStatus: TourStatus
+): Promise<ExhibitorEventSummary[]> => {
+  if (!mapInfoId) {
+    return [];
+  }
+
+  let query = supabase
+    .from("events")
+    .select("id, image_url, title")
+    .eq("location_id", mapInfoId)
+    .eq("event_day_out", false);
+
+  if (tourStatus === "new") {
+    query = query.eq("is_last_year_event", false);
+  } else {
+    query = query.eq("is_last_year_event", true);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Error fetching hub events by location:", error);
+    return [];
+  }
+
+  return data ?? [];
 };

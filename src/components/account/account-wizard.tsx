@@ -22,7 +22,7 @@ const emailSchema = z.object({
 
 type AccountWizardStep = "email" | "type";
 
-const formWrapperClassName = "title-padding w-full lg:max-w-[508px] lg:mx-auto";
+const formWrapperClassName = "title-padding w-full lg:max-w-(--field-max-width) lg:mx-auto";
 
 const accountTypeOptions = [
   {
@@ -120,7 +120,7 @@ export const AccountWizard = () => {
     return (
       <div className="flex flex-col">
         <AuthPageHeadline title="Account" />
-        <div className="title-padding flex flex-col">
+        <div className="title-padding flex flex-col lg:pb-[60px]">
           {accountTypeOptions.map((option, index) => (
             <div
               key={option.id}
@@ -130,15 +130,14 @@ export const AccountWizard = () => {
                   : "pt-[100px]"
               }
             >
-              <div className="flex flex-col gap-[15px] lg:flex-row lg:items-start lg:justify-between lg:gap-[30px] main-boder-top">
-                <div className="flex flex-col gap-[15px] lg:max-w-[70%]">
-                  <h2 className="small-title-text pt-[15px]">
-                    {option.title.toUpperCase()}</h2>
-                  <p className="body-text max-w-(--paragraph-max-width) title-padding">
-                    {option.description}
-                  </p>
-                </div>
-                <div className="shrink-0 self-center title-padding pb-[85px]">
+              <div className="flex flex-col gap-[40px] lg:gap-[60px] main-boder-top max-w-(--field-max-width) mx-auto">
+
+                <h2 className="small-title-text pt-[15px]">
+                  {option.title.toUpperCase()}</h2>
+                <p className="body-text">
+                  {option.description}
+                </p>
+                <div className="shrink-0 self-center lg:self-end">
                   <BigButton
                     as="button"
                     label={option.buttonLabel}
@@ -157,6 +156,8 @@ export const AccountWizard = () => {
                 </div>
               </div>
             </div>
+
+
           ))}
         </div>
       </div>

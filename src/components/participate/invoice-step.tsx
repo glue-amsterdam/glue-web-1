@@ -1,9 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import BigButton from "@/components/big-button";
 import { ParticipateFormField } from "@/components/participate/participate-form-field";
+import {
+  ParticipateTermsAcceptance,
+  TERMS_ACCEPTANCE_ERROR,
+} from "@/components/participate/participate-terms-acceptance";
 import {
   invoiceDataTypeSchema,
   type InvoiceDataType,
@@ -13,13 +18,25 @@ type InvoiceStepProps = {
   onSubmit: (data: InvoiceDataType) => void;
   onBack: () => void;
   defaultValues?: Partial<InvoiceDataType>;
+  submitLabel?: string;
+  termsContent?: string;
+  termsAccepted?: boolean;
+  onTermsAcceptedChange?: (accepted: boolean) => void;
 };
 
 export const InvoiceStep = ({
   onSubmit,
   onBack,
   defaultValues,
+  submitLabel = "next step",
+  termsContent,
+  termsAccepted = false,
+  onTermsAcceptedChange,
 }: InvoiceStepProps) => {
+  const showTerms = Boolean(termsContent);
+  const [localTermsAccepted, setLocalTermsAccepted] = useState(termsAccepted);
+  const [termsError, setTermsError] = useState<string | null>(null);
+
   const {
     control,
     handleSubmit,
@@ -36,10 +53,34 @@ export const InvoiceStep = ({
     },
   });
 
-  return (
-    <div className="w-full max-w-[508px] lg:max-w-[1045px] mx-auto title-padding pb-[15px] lg:pb-[30px]">
+  const handleTermsChange = (accepted: boolean) => {
+    setLocalTermsAccepted(accepted);
+    onTermsAcceptedChange?.(accepted);
+    if (accepted) {
+      setTermsError(null);
+    }
+  };
 
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full" noValidate>
+  const handleFormSubmit = (data: InvoiceDataType) => {
+    if (showTerms && !localTermsAccepted) {
+      setTermsError(TERMS_ACCEPTANCE_ERROR);
+      return;
+    }
+
+    if (showTerms) {
+      onTermsAcceptedChange?.(true);
+    }
+
+    onSubmit(data);
+  };
+
+  return (
+    <div className="w-full max-w-(--field-max-width) lg:max-w-[1045px] mx-auto title-padding pb-[15px] lg:pb-[30px]">
+      <form
+        onSubmit={handleSubmit(handleFormSubmit)}
+        className="w-full"
+        noValidate
+      >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[15px] lg:gap-[30px]">
           <Controller
             name="invoice_company_name"
@@ -125,6 +166,19 @@ export const InvoiceStep = ({
             )}
           />
         </div>
+
+        {showTerms && termsContent ? (
+          <div className="flex flex-col gap-4 pt-[15px] lg:pt-[30px]">
+            <ParticipateTermsAcceptance
+              termsContent={termsContent}
+              accepted={localTermsAccepted}
+              onAcceptedChange={handleTermsChange}
+              error={termsError ?? undefined}
+              checkboxId="invoice-termsAccepted"
+            />
+          </div>
+        ) : null}
+
         <div className="flex justify-between items-end pt-[30px] gap-4">
           <button
             type="button"
@@ -133,7 +187,7 @@ export const InvoiceStep = ({
           >
             Back
           </button>
-          <BigButton as="submit" label="Next Step" mode="navbar" />
+          <BigButton as="submit" label={submitLabel} mode="navbar" />
         </div>
       </form>
     </div>

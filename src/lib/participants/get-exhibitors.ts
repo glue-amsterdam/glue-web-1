@@ -6,6 +6,7 @@ import type {
 } from "./exhibitor-types";
 import {
   classifyCategory,
+  classifyHubMemberCategory,
   fetchParticipantCategories,
 } from "./participant-categories";
 import { createEmptyGroupedExhibitors } from "./flatten-exhibitors";
@@ -198,8 +199,26 @@ export const getExhibitors = async (
     eligibleParticipants.map((participant) => participant.user_id)
   );
 
+  const hubMemberUserIds = new Set<string>();
+  const hubRows = (hubsResult.data as HubRow[]) ?? [];
+
+  for (const hub of hubRows) {
+    if (!eligibleParticipantIds.has(hub.hub_host_id)) continue;
+
+    const eligibleMemberIds = getEligibleHubMemberIds(
+      hub,
+      eligibleParticipantIds
+    );
+
+    for (const userId of eligibleMemberIds) {
+      hubMemberUserIds.add(userId);
+    }
+  }
+
   for (const participant of eligibleParticipants) {
-    const type = classifyCategory(1, participant.category, categories);
+    const type = hubMemberUserIds.has(participant.user_id)
+      ? classifyHubMemberCategory(participant.category, categories)
+      : classifyCategory(1, participant.category, categories);
     const item = buildParticipantItem(
       participant,
       type,
@@ -208,8 +227,6 @@ export const getExhibitors = async (
     );
     pushToGroup(grouped, type, item);
   }
-
-  const hubRows = (hubsResult.data as HubRow[]) ?? [];
 
   for (const hub of hubRows) {
     if (!eligibleParticipantIds.has(hub.hub_host_id)) continue;

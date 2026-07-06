@@ -164,19 +164,21 @@ const RouteFooter = ({
     >
       <MainContainer>
         <div className="border-t border-(--black-color) px-[20px] pt-[15px] pb-[20px]">
-          <div className="flex gap-[25px] items-start w-full">
+          <div className="flex min-w-0 gap-[25px] items-start w-full">
             <RouteStopBadge stop={currentStop} />
-            <div className="w-full">
+            <div className="min-w-0 flex-1">
               <div
-                className="w-full flex justify-between"
+                className="flex w-full items-start justify-between gap-3"
                 aria-live="polite"
                 aria-atomic="true"
               >
-                <h3 className="truncate">{route.name}</h3>
+                <h3 className="min-w-0 flex-1 whitespace-normal wrap-break-word">
+                  {route.name}
+                </h3>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="cursor-pointer"
+                  className="shrink-0 cursor-pointer"
                   aria-label="Close route details"
                 >
                   <CrossRotatedMobile />

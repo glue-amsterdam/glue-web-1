@@ -4,11 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useState, type ReactNode } from "react";
 
-import { useAuth } from "@/context/AuthContext";
 import { AccountNavLink } from "@/components/account/account-nav-link";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 import { fetchNavbarIdentity } from "@/lib/users/fetch-navbar-identity";
 import type { NavbarIdentity } from "@/lib/users/get-navbar-identity";
-import { getVisitorDataDashboardPath } from "@/lib/users/redirect-to-dashboard-home";
 import { cn } from "@/lib/utils";
 
 import LogoWithLink from "../LogoWithLink";
@@ -51,30 +60,15 @@ const Container = ({
 };
 
 const accountLinkClassName =
-  "text-[15px] leading-[15px] lg:text-[19px] lg:leading-[25px] text-(--black-color)";
+  "text-[15px] leading-[15px] lg:text-[19px] lg:leading-[25px] transition-colors duration-100 navigation";
 
 type NavbarClientProps = {
   initialIdentity: NavbarIdentity | null;
   navLinks: NavbarLink[];
 };
 
-type NavbarAuthProps = {
-  identity: NavbarIdentity | null;
-  isAuthenticated: boolean;
-  userId: string | null;
-};
-
-const Buttons = ({ identity, isAuthenticated, userId }: NavbarAuthProps) => {
+const Buttons = () => {
   const pathname = usePathname();
-  const { logout } = useAuth();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
 
   const isNavButtonActive = (href: string) => {
     if (href === "/participate") {
@@ -84,48 +78,19 @@ const Buttons = ({ identity, isAuthenticated, userId }: NavbarAuthProps) => {
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
-  if (!isAuthenticated) {
-    return (
-      <Container className="sm:gap-[30px] gap-[15px]">
-        {navButtons.map((item, i) => (
-          <BigButton
-            as="link"
-            key={i}
-            label={item.label}
-            href={item.href}
-            mode="navbar"
-            fontSize="base"
-            isActive={isNavButtonActive(item.href)}
-          />
-        ))}
-      </Container>
-    );
-  }
-
-  const dashboardHref =
-    identity?.dashboardHref ??
-    (userId ? getVisitorDataDashboardPath(userId) : null);
-  const isDashboardActive = pathname.startsWith("/dashboard/");
-
   return (
     <Container className="sm:gap-[30px] gap-[15px]">
-      {dashboardHref && (
+      {navButtons.map((item, i) => (
         <BigButton
           as="link"
-          label="dashboard"
-          href={dashboardHref}
+          key={i}
+          label={item.label}
+          href={item.href}
           mode="navbar"
           fontSize="base"
-          isActive={isDashboardActive}
+          isActive={isNavButtonActive(item.href)}
         />
-      )}
-      <BigButton
-        as="button"
-        label="log out"
-        mode="navbar"
-        fontSize="base"
-        onClick={() => void handleLogout()}
-      />
+      ))}
     </Container>
   );
 };
@@ -159,22 +124,173 @@ const Links = ({
   );
 };
 
-const AccountNav = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
-  if (isAuthenticated) {
-    return null;
-  }
+const LoggedOutAccountNav = () => {
+  const pathname = usePathname();
+  const isAccountActive = pathname === "/account";
 
   return (
     <Suspense
       fallback={
-        <Link href="/account" className={accountLinkClassName}>
+        <Link
+          href="/account"
+          className={cn(
+            accountLinkClassName,
+            isAccountActive
+              ? "text-(--primary-color)"
+              : "text-(--black-color)",
+          )}
+        >
           Account
         </Link>
       }
     >
-      <AccountNavLink className={accountLinkClassName}>Account</AccountNavLink>
+      <AccountNavLink
+        className={cn(
+          accountLinkClassName,
+          isAccountActive
+            ? "text-(--primary-color)"
+            : "text-(--black-color)",
+        )}
+      >
+        Account
+      </AccountNavLink>
     </Suspense>
   );
+};
+
+type LoggedInAccountNavProps = {
+  dashboardHref: string | null;
+};
+
+const LoggedInAccountNav = ({ dashboardHref }: LoggedInAccountNavProps) => {
+  const pathname = usePathname();
+  const { logout } = useAuth();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const isDashboardActive = pathname.startsWith("/dashboard/");
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  const handleOpenDeleteDialog = () => {
+    setDeleteError(null);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (isDeleting) return;
+
+    setDeleteError(null);
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch("/api/account/delete", { method: "POST" });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setDeleteError(
+          typeof result.message === "string"
+            ? result.message
+            : "Could not delete your account. Please try again.",
+        );
+        return;
+      }
+
+      setIsDeleteDialogOpen(false);
+      await logout();
+    } catch {
+      setDeleteError("Something went wrong. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const navActionClassName = (isActive: boolean) =>
+    cn(
+      accountLinkClassName,
+      isActive ? "text-(--primary-color)" : "text-(--black-color) cursor-pointer",
+    );
+
+  return (
+    <>
+      <Container className="sm:gap-[30px] gap-[20px]">
+        {dashboardHref ? (
+          <Link
+            href={dashboardHref}
+            className={navActionClassName(isDashboardActive)}
+            aria-label="Go to dashboard"
+          >
+            Account
+          </Link>
+        ) : null}
+        <button
+          type="button"
+          className={navActionClassName(false)}
+          onClick={() => void handleLogout()}
+          aria-label="Log out of your account"
+        >
+          Log Out
+        </button>
+        <button
+          type="button"
+          className={navActionClassName(false)}
+          onClick={handleOpenDeleteDialog}
+          aria-label="Delete your account"
+        >
+          Delete Account
+        </button>
+      </Container>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete your account and all associated data,
+              including your visitor profile and participant details. This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {deleteError ? (
+            <p role="alert" className="body-text px-6">
+              {deleteError}
+            </p>
+          ) : null}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => void handleConfirmDelete()}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting…" : "Delete account"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+};
+
+type AccountNavProps = {
+  isAuthenticated: boolean;
+  dashboardHref: string | null;
+};
+
+const AccountNav = ({ isAuthenticated, dashboardHref }: AccountNavProps) => {
+  if (isAuthenticated) {
+    return <LoggedInAccountNav dashboardHref={dashboardHref} />;
+  }
+
+  return <LoggedOutAccountNav />;
 };
 
 export const NavBarClient = ({
@@ -212,17 +328,16 @@ export const NavBarClient = ({
     };
   }, [user, initialIdentity, navbarIdentity]);
 
-  const isAuthenticated =
-    user !== null || initialIdentity !== null;
+  const isAuthenticated = user !== null || initialIdentity !== null;
   const identity = isAuthenticated
     ? (initialIdentity ?? navbarIdentity ?? liveIdentity)
     : null;
-  const userId = user?.id ?? null;
+  const dashboardHref = identity?.dashboardHref ?? null;
 
   const showExhibitorsNav = pathname === "/exhibitors";
   const showProgramNav = pathname === "/program";
   const showAccountNav =
-    (pathname === "/participate" || pathname === "/visit") && !isAuthenticated;
+    pathname === "/participate" || pathname === "/visit";
 
   return (
     <div className="fixed font-normal top-0 w-full z-50 animate-enter-down">
@@ -233,11 +348,7 @@ export const NavBarClient = ({
               <LogoWithLink className="size-10 lg:size-[60px]" />
             </div>
             <Links className="hidden lg:flex" navLinks={navLinks} />
-            <Buttons
-              identity={identity}
-              isAuthenticated={isAuthenticated}
-              userId={userId}
-            />
+            <Buttons />
           </Block>
           <Block className="flex lg:hidden h-(--nav-secondary-h-mobile)">
             <Links navLinks={navLinks} />
@@ -247,7 +358,10 @@ export const NavBarClient = ({
       {showAccountNav && (
         <MainContainer>
           <Block className="flex justify-end h-(--nav-secondary-h-mobile) lg:h-(--nav-secondary-h)">
-            <AccountNav isAuthenticated={isAuthenticated} />
+            <AccountNav
+              isAuthenticated={isAuthenticated}
+              dashboardHref={dashboardHref}
+            />
           </Block>
         </MainContainer>
       )}

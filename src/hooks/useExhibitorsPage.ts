@@ -41,6 +41,7 @@ type UseExhibitorsPageReturn = {
   hasMore: boolean;
   filters: ExhibitorsFilters;
   loading: boolean;
+  isRefetching: boolean;
   loadingMore: boolean;
   error: string | null;
   handleFiltersChange: (next: Partial<ExhibitorsFilters>) => void;
@@ -146,6 +147,7 @@ export const useExhibitorsPage = (
     initialState.filters,
   );
   const [loading, setLoading] = useState(false);
+  const [isRefetching, setIsRefetching] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -256,7 +258,11 @@ export const useExhibitorsPage = (
   const applyLocalPage = useCallback(
     (nextFilters: ExhibitorsFilters, offset: number, limit: number) => {
       const catalog = catalogRef.current;
-      if (!catalog || catalog.filtersKey !== getBaseFiltersKey(nextFilters)) {
+      if (
+        !catalog ||
+        catalog.filtersKey !== getBaseFiltersKey(nextFilters) ||
+        !isCatalogComplete(catalog)
+      ) {
         return null;
       }
 
@@ -308,7 +314,11 @@ export const useExhibitorsPage = (
       if (append) {
         setLoadingMore(true);
       } else if (!silent) {
-        setLoading(true);
+        if (listStateRef.current.items.length > 0) {
+          setIsRefetching(true);
+        } else {
+          setLoading(true);
+        }
       }
 
       setError(null);
@@ -356,6 +366,7 @@ export const useExhibitorsPage = (
           setLoadingMore(false);
         } else if (!silent) {
           setLoading(false);
+          setIsRefetching(false);
         }
       }
     },
@@ -417,7 +428,7 @@ export const useExhibitorsPage = (
   );
 
   const handleLoadMore = useCallback(() => {
-    if (loading || loadingMore || !hasMore) return;
+    if (loading || isRefetching || loadingMore || !hasMore) return;
 
     const catalog = catalogRef.current;
     if (
@@ -440,7 +451,7 @@ export const useExhibitorsPage = (
     fetchPage(filters, items.length, true, false, {
       nextVisibleCount,
     });
-  }, [fetchPage, filters, hasMore, items.length, loading, loadingMore]);
+  }, [fetchPage, filters, hasMore, isRefetching, items.length, loading, loadingMore]);
 
   const handleRetry = useCallback(() => {
     clearSuppressFetch();
@@ -468,8 +479,6 @@ export const useExhibitorsPage = (
 
     fetchPage(filters, 0, false, shouldSyncUrl, {
       limit: requestedVisibleCount,
-      silent: localResult !== null,
-      preserveOnError: localResult !== null,
     });
   }, [applyLocalPage, fetchPage, filters]);
 
@@ -512,6 +521,7 @@ export const useExhibitorsPage = (
     hasMore,
     filters,
     loading,
+    isRefetching,
     loadingMore,
     error,
     handleFiltersChange,

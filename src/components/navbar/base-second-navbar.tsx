@@ -92,11 +92,12 @@ const BaseSecondNavbar = forwardRef<HTMLDivElement, BaseSecondNavbarProps>(
         <div
             ref={ref}
             className={cn(
-                "grid auto-rows-auto lg:flex items-end w-fit lg:gap-[40px]",
+                "grid h-full w-full grid-rows-[var(--nav-secondary-h-mobile)_var(--nav-secondary-h-mobile)]",
+                "lg:flex lg:h-auto lg:w-fit lg:grid-rows-none lg:items-end lg:gap-[40px]",
                 className
             )}
         >
-            <div className="relative lg:order-last">
+            <div className="relative flex h-full w-full flex-col justify-center border-b border-(--black-color) lg:order-last lg:h-auto lg:justify-end lg:border-b-0">
                 <input
                     id={searchInputId}
                     type="search"
@@ -105,11 +106,11 @@ const BaseSecondNavbar = forwardRef<HTMLDivElement, BaseSecondNavbarProps>(
                     onKeyDown={onSearchKeyDown}
                     placeholder="Search"
                     aria-label={searchAriaLabel}
-                    className="navbar-search-input text-[16px] leading-[21px] lg:text-[19px] lg:leading-[25px] h-[20px] lg:h-[30px] max-w-[170px] lg:max-w-[300px] placeholder:body-text placeholder:text-[var(--gray-color)] border-b lg:border-b-2 border-[var(--black-color)] focus:outline-none focus:ring-0"
+                    className="navbar-search-input w-full max-w-none bg-transparent text-[16px] leading-[20px] lg:text-[19px] lg:leading-[25px] h-[20px] lg:h-[30px] lg:w-auto lg:max-w-[300px] placeholder:body-text placeholder:text-(--gray-color) border-0 lg:border-b-2 lg:border-(--black-color) focus:outline-none focus:ring-0 p-0"
                 />
                 {searchAfter}
             </div>
-            <div className="flex gap-[30px] pt-[20px] lg:pt-0">{children}</div>
+            <div className="flex items-center gap-[30px]">{children}</div>
         </div>
     )
 );

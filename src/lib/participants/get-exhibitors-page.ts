@@ -3,18 +3,18 @@ import type {
   ExhibitorsPageResponse,
   ParsedExhibitorsQuery,
 } from "./exhibitor-types";
+import { getExhibitorsGroupedCached } from "./cached-get-exhibitors";
 import {
   applyExhibitorsFilters,
   paginateExhibitors,
 } from "./exhibitors-filter";
 import { flattenExhibitors } from "./flatten-exhibitors";
-import { getExhibitors } from "./get-exhibitors";
 
 export const getExhibitorsPage = async (
-  supabase: SupabaseClient,
+  _supabase: SupabaseClient,
   query: ParsedExhibitorsQuery
 ): Promise<ExhibitorsPageResponse> => {
-  const grouped = await getExhibitors(supabase);
+  const grouped = await getExhibitorsGroupedCached();
 
   const items = applyExhibitorsFilters(flattenExhibitors(grouped), {
     type: query.type ?? "all",
