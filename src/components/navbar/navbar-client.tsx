@@ -76,6 +76,14 @@ const Buttons = ({ identity, isAuthenticated, userId }: NavbarAuthProps) => {
     }
   };
 
+  const isNavButtonActive = (href: string) => {
+    if (href === "/participate") {
+      return pathname === "/participate";
+    }
+
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
   if (!isAuthenticated) {
     return (
       <Container className="sm:gap-[30px] gap-[15px]">
@@ -87,6 +95,7 @@ const Buttons = ({ identity, isAuthenticated, userId }: NavbarAuthProps) => {
             href={item.href}
             mode="navbar"
             fontSize="base"
+            isActive={isNavButtonActive(item.href)}
           />
         ))}
       </Container>

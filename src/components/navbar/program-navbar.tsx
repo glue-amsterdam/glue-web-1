@@ -41,7 +41,18 @@ const ProgramNavbar = () => {
   const eventsDays = useEventsDays();
 
   const handleSearchCommit = useCallback(
-    (q: string) => updateFilters({ q }),
+    (q: string) => {
+      if (q.trim()) {
+        updateFilters({
+          q,
+          type: "all",
+          day: "all",
+        });
+        return;
+      }
+
+      updateFilters({ q: "" });
+    },
     [updateFilters]
   );
 
@@ -68,11 +79,11 @@ const ProgramNavbar = () => {
   const handleClearFilter = useCallback(
     (filterId: ProgramFilterId) => {
       if (filterId === "date") {
-        updateFilters({ day: DEFAULT_PROGRAM_FILTERS.day });
+        updateFilters({ day: DEFAULT_PROGRAM_FILTERS.day, q: "" });
         return;
       }
 
-      updateFilters({ type: DEFAULT_PROGRAM_FILTERS.type });
+      updateFilters({ type: DEFAULT_PROGRAM_FILTERS.type, q: "" });
     },
     [updateFilters]
   );
@@ -106,7 +117,7 @@ const ProgramNavbar = () => {
 
   const handleDaySelect = (dayId: string) => {
     if (dayId === "all") {
-      updateFilters({ day: "all" });
+      updateFilters({ day: "all", q: "" });
       afterSelect();
       return;
     }
@@ -115,13 +126,13 @@ const ProgramNavbar = () => {
       return;
     }
 
-    updateFilters({ day: dayId, type: "all" });
+    updateFilters({ day: dayId, type: "all", q: "" });
     afterSelect();
   };
 
   const handleTypeSelect = (type: ProgramFilterType) => {
     if (type === "all") {
-      updateFilters({ type: "all" });
+      updateFilters({ type: "all", q: "" });
       afterSelect();
       return;
     }
@@ -130,7 +141,7 @@ const ProgramNavbar = () => {
       return;
     }
 
-    updateFilters({ type, day: "all" });
+    updateFilters({ type, day: "all", q: "" });
     afterSelect();
   };
 

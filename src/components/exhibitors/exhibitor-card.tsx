@@ -16,7 +16,7 @@ const ExhibitorCard = ({ exhibitor }: Props) => {
   const href = getExhibitorLink(exhibitor);
 
   const content = (
-    <article className="max-w-[400px] max-h-[260px] lg:max-h-[310px] border-t lg:border-t-2 border-(--black-color) pt-[15px] overflow-hidden mx-auto">
+    <article className="mx-auto w-full max-w-[400px] max-h-[260px] lg:max-h-[310px] border-t lg:border-t-2 border-(--black-color) pt-[15px] overflow-hidden lg:mx-0">
       <div className="flex items-center gap-[20px]">
         <RoundedNumber type={exhibitor.type} participant_n={displayNumber} />
         <h2 className="versal-body-text font-normal text-(--black-color)">

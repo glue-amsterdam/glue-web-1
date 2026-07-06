@@ -28,12 +28,12 @@ function ExhibitorsGrid({ exhibitors, loading, mode, title, description }: Props
     if (mode === 'fullpage') {
         return (
             <ul
-                className={`grid grid-cols-1 lg:grid-cols-3 gap-y-[60px] lg:gap-x-[30px] list-none place-self-center ${loading ? "opacity-60 pointer-events-none" : ""
+                className={`grid w-full grid-cols-1 lg:grid-cols-3 gap-y-[60px] lg:gap-x-[30px] list-none justify-items-center lg:justify-items-start ${loading ? "opacity-60 pointer-events-none" : ""
                     }`}
                 aria-busy={loading}
             >
                 {exhibitors.map((exhibitor) => (
-                    <li key={getExhibitorItemKey(exhibitor)} className="mx-auto w-full">
+                    <li key={getExhibitorItemKey(exhibitor)} className="w-full min-w-0">
                         <ExhibitorCard exhibitor={exhibitor} />
                     </li>
                 ))}

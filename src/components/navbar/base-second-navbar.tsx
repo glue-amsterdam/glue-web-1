@@ -105,7 +105,7 @@ const BaseSecondNavbar = forwardRef<HTMLDivElement, BaseSecondNavbarProps>(
                     onKeyDown={onSearchKeyDown}
                     placeholder="Search"
                     aria-label={searchAriaLabel}
-                    className="navbar-search-input base-text-size h-[20px] lg:h-[30px] max-w-[170px] lg:max-w-[300px] placeholder:body-text placeholder:text-[var(--gray-color)] border-b lg:border-b-2 border-[var(--black-color)] focus:outline-none focus:ring-0"
+                    className="navbar-search-input text-[16px] leading-[21px] lg:text-[19px] lg:leading-[25px] h-[20px] lg:h-[30px] max-w-[170px] lg:max-w-[300px] placeholder:body-text placeholder:text-[var(--gray-color)] border-b lg:border-b-2 border-[var(--black-color)] focus:outline-none focus:ring-0"
                 />
                 {searchAfter}
             </div>

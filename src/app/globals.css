@@ -2,6 +2,9 @@
 @config "../../tailwind.config.ts";
 
 @layer components {
+  .second-navbar-gap {
+    @apply gap-[15px] lg:gap-[40px];
+  }
   .navigation {
     @apply text-[15px] leading-[15px] lg:text-[23px] lg:leading-[29px];
   }
