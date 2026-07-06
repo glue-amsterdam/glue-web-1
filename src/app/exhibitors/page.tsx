@@ -49,7 +49,7 @@ export default async function Page({ searchParams }: PageProps) {
         /></MainContainer>
       <StaggerEnterContainer
         variant="fade"
-        className="pt-[40px] lg:pt-[calc(var(--nav-secondary-h)-3px)] mt-(--filter-panel-open-h) lg:mt-0 transition-[margin] duration-200 ease-out"
+        className="pt-[72px] lg:pt-[calc(var(--nav-secondary-h)-3px)] mt-(--filter-panel-open-h) lg:mt-0 transition-[margin] duration-200 ease-out"
       >
         <nav className="sr-only" aria-label="Breadcrumb">
           <ol>

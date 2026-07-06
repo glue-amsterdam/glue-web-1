@@ -8,8 +8,9 @@ import { parseExhibitorsQuery } from "@/lib/participants/exhibitors-query";
 import { fetchParticipantCategories, getValidFilterSlugs } from "@/lib/participants/participant-categories";
 import { buildExhibitorsSearchParams } from "@/lib/participants/exhibitors-url";
 import { createPublicSupabaseClient } from "@/utils/supabase/public";
+import { EXHIBITORS_PAGE_CACHE_TAG } from "@/lib/participants/exhibitors-cache-tags";
 
-export const EXHIBITORS_PAGE_CACHE_TAG = "exhibitors-page";
+export { EXHIBITORS_PAGE_CACHE_TAG } from "@/lib/participants/exhibitors-cache-tags";
 
 const fetchExhibitorsPageCached = unstable_cache(
   async (queryKey: string): Promise<ExhibitorsPageResponse> => {

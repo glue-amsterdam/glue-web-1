@@ -126,7 +126,7 @@ function NewsletterForm() {
         <form
             onSubmit={handleSubmit}
             id="newsletter-form"
-            className="title-padding max-w-[508px] mx-auto"
+            className="title-padding max-w-(--field-max-width) mx-auto"
             noValidate
         >
             <div className="flex flex-col gap-[15px] md:gap-[30px]">
@@ -141,7 +141,7 @@ function NewsletterForm() {
                                     <span aria-hidden="true"
                                         id={`${item.name}-error`}
                                         role="alert"
-                                        className="text-[12px] text-[var(--primary-color)]"
+                                        className="text-[12px] text-(--primary-color)"
                                     >
                                         {fieldError}
                                     </span>
@@ -154,7 +154,7 @@ function NewsletterForm() {
                                 required={item.required}
                                 aria-invalid={Boolean(fieldError)}
                                 aria-describedby={fieldError ? `${item.name}-error` : undefined}
-                                className="pt-[5px] md:pt-[15px] bg-[var(--white-color)] border border-[var(--black-color)] h-[42px] pl-1"
+                                className="pt-[5px] md:pt-[15px] bg-(--white-color) border lg:border-2 border-(--black-color) h-[42px] pl-1"
                             />
 
                         </div>
@@ -163,18 +163,18 @@ function NewsletterForm() {
             </div>
 
             {submitError ? (
-                <p role="alert" className="pt-[15px] base-text-size text-[var(--primary-color)]">
+                <p role="alert" className="pt-[15px] body-text text-(--primary-color)">
                     {submitError}
                 </p>
             ) : null}
 
             {successMessage ? (
-                <p role="status" className="pt-[15px] base-text-size text-[var(--primary-color)]">
+                <p role="status" className="pt-[15px] body-text text-(--primary-color)">
                     {successMessage}
                 </p>
             ) : null}
 
-            <div className="flex justify-end pt-[15px] pb-[5px]">
+            <div className="flex justify-end mini-padding pb-[5px]">
                 <BigButton
                     as="submit"
                     label={isSubmitting ? "signing up..." : "sign up"}

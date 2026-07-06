@@ -46,7 +46,10 @@ const ExhibitorList = ({
   );
 
   const nameButtonClassName = cn(
-    "w-full text-left truncate lg:max-w-[237px] cursor-pointer",
+    "w-full text-left cursor-pointer",
+    variant === "panel" && "truncate",
+    variant === "sidebar" &&
+      "min-w-0 whitespace-normal wrap-break-word max-w-[237px]",
     variant === "panel" && "py-[2px]"
   );
 
@@ -69,7 +72,16 @@ const ExhibitorList = ({
           className={listButtonClassName}
         >
           <RoundedNumber type={location.type} participant_n={displayNumber} />
-          <p className="truncate lg:max-w-[237px]">{location.name}</p>
+          <p
+            className={cn(
+              "min-w-0 flex-1",
+              variant === "panel" && "truncate",
+              variant === "sidebar" &&
+                "whitespace-normal wrap-break-word max-w-[237px]"
+            )}
+          >
+            {location.name}
+          </p>
         </button>
       </li>
     );

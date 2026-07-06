@@ -169,21 +169,23 @@ const RoutePopup = ({
       <div
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className="overflow-hidden border-t-2 border-(--black-color) px-[30px] pt-[15px] pb-[30px] text-(--black-color) bg-(--white-color) z-51 min-h-[452px] base-text-size w-[460px]"
+        className="overflow-hidden border-t-2 border-(--black-color) px-[30px] pt-[15px] pb-[30px] text-(--black-color) bg-(--white-color) z-51 min-h-[452px] base-text-size w-[460px] max-w-full"
       >
-        <div className="flex gap-[25px] items-start w-full">
+        <div className="flex min-w-0 gap-[25px] items-start w-full">
           <RouteStopBadge stop={currentStop} />
-          <div className="w-full">
+          <div className="min-w-0 flex-1">
             <div
-              className="w-full flex justify-between"
+              className="flex w-full items-start justify-between gap-3"
               aria-live="polite"
               aria-atomic="true"
             >
-              <h3 className="truncate">{route.name}</h3>
+              <h3 className="min-w-0 flex-1 whitespace-normal wrap-break-word">
+                {route.name}
+              </h3>
               <button
                 type="button"
                 onClick={onClose}
-                className="cursor-pointer"
+                className="shrink-0 cursor-pointer"
                 aria-label="Close route details"
               >
                 <CrossRotatedDesktop />

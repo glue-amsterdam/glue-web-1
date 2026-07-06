@@ -40,6 +40,7 @@ type UseProgramPageReturn = {
   hasMore: boolean;
   filters: ProgramFilters;
   loading: boolean;
+  isRefetching: boolean;
   loadingMore: boolean;
   error: string | null;
   handleFiltersChange: (next: Partial<ProgramFilters>) => void;
@@ -136,6 +137,7 @@ export const useProgramPage = (
   const [hasMore, setHasMore] = useState(initialState.hasMore);
   const [filters, setFilters] = useState<ProgramFilters>(initialState.filters);
   const [loading, setLoading] = useState(false);
+  const [isRefetching, setIsRefetching] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -246,7 +248,11 @@ export const useProgramPage = (
   const applyLocalPage = useCallback(
     (nextFilters: ProgramFilters, offset: number, limit: number) => {
       const catalog = catalogRef.current;
-      if (!catalog || catalog.filtersKey !== getBaseFiltersKey(nextFilters)) {
+      if (
+        !catalog ||
+        catalog.filtersKey !== getBaseFiltersKey(nextFilters) ||
+        !isCatalogComplete(catalog)
+      ) {
         return null;
       }
 
@@ -298,7 +304,11 @@ export const useProgramPage = (
       if (append) {
         setLoadingMore(true);
       } else if (!silent) {
-        setLoading(true);
+        if (listStateRef.current.items.length > 0) {
+          setIsRefetching(true);
+        } else {
+          setLoading(true);
+        }
       }
 
       setError(null);
@@ -346,6 +356,7 @@ export const useProgramPage = (
           setLoadingMore(false);
         } else if (!silent) {
           setLoading(false);
+          setIsRefetching(false);
         }
       }
     },
@@ -407,7 +418,7 @@ export const useProgramPage = (
   );
 
   const handleLoadMore = useCallback(() => {
-    if (loading || loadingMore || !hasMore) return;
+    if (loading || isRefetching || loadingMore || !hasMore) return;
 
     const catalog = catalogRef.current;
     if (
@@ -430,7 +441,7 @@ export const useProgramPage = (
     fetchPage(filters, items.length, true, false, {
       nextVisibleCount,
     });
-  }, [fetchPage, filters, hasMore, items.length, loading, loadingMore]);
+  }, [fetchPage, filters, hasMore, isRefetching, items.length, loading, loadingMore]);
 
   const handleRetry = useCallback(() => {
     clearSuppressFetch();
@@ -458,8 +469,6 @@ export const useProgramPage = (
 
     fetchPage(filters, 0, false, shouldSyncUrl, {
       limit: requestedVisibleCount,
-      silent: localResult !== null,
-      preserveOnError: localResult !== null,
     });
   }, [applyLocalPage, fetchPage, filters]);
 
@@ -502,6 +511,7 @@ export const useProgramPage = (
     hasMore,
     filters,
     loading,
+    isRefetching,
     loadingMore,
     error,
     handleFiltersChange,

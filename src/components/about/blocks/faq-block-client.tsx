@@ -119,7 +119,7 @@ const FaqBlockClient = ({ block, sanitized }: Props) => {
             <AccordionItem key={itemId} value={itemId} className="border-b-0">
               <FaqItemTrigger item={item} itemId={itemId} />
               <AccordionContent
-                className="pt-[15px]"
+                className="lg:pt-0"
                 aria-labelledby={`${itemId}-question`}
               >
                 <FaqItemContent sanitizedAnswer={sanitized.answers[index] ?? ""} />

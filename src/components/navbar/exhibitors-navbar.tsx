@@ -57,7 +57,20 @@ const ExhibitorsNavbar = () => {
     const [isDisplayNumberSortChosen, setIsDisplayNumberSortChosen] =
         useState(false);
     const handleSearchCommit = useCallback(
-        (q: string) => updateFilters({ q }),
+        (q: string) => {
+            if (q.trim()) {
+                setIsDisplayNumberSortChosen(false);
+                updateFilters({
+                    q,
+                    type: "all",
+                    sort: DEFAULT_EXHIBITORS_FILTERS.sort,
+                    order: DEFAULT_EXHIBITORS_FILTERS.order,
+                });
+                return;
+            }
+
+            updateFilters({ q: "" });
+        },
         [updateFilters]
     );
     const {
@@ -83,7 +96,7 @@ const ExhibitorsNavbar = () => {
     const handleClearFilter = useCallback(
         (filterId: ExhibitorFilterId) => {
             if (filterId === "category") {
-                updateFilters({ type: "all" });
+                updateFilters({ type: "all", q: "" });
                 return;
             }
 
@@ -91,6 +104,7 @@ const ExhibitorsNavbar = () => {
             updateFilters({
                 sort: DEFAULT_EXHIBITORS_FILTERS.sort,
                 order: DEFAULT_EXHIBITORS_FILTERS.order,
+                q: "",
             });
         },
         [updateFilters]
@@ -128,7 +142,7 @@ const ExhibitorsNavbar = () => {
         setIsDisplayNumberSortChosen(false);
 
         if (value === "all") {
-            updateFilters({ type: "all" });
+            updateFilters({ type: "all", q: "" });
             afterSelect();
             return;
         }
@@ -137,6 +151,7 @@ const ExhibitorsNavbar = () => {
             type: value,
             sort: DEFAULT_EXHIBITORS_FILTERS.sort,
             order: DEFAULT_EXHIBITORS_FILTERS.order,
+            q: "",
         });
         afterSelect();
     };
@@ -155,6 +170,7 @@ const ExhibitorsNavbar = () => {
             updateFilters({
                 sort: DEFAULT_EXHIBITORS_FILTERS.sort,
                 order: DEFAULT_EXHIBITORS_FILTERS.order,
+                q: "",
             });
 
             setOpenFilter("sort");
@@ -171,6 +187,7 @@ const ExhibitorsNavbar = () => {
             sort: field,
             order: "asc",
             type: "all",
+            q: "",
         });
         afterSelect();
     };
@@ -178,7 +195,7 @@ const ExhibitorsNavbar = () => {
     return (
         <section
             aria-label="Exhibitors filters"
-            className="w-full h-(--nav-secondary-h) flex items-center relative overflow-visible border-b lg:border-b-2 border-(--black-color) bg-(--background-color) py-[12px]"
+            className="w-full h-(--nav-secondary-h) flex items-stretch lg:items-center relative overflow-visible border-b lg:border-b-2 border-(--black-color) bg-(--background-color) py-0 lg:py-[12px]"
         >
             <BaseSecondNavbar
                 searchValue={searchValue}
@@ -215,7 +232,7 @@ const ExhibitorsNavbar = () => {
                 openFilter={openFilter}
                 panelId={categoryPanelId}
                 ariaLabel="Category options"
-                className="py-[30px] lg:py-[25px] gap-[15px] lg:gap-[40px] min-h-[80px] lg:h-[81px]"
+                className="py-[30px] lg:py-[25px] second-navbar-gap min-h-[80px] lg:h-[81px]"
             >
                 {filterOptions.map((option) => {
                     const isSelected =
@@ -249,15 +266,15 @@ const ExhibitorsNavbar = () => {
                 openFilter={openFilter}
                 panelId={sortPanelId}
                 ariaLabel="Sort options"
-                className="py-[35px] lg:py-[25px] gap-[15px] min-h-[80px] lg:h-[81px]"
+                className="py-[35px] lg:py-[25px] second-navbar-gap min-h-[80px] lg:h-[81px]"
             >
                 {SORT_OPTIONS.map((option) => {
                     const isSelected =
                         option.field === "name"
                             ? activeFilterId === "sort" &&
-                              filters.sort === option.field
+                            filters.sort === option.field
                             : isDisplayNumberSortChosen &&
-                              filters.sort === option.field;
+                            filters.sort === option.field;
 
                     return (
                         <button

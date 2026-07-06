@@ -458,9 +458,9 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     <section
       ref={mapNavbarRef}
       aria-label="Map filters"
-      className="w-full h-(--nav-secondary-h) flex items-center relative overflow-visible border-b lg:border-b-2 border-(--black-color) bg-(--background-color) py-[12px]"
+      className="w-full h-(--nav-secondary-h) flex items-stretch lg:items-center relative overflow-visible border-b lg:border-b-2 border-(--black-color) bg-(--background-color) py-0 lg:py-[12px]"
     >
-      <div className="relative w-full">
+      <div className="relative h-full w-full">
         <BaseSecondNavbar
           searchValue={searchValue}
           onSearchChange={handleSearchChange}

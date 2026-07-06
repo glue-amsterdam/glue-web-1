@@ -2,6 +2,12 @@
 @config "../../tailwind.config.ts";
 
 @layer components {
+  .main-grid-gap {
+    @apply gap-y-[40px] lg:gap-y-[60px] lg:gap-x-[30px];
+  }
+  .second-navbar-gap {
+    @apply gap-[15px] lg:gap-[40px];
+  }
   .navigation {
     @apply text-[15px] leading-[15px] lg:text-[23px] lg:leading-[29px];
   }
@@ -155,6 +161,7 @@
     --filter-panel-open-h: 0px;
     --site-footer-h: 65px;
     --total-nav-height: calc(var(--nav-primary-h) + var(--site-footer-h));
+    --field-max-width: 508px;
   }
 
   

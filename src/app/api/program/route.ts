@@ -1,14 +1,18 @@
-import { getProgramPage } from "@/lib/program/get-program-page";
+import { fetchProgramPage } from "@/lib/program/fetch-program-page";
 import { parseProgramQuery, ProgramQueryError } from "@/lib/program/program-query";
-import { createPublicSupabaseClient } from "@/utils/supabase/public";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const query = parseProgramQuery(searchParams);
-    const supabase = createPublicSupabaseClient();
-    const data = await getProgramPage(supabase, query);
+    const data = await fetchProgramPage({
+      limit: query.limit,
+      offset: query.offset,
+      type: query.type,
+      day: query.day,
+      q: query.q,
+    });
 
     return NextResponse.json(data);
   } catch (error) {

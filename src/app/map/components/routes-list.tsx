@@ -75,9 +75,9 @@ const RoutesList = ({
   );
 
   const routeButtonClassName = cn(
-    "w-full text-left flex items-center gap-[15px] base-text-size cursor-pointer",
-    variant === "panel" && "py-[10px]",
-    variant === "sidebar" && "p-2 rounded"
+    "w-full text-left flex gap-[15px] base-text-size cursor-pointer",
+    variant === "panel" && "items-center py-[10px]",
+    variant === "sidebar" && "items-start p-2 rounded"
   );
 
   const renderRouteButton = (route: MapRoute) => (
@@ -88,7 +88,15 @@ const RoutesList = ({
         aria-pressed={selectedRoute === route.id}
         className={routeButtonClassName}
       >
-        <p className="truncate">{route.name}</p>
+        <p
+          className={cn(
+            "min-w-0 flex-1",
+            variant === "panel" && "truncate",
+            variant === "sidebar" && "whitespace-normal wrap-break-word"
+          )}
+        >
+          {route.name}
+        </p>
       </button>
     </li>
   );

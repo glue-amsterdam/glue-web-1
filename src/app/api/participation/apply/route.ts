@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import {
   participantApplicationSchema,
   participantApplicationWithAccountSchema,
@@ -256,13 +256,15 @@ export async function POST(request: Request) {
     }
 
     if (accountData.newsletterSubscribe) {
-      await subscribeToNewsletterBestEffort(
-        {
-          firstName: accountData.firstName,
-          lastName: accountData.lastName,
-          email: normalizedEmail,
-        },
-        "POST /api/participation/apply",
+      after(() =>
+        subscribeToNewsletterBestEffort(
+          {
+            firstName: accountData.firstName,
+            lastName: accountData.lastName,
+            email: normalizedEmail,
+          },
+          "POST /api/participation/apply",
+        ),
       );
     }
   }

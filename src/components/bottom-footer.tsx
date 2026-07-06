@@ -33,7 +33,9 @@ const fixedHelpLinks: FooterLink[] = [
   { title: "Imprint", link: "/imprint" },
 ];
 
-const SOCIAL_PLATFORMS = new Set(["instagram", "linkedin", "youtube"]);
+const SOCIAL_LINK_ORDER = ["instagram", "linkedin", "youtube"] as const;
+
+const FOOTER_ABOUT_ORDER = ["faq", "press-media", "archive"] as const;
 
 const platformLabels: Record<string, string> = {
   instagram: "Instagram",
@@ -44,27 +46,41 @@ const platformLabels: Record<string, string> = {
 const isHttpUrl = (url: string) =>
   url.startsWith("http://") || url.startsWith("https://");
 
+const sortFooterAboutLinks = (links: FooterAboutLink[]): FooterAboutLink[] => {
+  const order = new Map<string, number>(
+    FOOTER_ABOUT_ORDER.map((anchor, i) => [anchor, i])
+  );
+  const getAnchor = (link: string) => link.split("#")[1] ?? "";
+  return [...links].sort(
+    (a, b) =>
+      (order.get(getAnchor(a.link)) ?? 99) -
+      (order.get(getAnchor(b.link)) ?? 99)
+  );
+};
+
 const buildSocialLinks = (mainLinks: LinkItem[]): FooterLink[] =>
-  mainLinks
-    .filter(
-      ({ platform, link }) =>
-        SOCIAL_PLATFORMS.has(platform.toLowerCase()) &&
-        isHttpUrl(link?.trim() ?? "")
-    )
-    .map(({ platform, link }) => ({
-      title: platformLabels[platform.toLowerCase()] ?? platform,
-      link,
-    }));
+  SOCIAL_LINK_ORDER.flatMap((platform) => {
+    const item = mainLinks.find(
+      (m) =>
+        m.platform.toLowerCase() === platform &&
+        isHttpUrl(m.link?.trim() ?? "")
+    );
+    if (!item) return [];
+    return [{ title: platformLabels[platform], link: item.link }];
+  });
 
 function BottomFooter({ mainLinks, aboutLinks }: BottomFooterProps) {
   const pathname = usePathname();
+  const orderedAboutLinks = sortFooterAboutLinks(aboutLinks);
   const socialLinks = buildSocialLinks(mainLinks);
-  const helpLinks = [blogLink, ...aboutLinks, ...fixedHelpLinks];
   const isHome = pathname === "/";
 
   const mobileColumns = [
     { title: "Web Navigation", links: navLinks },
-    { title: "Help & Support", links: helpLinks },
+    {
+      title: "Help & Support",
+      links: [blogLink, ...orderedAboutLinks, ...fixedHelpLinks],
+    },
     ...(socialLinks.length > 0
       ? [{ title: "Follow Us", links: socialLinks }]
       : []),
@@ -72,8 +88,8 @@ function BottomFooter({ mainLinks, aboutLinks }: BottomFooterProps) {
   const desktopLinkColumns: FooterLink[][] = [
     navLinks.slice(0, 3),
     navLinks.slice(3),
-    helpLinks.slice(0, 3),
-    helpLinks.slice(3),
+    [blogLink, ...orderedAboutLinks],
+    fixedHelpLinks,
     ...(socialLinks.length > 0 ? [socialLinks] : []),
   ];
 

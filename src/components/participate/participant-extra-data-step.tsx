@@ -38,7 +38,7 @@ export const ParticipantExtraDataStep = ({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="max-w-[508px] lg:max-w-[1045px] mx-auto title-padding pb-[30px] w-full"
+      className="max-w-(--field-max-width) lg:max-w-[1045px] mx-auto title-padding pb-[30px] w-full"
       noValidate
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-[15px] lg:gap-[30px]">

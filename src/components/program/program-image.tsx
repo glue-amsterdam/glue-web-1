@@ -10,16 +10,14 @@ type ProgramImageProps = {
 
 const ProgramImage = ({ src, alt }: ProgramImageProps) => {
   return (
-    <div
-      className={"flex w-full h-[165px] lg:h-[200px] overflow-hidden mx-auto"}
-    >
+    <div className="flex w-full h-[165px] lg:h-[200px] overflow-hidden">
       <Image
         src={src}
         alt={alt}
         width={IMAGE_WIDTH}
         height={IMAGE_HEIGHT}
         sizes="(max-width: 768px) 100vw, 33vw"
-        className="object-contain  object-top"
+        className="h-full w-full object-contain object-center"
       />
     </div>
   );

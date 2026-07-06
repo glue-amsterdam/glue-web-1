@@ -1,5 +1,5 @@
 
-import { getExhibitorsPage } from "@/lib/participants/get-exhibitors-page";
+import { fetchExhibitorsPage } from "@/lib/participants/fetch-exhibitors";
 import {
   ExhibitorsQueryError,
   parseExhibitorsQuery,
@@ -28,7 +28,14 @@ export async function GET(request: Request) {
       throw error;
     }
 
-    const response = await getExhibitorsPage(supabase, query);
+    const response = await fetchExhibitorsPage({
+      limit: query.limit,
+      offset: query.offset,
+      type: query.type,
+      sort: query.sort,
+      order: query.order,
+      q: query.q,
+    });
 
     return NextResponse.json(response);
   } catch (error) {

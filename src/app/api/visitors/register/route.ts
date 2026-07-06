@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/subscribe-to-mailchimp";
 import { visitorRegisterSchema } from "@/schemas/visitorSchemas";
 import { createClient } from "@/utils/supabase/server";
@@ -60,6 +60,8 @@ export async function POST(request: Request) {
       .eq("email", normalizedEmail)
       .maybeSingle();
 
+    let visitorId: string;
+
     if (existingVisitor?.id) {
       const { error: linkError } = await admin
         .from("visitor_data")
@@ -75,56 +77,43 @@ export async function POST(request: Request) {
         .eq("id", existingVisitor.id);
 
       if (linkError) throw linkError;
+      visitorId = existingVisitor.id;
+    } else {
+      const { data: visitorRow, error: insertError } = await admin
+        .from("visitor_data")
+        .insert({
+          auth_user_id: authData.user.id,
+          first_name: firstName,
+          last_name: lastName,
+          email: normalizedEmail,
+          full_name: `${firstName} ${lastName}`.trim(),
+          birth_date: birthDate,
+          area_id: areaId,
+          visitor_token: createVisitorToken(),
+        })
+        .select("id")
+        .single();
 
-      if (newsletterSubscribe) {
-        await subscribeToNewsletterBestEffort(
+      if (insertError) throw insertError;
+      visitorId = visitorRow.id;
+    }
+
+    if (newsletterSubscribe) {
+      after(() =>
+        subscribeToNewsletterBestEffort(
           {
             firstName,
             lastName,
             email: normalizedEmail,
           },
           "POST /api/visitors/register",
-        );
-      }
-
-      return NextResponse.json({
-        success: true,
-        visitorId: existingVisitor.id,
-        userId: authData.user.id,
-      });
-    }
-
-    const { data: visitorRow, error: insertError } = await admin
-      .from("visitor_data")
-      .insert({
-        auth_user_id: authData.user.id,
-        first_name: firstName,
-        last_name: lastName,
-        email: normalizedEmail,
-        full_name: `${firstName} ${lastName}`.trim(),
-        birth_date: birthDate,
-        area_id: areaId,
-        visitor_token: createVisitorToken(),
-      })
-      .select("id")
-      .single();
-
-    if (insertError) throw insertError;
-
-    if (newsletterSubscribe) {
-      await subscribeToNewsletterBestEffort(
-        {
-          firstName,
-          lastName,
-          email: normalizedEmail,
-        },
-        "POST /api/visitors/register",
+        ),
       );
     }
 
     return NextResponse.json({
       success: true,
-      visitorId: visitorRow.id,
+      visitorId,
       userId: authData.user.id,
     });
   } catch (err) {

@@ -87,16 +87,22 @@ const ExhibitorPopUp = ({
   return (
     <Popup {...popupConfig}>
       <div onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave} className="overflow-hidden border-t-2 border-(--black-color) px-[30px] pt-[15px] pb-[30px] text-(--black-color) bg-(--white-color) z-51 min-h-[452px] base-text-size w-[460px]">
-        <div className="flex gap-[25px] items-start w-full">
+        onMouseLeave={handleMouseLeave}         className="overflow-hidden border-t-2 border-(--black-color) px-[30px] pt-[15px] pb-[30px] text-(--black-color) bg-(--white-color) z-51 min-h-[452px] base-text-size w-[460px] max-w-full">
+        <div className="flex min-w-0 gap-[25px] items-start w-full">
           <RoundedNumber type={location.type} participant_n={location.displayNumber ?? " "} />
-          <div className="w-full">
-            <div className="w-full flex justify-between" aria-live="polite" aria-atomic="true">
-              <h3 className="truncate ">{location.name.toUpperCase()}</h3>
+          <div className="min-w-0 flex-1">
+            <div
+              className="flex w-full items-start justify-between gap-3"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              <h3 className="min-w-0 flex-1 whitespace-normal wrap-break-word">
+                {location.name.toUpperCase()}
+              </h3>
               <button
                 type="button"
                 onClick={onClose}
-                className="cursor-pointer"
+                className="shrink-0 cursor-pointer"
                 aria-label="Close exhibitor details"
               >
                 <CrossRotatedDesktop />

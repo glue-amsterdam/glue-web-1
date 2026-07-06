@@ -20,7 +20,7 @@ const ExhibitorDetailView = ({
   const showNavigation = navigation.showMap || navigation.showEvents;
 
   return (
-    <section id="exhibitor-detail-section" className="text-(--black-color) pt-[122px] lg:pt-[113px]">
+    <section id="exhibitor-detail-section" className="text-(--black-color) terms-and-conditions-padding">
       <HeadlineWCross title={name.toUpperCase()} />
       <div className="max-w-[1045px] w-full mx-auto">
         <ExhibitorImagesCarousel
@@ -39,7 +39,7 @@ const ExhibitorDetailView = ({
 
           <article
             id="exhibitor-detail-description-section"
-            className="border-t border-(--black-color) pt-[30px] lg:border-t-2"
+            className="main-boder-top pt-[15px]"
           >
             <div className="flex items-center gap-[20px]">
               <RoundedNumber

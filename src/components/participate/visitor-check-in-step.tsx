@@ -14,6 +14,10 @@ import {
   visitorProfileSchema,
   type VisitorProfileFormState,
 } from "@/schemas/visitorSchemas";
+import {
+  ParticipateTermsAcceptance,
+  TERMS_ACCEPTANCE_ERROR,
+} from "@/components/participate/participate-terms-acceptance";
 
 const ageRangeOptions = VISITOR_AGE_RANGES.map((range) => ({
   value: range,
@@ -38,6 +42,9 @@ type VisitorCheckInStepProps = {
   submitLabel?: string;
   isSubmitting?: boolean;
   loadingMessage?: string;
+  termsContent?: string;
+  termsAccepted?: boolean;
+  onTermsAcceptedChange?: (accepted: boolean) => void;
 };
 
 export const VisitorCheckInStep = ({
@@ -48,6 +55,9 @@ export const VisitorCheckInStep = ({
   submitLabel = "Continue",
   isSubmitting = false,
   loadingMessage = "Saving check-in profile…",
+  termsContent,
+  termsAccepted = false,
+  onTermsAcceptedChange,
 }: VisitorCheckInStepProps) => {
   const [values, setValues] = useState<VisitorCheckInFormState>({
     birthDate: initialProfile.birthDate,
@@ -58,6 +68,9 @@ export const VisitorCheckInStep = ({
   >({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [termsError, setTermsError] = useState<string | null>(null);
+  const [localTermsAccepted, setLocalTermsAccepted] = useState(termsAccepted);
+  const showTerms = Boolean(termsContent);
 
   const workAreaOptions = workAreas.map((area) => ({
     value: area.id,
@@ -72,6 +85,12 @@ export const VisitorCheckInStep = ({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setSubmitError(null);
+    setTermsError(null);
+
+    if (showTerms && !localTermsAccepted) {
+      setTermsError(TERMS_ACCEPTANCE_ERROR);
+      return;
+    }
 
     const parsed = visitorCheckInFieldsSchema.safeParse(values);
     if (!parsed.success) {
@@ -112,6 +131,9 @@ export const VisitorCheckInStep = ({
       }
 
       onSubmit();
+      if (showTerms) {
+        onTermsAcceptedChange?.(true);
+      }
     } catch (error) {
       setSubmitError(
         error instanceof Error
@@ -123,10 +145,18 @@ export const VisitorCheckInStep = ({
     }
   };
 
+  const handleTermsChange = (accepted: boolean) => {
+    setLocalTermsAccepted(accepted);
+    onTermsAcceptedChange?.(accepted);
+    if (accepted) {
+      setTermsError(null);
+    }
+  };
+
   if (isSubmitting) {
     return (
       <div
-        className="max-w-[508px] mx-auto pt-[40px] lg:pt-[60px] pb-[15px] lg:pb-[30px]"
+        className="max-w-(--field-max-width) mx-auto title-padding pb-[15px] lg:pb-[30px]"
         aria-busy="true"
         aria-live="polite"
       >
@@ -141,10 +171,9 @@ export const VisitorCheckInStep = ({
   return (
     <form
       onSubmit={(event) => void handleSubmit(event)}
-      className="max-w-[508px] lg:max-w-[1045px] mx-auto pt-[40px] lg:pt-[60px] pb-[15px] lg:pb-[30px]"
+      className="max-w-(--field-max-width) lg:max-w-[1045px] mx-auto title-padding pb-[15px] lg:pb-[30px]"
       noValidate
     >
-      <h1 className="title-text pb-[15px]">Check-in profile</h1>
       <p className="base-text-size pb-[30px] max-w-prose">
         Before you continue, tell us your age range and work area for event
         check-in.
@@ -153,7 +182,7 @@ export const VisitorCheckInStep = ({
       {submitError ? (
         <p
           role="alert"
-          className="max-w-[508px] mx-auto pb-[15px] base-text-size text-(--primary-color)"
+          className="max-w-(--field-max-width) mx-auto pb-[15px] base-text-size text-(--primary-color)"
         >
           {submitError}
         </p>
@@ -179,6 +208,18 @@ export const VisitorCheckInStep = ({
           options={workAreaOptions}
         />
       </div>
+
+      {showTerms && termsContent ? (
+        <div className="flex flex-col gap-4 pt-[15px] lg:pt-[30px]">
+          <ParticipateTermsAcceptance
+            termsContent={termsContent}
+            accepted={localTermsAccepted}
+            onAcceptedChange={handleTermsChange}
+            error={termsError ?? undefined}
+            checkboxId="checkin-termsAccepted"
+          />
+        </div>
+      ) : null}
 
       <div className="flex justify-between pt-[30px] gap-4">
         <button

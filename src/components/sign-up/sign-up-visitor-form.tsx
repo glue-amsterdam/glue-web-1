@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getCookieConsent } from "@/app/actions/cookieConsent";
 import {
@@ -9,6 +9,8 @@ import {
   type VisitorAccountValues,
   type VisitorWorkAreaOption,
 } from "@/components/participate/visitor-account-step";
+import { redirectToDashboardHome } from "@/lib/users/redirect-to-dashboard-home";
+import { fetchNavbarIdentity } from "@/lib/users/fetch-navbar-identity";
 import {
   buildLoginHref,
   parseCancelToParam,
@@ -27,7 +29,8 @@ export const SignUpVisitorForm = ({
 }: SignUpVisitorFormProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const hasRedirectedRef = useRef(false);
+  const { user, isLoading: isAuthLoading, login } = useAuth();
   const returnTo = parseReturnToParam(searchParams);
   const cancelTo = resolveCancelTo(parseCancelToParam(searchParams));
   const prefilledEmail = parseEmailParam(searchParams);
@@ -35,6 +38,53 @@ export const SignUpVisitorForm = ({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+
+  const redirectAfterAuth = (loggedInUserId: string, dashboardHref: string | null) => {
+    if (hasRedirectedRef.current) {
+      return;
+    }
+
+    setIsRedirecting(true);
+
+    if (returnTo) {
+      hasRedirectedRef.current = true;
+      router.replace(resolvePostAuthRedirect(returnTo));
+      return;
+    }
+
+    redirectToDashboardHome({
+      router,
+      userId: loggedInUserId,
+      hasRedirectedRef,
+      href: dashboardHref,
+    });
+  };
+
+  useEffect(() => {
+    if (isAuthLoading || !user || hasRedirectedRef.current) {
+      return;
+    }
+
+    setIsRedirecting(true);
+
+    const redirectExistingSession = async () => {
+      if (returnTo) {
+        hasRedirectedRef.current = true;
+        router.replace(resolvePostAuthRedirect(returnTo));
+        return;
+      }
+
+      const identity = await fetchNavbarIdentity();
+      redirectToDashboardHome({
+        router,
+        userId: user.id,
+        hasRedirectedRef,
+        href: identity?.dashboardHref,
+      });
+    };
+
+    void redirectExistingSession();
+  }, [user, isAuthLoading, router, returnTo]);
 
   const handleSubmit = async (data: VisitorAccountValues) => {
     if (isSubmitting || isRedirecting) return;
@@ -69,7 +119,12 @@ export const SignUpVisitorForm = ({
       }
 
       try {
-        await login(data.email, data.password);
+        const { user: loggedInUser, dashboardHref } = await login(
+          data.email,
+          data.password,
+        );
+        redirecting = true;
+        redirectAfterAuth(loggedInUser.id, dashboardHref);
       } catch (error) {
         const message =
           error instanceof Error
@@ -78,10 +133,6 @@ export const SignUpVisitorForm = ({
         setSubmitError(message);
         return;
       }
-
-      redirecting = true;
-      setIsRedirecting(true);
-      router.replace(resolvePostAuthRedirect(returnTo));
     } catch {
       setSubmitError("Something went wrong. Please try again.");
     } finally {
@@ -97,6 +148,9 @@ export const SignUpVisitorForm = ({
     cancelTo,
   });
 
+  const showSpinner =
+    isAuthLoading || isSubmitting || isRedirecting || user !== null;
+
   return (
     <>
       <VisitorAccountStep
@@ -106,8 +160,8 @@ export const SignUpVisitorForm = ({
         showBackButton={false}
         initialValues={{ email: prefilledEmail ?? "" }}
         submitLabel={isSubmitting ? "creating…" : "create account"}
-        submitDisabled={isSubmitting || isRedirecting}
-        isSubmitting={isSubmitting || isRedirecting}
+        submitDisabled={showSpinner}
+        isSubmitting={showSpinner}
         loadingMessage="Creating your account…"
         loginHref={loginHref}
       />

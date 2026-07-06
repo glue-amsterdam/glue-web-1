@@ -76,6 +76,7 @@ export type ExhibitorHubDetail = {
   description: string | null;
   mapInfoId: string | null;
   formattedAddress: string | null;
+  events: ExhibitorEventSummary[];
   members: ExhibitorHubMember[];
 };
 

@@ -13,10 +13,10 @@ type SlideLineNavProps = {
 
 const getNavClassName = (size: "default" | "compact" | "desktop") => {
   if (size === "compact") {
-    return "flex justify-center w-full flex-wrap gap-[6px] pt-[10px]";
+    return "mx-auto flex w-full max-w-[200px] flex-nowrap justify-center gap-[6px] pt-[10px]";
   }
 
-  return "flex pt-[30px] gap-[15px] justify-center w-full flex-wrap";
+  return "mx-auto flex w-full max-w-[300px] flex-nowrap justify-center gap-[15px] pt-[30px] lg:max-w-[480px]";
 };
 
 const getLineButtonClassName = (
@@ -24,20 +24,20 @@ const getLineButtonClassName = (
   size: "default" | "compact" | "desktop"
 ) => {
   const base =
-    "h-2 shrink-0 cursor-pointer border-0 border-[var(--black-color)] bg-transparent p-0";
+    "h-2 min-w-0 flex-1 cursor-pointer border-0 border-[var(--black-color)] bg-transparent p-0";
 
   if (size === "compact") {
-    return `${base} w-[36px] ${isActive ? "border-b-[3px]" : "border-b-[1px]"}`;
+    return `${base} max-w-[36px] ${isActive ? "border-b-[3px]" : "border-b-[1px]"}`;
   }
 
   if (size === "desktop") {
-    return `${base} w-[90px] lg:w-[150px] ${isActive
+    return `${base} max-w-[90px] lg:max-w-[150px] ${isActive
       ? "border-b-[3px] lg:border-b-[4px]"
       : "border-b-[1px] lg:border-b-[2px]"
       }`;
   }
 
-  return `${base} w-[90px] lg:w-[150px] ${isActive
+  return `${base} max-w-[90px] lg:max-w-[150px] ${isActive
     ? "border-b-[3px] lg:border-b-[4px]"
     : "border-b-[1px] lg:border-b-[2px]"
     }`;

@@ -2,8 +2,8 @@ import type { OpenCloseTime } from "@/types/api-visible-user";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { classifyLocationType } from "@/lib/map/classify-location-type";
 import {
+  classifyHubMemberCategory,
   fetchParticipantCategories,
-  type ParticipantCategory,
 } from "@/lib/participants/participant-categories";
 import type { ExhibitorType } from "./exhibitor-types";
 import {
@@ -49,9 +49,18 @@ type HubHostMapContext = {
 
 const getParticipantType = async (
   supabase: SupabaseClient,
+  userId: string,
   category: string
 ): Promise<ExhibitorType> => {
-  const categories = await fetchParticipantCategories(supabase);
+  const [categories, hubHostUserId] = await Promise.all([
+    fetchParticipantCategories(supabase),
+    resolveHubHostUserId(supabase, userId),
+  ]);
+
+  if (hubHostUserId) {
+    return classifyHubMemberCategory(category, categories);
+  }
+
   return classifyLocationType(1, category, categories);
 };
 
@@ -306,7 +315,7 @@ export const getExhibitorBySlug = async (
       .eq("user_id", row.user_id)
       .order("id", { ascending: true }),
     buildContactInfo(supabase, row.user_id, row, tourStatus),
-    getParticipantType(supabase, row.category),
+    getParticipantType(supabase, row.user_id, row.category),
   ]);
 
   const carouselSlides = participantImagesToCarouselSlides(
