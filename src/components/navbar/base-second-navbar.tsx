@@ -35,8 +35,8 @@ const LabelWithPlusButton = ({
     label: string;
     isOpen: boolean;
 }) => (
-    <div className="flex gap-[10px] lg:gap-[15px] items-center">
-        <p className="body-text">
+    <div className="flex gap-[10px] lg:gap-[15px] items-center shrink-0">
+        <p className="body-text whitespace-nowrap">
             {label}
         </p>
         <span>
@@ -65,7 +65,7 @@ export const FilterButton = <TFilterId extends string>({
             aria-label={`Filter by ${label}`}
             onClick={() => onToggle(filterId)}
             className={cn(
-                "cursor-pointer",
+                "cursor-pointer shrink-0",
                 (isActive || isOpen) && "text-(--primary-color)"
             )}
             onKeyDown={(event) => onKeyDown(event, filterId)}
@@ -92,12 +92,17 @@ const BaseSecondNavbar = forwardRef<HTMLDivElement, BaseSecondNavbarProps>(
         <div
             ref={ref}
             className={cn(
-                "grid h-full w-full grid-rows-[var(--nav-secondary-h-mobile)_var(--nav-secondary-h-mobile)]",
-                "lg:flex lg:h-auto lg:w-fit lg:grid-rows-none lg:items-end lg:gap-[40px]",
+                "max-lg:grid max-lg:h-full max-lg:w-full max-lg:grid-rows-[var(--nav-secondary-h-mobile)_var(--nav-secondary-h-mobile)]",
+                "lg:flex lg:items-end lg:w-fit lg:gap-[40px]",
                 className
             )}
         >
-            <div className="relative flex h-full w-full flex-col justify-center border-b border-(--black-color) lg:order-last lg:h-auto lg:justify-end lg:border-b-0">
+            <div
+                className={cn(
+                    "relative lg:order-last",
+                    "max-lg:flex max-lg:h-full max-lg:w-full max-lg:flex-col max-lg:justify-center max-lg:border-b max-lg:border-(--black-color)"
+                )}
+            >
                 <input
                     id={searchInputId}
                     type="search"
@@ -106,11 +111,11 @@ const BaseSecondNavbar = forwardRef<HTMLDivElement, BaseSecondNavbarProps>(
                     onKeyDown={onSearchKeyDown}
                     placeholder="Search"
                     aria-label={searchAriaLabel}
-                    className="navbar-search-input w-full max-w-none bg-transparent text-[16px] leading-[20px] lg:text-[19px] lg:leading-[25px] h-[20px] lg:h-[30px] lg:w-auto lg:max-w-[300px] placeholder:body-text placeholder:text-(--gray-color) border-0 lg:border-b-2 lg:border-(--black-color) focus:outline-none focus:ring-0 p-0"
+                    className="navbar-search-input text-[16px] leading-[20px] max-lg:w-full max-lg:max-w-none max-lg:bg-transparent max-lg:border-0 max-lg:p-0 lg:text-[19px] lg:leading-[25px] h-[20px] lg:h-[30px] max-w-[170px] lg:max-w-[300px] placeholder:body-text placeholder:text-(--gray-color) border-b lg:border-b-2 border-(--black-color) focus:outline-none focus:ring-0"
                 />
                 {searchAfter}
             </div>
-            <div className="flex items-center gap-[30px]">{children}</div>
+            <div className="flex gap-[30px] max-lg:items-center shrink-0">{children}</div>
         </div>
     )
 );

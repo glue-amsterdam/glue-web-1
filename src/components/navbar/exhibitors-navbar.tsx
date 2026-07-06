@@ -195,7 +195,7 @@ const ExhibitorsNavbar = () => {
     return (
         <section
             aria-label="Exhibitors filters"
-            className="w-full h-(--nav-secondary-h) flex items-stretch lg:items-center relative overflow-visible border-b lg:border-b-2 border-(--black-color) bg-(--background-color) py-0 lg:py-[12px]"
+            className="w-full h-(--nav-secondary-h) flex items-stretch lg:items-center py-0 lg:py-[12px] relative overflow-visible border-b lg:border-b-2 border-(--black-color) bg-(--background-color)"
         >
             <BaseSecondNavbar
                 searchValue={searchValue}
