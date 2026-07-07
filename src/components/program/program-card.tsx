@@ -28,27 +28,29 @@ const ProgramCard = ({ event }: Props) => {
               : ""}
           </p>
           <p>{event.type}</p>
+          <div className="program-card-padding">
+            <ProgramImage src={event.eventImg} alt={event.name} />
+          </div>
+          <h2 className="program-card-padding versal-body-text line-clamp-2">
+            {event.name.toUpperCase()}
+          </h2>
+          <p className="body-text text-(--black-color) truncate">
+            {event.organizer.userName}
+            {event.coOrganizers.length > 0 &&
+              ` x ${event.coOrganizers.map((c) => c.userName).join("x ")}`}
+          </p>
         </div>
-        <div className="shrink-0 lg:hidden">
-          <PlusButtonMobile />
-        </div>
-        <div className="hidden shrink-0 lg:block">
-          <PlusIconDesktop />
+
+        <div>
+          <div className="shrink-0 lg:hidden">
+            <PlusButtonMobile />
+          </div>
+          <div className="hidden shrink-0 lg:block">
+            <PlusIconDesktop />
+          </div>
         </div>
       </div>
 
-      <div className="pt-[15px] w-full">
-        <ProgramImage src={event.eventImg} alt={event.name} />
-      </div>
-
-      <h2 className="program-card-padding versal-body-text line-clamp-2">
-        {event.name.toUpperCase()}
-      </h2>
-      <p className="body-text text-(--black-color) truncate">
-        {event.organizer.userName}
-        {event.coOrganizers.length > 0 &&
-          ` x ${event.coOrganizers.map((c) => c.userName).join("x ")}`}
-      </p>
     </article>
   );
 

@@ -13,7 +13,7 @@ const ProgramDetailView = ({ event }: Props) => {
   return (
     <section
       id="program-detail-section"
-      className="text-(--black-color) pt-[122px] lg:pt-[113px] base-text-size"
+      className="text-(--black-color) terms-and-conditions-padding base-text-size"
     >
       <HeadlineWCross title={event.name.toUpperCase()} />
       <div className="max-w-[1045px] w-full mx-auto">

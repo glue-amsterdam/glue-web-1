@@ -201,11 +201,16 @@ export const classifyCategory = (
   return getDefaultCategory(categories).slug;
 };
 
-/** Hub members inherit the hub color unless they have an assignable category. */
+/** Hub members inherit the hub color when the hub is large (>3); otherwise use individual classification. */
 export const classifyHubMemberCategory = (
+  memberCount: number,
   assignedSlug: string | null | undefined,
   categories: ParticipantCategory[]
 ): ExhibitorType => {
+  if (memberCount <= 3) {
+    return classifyCategory(1, assignedSlug, categories);
+  }
+
   const normalized = assignedSlug
     ? normalizeCategorySlug(assignedSlug)
     : undefined;
