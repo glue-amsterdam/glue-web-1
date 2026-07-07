@@ -25,31 +25,38 @@ const testCategories = [
 ];
 
 describe("classifyHubMemberCategory", () => {
-  it("returns hub for standard hub members", () => {
+  it("returns standard for small hub members with standard category", () => {
     assert.equal(
-      classifyHubMemberCategory("standard", testCategories),
+      classifyHubMemberCategory(2, "standard", testCategories),
+      "standard"
+    );
+  });
+
+  it("returns hub for large hub members with standard category", () => {
+    assert.equal(
+      classifyHubMemberCategory(4, "standard", testCategories),
       "hub"
     );
   });
 
-  it("returns sticky-participant for assignable sticky members", () => {
+  it("returns sticky-participant for assignable sticky members in large hubs", () => {
     assert.equal(
-      classifyHubMemberCategory("sticky-participant", testCategories),
+      classifyHubMemberCategory(4, "sticky-participant", testCategories),
       "sticky-participant"
     );
   });
 
-  it("returns special-program for assignable single-date members", () => {
+  it("returns special-program for assignable single-date members in small hubs", () => {
     assert.equal(
-      classifyHubMemberCategory("special-program", testCategories),
+      classifyHubMemberCategory(2, "special-program", testCategories),
       "special-program"
     );
   });
 
-  it("normalizes legacy standard slug to hub", () => {
+  it("normalizes legacy standard slug to standard for small hubs", () => {
     assert.equal(
-      classifyHubMemberCategory("up-to-three-participants", testCategories),
-      "hub"
+      classifyHubMemberCategory(2, "up-to-three-participants", testCategories),
+      "standard"
     );
   });
 });

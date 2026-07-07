@@ -199,7 +199,7 @@ export const getExhibitors = async (
     eligibleParticipants.map((participant) => participant.user_id)
   );
 
-  const hubMemberUserIds = new Set<string>();
+  const hubMemberCountByUserId = new Map<string, number>();
   const hubRows = (hubsResult.data as HubRow[]) ?? [];
 
   for (const hub of hubRows) {
@@ -209,16 +209,23 @@ export const getExhibitors = async (
       hub,
       eligibleParticipantIds
     );
+    const memberCount = eligibleMemberIds.size;
 
     for (const userId of eligibleMemberIds) {
-      hubMemberUserIds.add(userId);
+      hubMemberCountByUserId.set(userId, memberCount);
     }
   }
 
   for (const participant of eligibleParticipants) {
-    const type = hubMemberUserIds.has(participant.user_id)
-      ? classifyHubMemberCategory(participant.category, categories)
-      : classifyCategory(1, participant.category, categories);
+    const hubMemberCount = hubMemberCountByUserId.get(participant.user_id);
+    const type =
+      hubMemberCount !== undefined
+        ? classifyHubMemberCategory(
+            hubMemberCount,
+            participant.category,
+            categories
+          )
+        : classifyCategory(1, participant.category, categories);
     const item = buildParticipantItem(
       participant,
       type,

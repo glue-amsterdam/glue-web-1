@@ -15,6 +15,7 @@ import {
 import { resolveExhibitorDetailNavigation } from "./exhibitor-detail-navigation";
 import {
   getTourStatus,
+  getStickyParticipantIds,
   isParticipantEligibleForExhibitorsList,
   isParticipantPubliclyVisible,
   isParticipantSticky,
@@ -47,18 +48,39 @@ type HubHostMapContext = {
   mapInfoId: string | null;
 };
 
+type HubMembership = {
+  hubHostUserId: string;
+  memberCount: number;
+};
+
+type HubParticipantRow = { user_id: string };
+
+type HubRow = {
+  hub_host_id: string;
+  hub_participants: HubParticipantRow | HubParticipantRow[] | null;
+};
+
+const ensureArray = <T>(value: T | T[] | null | undefined): T[] => {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
+};
+
 const getParticipantType = async (
   supabase: SupabaseClient,
   userId: string,
   category: string
 ): Promise<ExhibitorType> => {
-  const [categories, hubHostUserId] = await Promise.all([
+  const [categories, membership] = await Promise.all([
     fetchParticipantCategories(supabase),
-    resolveHubHostUserId(supabase, userId),
+    resolveHubMembership(supabase, userId),
   ]);
 
-  if (hubHostUserId) {
-    return classifyHubMemberCategory(category, categories);
+  if (membership) {
+    return classifyHubMemberCategory(
+      membership.memberCount,
+      category,
+      categories
+    );
   }
 
   return classifyLocationType(1, category, categories);
@@ -83,13 +105,20 @@ const normalizeSocialMedia = (
   return media;
 };
 
-const resolveHubHostUserId = async (
+const resolveHubMembership = async (
   supabase: SupabaseClient,
   userId: string
-): Promise<string | null> => {
+): Promise<HubMembership | null> => {
   const { data: hostedHub, error: hostedHubError } = await supabase
     .from("hubs")
-    .select("hub_host_id")
+    .select(
+      `
+        hub_host_id,
+        hub_participants (
+          user_id
+        )
+      `
+    )
     .eq("hub_host_id", userId)
     .limit(1)
     .maybeSingle();
@@ -98,38 +127,91 @@ const resolveHubHostUserId = async (
     console.error("Error fetching hosted hub:", hostedHubError);
   }
 
-  if (hostedHub?.hub_host_id) {
-    return hostedHub.hub_host_id;
+  let hub = hostedHub as HubRow | null;
+
+  if (!hub) {
+    const { data: membership, error: membershipError } = await supabase
+      .from("hub_participants")
+      .select("hub_id")
+      .eq("user_id", userId)
+      .limit(1)
+      .maybeSingle();
+
+    if (membershipError) {
+      console.error("Error fetching hub membership:", membershipError);
+      return null;
+    }
+
+    if (!membership?.hub_id) {
+      return null;
+    }
+
+    const { data: memberHub, error: hubError } = await supabase
+      .from("hubs")
+      .select(
+        `
+          hub_host_id,
+          hub_participants (
+            user_id
+          )
+        `
+      )
+      .eq("id", membership.hub_id)
+      .maybeSingle();
+
+    if (hubError) {
+      console.error("Error fetching hub host for member:", hubError);
+      return null;
+    }
+
+    hub = memberHub as HubRow | null;
   }
 
-  const { data: membership, error: membershipError } = await supabase
-    .from("hub_participants")
-    .select("hub_id")
-    .eq("user_id", userId)
-    .limit(1)
-    .maybeSingle();
-
-  if (membershipError) {
-    console.error("Error fetching hub membership:", membershipError);
+  if (!hub?.hub_host_id) {
     return null;
   }
 
-  if (!membership?.hub_id) {
+  const memberUserIds = new Set<string>([hub.hub_host_id]);
+  for (const participant of ensureArray(hub.hub_participants)) {
+    memberUserIds.add(participant.user_id);
+  }
+
+  const [stickyIds, tourStatus] = await Promise.all([
+    getStickyParticipantIds(supabase),
+    getTourStatus(supabase),
+  ]);
+
+  const { data: memberRows, error: memberError } = await supabase
+    .from("participant_details")
+    .select("user_id, is_active, was_active_last_year, status")
+    .in("user_id", Array.from(memberUserIds))
+    .eq("status", "accepted");
+
+  if (memberError) {
+    console.error("Error fetching hub member eligibility:", memberError);
     return null;
   }
 
-  const { data: hub, error: hubError } = await supabase
-    .from("hubs")
-    .select("hub_host_id")
-    .eq("id", membership.hub_id)
-    .maybeSingle();
+  const memberCount = (memberRows ?? []).filter((member) =>
+    isParticipantEligibleForExhibitorsList(member, stickyIds, tourStatus)
+  ).length;
 
-  if (hubError) {
-    console.error("Error fetching hub host for member:", hubError);
+  if (memberCount === 0) {
     return null;
   }
 
-  return hub?.hub_host_id ?? null;
+  return {
+    hubHostUserId: hub.hub_host_id,
+    memberCount,
+  };
+};
+
+const resolveHubHostUserId = async (
+  supabase: SupabaseClient,
+  userId: string
+): Promise<string | null> => {
+  const membership = await resolveHubMembership(supabase, userId);
+  return membership?.hubHostUserId ?? null;
 };
 
 const resolveHubHostMapContext = async (

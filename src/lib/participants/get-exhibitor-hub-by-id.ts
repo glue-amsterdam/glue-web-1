@@ -62,9 +62,11 @@ const ensureArray = <T>(value: T | T[] | null | undefined): T[] => {
 };
 
 const getParticipantType = (
+  memberCount: number,
   category: string,
   categories: ParticipantCategory[]
-): ExhibitorType => classifyHubMemberCategory(category, categories);
+): ExhibitorType =>
+  classifyHubMemberCategory(memberCount, category, categories);
 
 const buildImageMap = (images: ImageRow[]): Map<string, string> => {
   const map = new Map<string, string>();
@@ -241,6 +243,7 @@ export const getExhibitorHubById = async (
 
   const placeholderUrl = await getParticipantPlaceholderUrl(supabase);
   const imageMap = buildImageMap((imagesData as ImageRow[]) ?? []);
+  const hubMemberCount = eligibleMemberIds.size;
 
   const members: ExhibitorHubMember[] = [];
 
@@ -256,7 +259,7 @@ export const getExhibitorHubById = async (
       name: getParticipantDisplayName(details),
       imageUrl: imageMap.get(userId) ?? placeholderUrl,
       displayNumber: details.display_number,
-      type: getParticipantType(details.category, categories),
+      type: getParticipantType(hubMemberCount, details.category, categories),
     });
   }
 

@@ -59,12 +59,15 @@ type LocationDraft = MapLocation & {
 type HubMembershipContext = {
   hubMapInfoId: string;
   hubAddressLine: string;
+  memberCount: number;
 };
 
 const getMemberType = (
+  memberCount: number,
   category: string,
   categories: ParticipantCategory[]
-): ExhibitorType => classifyHubMemberCategory(category, categories);
+): ExhibitorType =>
+  classifyHubMemberCategory(memberCount, category, categories);
 
 const resolveMemberMapLocationId = (
   userId: string,
@@ -97,6 +100,7 @@ const buildHubMembers = (
   categories: ParticipantCategory[]
 ): MapLocationDetailMember[] => {
   const members: MapLocationDetailMember[] = [];
+  const memberCount = memberIds.size;
 
   for (const userId of getOrderedEligibleMemberIds(hub, memberIds)) {
     const participant = participantByUserId.get(userId);
@@ -114,7 +118,7 @@ const buildHubMembers = (
     members.push({
       userId,
       name: getParticipantDisplayName(participant),
-      type: getMemberType(participant.category, categories),
+      type: getMemberType(memberCount, participant.category, categories),
       displayNumber: participant.display_number,
       locationId,
       ...(slug ? { slug } : {}),
@@ -253,6 +257,7 @@ export const buildMapLocations = async (
     const hubMembership: HubMembershipContext = {
       hubMapInfoId: hostMapInfo.id,
       hubAddressLine,
+      memberCount,
     };
 
     if (!hubMembershipByUserId.has(hub.hub_host_id)) {
@@ -317,13 +322,20 @@ export const buildMapLocations = async (
       continue;
     }
 
+    const hubMembership = hubMembershipByUserId.get(participant.user_id);
+    const type = hubMembership
+      ? classifyHubMemberCategory(
+          hubMembership.memberCount,
+          participant.category,
+          categories
+        )
+      : classifyLocationType(1, participant.category, categories);
+
     locationByMapInfoId.set(mapInfo.id, {
       id: mapInfo.id,
       latitude: mapInfo.latitude,
       longitude: mapInfo.longitude,
-      type: hubMembershipByUserId.has(participant.user_id)
-        ? classifyHubMemberCategory(participant.category, categories)
-        : classifyLocationType(1, participant.category, categories),
+      type,
       name: getParticipantDisplayName(participant),
       displayNumber: participant.display_number,
       addressLine: getAddressLine(mapInfo.formatted_address),
