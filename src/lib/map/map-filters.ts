@@ -64,6 +64,43 @@ export const sortMapLocationsForDisplayList = (
     return leftHasNumber ? -1 : 1;
   });
 
+export const locationMatchesCategory = (
+  location: MapLocation,
+  categoryType: ExhibitorsFilterType
+): boolean => {
+  if (categoryType === "all") return true;
+  if (location.type === categoryType) return true;
+
+  return (
+    location.members?.some((member) => member.type === categoryType) ?? false
+  );
+};
+
+export const getHubMembersMatchingCategory = (
+  location: MapLocation,
+  categoryType: ExhibitorsFilterType
+): MapLocationDetailMember[] => {
+  if (categoryType === "all") return [];
+
+  return (location.members ?? []).filter(
+    (member) => member.type === categoryType
+  );
+};
+
+/** When a hub dot is visible only via member category match, preselect that member on click. */
+export const getSingleCategoryMatchMemberUserId = (
+  location: MapLocation,
+  categoryType: ExhibitorsFilterType
+): string | undefined => {
+  if (categoryType === "all" || !location.hubId) return undefined;
+
+  const matching = getHubMembersMatchingCategory(location, categoryType);
+  if (matching.length !== 1) return undefined;
+
+  const member = matching[0];
+  return member?.userId ?? member?.slug;
+};
+
 const locationMatchesSearchQuery = (
   location: MapLocation,
   query: string
@@ -213,6 +250,67 @@ export const flattenHubMembersForAllList = (
   return sortMapLocationsForDisplayList(result);
 };
 
+/** Category view: hub rows when hub type matches; flat member rows when only members match. */
+export const flattenHubMembersForCategoryList = (
+  locations: MapLocation[],
+  categoryType: ExhibitorsFilterType
+): MapLocation[] => {
+  if (categoryType === "all") return locations;
+
+  const result: MapLocation[] = [];
+  const seenMemberUserIds = new Set<string>();
+
+  const addMemberFlatRow = (
+    location: MapLocation,
+    member: MapLocationDetailMember
+  ) => {
+    const memberLocationId = member.locationId ?? location.id;
+    if (memberLocationId !== location.id) {
+      return;
+    }
+
+    const memberUserId = member.userId ?? member.slug ?? member.name;
+    if (seenMemberUserIds.has(memberUserId)) {
+      return;
+    }
+
+    seenMemberUserIds.add(memberUserId);
+
+    result.push({
+      id: `list:hub-member:${location.hubId}:${memberUserId}`,
+      mapSelectionId: location.id,
+      hubMemberUserId: member.userId ?? member.slug,
+      latitude: location.latitude,
+      longitude: location.longitude,
+      type: member.type ?? location.type,
+      name: member.name,
+      displayNumber: member.displayNumber ?? null,
+      addressLine: location.addressLine,
+      slug: member.slug,
+      hubId: location.hubId,
+      memberCount: 1,
+    });
+  };
+
+  for (const location of locations) {
+    if (!location.hubId) {
+      result.push(location);
+      continue;
+    }
+
+    if (location.type === categoryType) {
+      result.push(location);
+      continue;
+    }
+
+    for (const member of getHubMembersMatchingCategory(location, categoryType)) {
+      addMemberFlatRow(location, member);
+    }
+  }
+
+  return sortMapLocationsForDisplayList(result);
+};
+
 export const filterMapLocations = (
   locations: MapLocation[],
   filters: Pick<MapFilters, "type" | "q">
@@ -220,7 +318,9 @@ export const filterMapLocations = (
   let result = locations;
 
   if (filters.type !== "all") {
-    result = result.filter((location) => location.type === filters.type);
+    result = result.filter((location) =>
+      locationMatchesCategory(location, filters.type)
+    );
   }
 
   const query = filters.q.trim().toLowerCase();
@@ -253,6 +353,10 @@ export const filterMapLocationsForList = (
     return flattenHubMembersForAllList(result, query || undefined);
   }
 
+  if (!query) {
+    return flattenHubMembersForCategoryList(result, filters.type);
+  }
+
   return result;
 };
 
@@ -260,7 +364,30 @@ export const filterMapLocationsForList = (
 export const filterMapLocationsForMap = (
   locations: MapLocation[],
   filters: Pick<MapFilters, "type" | "q">
-): MapLocation[] => filterMapLocations(locations, filters);
+): MapLocation[] => {
+  const filtered = filterMapLocations(locations, filters);
+
+  if (filters.type === "all") {
+    return filtered;
+  }
+
+  return filtered.map((location) => {
+    if (location.type === filters.type) {
+      return location;
+    }
+
+    const hasMatchingMembers = getHubMembersMatchingCategory(
+      location,
+      filters.type
+    ).length > 0;
+
+    if (!hasMatchingMembers) {
+      return location;
+    }
+
+    return { ...location, type: filters.type };
+  });
+};
 
 export const filterMapRoutes = (routes: MapRoute[], q: string): MapRoute[] => {
   const query = q.trim().toLowerCase();

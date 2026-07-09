@@ -1,14 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useParticipantCategories } from "@/context/ParticipantCategoriesContext";
+import { useListPageSearchParams } from "@/hooks/useListPageSearchParams";
 import { fetchExhibitorsPageClient } from "@/lib/client/fetch-exhibitors-page";
 import {
-  areClientSearchParamsReady,
   clearListSnapshot,
   filtersKeyFromPageUrl,
   readListSnapshot,
+  replaceListPageUrl,
   replaceListVisibleCountInUrl,
   saveListSnapshot,
   type ListPageCatalogSnapshot,
@@ -126,9 +127,8 @@ export const useExhibitorsPage = (
   initialData: ExhibitorsPageResponse,
   initialFilters: ExhibitorsFilters = DEFAULT_EXHIBITORS_FILTERS,
 ): UseExhibitorsPageReturn => {
-  const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const searchParams = useListPageSearchParams();
   const { categorySlugs } = useParticipantCategories();
 
   const initialStateRef = useRef<ResolvedExhibitorsState | null>(null);
@@ -215,9 +215,9 @@ export const useExhibitorsPage = (
         nextFilters,
         visibleCountRef.current,
       );
-      router.replace(nextUrl, { scroll: false });
+      replaceListPageUrl(nextUrl);
     },
-    [pathname, router],
+    [pathname],
   );
 
   const updateCatalog = useCallback(
@@ -392,6 +392,7 @@ export const useExhibitorsPage = (
     if (!snapshot) {
       if (requestedVisibleCount > EXHIBITORS_PAGE_SIZE) {
         void fetchPage(initialFilters, 0, false, false, {
+          silent: true,
           limit: requestedVisibleCount,
           preserveOnError: true,
         });
@@ -408,15 +409,19 @@ export const useExhibitorsPage = (
     setItems(restoredItems);
     setTotal(snapshot.total);
     setHasMore(restoredItems.length < snapshot.total);
-    setFilters(snapshot.filters);
+    setFilters((currentFilters) => {
+      if (areFiltersEqual(currentFilters, snapshot.filters)) {
+        return currentFilters;
+      }
+      return snapshot.filters;
+    });
 
-    clearSuppressFetch();
     void fetchPage(snapshot.filters, 0, false, false, {
       silent: true,
       preserveOnError: true,
       limit: requestedVisibleCount,
     });
-  }, [clearSuppressFetch, fetchPage, initialFilters]);
+  }, [fetchPage, initialFilters]);
 
   const handleFiltersChange = useCallback(
     (next: Partial<ExhibitorsFilters>) => {
@@ -483,11 +488,6 @@ export const useExhibitorsPage = (
   }, [applyLocalPage, fetchPage, filters]);
 
   useEffect(() => {
-    const expectedKey = getExhibitorsFiltersCacheKey(initialFilters);
-    if (!areClientSearchParamsReady(searchParams, expectedKey)) {
-      return;
-    }
-
     visibleCountRef.current = getExhibitorsVisibleCount(searchParams);
     const filtersFromUrl = searchParamsToFilters(searchParams, categorySlugs);
 
@@ -513,7 +513,7 @@ export const useExhibitorsPage = (
       filtersSourceRef.current = "url";
       return filtersFromUrl;
     });
-  }, [categorySlugs, clearSuppressFetch, initialFilters, searchParams]);
+  }, [categorySlugs, clearSuppressFetch, searchParams]);
 
   return {
     items,

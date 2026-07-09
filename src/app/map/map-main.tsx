@@ -237,6 +237,7 @@ const MapMain = ({ initialData }: MapMainProps) => {
             selectedRoute={selectedRoute}
             activeRouteStopId={activeRouteStopId}
             detailPanelDismissed={detailPanelDismissed}
+            categoryFilterType={filters.type}
             onLocationSelect={setSelectedLocation}
             onCloseExhibitorSelection={closeExhibitorSelection}
             onDismissRoutePanel={dismissRoutePanel}

@@ -63,7 +63,6 @@ const accountLinkClassName =
   "text-[15px] leading-[15px] lg:text-[19px] lg:leading-[25px] transition-colors duration-100 navigation";
 
 type NavbarClientProps = {
-  initialIdentity: NavbarIdentity | null;
   navLinks: NavbarLink[];
 };
 
@@ -293,10 +292,7 @@ const AccountNav = ({ isAuthenticated, dashboardHref }: AccountNavProps) => {
   return <LoggedOutAccountNav />;
 };
 
-export const NavBarClient = ({
-  initialIdentity,
-  navLinks,
-}: NavbarClientProps) => {
+export const NavBarClient = ({ navLinks }: NavbarClientProps) => {
   const pathname = usePathname();
   const { user, navbarIdentity } = useAuth();
   const [liveIdentity, setLiveIdentity] = useState<NavbarIdentity | null>(null);
@@ -307,7 +303,7 @@ export const NavBarClient = ({
       return;
     }
 
-    if (initialIdentity || navbarIdentity) {
+    if (navbarIdentity) {
       setLiveIdentity(null);
       return;
     }
@@ -326,12 +322,10 @@ export const NavBarClient = ({
     return () => {
       cancelled = true;
     };
-  }, [user, initialIdentity, navbarIdentity]);
+  }, [user, navbarIdentity]);
 
-  const isAuthenticated = user !== null || initialIdentity !== null;
-  const identity = isAuthenticated
-    ? (initialIdentity ?? navbarIdentity ?? liveIdentity)
-    : null;
+  const isAuthenticated = user !== null;
+  const identity = isAuthenticated ? (navbarIdentity ?? liveIdentity) : null;
   const dashboardHref = identity?.dashboardHref ?? null;
 
   const showExhibitorsNav = pathname === "/exhibitors";

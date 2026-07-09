@@ -4,19 +4,15 @@ import {
   ExhibitorsQueryError,
   parseExhibitorsQuery,
 } from "@/lib/participants/exhibitors-query";
-import {
-  fetchParticipantCategories,
-  getValidFilterSlugs,
-} from "@/lib/participants/participant-categories";
-import { createPublicSupabaseClient } from "@/utils/supabase/public";
+import { getValidFilterSlugs } from "@/lib/participants/participant-categories";
+import { getTheme } from "@/lib/theme";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const supabase = createPublicSupabaseClient();
-    const categories = await fetchParticipantCategories(supabase);
-    const validSlugs = getValidFilterSlugs(categories);
+    const { participantCategories } = await getTheme();
+    const validSlugs = getValidFilterSlugs(participantCategories);
 
     let query;
     try {

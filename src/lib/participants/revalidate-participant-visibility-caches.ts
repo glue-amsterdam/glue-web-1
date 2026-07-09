@@ -1,7 +1,11 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
-import { EXHIBITORS_PAGE_CACHE_TAG } from "@/lib/participants/exhibitors-cache-tags";
+import {
+  EXHIBITOR_DETAIL_CACHE_TAG,
+  EXHIBITOR_HUB_DETAIL_CACHE_TAG,
+  EXHIBITORS_PAGE_CACHE_TAG,
+} from "@/lib/participants/exhibitors-cache-tags";
 import { HOME_EXHIBITORS_RANDOM_CACHE_TAG } from "@/lib/participants/fetch-random-home-exhibitors";
 import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
 
@@ -42,6 +46,8 @@ export const revalidateParticipantVisibilityCaches = async (
   supabase: SupabaseClient
 ): Promise<void> => {
   revalidateTag(EXHIBITORS_PAGE_CACHE_TAG, "max");
+  revalidateTag(EXHIBITOR_DETAIL_CACHE_TAG, "max");
+  revalidateTag(EXHIBITOR_HUB_DETAIL_CACHE_TAG, "max");
   revalidateTag(HOME_EXHIBITORS_RANDOM_CACHE_TAG, "max");
   revalidatePath("/exhibitors");
   revalidatePath("/");

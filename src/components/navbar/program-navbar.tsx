@@ -6,6 +6,7 @@ import { useEventsDays } from "@/context/MainContext";
 import { useDebouncedUrlSearch } from "@/hooks/useDebouncedUrlSearch";
 import { useDesktopListFilterPanel } from "@/hooks/useDesktopListFilterPanel";
 import { useFilterPanelHeight } from "@/hooks/useFilterPanelHeight";
+import { useMediaQuery } from "@/hooks/userMediaQuery";
 import { useProgramFiltersFromUrl } from "@/hooks/useProgramFiltersFromUrl";
 import { cn } from "@/lib/utils";
 import {
@@ -39,6 +40,7 @@ const getActiveFilterId = (filters: ProgramFilters): ProgramFilterId | null => {
 const ProgramNavbar = () => {
   const { filters, updateFilters } = useProgramFiltersFromUrl();
   const eventsDays = useEventsDays();
+  const isLargeScreen = useMediaQuery("(min-width: 1024px)");
 
   const handleSearchCommit = useCallback(
     (q: string) => {
@@ -98,6 +100,8 @@ const ProgramNavbar = () => {
     activeFilterId,
     isFilterActive,
     onClearFilter: handleClearFilter,
+    pinWhenActive: isLargeScreen,
+    closeOnSelect: !isLargeScreen,
   });
 
   const datePanelId = useId();
@@ -108,11 +112,11 @@ const ProgramNavbar = () => {
 
   useFilterPanelHeight(
     datePanelRef,
-    openFilter === "date" && activeFilterId === "date"
+    isLargeScreen && openFilter === "date" && activeFilterId === "date"
   );
   useFilterPanelHeight(
     typePanelRef,
-    openFilter === "type" && activeFilterId === "type"
+    isLargeScreen && openFilter === "type" && activeFilterId === "type"
   );
 
   const handleDaySelect = (dayId: string) => {
@@ -187,6 +191,17 @@ const ProgramNavbar = () => {
         ariaLabel="Date options"
         className="py-[30px] lg:py-[25px] gap-[15px] lg:gap-[40px] min-h-[80px] lg:h-[81px]"
       >
+        <button
+          type="button"
+          aria-pressed={activeFilterId !== "date"}
+          onClick={() => handleDaySelect("all")}
+          className={cn(
+            "lg:hidden text-left base-text-size cursor-pointer",
+            activeFilterId !== "date" && "text-(--primary-color)"
+          )}
+        >
+          All
+        </button>
         {eventsDays.map((day) => {
           const isSelected =
             activeFilterId === "date" && filters.day === day.dayId;
@@ -216,6 +231,17 @@ const ProgramNavbar = () => {
         ariaLabel="Event type options"
         className="py-[30px] lg:py-[25px] gap-[15px] lg:gap-[40px] min-h-[80px] lg:h-[81px]"
       >
+        <button
+          type="button"
+          aria-pressed={activeFilterId !== "type"}
+          onClick={() => handleTypeSelect("all")}
+          className={cn(
+            "lg:hidden text-left base-text-size cursor-pointer",
+            activeFilterId !== "type" && "text-(--primary-color)"
+          )}
+        >
+          All
+        </button>
         {EVENT_TYPES.map((eventType) => {
           const isSelected =
             activeFilterId === "type" && filters.type === eventType;

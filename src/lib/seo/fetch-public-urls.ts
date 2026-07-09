@@ -1,8 +1,8 @@
 import { unstable_cache } from "next/cache";
 import { flattenExhibitors } from "@/lib/participants/flatten-exhibitors";
-import { getExhibitors } from "@/lib/participants/get-exhibitors";
+import { getExhibitorsGroupedCached } from "@/lib/participants/cached-get-exhibitors";
 import { getExhibitorLink } from "@/lib/participants/exhibitors-filters";
-import { loadProgramListItems } from "@/lib/program/get-program-events";
+import { loadProgramListItemsCached } from "@/lib/program/cached-load-program-items";
 import { POSTS_CACHE_TAG } from "@/lib/posts/revalidate-posts-cache";
 import { POSTS_PAGE_CACHE_TAG } from "@/lib/posts/fetch-posts-page";
 import { fetchPublishedPostSlugs } from "@/lib/posts/fetch-public-post";
@@ -17,7 +17,7 @@ export type PublicUrlEntry = {
 const fetchPublicUrlsCached = unstable_cache(
   async () => {
     const supabase = createPublicSupabaseClient();
-    const grouped = await getExhibitors(supabase);
+    const grouped = await getExhibitorsGroupedCached();
     const items = flattenExhibitors(grouped);
 
     const exhibitorSlugs: PublicUrlEntry[] = [];
@@ -34,7 +34,7 @@ const fetchPublicUrlsCached = unstable_cache(
       }
     }
 
-    const programItems = await loadProgramListItems(supabase, {});
+    const programItems = await loadProgramListItemsCached();
     const programEvents: PublicUrlEntry[] = programItems.map((item) => ({
       path: `/program/${item.eventId}`,
     }));

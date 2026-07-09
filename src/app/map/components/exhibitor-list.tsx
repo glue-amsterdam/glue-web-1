@@ -30,6 +30,9 @@ const shouldShowHubMembers = (
   categoryType === location.type &&
   isMapHubEntity(location);
 
+const isFlatMemberListRow = (location: MapLocation): boolean =>
+  Boolean(location.hubMemberUserId || location.mapSelectionId);
+
 const ExhibitorList = ({
   locations,
   selectedLocation,
@@ -90,14 +93,20 @@ const ExhibitorList = ({
   const listContent = (
     <ul className="py-[30px] lg:flex lg:flex-col lg:gap-[30px] base-text-size">
       {locations.map((location) => {
-        if (categoryType === "all" || !isMapHubEntity(location)) {
+        if (
+          categoryType === "all" ||
+          !isMapHubEntity(location) ||
+          isFlatMemberListRow(location)
+        ) {
           return renderFlatRow(location);
         }
 
         const isSelected = selectedLocation === location.id;
         const displayNumber = location.displayNumber ?? " ";
         const hubMembers = shouldShowHubMembers(location, categoryType)
-          ? (location.members ?? [])
+          ? (location.members ?? []).filter(
+              (member) => member.type === categoryType
+            )
           : [];
 
         return (

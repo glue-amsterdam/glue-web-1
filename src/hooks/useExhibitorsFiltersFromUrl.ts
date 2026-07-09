@@ -1,9 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { ExhibitorsFilters } from "@/lib/participants/exhibitors-filters";
+import { EXHIBITORS_PAGE_SIZE } from "@/lib/participants/exhibitors-filters";
 import { useParticipantCategories } from "@/context/ParticipantCategoriesContext";
+import { useListPageSearchParams } from "@/hooks/useListPageSearchParams";
+import { replaceListPageUrl } from "@/lib/list-page-session-cache";
 import {
   buildExhibitorsPageUrl,
   getExhibitorsUrlCleanupTarget,
@@ -17,9 +20,8 @@ type UseExhibitorsFiltersFromUrlReturn = {
 };
 
 export const useExhibitorsFiltersFromUrl = (): UseExhibitorsFiltersFromUrlReturn => {
-  const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const searchParams = useListPageSearchParams();
 
   const { categorySlugs } = useParticipantCategories();
 
@@ -41,17 +43,21 @@ export const useExhibitorsFiltersFromUrl = (): UseExhibitorsFiltersFromUrlReturn
 
     if (!cleanupUrl) return;
 
-    router.replace(cleanupUrl, { scroll: false });
-  }, [filters, pathname, router, searchParams]);
+    replaceListPageUrl(cleanupUrl);
+  }, [filters, pathname, searchParams]);
 
   const updateFilters = useCallback(
     (next: Partial<ExhibitorsFilters>) => {
       const merged: ExhibitorsFilters = { ...filtersRef.current, ...next };
-      const visibleCount = getExhibitorsVisibleCount(searchParams);
+      const resetsVisibleCount =
+        "type" in next || "sort" in next || "order" in next || "q" in next;
+      const visibleCount = resetsVisibleCount
+        ? EXHIBITORS_PAGE_SIZE
+        : getExhibitorsVisibleCount(searchParams);
       const nextUrl = buildExhibitorsPageUrl(pathname, merged, visibleCount);
-      router.replace(nextUrl, { scroll: false });
+      replaceListPageUrl(nextUrl);
     },
-    [pathname, router, searchParams],
+    [pathname, searchParams],
   );
 
   return { filters, updateFilters };

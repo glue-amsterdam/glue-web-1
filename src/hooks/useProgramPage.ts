@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useListPageSearchParams } from "@/hooks/useListPageSearchParams";
 import { fetchProgramPageClient } from "@/lib/client/fetch-program-page";
 import {
-  areClientSearchParamsReady,
   clearListSnapshot,
   filtersKeyFromPageUrl,
   readListSnapshot,
+  replaceListPageUrl,
   replaceListVisibleCountInUrl,
   saveListSnapshot,
   type ListPageCatalogSnapshot,
@@ -119,9 +120,8 @@ export const useProgramPage = (
   initialData: ProgramPageResponse,
   initialFilters: ProgramFilters = DEFAULT_PROGRAM_FILTERS,
 ): UseProgramPageReturn => {
-  const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const searchParams = useListPageSearchParams();
 
   const initialStateRef = useRef<ResolvedProgramState | null>(null);
   if (initialStateRef.current === null) {
@@ -205,9 +205,9 @@ export const useProgramPage = (
         nextFilters,
         visibleCountRef.current,
       );
-      router.replace(nextUrl, { scroll: false });
+      replaceListPageUrl(nextUrl);
     },
-    [pathname, router],
+    [pathname],
   );
 
   const updateCatalog = useCallback(
@@ -382,6 +382,7 @@ export const useProgramPage = (
     if (!snapshot) {
       if (requestedVisibleCount > PROGRAM_PAGE_SIZE) {
         void fetchPage(initialFilters, 0, false, false, {
+          silent: true,
           limit: requestedVisibleCount,
           preserveOnError: true,
         });
@@ -398,15 +399,19 @@ export const useProgramPage = (
     setItems(restoredItems);
     setTotal(snapshot.total);
     setHasMore(restoredItems.length < snapshot.total);
-    setFilters(snapshot.filters);
+    setFilters((currentFilters) => {
+      if (areFiltersEqual(currentFilters, snapshot.filters)) {
+        return currentFilters;
+      }
+      return snapshot.filters;
+    });
 
-    clearSuppressFetch();
     void fetchPage(snapshot.filters, 0, false, false, {
       silent: true,
       preserveOnError: true,
       limit: requestedVisibleCount,
     });
-  }, [clearSuppressFetch, fetchPage, initialFilters]);
+  }, [fetchPage, initialFilters]);
 
   const handleFiltersChange = useCallback(
     (next: Partial<ProgramFilters>) => {
@@ -473,11 +478,6 @@ export const useProgramPage = (
   }, [applyLocalPage, fetchPage, filters]);
 
   useEffect(() => {
-    const expectedKey = getProgramFiltersCacheKey(initialFilters);
-    if (!areClientSearchParamsReady(searchParams, expectedKey)) {
-      return;
-    }
-
     visibleCountRef.current = getProgramVisibleCount(searchParams);
     const filtersFromUrl = searchParamsToFilters(searchParams);
 
@@ -503,7 +503,7 @@ export const useProgramPage = (
       filtersSourceRef.current = "url";
       return filtersFromUrl;
     });
-  }, [clearSuppressFetch, initialFilters, searchParams]);
+  }, [clearSuppressFetch, searchParams]);
 
   return {
     items,

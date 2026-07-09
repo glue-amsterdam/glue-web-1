@@ -3,8 +3,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { classifyLocationType } from "@/lib/map/classify-location-type";
 import {
   classifyHubMemberCategory,
-  fetchParticipantCategories,
+  type ParticipantCategory,
 } from "@/lib/participants/participant-categories";
+import { getTheme } from "@/lib/theme";
 import type { ExhibitorType } from "./exhibitor-types";
 import {
   ExhibitorNotFoundError,
@@ -65,16 +66,11 @@ const ensureArray = <T>(value: T | T[] | null | undefined): T[] => {
   return Array.isArray(value) ? value : [value];
 };
 
-const getParticipantType = async (
-  supabase: SupabaseClient,
-  userId: string,
-  category: string
-): Promise<ExhibitorType> => {
-  const [categories, membership] = await Promise.all([
-    fetchParticipantCategories(supabase),
-    resolveHubMembership(supabase, userId),
-  ]);
-
+const getParticipantTypeFromMembership = (
+  membership: HubMembership | null,
+  category: string,
+  categories: ParticipantCategory[]
+): ExhibitorType => {
   if (membership) {
     return classifyHubMemberCategory(
       membership.memberCount,
@@ -206,20 +202,12 @@ const resolveHubMembership = async (
   };
 };
 
-const resolveHubHostUserId = async (
-  supabase: SupabaseClient,
-  userId: string
-): Promise<string | null> => {
-  const membership = await resolveHubMembership(supabase, userId);
-  return membership?.hubHostUserId ?? null;
-};
-
 const resolveHubHostMapContext = async (
   supabase: SupabaseClient,
-  userId: string,
+  membership: HubMembership | null,
   tourStatus: TourStatus
 ): Promise<HubHostMapContext> => {
-  const hubHostUserId = await resolveHubHostUserId(supabase, userId);
+  const hubHostUserId = membership?.hubHostUserId ?? null;
   if (!hubHostUserId) {
     return { address: null, mapInfoId: null };
   }
@@ -290,7 +278,8 @@ const buildContactInfo = async (
   supabase: SupabaseClient,
   userId: string,
   participant: ParticipantRow,
-  tourStatus: TourStatus
+  tourStatus: TourStatus,
+  membership: HubMembership | null
 ): Promise<ExhibitorContactInfo> => {
   const [mapInfoResult, visitingHoursResult, eventsResult, hubHostMapContext] =
     await Promise.all([
@@ -303,7 +292,7 @@ const buildContactInfo = async (
         .select("day_id, hours")
         .eq("user_id", userId),
       buildEventsQuery(supabase, userId, tourStatus),
-      resolveHubHostMapContext(supabase, userId, tourStatus),
+      resolveHubHostMapContext(supabase, membership, tourStatus),
     ]);
 
   const visitingHours =
@@ -376,10 +365,14 @@ export const getExhibitorBySlug = async (
   }
 
   const row = data as ParticipantRow;
-  const [isSticky, tourStatus] = await Promise.all([
-    isParticipantSticky(supabase, row.user_id),
-    getTourStatus(supabase),
-  ]);
+  const [isSticky, tourStatus, categories, membership, placeholderUrl] =
+    await Promise.all([
+      isParticipantSticky(supabase, row.user_id),
+      getTourStatus(supabase),
+      getTheme().then((theme) => theme.participantCategories),
+      resolveHubMembership(supabase, row.user_id),
+      getParticipantPlaceholderUrl(supabase),
+    ]);
 
   if (row.status === "accepted" && !isSticky) {
     if (!isParticipantPubliclyVisible(row, tourStatus)) {
@@ -387,17 +380,20 @@ export const getExhibitorBySlug = async (
     }
   }
 
-  const placeholderUrl = await getParticipantPlaceholderUrl(supabase);
   const participantName = getParticipantDisplayName(row);
+  const type = getParticipantTypeFromMembership(
+    membership,
+    row.category,
+    categories
+  );
 
-  const [imageResult, contactInfo, type] = await Promise.all([
+  const [imageResult, contactInfo] = await Promise.all([
     supabase
       .from("participant_image")
       .select("id, image_url")
       .eq("user_id", row.user_id)
       .order("id", { ascending: true }),
-    buildContactInfo(supabase, row.user_id, row, tourStatus),
-    getParticipantType(supabase, row.user_id, row.category),
+    buildContactInfo(supabase, row.user_id, row, tourStatus, membership),
   ]);
 
   const carouselSlides = participantImagesToCarouselSlides(
