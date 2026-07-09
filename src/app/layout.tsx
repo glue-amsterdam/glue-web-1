@@ -11,7 +11,6 @@ import { buildCategoryCssVars } from "@/lib/participants/participant-categories"
 import { AppProviders } from "@/components/app-providers";
 import { MainContextProvider } from "../context/MainContext";
 import { ParticipantCategoriesProvider } from "@/context/ParticipantCategoriesContext";
-import { getNavbarInitialIdentity } from "@/lib/users/get-navbar-initial-identity";
 import { AdminSiteChrome } from "@/components/admin/admin-site-chrome";
 
 import { Toaster } from "@/components/ui/toaster";
@@ -30,11 +29,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [initialData, theme, navbarInitialIdentity] = await Promise.all([
-    fetchMain(),
-    getTheme(),
-    getNavbarInitialIdentity(),
-  ]);
+  const [initialData, theme] = await Promise.all([fetchMain(), getTheme()]);
   const navLinks = buildNavbarLinks(theme.navMenu);
   const categoryCssVars = buildCategoryCssVars(theme.participantCategories);
 
@@ -61,7 +56,6 @@ export default async function RootLayout({
             <AppProviders>
               <CookieBannerProvider>
                 <AdminSiteChrome
-                  navbarInitialIdentity={navbarInitialIdentity}
                   navLinks={navLinks}
                   homeTexts={theme.homeTexts}
                 >

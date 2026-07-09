@@ -60,6 +60,15 @@ export const getListVisibleCount = (
   return normalizeListVisibleCount(Number(rawVisibleCount), pageSize);
 };
 
+/** Update URL without triggering a Next.js RSC navigation (keeps useSearchParams in sync). */
+export const LIST_PAGE_URL_CHANGE_EVENT = "glue:list-page-url-change";
+
+export const replaceListPageUrl = (url: string): void => {
+  if (typeof window === "undefined") return;
+  window.history.replaceState(window.history.state, "", url);
+  window.dispatchEvent(new Event(LIST_PAGE_URL_CHANGE_EVENT));
+};
+
 export const replaceListVisibleCountInUrl = (
   visibleCount: number,
   pageSize: number,
@@ -78,11 +87,7 @@ export const replaceListVisibleCountInUrl = (
     url.searchParams.set(LIST_VISIBLE_PARAM, String(normalizedVisibleCount));
   }
 
-  window.history.replaceState(
-    null,
-    "",
-    `${url.pathname}${url.search}${url.hash}`,
-  );
+  replaceListPageUrl(`${url.pathname}${url.search}${url.hash}`);
 };
 
 /** Avoid syncing useSearchParams → filters while the hook still lags behind the real URL. */

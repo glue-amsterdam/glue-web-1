@@ -5,7 +5,7 @@ import {
   loadOrganizerProfiles,
   type OrganizerProfile,
 } from "@/lib/participants/load-organizer-profiles";
-import { fetchParticipantCategories } from "@/lib/participants/participant-categories";
+import { getTheme } from "@/lib/theme";
 import type { TourStatus } from "@/lib/participants/exhibitor-visibility";
 import type { EventType } from "@/schemas/eventSchemas";
 import type { ProgramDetail } from "./program-types";
@@ -83,30 +83,26 @@ export const getProgramDetail = async (
     throw new ProgramNotFoundError();
   }
 
-  const eventDay = await getEventDayForDetail(
-    supabase,
-    currentTourStatus,
-    event.dayId
-  );
+  const organizerUserIds = [
+    ...(event.organizer_id ? [event.organizer_id] : []),
+    ...(event.co_organizers ?? []),
+  ];
+
+  const [organizerProfiles, eventDay, { participantCategories: categories }] =
+    await Promise.all([
+      loadOrganizerProfiles(supabase, organizerUserIds),
+      getEventDayForDetail(supabase, currentTourStatus, event.dayId),
+      getTheme(),
+    ]);
 
   if (!eventDay) {
     throw new ProgramNotFoundError();
   }
 
-  const organizerUserIds = [
-    ...(event.organizer_id ? [event.organizer_id] : []),
-    ...(event.co_organizers ?? []),
-  ];
-  const organizerProfiles = await loadOrganizerProfiles(
-    supabase,
-    organizerUserIds
-  );
-
   const organizer = event.organizer_id
     ? organizerProfiles.get(event.organizer_id)
     : undefined;
 
-  const categories = await fetchParticipantCategories(supabase);
   const tourStatus: TourStatus =
     currentTourStatus === "older" ? "older" : "new";
 

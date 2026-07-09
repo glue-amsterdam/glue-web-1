@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useMemo, useRef } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { ProgramFilters } from "@/lib/program/program-filters";
+import { PROGRAM_PAGE_SIZE } from "@/lib/program/program-filters";
+import { useListPageSearchParams } from "@/hooks/useListPageSearchParams";
+import { replaceListPageUrl } from "@/lib/list-page-session-cache";
 import {
   buildProgramPageUrl,
   getProgramVisibleCount,
@@ -15,9 +18,8 @@ type UseProgramFiltersFromUrlReturn = {
 };
 
 export const useProgramFiltersFromUrl = (): UseProgramFiltersFromUrlReturn => {
-  const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const searchParams = useListPageSearchParams();
 
   const filters = useMemo(
     () => searchParamsToFilters(searchParams),
@@ -30,11 +32,15 @@ export const useProgramFiltersFromUrl = (): UseProgramFiltersFromUrlReturn => {
   const updateFilters = useCallback(
     (next: Partial<ProgramFilters>) => {
       const merged: ProgramFilters = { ...filtersRef.current, ...next };
-      const visibleCount = getProgramVisibleCount(searchParams);
+      const resetsVisibleCount =
+        "type" in next || "day" in next || "q" in next;
+      const visibleCount = resetsVisibleCount
+        ? PROGRAM_PAGE_SIZE
+        : getProgramVisibleCount(searchParams);
       const nextUrl = buildProgramPageUrl(pathname, merged, visibleCount);
-      router.replace(nextUrl, { scroll: false });
+      replaceListPageUrl(nextUrl);
     },
-    [pathname, router, searchParams],
+    [pathname, searchParams],
   );
 
   return { filters, updateFilters };

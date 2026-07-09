@@ -1,14 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useParticipantCategories } from "@/context/ParticipantCategoriesContext";
+import { useListPageSearchParams } from "@/hooks/useListPageSearchParams";
 import { fetchExhibitorsPageClient } from "@/lib/client/fetch-exhibitors-page";
 import {
-  areClientSearchParamsReady,
   clearListSnapshot,
   filtersKeyFromPageUrl,
   readListSnapshot,
+  replaceListPageUrl,
   replaceListVisibleCountInUrl,
   saveListSnapshot,
   type ListPageCatalogSnapshot,
@@ -126,9 +127,8 @@ export const useExhibitorsPage = (
   initialData: ExhibitorsPageResponse,
   initialFilters: ExhibitorsFilters = DEFAULT_EXHIBITORS_FILTERS,
 ): UseExhibitorsPageReturn => {
-  const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const searchParams = useListPageSearchParams();
   const { categorySlugs } = useParticipantCategories();
 
   const initialStateRef = useRef<ResolvedExhibitorsState | null>(null);
@@ -215,9 +215,9 @@ export const useExhibitorsPage = (
         nextFilters,
         visibleCountRef.current,
       );
-      router.replace(nextUrl, { scroll: false });
+      replaceListPageUrl(nextUrl);
     },
-    [pathname, router],
+    [pathname],
   );
 
   const updateCatalog = useCallback(
@@ -488,11 +488,6 @@ export const useExhibitorsPage = (
   }, [applyLocalPage, fetchPage, filters]);
 
   useEffect(() => {
-    const expectedKey = getExhibitorsFiltersCacheKey(initialFilters);
-    if (!areClientSearchParamsReady(searchParams, expectedKey)) {
-      return;
-    }
-
     visibleCountRef.current = getExhibitorsVisibleCount(searchParams);
     const filtersFromUrl = searchParamsToFilters(searchParams, categorySlugs);
 
@@ -518,7 +513,7 @@ export const useExhibitorsPage = (
       filtersSourceRef.current = "url";
       return filtersFromUrl;
     });
-  }, [categorySlugs, clearSuppressFetch, initialFilters, searchParams]);
+  }, [categorySlugs, clearSuppressFetch, searchParams]);
 
   return {
     items,

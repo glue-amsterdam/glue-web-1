@@ -141,7 +141,6 @@ export const getExhibitors = async (
     stickyIds,
     participantsResult,
     hubsResult,
-    imagesResult,
   ] = await Promise.all([
     getTourStatus(supabase),
     getStickyParticipantIds(supabase),
@@ -171,20 +170,10 @@ export const getExhibitors = async (
         )
       `
     ),
-    supabase
-      .from("participant_image")
-      .select("user_id, image_url")
-      .order("id", { ascending: true }),
   ]);
 
   if (participantsResult.error) throw participantsResult.error;
   if (hubsResult.error) throw hubsResult.error;
-  if (imagesResult.error) {
-    console.error("Error fetching participant images:", imagesResult.error);
-  }
-
-  const imageMap = buildImageMap((imagesResult.data as ImageRow[]) ?? []);
-  const placeholderUrl = await getParticipantPlaceholderUrl(supabase);
 
   const participants = (participantsResult.data as ParticipantRow[]) ?? [];
   const eligibleParticipants = participants.filter((participant) =>
@@ -199,8 +188,36 @@ export const getExhibitors = async (
     eligibleParticipants.map((participant) => participant.user_id)
   );
 
-  const hubMemberCountByUserId = new Map<string, number>();
+  const participantByUserId = new Map(
+    eligibleParticipants.map((participant) => [participant.user_id, participant])
+  );
+
   const hubRows = (hubsResult.data as HubRow[]) ?? [];
+  const imageUserIds = new Set(eligibleParticipantIds);
+  for (const hub of hubRows) {
+    if (eligibleParticipantIds.has(hub.hub_host_id)) {
+      imageUserIds.add(hub.hub_host_id);
+    }
+  }
+
+  const [imagesResult, placeholderUrl] = await Promise.all([
+    imageUserIds.size > 0
+      ? supabase
+          .from("participant_image")
+          .select("user_id, image_url")
+          .in("user_id", Array.from(imageUserIds))
+          .order("id", { ascending: true })
+      : Promise.resolve({ data: [] as ImageRow[], error: null }),
+    getParticipantPlaceholderUrl(supabase),
+  ]);
+
+  if (imagesResult.error) {
+    console.error("Error fetching participant images:", imagesResult.error);
+  }
+
+  const imageMap = buildImageMap((imagesResult.data as ImageRow[]) ?? []);
+
+  const hubMemberCountByUserId = new Map<string, number>();
 
   for (const hub of hubRows) {
     if (!eligibleParticipantIds.has(hub.hub_host_id)) continue;
@@ -246,9 +263,7 @@ export const getExhibitors = async (
 
     if (memberCount === 0) continue;
 
-    const hostParticipant = eligibleParticipants.find(
-      (p) => p.user_id === hub.hub_host_id
-    );
+    const hostParticipant = participantByUserId.get(hub.hub_host_id);
     const hubType = classifyCategory(
       memberCount,
       hostParticipant?.category,

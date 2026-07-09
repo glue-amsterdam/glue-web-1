@@ -2,9 +2,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { classifyLocationType } from "@/lib/map/classify-location-type";
 import {
   classifyHubMemberCategory,
-  fetchParticipantCategories,
   type ParticipantCategory,
 } from "@/lib/participants/participant-categories";
+import { getTheme } from "@/lib/theme";
 import type { ExhibitorType } from "./exhibitor-types";
 import {
   ExhibitorNotFoundError,
@@ -125,7 +125,7 @@ export const getExhibitorHubById = async (
   supabase: SupabaseClient,
   hubId: string
 ): Promise<ExhibitorHubDetail> => {
-  const categories = await fetchParticipantCategories(supabase);
+  const { participantCategories: categories } = await getTheme();
 
   const { data: hub, error: hubError } = await supabase
     .from("hubs")

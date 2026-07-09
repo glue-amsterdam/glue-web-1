@@ -1,5 +1,4 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { buildMapLocations } from "@/lib/map/build-map-locations";
 import { toMediaUrl } from "@/lib/media/media-url";
 import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
 import {
@@ -7,12 +6,12 @@ import {
   loadOrganizerProfiles,
   type OrganizerProfile,
 } from "@/lib/participants/load-organizer-profiles";
-import { fetchParticipantCategories } from "@/lib/participants/participant-categories";
+import { getTheme } from "@/lib/theme";
 import type { TourStatus } from "@/lib/participants/exhibitor-visibility";
 import type { EventType } from "@/schemas/eventSchemas";
 import type { ProgramListItem } from "./program-types";
 import {
-  buildLocationBadgeIndex,
+  buildProgramLocationBadgeIndex,
   organizerBadgeFromParticipant,
   resolveOrganizerBadge,
 } from "./resolve-program-organizer-badge";
@@ -115,22 +114,21 @@ export const loadProgramListItems = async (
   }
 
   const rows = (events ?? []) as unknown as RawEventRow[];
-  const organizerProfiles = await loadOrganizerProfiles(
-    supabase,
-    collectOrganizerUserIds(rows)
-  );
-
+  const organizerUserIds = collectOrganizerUserIds(rows);
   const uniqueDayIds = [
     ...new Set(
-      rows.map((e) => e.dayId).filter((id): id is string => Boolean(id && id !== "day-off"))
+      rows
+        .map((event) => event.dayId)
+        .filter((id): id is string => Boolean(id && id !== "day-off"))
     ),
   ];
 
-  const eventDaysMap = await buildEventDaysMap(
-    supabase,
-    currentTourStatus,
-    uniqueDayIds
-  );
+  const [organizerProfiles, eventDaysMap, { participantCategories: categories }] =
+    await Promise.all([
+      loadOrganizerProfiles(supabase, organizerUserIds),
+      buildEventDaysMap(supabase, currentTourStatus, uniqueDayIds),
+      getTheme(),
+    ]);
 
   const validEvents = rows.filter(
     (event) =>
@@ -139,11 +137,13 @@ export const loadProgramListItems = async (
       eventDaysMap.has(event.dayId)
   );
 
-  const categories = await fetchParticipantCategories(supabase);
   const tourStatus: TourStatus =
     currentTourStatus === "older" ? "older" : "new";
-  const locations = await buildMapLocations(supabase, tourStatus);
-  const badgeByLocationId = buildLocationBadgeIndex(locations);
+  const badgeByLocationId = await buildProgramLocationBadgeIndex(
+    supabase,
+    validEvents.map((event) => event.location_id),
+    tourStatus
+  );
 
   return validEvents.map((event) => {
     const locationEmbed = normalizeLocationEmbed(event.location);

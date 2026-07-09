@@ -1,8 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { classifyLocationType } from "@/lib/map/classify-location-type";
 import { getEligibleHubMemberIds } from "@/lib/map/hub-members";
-import type { MapLocation } from "@/lib/map/types";
 import { ensureArray } from "@/lib/map/utils";
+import type { MapLocation } from "@/lib/map/types";
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
 import {
   fetchParticipantCategories,
@@ -79,37 +79,49 @@ type HubMemberRow = {
   status: string;
 };
 
-export const resolveLocationOrganizerBadge = async (
+type MapInfoRow = {
+  id: string;
+  user_id: string;
+};
+
+/** Badge lookup for specific map_info IDs only (avoids full buildMapLocations). */
+export const buildProgramLocationBadgeIndex = async (
   supabase: SupabaseClient,
-  locationId: string | null | undefined,
-  tourStatus: TourStatus,
-  organizerFallback: ProgramOrganizerBadge
-): Promise<ProgramOrganizerBadge> => {
-  if (!locationId) {
-    return organizerFallback;
+  locationIds: Array<string | null | undefined>,
+  tourStatus: TourStatus
+): Promise<Map<string, ProgramOrganizerBadge>> => {
+  const uniqueIds = [
+    ...new Set(locationIds.filter((id): id is string => Boolean(id))),
+  ];
+  const index = new Map<string, ProgramOrganizerBadge>();
+
+  if (uniqueIds.length === 0) {
+    return index;
   }
 
-  const categories = await fetchParticipantCategories(supabase);
-
-  const { data: mapInfo, error: mapInfoError } = await supabase
-    .from("map_info")
-    .select("id, user_id")
-    .eq("id", locationId)
-    .maybeSingle();
-
-  if (mapInfoError) throw mapInfoError;
-  if (!mapInfo) return organizerFallback;
-
-  const [stickyIds, participantResult, hubsResult] = await Promise.all([
+  const [categories, stickyIds, mapInfoResult] = await Promise.all([
+    fetchParticipantCategories(supabase),
     getStickyParticipantIds(supabase),
+    supabase.from("map_info").select("id, user_id").in("id", uniqueIds),
+  ]);
+
+  if (mapInfoResult.error) throw mapInfoResult.error;
+
+  const mapInfoRows = (mapInfoResult.data as MapInfoRow[] | null) ?? [];
+  if (mapInfoRows.length === 0) {
+    return index;
+  }
+
+  const userIds = [...new Set(mapInfoRows.map((row) => row.user_id))];
+
+  const [participantsResult, hubsResult] = await Promise.all([
     supabase
       .from("participant_details")
       .select(
         "user_id, category, display_number, is_active, was_active_last_year, status"
       )
-      .eq("user_id", mapInfo.user_id)
-      .eq("status", "accepted")
-      .maybeSingle(),
+      .in("user_id", userIds)
+      .eq("status", "accepted"),
     supabase
       .from("hubs")
       .select(
@@ -121,53 +133,99 @@ export const resolveLocationOrganizerBadge = async (
         )
       `
       )
-      .eq("hub_host_id", mapInfo.user_id),
+      .in("hub_host_id", userIds),
   ]);
 
-  const host = participantResult.data as HostParticipantRow | null;
-  if (
-    !host ||
-    !isParticipantEligibleForExhibitorsList(host, stickyIds, tourStatus)
-  ) {
-    return organizerFallback;
-  }
+  if (participantsResult.error) throw participantsResult.error;
+  if (hubsResult.error) throw hubsResult.error;
+
+  const participantByUserId = new Map(
+    ((participantsResult.data as HostParticipantRow[] | null) ?? [])
+      .filter((participant) =>
+        isParticipantEligibleForExhibitorsList(
+          participant,
+          stickyIds,
+          tourStatus
+        )
+      )
+      .map((participant) => [participant.user_id, participant])
+  );
+
+  const hubByHostId = new Map(
+    ((hubsResult.data as HubRow[] | null) ?? []).map((hub) => [
+      hub.hub_host_id,
+      hub,
+    ])
+  );
 
   const hubRows = (hubsResult.data as HubRow[] | null) ?? [];
-  const hub = hubRows[0];
-
-  if (hub) {
-    const memberUserIds = new Set<string>([hub.hub_host_id]);
+  const allMemberUserIds = new Set<string>();
+  for (const hub of hubRows) {
+    allMemberUserIds.add(hub.hub_host_id);
     for (const participant of ensureArray(hub.hub_participants)) {
-      memberUserIds.add(participant.user_id);
+      allMemberUserIds.add(participant.user_id);
     }
+  }
 
+  let eligibleMemberIds = new Set<string>();
+  if (allMemberUserIds.size > 0) {
     const { data: memberRows, error: memberError } = await supabase
       .from("participant_details")
       .select("user_id, is_active, was_active_last_year, status")
-      .in("user_id", Array.from(memberUserIds))
+      .in("user_id", Array.from(allMemberUserIds))
       .eq("status", "accepted");
 
     if (memberError) throw memberError;
 
-    const eligibleParticipantIds = new Set(
+    eligibleMemberIds = new Set(
       ((memberRows as HubMemberRow[] | null) ?? [])
         .filter((member) =>
           isParticipantEligibleForExhibitorsList(member, stickyIds, tourStatus)
         )
         .map((member) => member.user_id)
     );
-
-    const memberCount = getEligibleHubMemberIds(hub, eligibleParticipantIds).size;
-    if (memberCount > 0) {
-      return {
-        type: classifyLocationType(memberCount, host.category, categories),
-        displayNumber: hub.display_number ?? " ",
-      };
-    }
   }
 
-  return {
-    type: classifyLocationType(1, host.category, categories),
-    displayNumber: host.display_number ?? " ",
-  };
+  for (const mapInfo of mapInfoRows) {
+    const host = participantByUserId.get(mapInfo.user_id);
+    if (!host) continue;
+
+    const hub = hubByHostId.get(mapInfo.user_id);
+    if (hub) {
+      const memberCount = getEligibleHubMemberIds(hub, eligibleMemberIds).size;
+      if (memberCount > 0) {
+        index.set(mapInfo.id, {
+          type: classifyLocationType(memberCount, host.category, categories),
+          displayNumber: hub.display_number ?? " ",
+        });
+        continue;
+      }
+    }
+
+    index.set(mapInfo.id, {
+      type: classifyLocationType(1, host.category, categories),
+      displayNumber: host.display_number ?? " ",
+    });
+  }
+
+  return index;
+};
+
+export const resolveLocationOrganizerBadge = async (
+  supabase: SupabaseClient,
+  locationId: string | null | undefined,
+  tourStatus: TourStatus,
+  organizerFallback: ProgramOrganizerBadge
+): Promise<ProgramOrganizerBadge> => {
+  if (!locationId) {
+    return organizerFallback;
+  }
+
+  const index = await buildProgramLocationBadgeIndex(
+    supabase,
+    [locationId],
+    tourStatus
+  );
+
+  return index.get(locationId) ?? organizerFallback;
 };
