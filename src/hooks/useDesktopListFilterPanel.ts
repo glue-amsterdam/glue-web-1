@@ -8,12 +8,16 @@ type UseDesktopListFilterPanelOptions<TFilterId extends string> = {
   activeFilterId: TFilterId | null;
   isFilterActive: (id: TFilterId) => boolean;
   onClearFilter: (id: TFilterId) => void;
+  pinWhenActive?: boolean;
+  closeOnSelect?: boolean;
 };
 
 export const useDesktopListFilterPanel = <TFilterId extends string>({
   activeFilterId,
   isFilterActive,
   onClearFilter,
+  pinWhenActive = true,
+  closeOnSelect = false,
 }: UseDesktopListFilterPanelOptions<TFilterId>) => {
   const {
     openFilter,
@@ -23,8 +27,9 @@ export const useDesktopListFilterPanel = <TFilterId extends string>({
 
   const effectiveOpenFilter = useMemo(() => {
     if (openFilter !== null) return openFilter;
+    if (!pinWhenActive) return null;
     return activeFilterId;
-  }, [activeFilterId, openFilter]);
+  }, [activeFilterId, openFilter, pinWhenActive]);
 
   const prevActiveFilterIdRef = useRef(activeFilterId);
 
@@ -100,9 +105,10 @@ export const useDesktopListFilterPanel = <TFilterId extends string>({
   );
 
   const afterSelect = useCallback(() => {
-    // Panel stays pinned open on all screen sizes; it is closed only by
-    // re-clicking the active parent filter (handled in handleFilterToggle).
-  }, []);
+    if (closeOnSelect) {
+      closeFilter();
+    }
+  }, [closeFilter, closeOnSelect]);
 
   return {
     openFilter: effectiveOpenFilter,

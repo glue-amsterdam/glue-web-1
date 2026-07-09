@@ -18,6 +18,7 @@ import { useDebouncedUrlSearch } from "@/hooks/useDebouncedUrlSearch";
 import { useDesktopListFilterPanel } from "@/hooks/useDesktopListFilterPanel";
 import { useExhibitorsFiltersFromUrl } from "@/hooks/useExhibitorsFiltersFromUrl";
 import { useFilterPanelHeight } from "@/hooks/useFilterPanelHeight";
+import { useMediaQuery } from "@/hooks/userMediaQuery";
 import { cn } from "@/lib/utils";
 import RoundedNumber from "../rounded-number";
 import BaseSecondNavbar, { FilterButton } from "./base-second-navbar";
@@ -54,6 +55,7 @@ const getActiveFilterId = (
 const ExhibitorsNavbar = () => {
     const { filterOptions } = useParticipantCategories();
     const { filters, updateFilters } = useExhibitorsFiltersFromUrl();
+    const isLargeScreen = useMediaQuery("(min-width: 1024px)");
     const [isDisplayNumberSortChosen, setIsDisplayNumberSortChosen] =
         useState(false);
     const handleSearchCommit = useCallback(
@@ -121,6 +123,8 @@ const ExhibitorsNavbar = () => {
         activeFilterId,
         isFilterActive,
         onClearFilter: handleClearFilter,
+        pinWhenActive: isLargeScreen,
+        closeOnSelect: !isLargeScreen,
     });
 
     const categoryPanelId = useId();
@@ -131,11 +135,13 @@ const ExhibitorsNavbar = () => {
 
     useFilterPanelHeight(
         categoryPanelRef,
-        openFilter === "category" && activeFilterId === "category"
+        isLargeScreen &&
+            openFilter === "category" &&
+            activeFilterId === "category"
     );
     useFilterPanelHeight(
         sortPanelRef,
-        openFilter === "sort" && activeFilterId === "sort"
+        isLargeScreen && openFilter === "sort" && activeFilterId === "sort"
     );
 
     const handleTypeSelect = (value: ExhibitorsFilterType) => {
@@ -173,7 +179,11 @@ const ExhibitorsNavbar = () => {
                 q: "",
             });
 
-            setOpenFilter("sort");
+            if (isLargeScreen) {
+                setOpenFilter("sort");
+            } else {
+                afterSelect();
+            }
             return;
         }
 
@@ -187,6 +197,16 @@ const ExhibitorsNavbar = () => {
             sort: field,
             order: "asc",
             type: "all",
+            q: "",
+        });
+        afterSelect();
+    };
+
+    const handleSortClearAll = () => {
+        setIsDisplayNumberSortChosen(false);
+        updateFilters({
+            sort: DEFAULT_EXHIBITORS_FILTERS.sort,
+            order: DEFAULT_EXHIBITORS_FILTERS.order,
             q: "",
         });
         afterSelect();
@@ -234,6 +254,17 @@ const ExhibitorsNavbar = () => {
                 ariaLabel="Category options"
                 className="py-[30px] lg:py-[25px] second-navbar-gap min-h-[80px] lg:h-[81px]"
             >
+                <button
+                    type="button"
+                    aria-pressed={activeFilterId !== "category"}
+                    onClick={() => handleTypeSelect("all")}
+                    className={cn(
+                        "lg:hidden text-left base-text-size cursor-pointer",
+                        activeFilterId !== "category" && "text-(--primary-color)"
+                    )}
+                >
+                    All
+                </button>
                 {filterOptions.map((option) => {
                     const isSelected =
                         activeFilterId === "category" &&
@@ -268,6 +299,17 @@ const ExhibitorsNavbar = () => {
                 ariaLabel="Sort options"
                 className="py-[35px] lg:py-[25px] second-navbar-gap min-h-[80px] lg:h-[81px]"
             >
+                <button
+                    type="button"
+                    aria-pressed={activeFilterId !== "sort"}
+                    onClick={handleSortClearAll}
+                    className={cn(
+                        "lg:hidden text-left base-text-size cursor-pointer",
+                        activeFilterId !== "sort" && "text-(--primary-color)"
+                    )}
+                >
+                    All
+                </button>
                 {SORT_OPTIONS.map((option) => {
                     const isSelected =
                         option.field === "name"

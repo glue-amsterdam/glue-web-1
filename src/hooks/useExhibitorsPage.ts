@@ -392,6 +392,7 @@ export const useExhibitorsPage = (
     if (!snapshot) {
       if (requestedVisibleCount > EXHIBITORS_PAGE_SIZE) {
         void fetchPage(initialFilters, 0, false, false, {
+          silent: true,
           limit: requestedVisibleCount,
           preserveOnError: true,
         });
@@ -408,15 +409,19 @@ export const useExhibitorsPage = (
     setItems(restoredItems);
     setTotal(snapshot.total);
     setHasMore(restoredItems.length < snapshot.total);
-    setFilters(snapshot.filters);
+    setFilters((currentFilters) => {
+      if (areFiltersEqual(currentFilters, snapshot.filters)) {
+        return currentFilters;
+      }
+      return snapshot.filters;
+    });
 
-    clearSuppressFetch();
     void fetchPage(snapshot.filters, 0, false, false, {
       silent: true,
       preserveOnError: true,
       limit: requestedVisibleCount,
     });
-  }, [clearSuppressFetch, fetchPage, initialFilters]);
+  }, [fetchPage, initialFilters]);
 
   const handleFiltersChange = useCallback(
     (next: Partial<ExhibitorsFilters>) => {

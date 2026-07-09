@@ -146,7 +146,7 @@ export function VisitingHoursForm({
                               { open: "09:00", close: "17:00" },
                             ])
                           }
-                          className="p-0 bg-transparent shadow-none hover:bg-transparent cursor-pointer"
+                          className="p-0 bg-transparent shadow-none hover:bg-transparent cursor-pointer text-(--black-color) hover:text-(--black-color)"
                         >
                           <PlusIconDesktop />
                         </Button>
@@ -201,7 +201,7 @@ export function VisitingHoursForm({
                                 newValue.splice(rangeIndex, 1);
                                 field.onChange(newValue);
                               }}
-                              className="p-0 bg-transparent shadow-none hover:bg-transparent cursor-pointer"
+                              className="p-0 bg-transparent shadow-none hover:bg-transparent cursor-pointer text-(--black-color) hover:text-(--black-color)"
                             >
                               <CrossRotatedDesktop />
                             </Button>
