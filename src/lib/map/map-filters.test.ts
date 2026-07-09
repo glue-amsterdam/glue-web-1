@@ -2,8 +2,12 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { MapLocation } from "./types";
 import {
+  filterMapLocationsForList,
   filterMapLocationsForMap,
   flattenHubMembersForAllList,
+  flattenHubMembersForCategoryList,
+  getSingleCategoryMatchMemberUserId,
+  locationMatchesCategory,
 } from "./map-filters";
 
 const hubLocation: MapLocation = {
@@ -83,6 +87,84 @@ const galleryLocation: MapLocation = {
   memberCount: 1,
 };
 
+const hubWithStickyMember: MapLocation = {
+  id: "hub-map-info",
+  latitude: 48.2,
+  longitude: 16.37,
+  type: "standard",
+  name: "Hub Studio",
+  displayNumber: "10",
+  addressLine: "Hub Street 1, Vienna",
+  hubId: "hub-1",
+  hubHostUserId: "host-user",
+  memberCount: 2,
+  members: [
+    {
+      userId: "host-user",
+      name: "Host",
+      slug: "host",
+      locationId: "hub-map-info",
+      type: "standard",
+      displayNumber: "10",
+    },
+    {
+      userId: "sticky-user",
+      name: "Sticky Member",
+      slug: "sticky-member",
+      locationId: "hub-map-info",
+      type: "sticky-participant",
+      displayNumber: "11",
+    },
+  ],
+};
+
+const stickyHostHub: MapLocation = {
+  ...hubWithStickyMember,
+  type: "sticky-participant",
+  members: [
+    {
+      userId: "host-user",
+      name: "Sticky Host",
+      slug: "sticky-host",
+      locationId: "hub-map-info",
+      type: "sticky-participant",
+      displayNumber: "10",
+    },
+    {
+      userId: "standard-user",
+      name: "Standard Member",
+      slug: "standard-member",
+      locationId: "hub-map-info",
+      type: "standard",
+      displayNumber: "11",
+    },
+  ],
+};
+
+const soloSticky: MapLocation = {
+  id: "solo-sticky",
+  latitude: 48.24,
+  longitude: 16.41,
+  type: "sticky-participant",
+  name: "Solo Sticky",
+  displayNumber: "40",
+  addressLine: "Sticky Street 1, Vienna",
+  memberCount: 1,
+};
+
+describe("locationMatchesCategory", () => {
+  it("matches hub when a member has the category type", () => {
+    assert.equal(
+      locationMatchesCategory(hubWithStickyMember, "sticky-participant"),
+      true
+    );
+    assert.equal(
+      locationMatchesCategory(hubWithStickyMember, "gallery"),
+      false
+    );
+  });
+});
+
 describe("filterMapLocationsForMap", () => {
   it("filters markers by category type", () => {
     const locations = [standardLocation, galleryLocation];
@@ -104,6 +186,117 @@ describe("filterMapLocationsForMap", () => {
 
     assert.equal(result.length, 1);
     assert.equal(result[0]?.id, "gallery-1");
+  });
+
+  it("includes hub when a member matches category and overrides marker type", () => {
+    const result = filterMapLocationsForMap([hubWithStickyMember, standardLocation], {
+      type: "sticky-participant",
+      q: "",
+    });
+
+    assert.equal(result.length, 1);
+    assert.equal(result[0]?.id, "hub-map-info");
+    assert.equal(result[0]?.type, "sticky-participant");
+  });
+
+  it("keeps hub type when hub location already matches category", () => {
+    const result = filterMapLocationsForMap([stickyHostHub], {
+      type: "sticky-participant",
+      q: "",
+    });
+
+    assert.equal(result.length, 1);
+    assert.equal(result[0]?.type, "sticky-participant");
+  });
+
+  it("includes solo sticky locations unchanged", () => {
+    const result = filterMapLocationsForMap([soloSticky, standardLocation], {
+      type: "sticky-participant",
+      q: "",
+    });
+
+    assert.equal(result.length, 1);
+    assert.equal(result[0]?.id, "solo-sticky");
+    assert.equal(result[0]?.type, "sticky-participant");
+  });
+});
+
+describe("flattenHubMembersForCategoryList", () => {
+  it("creates flat member rows when only members match category", () => {
+    const filtered = [hubWithStickyMember];
+    const result = flattenHubMembersForCategoryList(
+      filtered,
+      "sticky-participant"
+    );
+
+    assert.equal(result.length, 1);
+    assert.equal(result[0]?.id, "list:hub-member:hub-1:sticky-user");
+    assert.equal(result[0]?.mapSelectionId, "hub-map-info");
+    assert.equal(result[0]?.hubMemberUserId, "sticky-user");
+    assert.equal(result[0]?.type, "sticky-participant");
+  });
+
+  it("keeps hub row when hub type matches category", () => {
+    const result = flattenHubMembersForCategoryList(
+      [stickyHostHub],
+      "sticky-participant"
+    );
+
+    assert.equal(result.length, 1);
+    assert.equal(result[0]?.id, "hub-map-info");
+  });
+});
+
+describe("filterMapLocationsForList", () => {
+  it("flattens matching hub members in category view", () => {
+    const result = filterMapLocationsForList(
+      [hubWithStickyMember, standardLocation],
+      {
+        view: "category",
+        type: "sticky-participant",
+        q: "",
+      }
+    );
+
+    assert.equal(result.length, 1);
+    assert.equal(result[0]?.hubMemberUserId, "sticky-user");
+  });
+});
+
+describe("getSingleCategoryMatchMemberUserId", () => {
+  it("returns member id when exactly one member matches", () => {
+    assert.equal(
+      getSingleCategoryMatchMemberUserId(
+        hubWithStickyMember,
+        "sticky-participant"
+      ),
+      "sticky-user"
+    );
+  });
+
+  it("returns undefined when multiple members match", () => {
+    const hubWithTwoSticky: MapLocation = {
+      ...hubWithStickyMember,
+      members: [
+        {
+          userId: "sticky-1",
+          name: "Sticky One",
+          locationId: "hub-map-info",
+          type: "sticky-participant",
+        },
+        {
+          userId: "sticky-2",
+          name: "Sticky Two",
+          locationId: "hub-map-info",
+          type: "sticky-participant",
+        },
+      ],
+    };
+
+    assert.equal(
+      getSingleCategoryMatchMemberUserId(hubWithTwoSticky, "sticky-participant"),
+      undefined
+    );
   });
 });
 

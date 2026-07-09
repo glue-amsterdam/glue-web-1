@@ -22,6 +22,9 @@ import { usePathname } from "next/navigation";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
 import type { MapLocation, MapRoute, MapTourMode } from "@/lib/map/types";
 import { resolveMapLocationSelectionId } from "@/lib/map/map-selection";
+import { getSingleCategoryMatchMemberUserId } from "@/lib/map/map-filters";
+import type { ExhibitorsFilterType } from "@/lib/participants/exhibitors-filters";
+import type { MapLocationSelectOptions } from "@/app/map/stores/use-map-store";
 import { MAP_CITY_BOUNDS, MAP_CITY_CENTER } from "@/lib/map/map-bounds";
 import {
   focusMapOnPoint,
@@ -116,7 +119,11 @@ type MapViewProps = {
   selectedRoute: string | null;
   activeRouteStopId: string | null;
   detailPanelDismissed: boolean;
-  onLocationSelect: (locationId: string) => void;
+  categoryFilterType?: ExhibitorsFilterType;
+  onLocationSelect: (
+    locationId: string,
+    options?: MapLocationSelectOptions
+  ) => void;
   onCloseExhibitorSelection: () => void;
   onDismissRoutePanel: () => void;
   onRouteStopSelect: (dotId: string) => void;
@@ -133,6 +140,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     selectedRoute,
     activeRouteStopId,
     detailPanelDismissed,
+    categoryFilterType = "all",
     onLocationSelect,
     onCloseExhibitorSelection,
     onDismissRoutePanel,
@@ -546,9 +554,32 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
         return;
       }
 
-      onLocationSelect(feature.properties.locationId);
+      const locationId = feature.properties.locationId;
+
+      if (categoryFilterType !== "all") {
+        const location = selectionLocations.find((loc) => loc.id === locationId);
+        if (location?.hubId) {
+          const memberUserId = getSingleCategoryMatchMemberUserId(
+            location,
+            categoryFilterType
+          );
+          if (memberUserId) {
+            onLocationSelect(locationId, { memberUserId });
+            return;
+          }
+        }
+      }
+
+      onLocationSelect(locationId);
     },
-    [pathname, selectedRoute, onRouteStopSelect, onLocationSelect]
+    [
+      pathname,
+      selectedRoute,
+      categoryFilterType,
+      selectionLocations,
+      onRouteStopSelect,
+      onLocationSelect,
+    ]
   );
 
   const handleMapClick = useCallback(() => {
