@@ -3,9 +3,11 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
+import { AccountHub } from "@/components/account/account-hub";
 import BigButton from "@/components/big-button";
 import { AuthPageHeadline } from "@/components/auth/auth-page-headline";
 import { ParticipateFormField } from "@/components/participate/participate-form-field";
+import { useAuth } from "@/context/AuthContext";
 import {
   buildLoginHref,
   buildParticipateFromAccountHref,
@@ -44,6 +46,7 @@ const accountTypeOptions = [
 export const AccountWizard = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, isLoading } = useAuth();
   const returnTo = parseReturnToParam(searchParams);
   const cancelTo = resolveCancelTo(parseCancelToParam(searchParams));
 
@@ -52,6 +55,14 @@ export const AccountWizard = () => {
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isChecking, setIsChecking] = useState(false);
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (user) {
+    return <AccountHub />;
+  }
 
   const handleEmailSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

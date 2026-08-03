@@ -34,7 +34,7 @@ const FaqItemContent = ({ sanitizedAnswer }: { sanitizedAnswer: string }) => {
 
   return (
     <div
-      className="body-text post-content"
+      className="body-text post-content [&>:first-child]:mt-0"
       dangerouslySetInnerHTML={{ __html: sanitizedAnswer }}
     />
   );
@@ -49,7 +49,7 @@ const FaqItemTrigger = ({
 }) => (
   <AccordionTrigger
     hideIcon
-    className="group versal-body-text main-boder-top lg:border-0 hover:no-underline py-[15px] lg:pointer-events-none"
+    className="group items-start justify-start versal-body-text main-boder-top lg:border-0 hover:no-underline pt-[15px] pb-0 lg:pt-0 lg:pointer-events-none"
   >
     <div className="flex w-full flex-1 flex-col">
       <div className="flex w-full items-start justify-between gap-3">
@@ -119,7 +119,7 @@ const FaqBlockClient = ({ block, sanitized }: Props) => {
             <AccordionItem key={itemId} value={itemId} className="border-b-0">
               <FaqItemTrigger item={item} itemId={itemId} />
               <AccordionContent
-                className="lg:pt-0"
+                className="pt-[15px] pb-0"
                 aria-labelledby={`${itemId}-question`}
               >
                 <FaqItemContent sanitizedAnswer={sanitized.answers[index] ?? ""} />

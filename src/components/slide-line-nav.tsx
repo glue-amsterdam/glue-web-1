@@ -27,7 +27,10 @@ const getLineButtonClassName = (
     "h-2 min-w-0 flex-1 cursor-pointer border-0 border-[var(--black-color)] bg-transparent p-0";
 
   if (size === "compact") {
-    return `${base} max-w-[36px] ${isActive ? "border-b-[3px]" : "border-b-[1px]"}`;
+    return `${base} max-w-[36px] ${isActive
+      ? "border-b-[3px] lg:border-b-[4px]"
+      : "border-b-[1px] lg:border-b-[2px]"
+      }`;
   }
 
   if (size === "desktop") {
