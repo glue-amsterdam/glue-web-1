@@ -2,22 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 import { AccountNavLink } from "@/components/account/account-nav-link";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/AuthContext";
-import { fetchNavbarIdentity } from "@/lib/users/fetch-navbar-identity";
-import type { NavbarIdentity } from "@/lib/users/get-navbar-identity";
 import { cn } from "@/lib/utils";
 
 import LogoWithLink from "../LogoWithLink";
@@ -123,7 +110,7 @@ const Links = ({
   );
 };
 
-const LoggedOutAccountNav = () => {
+const AccountNav = () => {
   const pathname = usePathname();
   const isAccountActive = pathname === "/account";
 
@@ -157,176 +144,8 @@ const LoggedOutAccountNav = () => {
   );
 };
 
-type LoggedInAccountNavProps = {
-  dashboardHref: string | null;
-};
-
-const LoggedInAccountNav = ({ dashboardHref }: LoggedInAccountNavProps) => {
-  const pathname = usePathname();
-  const { logout } = useAuth();
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-
-  const isDashboardActive = pathname.startsWith("/dashboard/");
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
-
-  const handleOpenDeleteDialog = () => {
-    setDeleteError(null);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (isDeleting) return;
-
-    setDeleteError(null);
-    setIsDeleting(true);
-
-    try {
-      const response = await fetch("/api/account/delete", { method: "POST" });
-      const result = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        setDeleteError(
-          typeof result.message === "string"
-            ? result.message
-            : "Could not delete your account. Please try again.",
-        );
-        return;
-      }
-
-      setIsDeleteDialogOpen(false);
-      await logout();
-    } catch {
-      setDeleteError("Something went wrong. Please try again.");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const navActionClassName = (isActive: boolean) =>
-    cn(
-      accountLinkClassName,
-      isActive ? "text-(--primary-color)" : "text-(--black-color) cursor-pointer",
-    );
-
-  return (
-    <>
-      <Container className="sm:gap-[30px] gap-[20px]">
-        {dashboardHref ? (
-          <Link
-            href={dashboardHref}
-            className={navActionClassName(isDashboardActive)}
-            aria-label="Go to dashboard"
-          >
-            Account
-          </Link>
-        ) : null}
-        <button
-          type="button"
-          className={navActionClassName(false)}
-          onClick={() => void handleLogout()}
-          aria-label="Log out of your account"
-        >
-          Log Out
-        </button>
-        <button
-          type="button"
-          className={navActionClassName(false)}
-          onClick={handleOpenDeleteDialog}
-          aria-label="Delete your account"
-        >
-          Delete Account
-        </button>
-      </Container>
-
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete your account and all associated data,
-              including your visitor profile and participant details. This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          {deleteError ? (
-            <p role="alert" className="body-text px-6">
-              {deleteError}
-            </p>
-          ) : null}
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => void handleConfirmDelete()}
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Deleting…" : "Delete account"}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
-};
-
-type AccountNavProps = {
-  isAuthenticated: boolean;
-  dashboardHref: string | null;
-};
-
-const AccountNav = ({ isAuthenticated, dashboardHref }: AccountNavProps) => {
-  if (isAuthenticated) {
-    return <LoggedInAccountNav dashboardHref={dashboardHref} />;
-  }
-
-  return <LoggedOutAccountNav />;
-};
-
 export const NavBarClient = ({ navLinks }: NavbarClientProps) => {
   const pathname = usePathname();
-  const { user, navbarIdentity } = useAuth();
-  const [liveIdentity, setLiveIdentity] = useState<NavbarIdentity | null>(null);
-
-  useEffect(() => {
-    if (!user) {
-      setLiveIdentity(null);
-      return;
-    }
-
-    if (navbarIdentity) {
-      setLiveIdentity(null);
-      return;
-    }
-
-    let cancelled = false;
-
-    const loadIdentity = async () => {
-      const identity = await fetchNavbarIdentity();
-      if (!cancelled) {
-        setLiveIdentity(identity);
-      }
-    };
-
-    void loadIdentity();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [user, navbarIdentity]);
-
-  const isAuthenticated = user !== null;
-  const identity = isAuthenticated ? (navbarIdentity ?? liveIdentity) : null;
-  const dashboardHref = identity?.dashboardHref ?? null;
 
   const showExhibitorsNav = pathname === "/exhibitors";
   const showProgramNav = pathname === "/program";
@@ -352,10 +171,7 @@ export const NavBarClient = ({ navLinks }: NavbarClientProps) => {
       {showAccountNav && (
         <MainContainer>
           <Block className="flex justify-end h-(--nav-secondary-h-mobile) lg:h-(--nav-secondary-h)">
-            <AccountNav
-              isAuthenticated={isAuthenticated}
-              dashboardHref={dashboardHref}
-            />
+            <AccountNav />
           </Block>
         </MainContainer>
       )}
