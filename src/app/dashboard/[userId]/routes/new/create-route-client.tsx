@@ -14,6 +14,10 @@ import {
   RouteAvailableLocations,
   RouteSelectedLocations,
 } from "@/app/dashboard/[userId]/routes/components/route-locations-panel";
+import {
+  reorderRouteSteps,
+  withRenumberedSteps,
+} from "@/lib/routes/route-dot-mappers";
 
 type CreateRouteClientProps = {
   targetUserId: string;
@@ -38,17 +42,20 @@ export const CreateRouteClient = ({
   const { toast } = useToast();
 
   const addDotToRoute = (mapInfo: MapInfoAPICall) => {
-    setSelectedDots((prev) => [
-      ...prev,
-      { ...mapInfo, route_step: prev.length + 1 },
-    ]);
+    setSelectedDots((prev) => {
+      if (prev.some((dot) => dot.id === mapInfo.id)) return prev;
+      return withRenumberedSteps([...prev, { ...mapInfo, route_step: 0 }]);
+    });
   };
 
   const removeDotFromRoute = (index: number) => {
-    setSelectedDots((prev) => {
-      const newDots = prev.filter((_, i) => i !== index);
-      return newDots.map((dot, i) => ({ ...dot, route_step: i + 1 }));
-    });
+    setSelectedDots((prev) =>
+      withRenumberedSteps(prev.filter((_, i) => i !== index))
+    );
+  };
+
+  const handleReorder = (fromIndex: number, toIndex: number) => {
+    setSelectedDots((prev) => reorderRouteSteps(prev, fromIndex, toIndex));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -141,6 +148,7 @@ export const CreateRouteClient = ({
           <RouteSelectedLocations
             selectedDots={selectedDots}
             onRemove={removeDotFromRoute}
+            onReorder={handleReorder}
           />
           <RouteAvailableLocations
             mapInfoList={mapInfoList}
