@@ -179,7 +179,6 @@ export const MapFilterPanelContent = ({
         variant={variant}
         className={className}
         onRouteSelected={onRouteSelected}
-        groupByZone
       />
     );
   }
