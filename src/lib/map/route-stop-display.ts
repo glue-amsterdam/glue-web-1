@@ -64,7 +64,7 @@ export const getRouteStopsForDisplay = (
         label: String(dot.routeStep),
         backgroundColor,
         color,
-        userName: dot.name,
+        userName: location?.name ?? dot.name,
         addressLine: dot.addressLine,
       };
     });
