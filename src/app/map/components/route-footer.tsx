@@ -7,12 +7,13 @@ import { useCyclicIndex } from "@/hooks/useCyclicIndex";
 import type { MapLocation, MapRoute, MapTourMode } from "@/lib/map/types";
 import type { RouteStopDisplay } from "@/lib/map/route-stop-display";
 import { getRouteStopsForDisplay } from "@/lib/map/route-stop-display";
-import { useMapLocationDetail } from "../hooks/use-map-location-detail";
+import { useMapLocationDetails } from "../hooks/use-map-location-details";
 import MainContainer from "@/components/main-container";
 import RoundedNumber from "@/components/rounded-number";
 import CrossRotatedMobile from "@/components/icons/cross-rotated-mobile";
 import BigButton from "@/components/big-button";
 import SlideLineNav from "@/components/slide-line-nav";
+import PreloadedImageStack from "@/components/preloaded-image-stack";
 
 const DEFAULT_AUTOPLAY_DELAY_MS = 3000;
 
@@ -57,40 +58,6 @@ const RouteStopBadge = ({ stop }: RouteStopBadgeProps) => {
   );
 };
 
-type RouteStopSlideProps = {
-  stop: RouteStopDisplay;
-  tourMode: MapTourMode;
-};
-
-const RouteStopSlide = ({ stop, tourMode }: RouteStopSlideProps) => {
-  const canFetchDetail = tourMode === "live" && !!stop.mapInfoId;
-  const { detail, isLoading } = useMapLocationDetail(stop.mapInfoId, canFetchDetail);
-  const showLoading = canFetchDetail && isLoading && !detail;
-
-  if (showLoading) {
-    return (
-      <div className="h-full w-full flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (detail?.imageUrl) {
-    return (
-      <Image
-        src={detail.imageUrl}
-        alt={`Image of ${stop.userName}`}
-        width={300}
-        height={190}
-        sizes="(max-width: 768px) 100vw, 33vw"
-        className="h-full w-full object-contain object-top"
-      />
-    );
-  }
-
-  return null;
-};
-
 const RouteFooter = ({
   route,
   locations,
@@ -106,6 +73,27 @@ const RouteFooter = ({
     [route, locations]
   );
 
+  const mapInfoIds = useMemo(
+    () => stops.map((stop) => stop.mapInfoId),
+    [stops]
+  );
+
+  const canFetchDetails = tourMode === "live";
+  const { detailsById, isLoading } = useMapLocationDetails(
+    mapInfoIds,
+    canFetchDetails
+  );
+
+  const imageSlides = useMemo(
+    () =>
+      stops.map((stop) => ({
+        id: stop.dotId,
+        src: detailsById.get(stop.mapInfoId)?.imageUrl ?? null,
+        alt: `Image of ${stop.userName}`,
+      })),
+    [stops, detailsById]
+  );
+
   const {
     currentIndex,
     hasMultiple,
@@ -113,6 +101,7 @@ const RouteFooter = ({
     handleMouseEnter,
     handleMouseLeave,
     handleSelect,
+    handleAdvance,
   } = useCyclicIndex({
     itemCount: stops.length,
     delayMs,
@@ -120,6 +109,7 @@ const RouteFooter = ({
   });
 
   const currentStop = stops[currentIndex] ?? stops[0];
+  const currentImageSlide = imageSlides[currentIndex] ?? imageSlides[0];
 
   useEffect(() => {
     if (!activeStopId || stops.length === 0) return;
@@ -155,6 +145,8 @@ const RouteFooter = ({
     return null;
   }
 
+  const showLoading = canFetchDetails && isLoading && detailsById.size === 0;
+
   return (
     <div
       data-route-footer
@@ -185,12 +177,37 @@ const RouteFooter = ({
                 </button>
               </div>
               <div className="pt-[15px] pl-[4px]">
+                <p>{currentStop.userName}</p>
                 <p>{currentStop.addressLine}</p>
               </div>
             </div>
           </div>
           <div className="flex w-full h-[190px] overflow-hidden mx-auto pt-[15px]">
-            <RouteStopSlide stop={currentStop} tourMode={tourMode} />
+            {showLoading ? (
+              <div className="h-full w-full flex items-center justify-center">
+                <LoadingSpinner />
+              </div>
+            ) : hasMultiple ? (
+              <PreloadedImageStack
+                slides={imageSlides}
+                currentIndex={currentIndex}
+                onAdvance={handleAdvance}
+                className="relative h-full w-full"
+                sizes="(max-width: 768px) 100vw, 33vw"
+                objectFit="contain"
+                objectPosition="top"
+                fullWidth
+              />
+            ) : currentImageSlide?.src ? (
+              <Image
+                src={currentImageSlide.src}
+                alt={currentImageSlide.alt}
+                width={300}
+                height={190}
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="h-full w-full object-contain object-top"
+              />
+            ) : null}
           </div>
           <SlideLineNav
             items={stops.map((stop) => ({ id: stop.dotId, label: stop.userName }))}

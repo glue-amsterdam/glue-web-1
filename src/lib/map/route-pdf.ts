@@ -154,7 +154,10 @@ export const downloadRoutePdf = async (
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(55, 55, 55);
-    const descLines = doc.splitTextToSize(route.description.trim(), contentWidth);
+    const descLines = doc.splitTextToSize(
+      route.description.trim(),
+      titleMaxWidth
+    );
     y = drawWrappedLines(doc, descLines, margin, pageHeight, y, 10, margin);
     y += 2;
   }
