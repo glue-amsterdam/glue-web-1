@@ -38,7 +38,7 @@ const PartnersGroup = ({ group }: PartnersSectionProps) => (
                                 height={32}
                                 src={sponsor.image_url}
                                 alt={sponsor.name + "logo"}
-                                className="object-contain mix-blend-difference h-full w-full"
+                                className="h-full w-full object-contain brightness-0"
                             />
                         </div>
                     </Link>

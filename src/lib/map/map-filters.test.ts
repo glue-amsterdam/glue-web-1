@@ -6,6 +6,7 @@ import {
   filterMapLocationsForMap,
   flattenHubMembersForAllList,
   flattenHubMembersForCategoryList,
+  getMapLocationNumberBadges,
   getSingleCategoryMatchMemberUserId,
   locationMatchesCategory,
 } from "./map-filters";
@@ -483,5 +484,87 @@ describe("flattenHubMembersForAllList", () => {
       memberRow?.numberBadges?.map((badge) => badge.value),
       ["6", "10"]
     );
+  });
+
+  it("inherits Hub number on dual-location solo rows without an own number", () => {
+    const hubWithDualUnnumberedMember: MapLocation = {
+      ...hubLocation,
+      displayNumber: "19",
+      type: "hub",
+      members: [
+        {
+          userId: "host-user",
+          name: "Host",
+          slug: "host",
+          locationId: "hub-map-info",
+          type: "hub",
+          displayNumber: "19",
+        },
+        {
+          userId: "echo-user",
+          name: "ECHO",
+          slug: "echo",
+          locationId: "echo-own-map-info",
+          type: "hub",
+          displayNumber: null,
+          showHubNumber: true,
+          inheritedHubs: [{ displayNumber: "19", type: "hub" }],
+        },
+      ],
+    };
+
+    const echoSolo: MapLocation = {
+      id: "echo-own-map-info",
+      latitude: 52.36,
+      longitude: 4.88,
+      type: "hub",
+      name: "ECHO",
+      displayNumber: null,
+      addressLine: "Leidsestraat 32-34, Amsterdam",
+      slug: "echo",
+      memberCount: 1,
+      showHubNumber: true,
+      inheritedHubs: [{ displayNumber: "19", type: "hub" }],
+    };
+
+    const result = flattenHubMembersForAllList([
+      hubWithDualUnnumberedMember,
+      echoSolo,
+    ]);
+    const echoRow = result.find(
+      (location) => location.id === "echo-own-map-info"
+    );
+
+    assert.equal(echoRow?.displayNumber, "19");
+    assert.equal(echoRow?.numberBadges?.length, 1);
+    assert.equal(echoRow?.numberBadges?.[0]?.value, "19");
+    assert.equal(echoRow?.numberBadges?.[0]?.source, "hub");
+    assert.equal(
+      result.some(
+        (location) => location.id === "list:hub-member:hub-1:echo-user"
+      ),
+      false
+    );
+  });
+});
+
+describe("getMapLocationNumberBadges", () => {
+  it("inherits Hub numbers on dual-location rows", () => {
+    const badges = getMapLocationNumberBadges({
+      id: "echo-own-map-info",
+      latitude: 52.36,
+      longitude: 4.88,
+      type: "hub",
+      name: "ECHO",
+      displayNumber: null,
+      addressLine: "Leidsestraat 32-34, Amsterdam",
+      memberCount: 1,
+      showHubNumber: true,
+      inheritedHubs: [{ displayNumber: "19", type: "hub" }],
+    });
+
+    assert.deepEqual(badges, [
+      { value: "19", type: "hub", source: "hub" },
+    ]);
   });
 });

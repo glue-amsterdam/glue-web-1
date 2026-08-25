@@ -397,6 +397,7 @@ export const buildMapLocations = async (
           categories
         )
       : classifyLocationType(1, participant.category, categories);
+    const inheritedHubs = inheritedHubsByUserId.get(participant.user_id) ?? [];
 
     locationByMapInfoId.set(mapInfo.id, {
       id: mapInfo.id,
@@ -410,6 +411,15 @@ export const buildMapLocations = async (
       memberCount: 1,
       hostUserId: participant.user_id,
       hostCategory: participant.category,
+      showHubNumber: participant.show_hub_number ?? true,
+      ...(inheritedHubs.length > 0
+        ? {
+            inheritedHubs: inheritedHubs.map((hub) => ({
+              displayNumber: hub.displayNumber,
+              type: hub.type,
+            })),
+          }
+        : {}),
     });
   }
 

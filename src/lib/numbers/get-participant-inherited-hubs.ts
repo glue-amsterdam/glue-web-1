@@ -37,6 +37,7 @@ export const getParticipantInheritedHubs = async (
       displayNumber: hub.display_number,
       type: "hub",
       isHost: hub.hub_host_id === userId,
+      hubHostUserId: hub.hub_host_id,
     });
   };
 

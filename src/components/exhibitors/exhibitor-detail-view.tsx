@@ -54,14 +54,15 @@ const ExhibitorDetailView = ({
                 {contactInfo && <ExhibitorDetailInfo contactInfo={contactInfo} />}
                 {showNavigation ? (
                   <div className="flex gap-[20px] pt-[30px] flex-wrap">
-                    {navigation.showMap && navigation.mapHref ? (
+                    {navigation.mapHrefs.map((href) => (
                       <BigButton
+                        key={href}
                         label="map"
-                        href={navigation.mapHref}
+                        href={href}
                         mode="navbar"
                         as="link"
                       />
-                    ) : null}
+                    ))}
                     {navigation.showEvents && navigation.eventsHref ? (
                       <BigButton
                         label="events"

@@ -1,3 +1,4 @@
+import { normalizeMapAddressLine } from "@/lib/map/utils";
 import type {
   ExhibitorContactInfo,
   ExhibitorDetailNavigation,
@@ -13,7 +14,7 @@ import type { TourStatus } from "./exhibitor-visibility";
 const EMPTY_NAVIGATION: ExhibitorDetailNavigation = {
   showMap: false,
   showEvents: false,
-  mapHref: null,
+  mapHrefs: [],
   eventsHref: null,
 };
 
@@ -45,6 +46,49 @@ export const canLinkExhibitorToMapAndEvents = ({
   return false;
 };
 
+const isVisibleMapInfo = (map: ExhibitorMapInfo): boolean =>
+  !map.no_address && Boolean(map.id) && Boolean(map.formatted_address?.trim());
+
+export const resolveExhibitorVisibleMapInfo = (
+  contactInfo: ExhibitorContactInfo
+): ExhibitorMapInfo[] => {
+  const seenIds = new Set<string>();
+  const seenAddresses = new Set<string>();
+  const result: ExhibitorMapInfo[] = [];
+
+  const addLocation = (map: ExhibitorMapInfo) => {
+    if (!isVisibleMapInfo(map)) return;
+
+    const normalizedAddress = normalizeMapAddressLine(map.formatted_address);
+    if (seenIds.has(map.id)) return;
+    if (normalizedAddress && seenAddresses.has(normalizedAddress)) return;
+
+    seenIds.add(map.id);
+    if (normalizedAddress) {
+      seenAddresses.add(normalizedAddress);
+    }
+    result.push(map);
+  };
+
+  for (const map of contactInfo.mapInfo) {
+    addLocation(map);
+  }
+
+  for (const map of contactInfo.hubLocations ?? []) {
+    addLocation(map);
+  }
+
+  if (contactInfo.hubHostMapInfoId && contactInfo.hubHostAddress?.trim()) {
+    addLocation({
+      id: contactInfo.hubHostMapInfoId,
+      formatted_address: contactInfo.hubHostAddress,
+      no_address: false,
+    });
+  }
+
+  return result;
+};
+
 export const resolveOwnMapInfoId = (
   mapInfo: ExhibitorMapInfo[]
 ): string | null => {
@@ -55,12 +99,11 @@ export const resolveOwnMapInfoId = (
 export const resolveExhibitorMapInfoId = (
   contactInfo: ExhibitorContactInfo
 ): string | null => {
-  const ownMapInfoId = resolveOwnMapInfoId(contactInfo.mapInfo);
-  if (ownMapInfoId) {
-    return ownMapInfoId;
-  }
-
-  return contactInfo.hubHostMapInfoId ?? null;
+  return (
+    resolveExhibitorVisibleMapInfo(contactInfo)[0]?.id ??
+    contactInfo.hubHostMapInfoId ??
+    null
+  );
 };
 
 export const resolveExhibitorDetailNavigation = (
@@ -85,8 +128,9 @@ export const resolveExhibitorDetailNavigation = (
     return EMPTY_NAVIGATION;
   }
 
-  const mapInfoId = resolveExhibitorMapInfoId(participant.contactInfo);
-  const hasMap = Boolean(mapInfoId);
+  const visibleMapInfo = resolveExhibitorVisibleMapInfo(participant.contactInfo);
+  const mapHrefs = visibleMapInfo.map((map) => getExhibitorMapHref(map.id));
+  const hasMap = mapHrefs.length > 0;
   const hasEvents = participant.contactInfo.events.length > 0;
 
   if (!hasMap && !hasEvents) {
@@ -99,7 +143,7 @@ export const resolveExhibitorDetailNavigation = (
   return {
     showMap: hasMap,
     showEvents: hasEvents,
-    mapHref: hasMap ? getExhibitorMapHref(mapInfoId) : null,
+    mapHrefs,
     eventsHref: hasEvents
       ? getExhibitorProgramHref({
           ownAddress,
