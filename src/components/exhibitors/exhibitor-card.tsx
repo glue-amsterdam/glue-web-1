@@ -1,10 +1,10 @@
 import Link from "next/link";
 import ExhibitorImage from "@/components/exhibitors/exhibitor-image";
-import RoundedNumber from "@/components/rounded-number";
+import DisplayNumberCluster from "@/components/display-number-cluster";
 import type { ExhibitorItem } from "@/lib/participants/exhibitor-types";
 import {
-  getExhibitorDisplayNumber,
   getExhibitorLink,
+  getExhibitorNumberBadges,
 } from "@/lib/participants/exhibitors-filters";
 
 type Props = {
@@ -12,13 +12,16 @@ type Props = {
 };
 
 const ExhibitorCard = ({ exhibitor }: Props) => {
-  const displayNumber = getExhibitorDisplayNumber(exhibitor);
+  const numberBadges = getExhibitorNumberBadges(exhibitor);
   const href = getExhibitorLink(exhibitor);
 
   const content = (
     <article className="mx-auto w-full max-w-[400px] max-h-[260px] lg:max-h-[310px] border-t lg:border-t-2 border-(--black-color) pt-[15px] overflow-hidden lg:mx-0">
       <div className="flex items-center gap-[20px]">
-        <RoundedNumber type={exhibitor.type} participant_n={displayNumber} />
+        <DisplayNumberCluster
+          badges={numberBadges}
+          fallbackType={exhibitor.type}
+        />
         <h2 className="versal-body-text font-normal text-(--black-color)">
           {exhibitor.name.toUpperCase()}
         </h2>

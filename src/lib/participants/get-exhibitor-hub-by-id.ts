@@ -36,6 +36,7 @@ type MemberParticipantRow = {
   category: string;
   display_number: string | null;
   display_name: string | null;
+  show_hub_number?: boolean | null;
 };
 
 type HubParticipantRow = {
@@ -201,26 +202,58 @@ export const getExhibitorHubById = async (
     eligibleMemberIds
   );
 
-  const { data: memberDetailsData, error: memberDetailsError } = await supabase
-    .from("participant_details")
-    .select(
+  const [memberDetailsResult, hostedHubsResult, membershipsResult] =
+    await Promise.all([
+      supabase
+        .from("participant_details")
+        .select(
+          `
+        user_id,
+        slug,
+        category,
+        display_number,
+        display_name,
+        show_hub_number
       `
+        )
+        .in("user_id", orderedMemberIds)
+        .eq("status", "accepted"),
+      supabase
+        .from("hubs")
+        .select("id, display_number, hub_host_id")
+        .in("hub_host_id", orderedMemberIds),
+      supabase
+        .from("hub_participants")
+        .select("user_id, hub_id")
+        .in("user_id", orderedMemberIds),
+    ]);
+
+  const { data: memberDetailsData, error: memberDetailsError } =
+    memberDetailsResult;
+
+  let memberDetails = memberDetailsData as MemberParticipantRow[] | null;
+  if (memberDetailsError) {
+    const fallback = await supabase
+      .from("participant_details")
+      .select(
+        `
         user_id,
         slug,
         category,
         display_number,
         display_name
       `
-    )
-    .in("user_id", orderedMemberIds)
-    .eq("status", "accepted");
-
-  if (memberDetailsError) {
-    throw memberDetailsError;
+      )
+      .in("user_id", orderedMemberIds)
+      .eq("status", "accepted");
+    if (fallback.error) {
+      throw fallback.error;
+    }
+    memberDetails = fallback.data as MemberParticipantRow[] | null;
   }
 
   const memberDetailsByUserId = new Map(
-    ((memberDetailsData as MemberParticipantRow[]) ?? []).map((row) => [
+    (memberDetails ?? []).map((row) => [
       row.user_id,
       row,
     ])
@@ -245,6 +278,75 @@ export const getExhibitorHubById = async (
   const imageMap = buildImageMap((imagesData as ImageRow[]) ?? []);
   const hubMemberCount = eligibleMemberIds.size;
 
+  const hubsById = new Map<string, { id: string; display_number: string | null }>(
+    [
+      [hubRow.id, { id: hubRow.id, display_number: hubRow.display_number }],
+      ...(hostedHubsResult.data ?? []).map(
+        (hub) =>
+          [hub.id, { id: hub.id, display_number: hub.display_number }] as const
+      ),
+    ]
+  );
+
+  if (hostedHubsResult.error) {
+    console.error("Error fetching hosted hubs for members:", hostedHubsResult.error);
+  }
+  if (membershipsResult.error) {
+    console.error(
+      "Error fetching hub memberships for members:",
+      membershipsResult.error
+    );
+  }
+
+  const missingHubIds = Array.from(
+    new Set(
+      (membershipsResult.data ?? [])
+        .map((row) => row.hub_id)
+        .filter((hubId) => !hubsById.has(hubId))
+    )
+  );
+
+  if (missingHubIds.length > 0) {
+    const { data: extraHubs, error: extraHubsError } = await supabase
+      .from("hubs")
+      .select("id, display_number")
+      .in("id", missingHubIds);
+    if (extraHubsError) {
+      console.error("Error fetching extra hubs for members:", extraHubsError);
+    }
+    for (const hub of extraHubs ?? []) {
+      hubsById.set(hub.id, hub);
+    }
+  }
+
+  const inheritedHubsByUserId = new Map<
+    string,
+    { hubId: string; displayNumber: string | null; type: ExhibitorType }[]
+  >();
+
+  const addInheritedHub = (userId: string, hubId: string) => {
+    const hub = hubsById.get(hubId);
+    if (!hub) return;
+    const current = inheritedHubsByUserId.get(userId) ?? [];
+    if (current.some((item) => item.hubId === hubId)) return;
+    current.push({
+      hubId,
+      displayNumber: hub.display_number,
+      type: "hub",
+    });
+    inheritedHubsByUserId.set(userId, current);
+  };
+
+  for (const userId of orderedMemberIds) {
+    addInheritedHub(userId, hubRow.id);
+  }
+  for (const hub of hostedHubsResult.data ?? []) {
+    addInheritedHub(hub.hub_host_id, hub.id);
+  }
+  for (const row of membershipsResult.data ?? []) {
+    addInheritedHub(row.user_id, row.hub_id);
+  }
+
   const members: ExhibitorHubMember[] = [];
 
   for (const userId of orderedMemberIds) {
@@ -260,6 +362,11 @@ export const getExhibitorHubById = async (
       imageUrl: imageMap.get(userId) ?? placeholderUrl,
       displayNumber: details.display_number,
       type: getParticipantType(hubMemberCount, details.category, categories),
+      showHubNumber: details.show_hub_number ?? true,
+      inheritedHubs: (inheritedHubsByUserId.get(userId) ?? []).map((hub) => ({
+        displayNumber: hub.displayNumber,
+        type: hub.type,
+      })),
     });
   }
 

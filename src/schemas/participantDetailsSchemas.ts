@@ -93,6 +93,8 @@ export const participantDetailsSchema = z.object({
     .max(10, "Display number must be less than 10 characters")
     .optional()
     .nullable(),
+  show_hub_number: z.boolean().optional().default(true),
+  preferred_hub_id: z.string().uuid().optional().nullable(),
   plan_id: z.string().uuid().optional().nullable(),
   plan_type: z.string().optional().nullable(),
   display_name: z.string().optional().nullable(),

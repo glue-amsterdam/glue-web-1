@@ -18,6 +18,7 @@ import {
 import { getParticipantDisplayName } from "./get-participant-display-name";
 import { getParticipantPlaceholderUrl } from "./get-participant-placeholder-url";
 import { toMediaUrl } from "@/lib/media/media-url";
+import type { InheritedHubOption } from "@/lib/numbers/pick-inherited-hub";
 
 type ParticipantRow = {
   user_id: string;
@@ -28,6 +29,8 @@ type ParticipantRow = {
   was_active_last_year: boolean;
   status: string;
   display_name: string | null;
+  show_hub_number?: boolean | null;
+  preferred_hub_id?: string | null;
 };
 
 type HubParticipantRow = {
@@ -104,13 +107,22 @@ const buildParticipantItem = (
   participant: ParticipantRow,
   type: ExhibitorType,
   imageMap: Map<string, string>,
-  placeholderUrl: string
+  placeholderUrl: string,
+  inheritedHubs: InheritedHubOption[]
 ): ExhibitorItem => ({
   type,
   name: getParticipantDisplayName(participant),
   imageUrl: getImageUrl(imageMap, participant.user_id, placeholderUrl),
   displayNumber: participant.display_number,
-  hubDisplayNumber: null,
+  hubDisplayNumber:
+    inheritedHubs.find((hub) => hub.displayNumber?.trim())?.displayNumber ??
+    null,
+  hubType: inheritedHubs[0]?.type,
+  inheritedHubs: inheritedHubs.map((hub) => ({
+    displayNumber: hub.displayNumber,
+    type: hub.type,
+  })),
+  showHubNumber: participant.show_hub_number ?? true,
   userId: participant.user_id,
   slug: participant.slug,
 });
@@ -155,7 +167,9 @@ export const getExhibitors = async (
         is_active,
         was_active_last_year,
         status,
-        display_name
+        display_name,
+        show_hub_number,
+        preferred_hub_id
       `
       )
       .eq("status", "accepted"),
@@ -172,10 +186,30 @@ export const getExhibitors = async (
     ),
   ]);
 
-  if (participantsResult.error) throw participantsResult.error;
   if (hubsResult.error) throw hubsResult.error;
 
-  const participants = (participantsResult.data as ParticipantRow[]) ?? [];
+  let participantRows = (participantsResult.data as ParticipantRow[] | null) ?? [];
+  if (participantsResult.error) {
+    const fallback = await supabase
+      .from("participant_details")
+      .select(
+        `
+        user_id,
+        slug,
+        category,
+        display_number,
+        is_active,
+        was_active_last_year,
+        status,
+        display_name
+      `
+      )
+      .eq("status", "accepted");
+    if (fallback.error) throw fallback.error;
+    participantRows = (fallback.data as ParticipantRow[]) ?? [];
+  }
+
+  const participants = participantRows;
   const eligibleParticipants = participants.filter((participant) =>
     isParticipantEligibleForExhibitorsList(
       participant,
@@ -218,6 +252,7 @@ export const getExhibitors = async (
   const imageMap = buildImageMap((imagesResult.data as ImageRow[]) ?? []);
 
   const hubMemberCountByUserId = new Map<string, number>();
+  const inheritedHubsByUserId = new Map<string, InheritedHubOption[]>();
 
   for (const hub of hubRows) {
     if (!eligibleParticipantIds.has(hub.hub_host_id)) continue;
@@ -227,9 +262,31 @@ export const getExhibitors = async (
       eligibleParticipantIds
     );
     const memberCount = eligibleMemberIds.size;
+    if (memberCount === 0) continue;
+
+    const hostParticipant = participantByUserId.get(hub.hub_host_id);
+    const hubType = classifyCategory(
+      memberCount,
+      hostParticipant?.category,
+      categories
+    );
+    const option: InheritedHubOption = {
+      hubId: hub.id,
+      name: hub.name,
+      displayNumber: hub.display_number,
+      type: hubType,
+      isHost: false,
+    };
 
     for (const userId of eligibleMemberIds) {
       hubMemberCountByUserId.set(userId, memberCount);
+      const current = inheritedHubsByUserId.get(userId) ?? [];
+      if (current.some((item) => item.hubId === hub.id)) continue;
+      current.push({
+        ...option,
+        isHost: userId === hub.hub_host_id,
+      });
+      inheritedHubsByUserId.set(userId, current);
     }
   }
 
@@ -247,7 +304,8 @@ export const getExhibitors = async (
       participant,
       type,
       imageMap,
-      placeholderUrl
+      placeholderUrl,
+      inheritedHubsByUserId.get(participant.user_id) ?? []
     );
     pushToGroup(grouped, type, item);
   }

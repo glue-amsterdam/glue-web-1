@@ -356,4 +356,116 @@ describe("flattenHubMembersForAllList", () => {
       true
     );
   });
+
+  it("inherits the Hub number on flat member rows without an own number", () => {
+    const hubWithUnnumberedMember: MapLocation = {
+      ...hubLocation,
+      members: [
+        {
+          userId: "host-user",
+          name: "Host",
+          slug: "host",
+          locationId: "hub-map-info",
+          type: "standard",
+          displayNumber: "10",
+        },
+        {
+          userId: "plain-member",
+          name: "Plain Member",
+          slug: "plain-member",
+          locationId: "hub-map-info",
+          type: "standard",
+          displayNumber: null,
+          showHubNumber: true,
+          inheritedHubs: [{ displayNumber: "10", type: "standard" }],
+        },
+      ],
+    };
+
+    const result = flattenHubMembersForAllList([hubWithUnnumberedMember]);
+    const memberRow = result.find(
+      (location) => location.id === "list:hub-member:hub-1:plain-member"
+    );
+
+    assert.equal(memberRow?.displayNumber, "10");
+    assert.equal(memberRow?.numberBadges?.length, 1);
+    assert.equal(memberRow?.numberBadges?.[0]?.source, "hub");
+  });
+
+  it("keeps two badges when own number differs from the Hub number", () => {
+    const hubWithNumberedMember: MapLocation = {
+      ...hubLocation,
+      members: [
+        {
+          userId: "host-user",
+          name: "Host",
+          slug: "host",
+          locationId: "hub-map-info",
+          type: "standard",
+          displayNumber: "10",
+        },
+        {
+          userId: "dual-number-member",
+          name: "Dual Number",
+          slug: "dual-number-member",
+          locationId: "hub-map-info",
+          type: "sticky-participant",
+          displayNumber: "33",
+          showHubNumber: true,
+          inheritedHubs: [{ displayNumber: "10", type: "standard" }],
+        },
+      ],
+    };
+
+    const result = flattenHubMembersForAllList([hubWithNumberedMember]);
+    const memberRow = result.find(
+      (location) => location.id === "list:hub-member:hub-1:dual-number-member"
+    );
+
+    assert.equal(memberRow?.displayNumber, "10");
+    assert.equal(memberRow?.numberBadges?.length, 2);
+    assert.equal(memberRow?.numberBadges?.[0]?.value, "10");
+    assert.equal(memberRow?.numberBadges?.[0]?.type, "sticky-participant");
+    assert.equal(memberRow?.numberBadges?.[1]?.value, "33");
+    assert.equal(memberRow?.numberBadges?.[1]?.type, "sticky-participant");
+  });
+
+  it("shows both Hub numbers when the member belongs to two Hubs", () => {
+    const hubWithMultiHubMember: MapLocation = {
+      ...hubLocation,
+      members: [
+        {
+          userId: "host-user",
+          name: "Host",
+          slug: "host",
+          locationId: "hub-map-info",
+          type: "standard",
+          displayNumber: "10",
+        },
+        {
+          userId: "two-hub-member",
+          name: "Two Hubs",
+          slug: "two-hub-member",
+          locationId: "hub-map-info",
+          type: "standard",
+          displayNumber: null,
+          showHubNumber: true,
+          inheritedHubs: [
+            { displayNumber: "10", type: "standard" },
+            { displayNumber: "6", type: "hub" },
+          ],
+        },
+      ],
+    };
+
+    const result = flattenHubMembersForAllList([hubWithMultiHubMember]);
+    const memberRow = result.find(
+      (location) => location.id === "list:hub-member:hub-1:two-hub-member"
+    );
+
+    assert.deepEqual(
+      memberRow?.numberBadges?.map((badge) => badge.value),
+      ["6", "10"]
+    );
+  });
 });

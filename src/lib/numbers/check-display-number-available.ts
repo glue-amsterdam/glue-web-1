@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 import type { DisplayNumberEntityType } from "./get-display-numbers-panel-data";
+import {
+  filterHubMemberShareOccupants,
+  type HubMembershipLink,
+} from "./hub-member-number-share";
 
 export type DisplayNumberOccupantResult = {
   entityType: DisplayNumberEntityType;
@@ -22,6 +26,43 @@ type CheckDisplayNumberResult = {
   isAvailable: boolean;
   occupants: DisplayNumberOccupantResult[];
   error: unknown | null;
+};
+
+const fetchHubMemberships = async (
+  supabase: SupabaseClient
+): Promise<HubMembershipLink[]> => {
+  const [hubsResult, membersResult] = await Promise.all([
+    supabase.from("hubs").select("id, hub_host_id"),
+    supabase.from("hub_participants").select("hub_id, user_id"),
+  ]);
+
+  if (hubsResult.error) {
+    throw hubsResult.error;
+  }
+
+  if (membersResult.error) {
+    throw membersResult.error;
+  }
+
+  const memberships: HubMembershipLink[] = [];
+  const seen = new Set<string>();
+
+  const addMembership = (userId: string, hubId: string) => {
+    const key = `${userId}:${hubId}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    memberships.push({ userId, hubId });
+  };
+
+  for (const hub of hubsResult.data ?? []) {
+    addMembership(hub.hub_host_id, hub.id);
+  }
+
+  for (const row of membersResult.data ?? []) {
+    addMembership(row.user_id, row.hub_id);
+  }
+
+  return memberships;
 };
 
 export const checkDisplayNumberAvailable = async ({
@@ -67,7 +108,11 @@ export const checkDisplayNumberAvailable = async ({
   }
 
   if (hubResult.error) {
-    return { isAvailable: false, occupants: [], error: hubResult.error };
+    return {
+      isAvailable: false,
+      occupants: [],
+      error: hubResult.error,
+    };
   }
 
   const occupants: DisplayNumberOccupantResult[] = [];
@@ -92,9 +137,28 @@ export const checkDisplayNumberAvailable = async ({
     });
   }
 
+  let blockingOccupants = occupants;
+
+  if (entityId && occupants.length > 0) {
+    try {
+      const memberships = await fetchHubMemberships(supabase);
+      blockingOccupants = filterHubMemberShareOccupants(occupants, {
+        entityType,
+        entityId,
+        memberships,
+      });
+    } catch (error) {
+      return {
+        isAvailable: false,
+        occupants: [],
+        error,
+      };
+    }
+  }
+
   return {
-    isAvailable: occupants.length === 0,
-    occupants,
+    isAvailable: blockingOccupants.length === 0,
+    occupants: blockingOccupants,
     error: null,
   };
 };

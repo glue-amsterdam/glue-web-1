@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { useFormContext } from "react-hook-form";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check, X, Loader2 } from "lucide-react";
 import type { ParticipantDetailsInput } from "@/schemas/participantDetailsSchemas";
+import HubNumberInheritControls from "@/app/dashboard/[userId]/numbers/components/hub-number-inherit-controls";
+import type { InheritedHubOption } from "@/lib/numbers/pick-inherited-hub";
 
 interface DisplayNumberFieldProps {
   isMod: boolean;
@@ -19,13 +20,38 @@ export function DisplayNumberField({
 }: DisplayNumberFieldProps) {
   const {
     register,
+    watch,
+    setValue,
     formState: { errors },
   } = useFormContext<ParticipantDetailsInput>();
   const [isChecking, setIsChecking] = useState(false);
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const [checkedValue, setCheckedValue] = useState("");
+  const [inheritedHubs, setInheritedHubs] = useState<InheritedHubOption[]>([]);
   const latestValueRef = useRef("");
   const requestIdRef = useRef(0);
+  const showHubNumber = watch("show_hub_number") ?? true;
+
+  useEffect(() => {
+    if (!isMod || !targetUserId) return;
+
+    const handleLoadHubs = async () => {
+      try {
+        const response = await fetch(
+          `/api/users/participants/${targetUserId}/inherited-hubs`
+        );
+        if (!response.ok) return;
+        const data = (await response.json()) as {
+          hubs?: InheritedHubOption[];
+        };
+        setInheritedHubs(data.hubs ?? []);
+      } catch (error) {
+        console.error("Error loading inherited hubs:", error);
+      }
+    };
+
+    void handleLoadHubs();
+  }, [isMod, targetUserId]);
 
   const checkAvailability = useDebouncedCallback(async (value: string) => {
     if (!value || !isMod) {
@@ -138,9 +164,19 @@ export function DisplayNumberField({
         <p className="text-sm text-red-500">{errors.display_number.message}</p>
       )}
       <p className="text-xs text-gray-500">
-        Optional. Used to display a number-letter identifier on the map (e.g.,
-        1A, 2B, 3). Must be unique across all participants and hubs.
+        Optional own number. Unique except that a Hub and its members may share
+        that Hub number. Members inherit every Hub number they belong to on
+        public lists unless Show HUB number is off.
       </p>
+      {inheritedHubs.length > 0 ? (
+        <HubNumberInheritControls
+          hubs={inheritedHubs}
+          showHubNumber={Boolean(showHubNumber)}
+          onShowHubNumberChange={(value) =>
+            setValue("show_hub_number", value, { shouldDirty: true })
+          }
+        />
+      ) : null}
     </div>
   );
 }

@@ -50,6 +50,8 @@ export type ExhibitorParticipantDetail = {
   imageUrl: string;
   carouselSlides: ExhibitorCarouselSlide[];
   displayNumber: string | null;
+  showHubNumber?: boolean;
+  inheritedHubs?: { displayNumber: string | null; type: ExhibitorType }[];
   description: string | null;
   status: string;
   is_sticky: boolean;
@@ -66,6 +68,8 @@ export type ExhibitorHubMember = {
   imageUrl: string;
   displayNumber: string | null;
   type: ExhibitorType;
+  showHubNumber?: boolean;
+  inheritedHubs?: { displayNumber: string | null; type: ExhibitorType }[];
 };
 
 export type ExhibitorHubDetail = {

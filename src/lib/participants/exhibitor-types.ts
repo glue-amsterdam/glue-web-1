@@ -9,6 +9,9 @@ export type ExhibitorItem = {
   imageUrl: string;
   displayNumber: string | null;
   hubDisplayNumber: string | null;
+  hubType?: ExhibitorType;
+  inheritedHubs?: { displayNumber: string | null; type: ExhibitorType }[];
+  showHubNumber?: boolean;
   userId?: string;
   hubId?: string;
   slug?: string;

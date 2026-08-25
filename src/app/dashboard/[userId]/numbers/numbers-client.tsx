@@ -11,6 +11,11 @@ import type {
   DisplayNumberRow,
   DisplayNumbersPanelData,
 } from "@/lib/numbers/get-display-numbers-panel-data";
+import {
+  getNumbersRowKey,
+  groupNumbersPanelRows,
+} from "@/lib/numbers/group-numbers-panel-rows";
+import { hasDisplayNumberConflict } from "@/lib/numbers/hub-member-number-share";
 import { useToast } from "@/hooks/use-toast";
 
 type NumbersClientProps = DisplayNumbersPanelData & {
@@ -59,10 +64,11 @@ const getStatusLabel = (row: DisplayNumberRow): string => {
 };
 
 const countConflicts = (
-  occupantsByNumber: Record<string, DisplayNumberOccupant[]>
+  occupantsByNumber: Record<string, DisplayNumberOccupant[]>,
+  hubMemberships: DisplayNumbersPanelData["hubMemberships"]
 ): number => {
-  return Object.values(occupantsByNumber).filter(
-    (occupants) => occupants.length > 1
+  return Object.values(occupantsByNumber).filter((occupants) =>
+    hasDisplayNumberConflict(occupants, hubMemberships)
   ).length;
 };
 
@@ -70,6 +76,7 @@ export const NumbersClient = ({
   targetUserId,
   rows,
   occupantsByNumber,
+  hubMemberships,
 }: NumbersClientProps) => {
   const router = useRouter();
   const { toast } = useToast();
@@ -81,15 +88,17 @@ export const NumbersClient = ({
   const stats = useMemo(() => {
     const assigned = rows.filter((row) => row.displayNumber?.trim()).length;
     const unassigned = rows.length - assigned;
-    const conflicts = countConflicts(occupantsByNumber);
+    const conflicts = countConflicts(occupantsByNumber, hubMemberships);
 
     return { assigned, unassigned, conflicts };
-  }, [rows, occupantsByNumber]);
+  }, [rows, occupantsByNumber, hubMemberships]);
 
-  const filteredRows = useMemo(() => {
+  const listItems = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
+    const includeMembers = category !== "hubs";
+    const includeSolos = category !== "hubs";
 
-    return rows.filter((row) => {
+    const matchesCategory = (row: DisplayNumberRow): boolean => {
       if (category === "participants" && row.entityType !== "participant") {
         return false;
       }
@@ -98,6 +107,10 @@ export const NumbersClient = ({
         return false;
       }
 
+      return true;
+    };
+
+    const matchesFilterMode = (row: DisplayNumberRow): boolean => {
       if (filterMode === "assigned" && !row.displayNumber?.trim()) {
         return false;
       }
@@ -106,14 +119,53 @@ export const NumbersClient = ({
         return false;
       }
 
+      return true;
+    };
+
+    const matchesSearch = (row: DisplayNumberRow): boolean => {
       if (!term) return true;
 
       const number = row.displayNumber?.toLowerCase() ?? "";
+      const inheritedNumbers = row.inheritedHubs
+        .map((hub) => hub.displayNumber?.toLowerCase() ?? "")
+        .join(" ");
+
       return (
         row.name.toLowerCase().includes(term) ||
         number.includes(term) ||
+        inheritedNumbers.includes(term) ||
         row.context.toLowerCase().includes(term)
       );
+    };
+
+    const memberFilterKeys = new Set<string>();
+    const visibleKeys = new Set<string>();
+    const expandHubKeys = new Set<string>();
+
+    for (const row of rows) {
+      if (!matchesCategory(row) || !matchesFilterMode(row)) {
+        continue;
+      }
+
+      const key = getNumbersRowKey(row);
+      memberFilterKeys.add(key);
+
+      if (matchesSearch(row)) {
+        visibleKeys.add(key);
+        if (term && row.entityType === "hub") {
+          expandHubKeys.add(key);
+        }
+      }
+    }
+
+    return groupNumbersPanelRows({
+      rows,
+      visibleKeys,
+      memberFilterKeys,
+      includeHubRows: true,
+      includeMembers,
+      includeSolos,
+      expandHubKeys,
     });
   }, [rows, searchTerm, category, filterMode]);
 
@@ -156,6 +208,53 @@ export const NumbersClient = ({
           error instanceof Error
             ? error.message
             : "Failed to update display number.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setSavingKey(null);
+    }
+  };
+
+  const handleSaveHubPrefs = async (
+    row: DisplayNumberRow,
+    prefs: { showHubNumber: boolean }
+  ): Promise<boolean> => {
+    const rowKey = `${row.entityType}:${row.entityId}`;
+    setSavingKey(rowKey);
+
+    try {
+      const response = await fetch("/api/display-numbers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          entityType: row.entityType,
+          entityId: row.entityId,
+          showHubNumber: prefs.showHubNumber,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(data?.error ?? "Failed to update Hub number settings");
+      }
+
+      toast({
+        title: "Saved",
+        description: `Hub number visibility updated for ${row.name}.`,
+      });
+      router.refresh();
+      return true;
+    } catch (error) {
+      console.error("Error saving hub number prefs:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to update Hub number settings.",
         variant: "destructive",
       });
       return false;
@@ -233,7 +332,7 @@ export const NumbersClient = ({
         </button>
       </div>
 
-      {filteredRows.length === 0 ? (
+      {listItems.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           {rows.length === 0
             ? "No active participants or hubs found."
@@ -245,20 +344,21 @@ export const NumbersClient = ({
             <div className="border-b border-gray-200 bg-gray-50 px-2 py-2 text-sm font-medium">
               Name · Number
             </div>
-            {filteredRows.map((row) => {
-              const rowKey = `${row.entityType}:${row.entityId}`;
+            {listItems.map((item) => {
+              const rowKey = `${item.row.entityType}:${item.row.entityId}`;
 
               return (
                 <NumberRowMobile
-                  key={rowKey}
-                  row={row}
+                  key={`${rowKey}:${item.parentHubId ?? "root"}:${item.mode}`}
+                  item={item}
                   targetUserId={targetUserId}
                   occupantsByNumber={occupantsByNumber}
                   onSave={handleSave}
+                  onSaveHubPrefs={handleSaveHubPrefs}
                   isSaving={savingKey === rowKey}
-                  rowHref={getRowHref(row, targetUserId)}
-                  contextLabel={getContextLabel(row)}
-                  statusLabel={getStatusLabel(row)}
+                  rowHref={getRowHref(item.row, targetUserId)}
+                  contextLabel={getContextLabel(item.row)}
+                  statusLabel={getStatusLabel(item.row)}
                 />
               );
             })}
@@ -278,20 +378,21 @@ export const NumbersClient = ({
                 </tr>
               </thead>
               <tbody>
-                {filteredRows.map((row) => {
-                  const rowKey = `${row.entityType}:${row.entityId}`;
+                {listItems.map((item) => {
+                  const rowKey = `${item.row.entityType}:${item.row.entityId}`;
 
                   return (
                     <NumberRowDesktop
-                      key={rowKey}
-                      row={row}
+                      key={`${rowKey}:${item.parentHubId ?? "root"}:${item.mode}`}
+                      item={item}
                       targetUserId={targetUserId}
                       occupantsByNumber={occupantsByNumber}
                       onSave={handleSave}
+                      onSaveHubPrefs={handleSaveHubPrefs}
                       isSaving={savingKey === rowKey}
-                      rowHref={getRowHref(row, targetUserId)}
-                      contextLabel={getContextLabel(row)}
-                      statusLabel={getStatusLabel(row)}
+                      rowHref={getRowHref(item.row, targetUserId)}
+                      contextLabel={getContextLabel(item.row)}
+                      statusLabel={getStatusLabel(item.row)}
                     />
                   );
                 })}

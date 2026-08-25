@@ -5,14 +5,14 @@ import ExhibitorDescription from "@/components/exhibitors/exhibitor-description"
 import ExhibitorDetailInfo from "@/components/exhibitors/exhibitor-detail-info";
 import ExhibitorImagesCarousel from "@/components/exhibitors/exhibitor-images-carousel";
 import HeadlineWCross from "../headline-w-cross";
-import RoundedNumber from "../rounded-number";
+import DisplayNumberCluster from "@/components/display-number-cluster";
 import BigButton from "../big-button";
 
 const ExhibitorDetailView = ({
   type,
   name,
   carouselSlides,
-  displayLabel,
+  numberBadges,
   description,
   contactInfo,
   navigation,
@@ -41,39 +41,39 @@ const ExhibitorDetailView = ({
             id="exhibitor-detail-description-section"
             className="main-boder-top pt-[15px]"
           >
-            <div className="flex items-center gap-[20px]">
-              <RoundedNumber
-                type={type}
-                participant_n={displayLabel}
+            <div className="flex items-start gap-[20px]">
+              <DisplayNumberCluster
+                badges={numberBadges}
+                fallbackType={type}
                 className="shrink-0"
               />
-              <h2 className="versal-body-text uppercase min-w-0 flex-1">
-                {name.toUpperCase()}
-              </h2>
-            </div>
-            <div className="pl-[46px]">
-              {contactInfo && <ExhibitorDetailInfo contactInfo={contactInfo} />}
-              {showNavigation ? (
-                <div className="flex gap-[20px] pt-[30px] flex-wrap">
-                  {navigation.showMap && navigation.mapHref ? (
-                    <BigButton
-                      label="map"
-                      href={navigation.mapHref}
-                      mode="navbar"
-                      as="link"
-                    />
-                  ) : null}
-                  {navigation.showEvents && navigation.eventsHref ? (
-                    <BigButton
-                      label="events"
-                      href={navigation.eventsHref}
-                      mode="navbar"
-                      target="_self"
-                      as="link"
-                    />
-                  ) : null}
-                </div>
-              ) : null}
+              <div className="min-w-0 flex-1">
+                <h2 className="versal-body-text uppercase">
+                  {name.toUpperCase()}
+                </h2>
+                {contactInfo && <ExhibitorDetailInfo contactInfo={contactInfo} />}
+                {showNavigation ? (
+                  <div className="flex gap-[20px] pt-[30px] flex-wrap">
+                    {navigation.showMap && navigation.mapHref ? (
+                      <BigButton
+                        label="map"
+                        href={navigation.mapHref}
+                        mode="navbar"
+                        as="link"
+                      />
+                    ) : null}
+                    {navigation.showEvents && navigation.eventsHref ? (
+                      <BigButton
+                        label="events"
+                        href={navigation.eventsHref}
+                        mode="navbar"
+                        target="_self"
+                        as="link"
+                      />
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
             </div>
           </article>
         </div>

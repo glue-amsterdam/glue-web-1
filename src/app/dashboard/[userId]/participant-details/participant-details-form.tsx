@@ -112,6 +112,8 @@ export function ParticipantDetailsForm({
       reactivation_notes: participantDetails?.reactivation_notes || null,
       reactivation_status: participantDetails?.reactivation_status || null,
       display_number: participantDetails?.display_number || null,
+      show_hub_number: participantDetails?.show_hub_number ?? true,
+      preferred_hub_id: participantDetails?.preferred_hub_id ?? null,
       display_name: participantDetails?.display_name || "",
       phone_numbers: participantDetails?.phone_numbers ?? [],
       social_media: buildDefaultSocialMedia(participantDetails?.social_media),

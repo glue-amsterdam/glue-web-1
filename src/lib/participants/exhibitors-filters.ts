@@ -1,8 +1,10 @@
 import type {
+  ExhibitorItem,
   ExhibitorSortField,
   ExhibitorSortOrder,
   ExhibitorType,
 } from "@/lib/participants/exhibitor-types";
+import { resolveDisplayNumberBadges } from "@/lib/numbers/resolve-display-number-badges";
 
 export const EXHIBITORS_PAGE_SIZE = 30;
 
@@ -52,6 +54,37 @@ export const getExhibitorDisplayNumber = (item: {
 }): string => {
   return item.displayNumber ?? item.hubDisplayNumber ?? " ";
 };
+
+export const getExhibitorNumberBadges = (
+  item: Pick<
+    ExhibitorItem,
+    | "displayNumber"
+    | "hubDisplayNumber"
+    | "hubType"
+    | "inheritedHubs"
+    | "showHubNumber"
+    | "type"
+  >
+) =>
+  resolveDisplayNumberBadges({
+    ownNumber: item.displayNumber,
+    ownType: item.type,
+    showHubNumber: item.showHubNumber ?? true,
+    hubs:
+      item.inheritedHubs && item.inheritedHubs.length > 0
+        ? item.inheritedHubs.map((hub) => ({
+            number: hub.displayNumber,
+            type: hub.type,
+          }))
+        : item.hubDisplayNumber
+          ? [
+              {
+                number: item.hubDisplayNumber,
+                type: item.hubType ?? item.type,
+              },
+            ]
+          : [],
+  });
 
 export const getExhibitorLink = (item: {
   slug?: string;

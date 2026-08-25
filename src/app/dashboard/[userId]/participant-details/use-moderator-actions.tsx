@@ -31,6 +31,8 @@ export const MODERATOR_WATCH_FIELDS = [
   "category",
   "is_active",
   "display_number",
+  "show_hub_number",
+  "preferred_hub_id",
   "reactivation_requested",
   "reactivation_status",
   "reactivation_notes",

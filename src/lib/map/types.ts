@@ -1,3 +1,4 @@
+import type { DisplayNumberBadge } from "@/lib/numbers/resolve-display-number-badges";
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
 
 export type MapTourMode = "live" | "snapshot";
@@ -20,6 +21,8 @@ export type MapLocation = {
   mapSelectionId?: string;
   /** user_id of hub member when this row represents a flat member entry. */
   hubMemberUserId?: string;
+  /** Public list badges (own + inherited Hub). Map pins still use `displayNumber`. */
+  numberBadges?: DisplayNumberBadge[];
 };
 
 export type MapRouteDot = {
@@ -63,6 +66,8 @@ export type MapLocationDetailMember = {
   locationId?: string;
   /** Member's own map_info id when selection should resolve to the hub pin. */
   ownMapInfoId?: string;
+  showHubNumber?: boolean;
+  inheritedHubs?: { displayNumber: string | null; type: ExhibitorType }[];
 };
 
 export type MapLocationDetail = {

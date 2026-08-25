@@ -1,9 +1,10 @@
 "use client";
 
-import RoundedNumber from "@/components/rounded-number";
+import DisplayNumberCluster from "@/components/display-number-cluster";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { isMapHubEntity } from "@/lib/map/map-location-display";
 import { getHubMemberSelectionKey } from "@/lib/map/exhibitor-footer-slides";
+import { getMapLocationNumberBadges } from "@/lib/map/map-filters";
 import type { MapLocation } from "@/lib/map/types";
 import type { MapLocationSelectOptions } from "@/app/map/stores/use-map-store";
 import type { ExhibitorsFilterType } from "@/lib/participants/exhibitors-filters";
@@ -59,8 +60,8 @@ const ExhibitorList = ({
   const renderFlatRow = (location: MapLocation) => {
     const selectionId = location.mapSelectionId ?? location.id;
     const isSelected = selectedLocation === selectionId;
-    const displayNumber = location.displayNumber ?? " ";
     const memberKey = location.hubMemberUserId;
+    const numberBadges = getMapLocationNumberBadges(location);
 
     return (
       <li key={location.id}>
@@ -74,7 +75,10 @@ const ExhibitorList = ({
           aria-pressed={isSelected}
           className={listButtonClassName}
         >
-          <RoundedNumber type={location.type} participant_n={displayNumber} />
+          <DisplayNumberCluster
+            badges={numberBadges}
+            fallbackType={location.type}
+          />
           <p
             className={cn(
               "min-w-0 flex-1",
@@ -102,7 +106,7 @@ const ExhibitorList = ({
         }
 
         const isSelected = selectedLocation === location.id;
-        const displayNumber = location.displayNumber ?? " ";
+        const hubNumberBadges = getMapLocationNumberBadges(location);
         const hubMembers = shouldShowHubMembers(location, categoryType)
           ? (location.members ?? []).filter(
               (member) => member.type === categoryType
@@ -112,9 +116,9 @@ const ExhibitorList = ({
         return (
           <li key={location.id}>
             <div className={listButtonClassName}>
-              <RoundedNumber
-                type={location.type}
-                participant_n={displayNumber}
+              <DisplayNumberCluster
+                badges={hubNumberBadges}
+                fallbackType={location.type}
               />
               <div className="flex min-w-0 flex-1 flex-col">
                 <button

@@ -1,3 +1,8 @@
+import {
+  getPrimaryDisplayNumber,
+  resolveDisplayNumberBadges,
+  type DisplayNumberBadge,
+} from "@/lib/numbers/resolve-display-number-badges";
 import type { ExhibitorsFilterType } from "@/lib/participants/exhibitors-filters";
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
 import type { MapLocation, MapLocationDetailMember, MapRoute } from "@/lib/map/types";
@@ -107,6 +112,13 @@ const locationMatchesSearchQuery = (
 ): boolean => {
   if (location.name.toLowerCase().includes(query)) return true;
   if (location.displayNumber?.toLowerCase().includes(query)) return true;
+  if (
+    location.numberBadges?.some((badge) =>
+      badge.value.toLowerCase().includes(query)
+    )
+  ) {
+    return true;
+  }
   return (
     location.members?.some((member) =>
       member.name.toLowerCase().includes(query)
@@ -127,6 +139,63 @@ export const filterMapLocationsForSearch = (
   );
 
   return sortMapLocationsForDisplayList(result);
+};
+
+const buildMemberListLocation = (
+  location: MapLocation,
+  member: MapLocationDetailMember,
+  memberUserId: string
+): MapLocation => {
+  const ownType = member.type ?? location.type;
+  const inheritedHubs =
+    member.inheritedHubs && member.inheritedHubs.length > 0
+      ? member.inheritedHubs
+      : [
+          {
+            displayNumber: location.displayNumber,
+            type: location.type,
+          },
+        ];
+  const badges = resolveDisplayNumberBadges({
+    ownNumber: member.displayNumber,
+    ownType,
+    showHubNumber: member.showHubNumber ?? true,
+    hubs: inheritedHubs.map((hub) => ({
+      number: hub.displayNumber,
+      type: hub.type,
+    })),
+  });
+
+  return {
+    id: `list:hub-member:${location.hubId}:${memberUserId}`,
+    mapSelectionId: location.id,
+    hubMemberUserId: member.userId ?? member.slug,
+    latitude: location.latitude,
+    longitude: location.longitude,
+    type: ownType,
+    name: member.name,
+    displayNumber: getPrimaryDisplayNumber(badges),
+    numberBadges: badges,
+    addressLine: location.addressLine,
+    slug: member.slug,
+    hubId: location.hubId,
+    memberCount: 1,
+  };
+};
+
+export const getMapLocationNumberBadges = (
+  location: MapLocation
+): DisplayNumberBadge[] => {
+  if (location.numberBadges && location.numberBadges.length > 0) {
+    return location.numberBadges;
+  }
+
+  return resolveDisplayNumberBadges({
+    ownNumber: location.displayNumber,
+    ownType: location.type,
+    showHubNumber: false,
+    hubs: [],
+  });
 };
 
 /** In "All" view, keep hub rows and add flat member rows (solo entries unchanged). */
@@ -194,20 +263,7 @@ export const flattenHubMembersForAllList = (
 
     seenMemberUserIds.add(memberUserId);
 
-    result.push({
-      id: `list:hub-member:${location.hubId}:${memberUserId}`,
-      mapSelectionId: location.id,
-      hubMemberUserId: member.userId ?? member.slug,
-      latitude: location.latitude,
-      longitude: location.longitude,
-      type: member.type ?? location.type,
-      name: member.name,
-      displayNumber: member.displayNumber ?? null,
-      addressLine: location.addressLine,
-      slug: member.slug,
-      hubId: location.hubId,
-      memberCount: 1,
-    });
+    result.push(buildMemberListLocation(location, member, memberUserId));
   };
 
   for (const location of locations) {
@@ -276,20 +332,7 @@ export const flattenHubMembersForCategoryList = (
 
     seenMemberUserIds.add(memberUserId);
 
-    result.push({
-      id: `list:hub-member:${location.hubId}:${memberUserId}`,
-      mapSelectionId: location.id,
-      hubMemberUserId: member.userId ?? member.slug,
-      latitude: location.latitude,
-      longitude: location.longitude,
-      type: member.type ?? location.type,
-      name: member.name,
-      displayNumber: member.displayNumber ?? null,
-      addressLine: location.addressLine,
-      slug: member.slug,
-      hubId: location.hubId,
-      memberCount: 1,
-    });
+    result.push(buildMemberListLocation(location, member, memberUserId));
   };
 
   for (const location of locations) {
