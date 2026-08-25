@@ -6,6 +6,7 @@ import {
   type ParticipantCategory,
 } from "@/lib/participants/participant-categories";
 import { getTheme } from "@/lib/theme";
+import { getParticipantInheritedHubs } from "@/lib/numbers/get-participant-inherited-hubs";
 import type { ExhibitorType } from "./exhibitor-types";
 import {
   ExhibitorNotFoundError,
@@ -38,6 +39,7 @@ type ParticipantRow = {
   is_active: boolean;
   was_active_last_year: boolean;
   display_name: string | null;
+  show_hub_number?: boolean | null;
   phone_numbers: string[] | null;
   social_media: ExhibitorSocialMedia | Record<string, string> | null;
   visible_emails: string[] | null;
@@ -344,6 +346,7 @@ export const getExhibitorBySlug = async (
         is_active,
         was_active_last_year,
         display_name,
+        show_hub_number,
         phone_numbers,
         social_media,
         visible_emails,
@@ -365,13 +368,14 @@ export const getExhibitorBySlug = async (
   }
 
   const row = data as ParticipantRow;
-  const [isSticky, tourStatus, categories, membership, placeholderUrl] =
+  const [isSticky, tourStatus, categories, membership, placeholderUrl, inheritedHubs] =
     await Promise.all([
       isParticipantSticky(supabase, row.user_id),
       getTourStatus(supabase),
       getTheme().then((theme) => theme.participantCategories),
       resolveHubMembership(supabase, row.user_id),
       getParticipantPlaceholderUrl(supabase),
+      getParticipantInheritedHubs(supabase, row.user_id),
     ]);
 
   if (row.status === "accepted" && !isSticky) {
@@ -413,6 +417,11 @@ export const getExhibitorBySlug = async (
     imageUrl,
     carouselSlides,
     displayNumber: row.display_number,
+    showHubNumber: row.show_hub_number ?? true,
+    inheritedHubs: inheritedHubs.map((hub) => ({
+      displayNumber: hub.displayNumber,
+      type: hub.type,
+    })),
     description,
     status: row.status,
     is_sticky: isSticky,

@@ -38,6 +38,11 @@ export default async function NumbersPage({
   const data = await getDisplayNumbersPanelData();
 
   return (
-    <NumbersClient targetUserId={userId} rows={data.rows} occupantsByNumber={data.occupantsByNumber} />
+    <NumbersClient
+      targetUserId={userId}
+      rows={data.rows}
+      occupantsByNumber={data.occupantsByNumber}
+      hubMemberships={data.hubMemberships}
+    />
   );
 }

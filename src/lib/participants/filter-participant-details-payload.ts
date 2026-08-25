@@ -22,6 +22,8 @@ const MOD_ONLY_DEFAULTS: Pick<
   | "reactivation_notes"
   | "reactivation_status"
   | "display_number"
+  | "show_hub_number"
+  | "preferred_hub_id"
   | "upgrade_requested"
   | "upgrade_requested_plan_id"
   | "upgrade_requested_plan_type"
@@ -37,6 +39,8 @@ const MOD_ONLY_DEFAULTS: Pick<
   reactivation_notes: null,
   reactivation_status: null,
   display_number: null,
+  show_hub_number: true,
+  preferred_hub_id: null,
   upgrade_requested: false,
   upgrade_requested_plan_id: null,
   upgrade_requested_plan_type: null,

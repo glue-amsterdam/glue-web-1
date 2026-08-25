@@ -2,8 +2,9 @@
 
 import { useCallback } from "react";
 import { RouteIcon } from "lucide-react";
-import RoundedNumber from "@/components/rounded-number";
+import DisplayNumberCluster from "@/components/display-number-cluster";
 import type { MapLocation, MapRoute } from "@/lib/map/types";
+import { getMapLocationNumberBadges } from "@/lib/map/map-filters";
 import { cn } from "@/lib/utils";
 
 type MapSearchResultsProps = {
@@ -52,7 +53,7 @@ const MapSearchResults = ({
         <div>
           <ul>
             {locations.map((location) => {
-              const displayNumber = location.displayNumber ?? " ";
+              const numberBadges = getMapLocationNumberBadges(location);
               return (
                 <li key={location.id}>
                   <button
@@ -61,9 +62,9 @@ const MapSearchResults = ({
                     onClick={() => handleExhibitorClick(location.id)}
                     className="flex w-full items-center gap-[15px] py-[12px] pl-[4px] base-text-size"
                   >
-                    <RoundedNumber
-                      type={location.type}
-                      participant_n={displayNumber}
+                    <DisplayNumberCluster
+                      badges={numberBadges}
+                      fallbackType={location.type}
                     />
                     <span className="truncate">
                       {location.name}

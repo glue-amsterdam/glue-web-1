@@ -13,6 +13,10 @@ import { getIsPlatformMod } from "@/lib/permissions/get-is-mod";
 import type { ParticipantDetails } from "@/schemas/participantDetailsSchemas";
 import { participantDetailsSchema } from "@/schemas/participantDetailsSchemas";
 import { createClient } from "@/utils/supabase/server";
+import {
+  checkDisplayNumberAvailable,
+  normalizeDisplayNumberInput,
+} from "@/lib/numbers/check-display-number-available";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
@@ -140,6 +144,38 @@ async function handleRequest(
 
     let validatedData = filterParticipantDetailsPayload(parsed, existing, isMod);
     validatedData = await resolvePlanType(supabase, validatedData);
+
+    if (isMod) {
+      const normalizedDisplayNumber = normalizeDisplayNumberInput(
+        validatedData.display_number
+      );
+      if (normalizedDisplayNumber) {
+        const availability = await checkDisplayNumberAvailable({
+          supabase,
+          displayNumber: normalizedDisplayNumber,
+          entityType: "participant",
+          entityId: userId,
+        });
+
+        if (availability.error) {
+          console.error("Error checking display number:", availability.error);
+          return NextResponse.json(
+            { error: "Failed to check display number availability" },
+            { status: 500 }
+          );
+        }
+
+        if (!availability.isAvailable) {
+          return NextResponse.json(
+            {
+              error: "Display number is already in use",
+              occupants: availability.occupants,
+            },
+            { status: 409 }
+          );
+        }
+      }
+    }
 
     if (action === "update") {
       applyReactivationSideEffects(validatedData);

@@ -8,6 +8,7 @@ import type {
   DisplayNumberOccupant,
   DisplayNumberRow,
 } from "@/lib/numbers/get-display-numbers-panel-data";
+import HubNumberInheritControls from "@/app/dashboard/[userId]/numbers/components/hub-number-inherit-controls";
 
 type DisplayNumberCellProps = {
   row: DisplayNumberRow;
@@ -16,6 +17,10 @@ type DisplayNumberCellProps = {
   onSave: (
     row: DisplayNumberRow,
     displayNumber: string | null
+  ) => Promise<boolean>;
+  onSaveHubPrefs?: (
+    row: DisplayNumberRow,
+    prefs: { showHubNumber: boolean }
   ) => Promise<boolean>;
   isSaving: boolean;
   layout?: "inline" | "stacked";
@@ -103,6 +108,7 @@ export const DisplayNumberCell = ({
   targetUserId,
   occupantsByNumber,
   onSave,
+  onSaveHubPrefs,
   isSaving,
   layout = "inline",
 }: DisplayNumberCellProps) => {
@@ -250,7 +256,7 @@ export const DisplayNumberCell = ({
   const rowLayoutClass =
     layout === "stacked"
       ? "flex flex-wrap items-center gap-2"
-      : "relative inline-flex items-center gap-2";
+      : "relative inline-flex flex-wrap items-center gap-2";
 
   return (
     <div className={layout === "stacked" ? "space-y-1 w-full" : "space-y-1"}>
@@ -283,6 +289,18 @@ export const DisplayNumberCell = ({
         >
           {isSaving ? "Saving…" : "Save"}
         </button>
+        {row.entityType === "participant" &&
+        row.inheritedHubs.length > 0 &&
+        onSaveHubPrefs ? (
+          <HubNumberInheritControls
+            hubs={row.inheritedHubs}
+            showHubNumber={row.showHubNumber}
+            disabled={isSaving}
+            onShowHubNumberChange={(showHubNumber) => {
+              void onSaveHubPrefs(row, { showHubNumber });
+            }}
+          />
+        ) : null}
       </div>
 
       {isChecking && (

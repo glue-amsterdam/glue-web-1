@@ -1,8 +1,12 @@
 import { sortByDisplayNumber } from "@/lib/numbers/compare-display-numbers";
 import { getParticipantDisplayName } from "@/lib/participants/get-participant-display-name";
 import { createClient } from "@/utils/supabase/server";
+import type { InheritedHubOption } from "./pick-inherited-hub";
+import type { HubMembershipLink } from "./hub-member-number-share";
 
 export type DisplayNumberEntityType = "participant" | "hub";
+
+export type DisplayNumberInheritedHub = InheritedHubOption;
 
 export type DisplayNumberRow = {
   entityType: DisplayNumberEntityType;
@@ -13,6 +17,10 @@ export type DisplayNumberRow = {
   status: string;
   context: "solo" | "hub" | "hub-member" | "hub-host";
   slug: string | null;
+  type: string;
+  showHubNumber: boolean;
+  preferredHubId: string | null;
+  inheritedHubs: DisplayNumberInheritedHub[];
 };
 
 export type DisplayNumberOccupant = {
@@ -29,6 +37,7 @@ export type DisplayNumberOccupant = {
 export type DisplayNumbersPanelData = {
   rows: DisplayNumberRow[];
   occupantsByNumber: Record<string, DisplayNumberOccupant[]>;
+  hubMemberships: HubMembershipLink[];
 };
 
 const buildOccupantsByNumber = (
@@ -102,7 +111,7 @@ export const getDisplayNumbersPanelData =
       supabase
         .from("participant_details")
         .select(
-          "user_id, display_name, display_number, is_active, status, slug"
+          "user_id, display_name, display_number, is_active, status, slug, category, show_hub_number, preferred_hub_id"
         )
         .eq("status", "accepted")
         .eq("is_active", true),
@@ -136,6 +145,31 @@ export const getDisplayNumbersPanelData =
       );
     }
 
+    type ParticipantListRow = {
+      user_id: string;
+      display_name: string | null;
+      display_number: string | null;
+      is_active: boolean;
+      status: string;
+      slug: string | null;
+      category?: string | null;
+      show_hub_number?: boolean | null;
+      preferred_hub_id?: string | null;
+    };
+
+    let participantList: ParticipantListRow[] =
+      (participantsResult.data as ParticipantListRow[] | null) ?? [];
+    if (participantsResult.error) {
+      const fallback = await supabase
+        .from("participant_details")
+        .select(
+          "user_id, display_name, display_number, is_active, status, slug, category"
+        )
+        .eq("status", "accepted")
+        .eq("is_active", true);
+      participantList = (fallback.data as ParticipantListRow[] | null) ?? [];
+    }
+
     if (allParticipantsResult.error) {
       console.error(
         "getDisplayNumbersPanelData all participants:",
@@ -144,10 +178,58 @@ export const getDisplayNumbersPanelData =
     }
 
     const hubs = hubsResult.data ?? [];
-    const hubMemberIds = new Set(
-      (hubMembersResult.data ?? []).map((row) => row.user_id)
-    );
+    const hubMemberRows = hubMembersResult.data ?? [];
+    const hubMemberIds = new Set(hubMemberRows.map((row) => row.user_id));
     const hubHostIds = new Set(hubs.map((hub) => hub.hub_host_id));
+
+    const hubsById = new Map(hubs.map((hub) => [hub.id, hub]));
+    const inheritedHubsByUserId = new Map<string, DisplayNumberInheritedHub[]>();
+    const hubMemberships: HubMembershipLink[] = [];
+    const seenMembership = new Set<string>();
+
+    const addInheritedHub = (
+      userId: string,
+      hub: (typeof hubs)[number],
+      isHost: boolean
+    ) => {
+      const membershipKey = `${userId}:${hub.id}`;
+      if (!seenMembership.has(membershipKey)) {
+        seenMembership.add(membershipKey);
+        hubMemberships.push({ userId, hubId: hub.id });
+      }
+
+      const current = inheritedHubsByUserId.get(userId) ?? [];
+      if (current.some((item) => item.hubId === hub.id)) {
+        if (isHost) {
+          inheritedHubsByUserId.set(
+            userId,
+            current.map((item) =>
+              item.hubId === hub.id ? { ...item, isHost: true } : item
+            )
+          );
+        }
+        return;
+      }
+
+      current.push({
+        hubId: hub.id,
+        name: hub.name,
+        displayNumber: hub.display_number,
+        type: "hub",
+        isHost,
+      });
+      inheritedHubsByUserId.set(userId, current);
+    };
+
+    for (const hub of hubs) {
+      addInheritedHub(hub.hub_host_id, hub, true);
+    }
+
+    for (const row of hubMemberRows) {
+      const hub = hubsById.get(row.hub_id);
+      if (!hub) continue;
+      addInheritedHub(row.user_id, hub, hub.hub_host_id === row.user_id);
+    }
 
     const editableKeys = new Set<string>();
 
@@ -163,10 +245,14 @@ export const getDisplayNumbersPanelData =
         status: "accepted",
         context: "hub",
         slug: null,
+        type: "hub",
+        showHubNumber: true,
+        preferredHubId: null,
+        inheritedHubs: [],
       };
     });
 
-    const participantRows: DisplayNumberRow[] = (participantsResult.data ?? []).map(
+    const participantRows: DisplayNumberRow[] = participantList.map(
       (participant) => {
         editableKeys.add(`participant:${participant.user_id}`);
 
@@ -183,6 +269,10 @@ export const getDisplayNumbersPanelData =
             hubHostIds
           ),
           slug: participant.slug,
+          type: participant.category?.trim() || "standard",
+          showHubNumber: participant.show_hub_number ?? true,
+          preferredHubId: participant.preferred_hub_id ?? null,
+          inheritedHubs: inheritedHubsByUserId.get(participant.user_id) ?? [],
         };
       }
     );
@@ -234,5 +324,6 @@ export const getDisplayNumbersPanelData =
     return {
       rows,
       occupantsByNumber: buildOccupantsByNumber(occupants),
+      hubMemberships,
     };
   };

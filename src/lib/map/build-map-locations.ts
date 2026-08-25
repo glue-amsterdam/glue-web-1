@@ -22,6 +22,7 @@ import {
   getAddressLine,
   normalizeMapAddressLine,
 } from "./utils";
+import type { InheritedHubOption } from "@/lib/numbers/pick-inherited-hub";
 
 type ParticipantRow = {
   user_id: string;
@@ -32,6 +33,8 @@ type ParticipantRow = {
   was_active_last_year: boolean;
   status: string;
   display_name: string | null;
+  show_hub_number?: boolean | null;
+  preferred_hub_id?: string | null;
 };
 
 type MapInfoRow = {
@@ -97,7 +100,8 @@ const buildHubMembers = (
   hubMapInfoId: string,
   hubAddressLine: string,
   mapInfoByUserId: Map<string, MapInfoRow>,
-  categories: ParticipantCategory[]
+  categories: ParticipantCategory[],
+  inheritedHubsByUserId: Map<string, InheritedHubOption[]>
 ): MapLocationDetailMember[] => {
   const members: MapLocationDetailMember[] = [];
   const memberCount = memberIds.size;
@@ -114,6 +118,7 @@ const buildHubMembers = (
       hubAddressLine,
       mapInfoByUserId
     );
+    const inheritedHubs = inheritedHubsByUserId.get(userId) ?? [];
 
     members.push({
       userId,
@@ -121,6 +126,11 @@ const buildHubMembers = (
       type: getMemberType(memberCount, participant.category, categories),
       displayNumber: participant.display_number,
       locationId,
+      showHubNumber: participant.show_hub_number ?? true,
+      inheritedHubs: inheritedHubs.map((hub) => ({
+        displayNumber: hub.displayNumber,
+        type: hub.type,
+      })),
       ...(slug ? { slug } : {}),
       ...(ownMapInfo?.id &&
       locationId === hubMapInfoId &&
@@ -181,7 +191,9 @@ export const buildMapLocations = async (
         is_active,
         was_active_last_year,
         status,
-        display_name
+        display_name,
+        show_hub_number,
+        preferred_hub_id
       `
       )
       .eq("status", "accepted"),
@@ -199,10 +211,30 @@ export const buildMapLocations = async (
     ),
   ]);
 
-  if (participantsResult.error) throw participantsResult.error;
   if (hubsResult.error) throw hubsResult.error;
 
-  const participants = (participantsResult.data as ParticipantRow[]) ?? [];
+  let participantRows = (participantsResult.data as ParticipantRow[] | null) ?? [];
+  if (participantsResult.error) {
+    const fallback = await supabase
+      .from("participant_details")
+      .select(
+        `
+        user_id,
+        slug,
+        category,
+        display_number,
+        is_active,
+        was_active_last_year,
+        status,
+        display_name
+      `
+      )
+      .eq("status", "accepted");
+    if (fallback.error) throw fallback.error;
+    participantRows = (fallback.data as ParticipantRow[]) ?? [];
+  }
+
+  const participants = participantRows;
   const eligibleParticipants = participants.filter((participant) =>
     isParticipantEligibleForExhibitorsList(participant, stickyIds, tourStatus)
   );
@@ -235,6 +267,40 @@ export const buildMapLocations = async (
   const hubRows = (hubsResult.data as HubRow[]) ?? [];
   const processedHubHostIds = new Set<string>();
   const hubMembershipByUserId = new Map<string, HubMembershipContext>();
+  const inheritedHubsByUserId = new Map<string, InheritedHubOption[]>();
+
+  for (const hub of hubRows) {
+    if (!eligibleParticipantIds.has(hub.hub_host_id)) continue;
+    const hostParticipant = participantByUserId.get(hub.hub_host_id);
+    if (!hostParticipant) continue;
+
+    const memberIds = getEligibleHubMemberIds(hub, eligibleParticipantIds);
+    const memberCount = memberIds.size;
+    if (memberCount === 0) continue;
+
+    const hubType = classifyLocationType(
+      memberCount,
+      hostParticipant.category,
+      categories
+    );
+    const option: InheritedHubOption = {
+      hubId: hub.id,
+      name: hub.name,
+      displayNumber: hub.display_number,
+      type: hubType,
+      isHost: false,
+    };
+
+    for (const userId of memberIds) {
+      const current = inheritedHubsByUserId.get(userId) ?? [];
+      if (current.some((item) => item.hubId === hub.id)) continue;
+      current.push({
+        ...option,
+        isHost: userId === hub.hub_host_id,
+      });
+      inheritedHubsByUserId.set(userId, current);
+    }
+  }
 
   for (const hub of hubRows) {
     if (!eligibleParticipantIds.has(hub.hub_host_id)) continue;
@@ -283,7 +349,8 @@ export const buildMapLocations = async (
       hostMapInfo.id,
       hubAddressLine,
       mapInfoByUserId,
-      categories
+      categories,
+      inheritedHubsByUserId
     );
 
     locationByMapInfoId.set(hostMapInfo.id, {

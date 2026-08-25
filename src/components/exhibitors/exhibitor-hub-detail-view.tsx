@@ -93,7 +93,9 @@ const ExhibitorHubDetailView = ({ hub }: Props) => {
           >
             {hub.members.map((member) => (
               <li key={member.userId} className="w-full min-w-0">
-                <ExhibitorCard exhibitor={toExhibitorItemFromHubMember(member)} />
+                <ExhibitorCard
+                  exhibitor={toExhibitorItemFromHubMember(member, hub)}
+                />
               </li>
             ))}
           </ul>

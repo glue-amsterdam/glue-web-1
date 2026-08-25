@@ -11,7 +11,9 @@ import { z } from "zod";
 const patchDisplayNumberSchema = z.object({
   entityType: z.enum(["participant", "hub"]),
   entityId: z.string().uuid(),
-  displayNumber: z.string().max(10).nullable(),
+  displayNumber: z.string().max(10).nullable().optional(),
+  showHubNumber: z.boolean().optional(),
+  preferredHubId: z.string().uuid().nullable().optional(),
 });
 
 export async function PATCH(request: Request) {
@@ -22,9 +24,12 @@ export async function PATCH(request: Request) {
 
   try {
     const body = await request.json();
-    const { entityType, entityId, displayNumber } =
+    const { entityType, entityId, displayNumber, showHubNumber, preferredHubId } =
       patchDisplayNumberSchema.parse(body);
-    const normalizedDisplayNumber = normalizeDisplayNumberInput(displayNumber);
+    const hasDisplayNumberUpdate = displayNumber !== undefined;
+    const normalizedDisplayNumber = hasDisplayNumberUpdate
+      ? normalizeDisplayNumberInput(displayNumber)
+      : undefined;
 
     const supabase = await createClient();
 
@@ -57,10 +62,31 @@ export async function PATCH(request: Request) {
 
     const table = entityType === "participant" ? "participant_details" : "hubs";
     const idColumn = entityType === "participant" ? "user_id" : "id";
+    const updatePayload: Record<string, unknown> = {};
+
+    if (hasDisplayNumberUpdate) {
+      updatePayload.display_number = normalizedDisplayNumber ?? null;
+    }
+
+    if (entityType === "participant") {
+      if (showHubNumber !== undefined) {
+        updatePayload.show_hub_number = showHubNumber;
+      }
+      if (preferredHubId !== undefined) {
+        updatePayload.preferred_hub_id = preferredHubId;
+      }
+    }
+
+    if (Object.keys(updatePayload).length === 0) {
+      return NextResponse.json(
+        { error: "No fields to update" },
+        { status: 400 }
+      );
+    }
 
     const { data, error } = await supabase
       .from(table)
-      .update({ display_number: normalizedDisplayNumber })
+      .update(updatePayload)
       .eq(idColumn, entityId)
       .select("display_number")
       .single();
