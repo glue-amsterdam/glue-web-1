@@ -1,4 +1,8 @@
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
+import {
+  isStickyParticipantSlug,
+  STICKY_PARTICIPANT_SLUG,
+} from "@/lib/participants/participant-categories";
 import { getMapLocationProfileLink } from "./map-location-profile-link";
 import type {
   MapLocation,
@@ -6,7 +10,7 @@ import type {
   MapLocationDetailMember,
 } from "./types";
 
-export const STICKY_PARTICIPANT_SLUG = "sticky-participant";
+export { STICKY_PARTICIPANT_SLUG };
 
 export type ExhibitorFooterSlide = {
   id: string;
@@ -20,7 +24,7 @@ export const getExhibitorPopupDotType = (
   locationType: ExhibitorType,
   currentSlideType?: ExhibitorType
 ): ExhibitorType => {
-  if (currentSlideType === STICKY_PARTICIPANT_SLUG) {
+  if (isStickyParticipantSlug(currentSlideType)) {
     return currentSlideType;
   }
   return locationType;

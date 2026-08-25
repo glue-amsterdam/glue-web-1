@@ -76,6 +76,33 @@ export const LEGACY_CATEGORY_SLUG_ALIASES: Record<string, string> = {
   "up-to-three-participants": "standard",
 };
 
+export const STICKY_PARTICIPANT_SLUG = "sticky-participant";
+
+/** Amsterdam uses the plural slug; keep both so CSS vars and lookups work without a DB rename. */
+export const STICKY_PARTICIPANT_SLUG_ALIASES = [
+  "sticky-participant",
+  "sticky-participants",
+] as const;
+
+export const isStickyParticipantSlug = (
+  slug: string | null | undefined
+): slug is string => {
+  const normalized = slug?.trim().toLowerCase();
+  return (
+    normalized === "sticky-participant" ||
+    normalized === "sticky-participants"
+  );
+};
+
+export const categorySlugsMatch = (
+  left: string | null | undefined,
+  right: string | null | undefined
+): boolean => {
+  if (!left || !right) return false;
+  if (left === right) return true;
+  return isStickyParticipantSlug(left) && isStickyParticipantSlug(right);
+};
+
 export const normalizeCategorySlug = (slug: string): string =>
   LEGACY_CATEGORY_SLUG_ALIASES[slug] ?? slug;
 
@@ -127,7 +154,12 @@ export const getCategoryBySlug = (
   slug: string
 ): ParticipantCategory | undefined => {
   const normalized = normalizeCategorySlug(slug);
-  return categories.find((c) => c.slug === normalized);
+  const exact = categories.find((c) => c.slug === normalized);
+  if (exact) return exact;
+  if (isStickyParticipantSlug(normalized)) {
+    return categories.find((c) => isStickyParticipantSlug(c.slug));
+  }
+  return undefined;
 };
 
 export const getDefaultCategory = (
@@ -274,6 +306,14 @@ export const buildCategoryCssVars = (
     const { bg, font } = getCategoryCssVarNames(category.slug);
     vars[bg] = category.bgColor;
     vars[font] = category.fontColor;
+
+    if (!isStickyParticipantSlug(category.slug)) continue;
+    for (const alias of STICKY_PARTICIPANT_SLUG_ALIASES) {
+      if (alias === category.slug) continue;
+      const aliasNames = getCategoryCssVarNames(alias);
+      vars[aliasNames.bg] = category.bgColor;
+      vars[aliasNames.font] = category.fontColor;
+    }
   }
   return vars;
 };

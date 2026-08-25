@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  buildCategoryCssVars,
   classifyHubMemberCategory,
   DEFAULT_PARTICIPANT_CATEGORIES,
+  getCategoryBySlug,
   isModeratorCategorySwitchChecked,
   resolveModeratorCategorySwitchChange,
 } from "./participant-categories";
@@ -43,6 +45,42 @@ describe("classifyHubMemberCategory", () => {
     assert.equal(
       classifyHubMemberCategory(4, "sticky-participant", testCategories),
       "sticky-participant"
+    );
+  });
+
+  it("maps singular sticky slug onto a plural sticky category row", () => {
+    const categoriesWithPluralSticky = [
+      ...DEFAULT_PARTICIPANT_CATEGORIES,
+      {
+        id: "amsterdam-sticky",
+        slug: "sticky-participants",
+        label: "Sticky Participants",
+        bgColor: "#090359",
+        fontColor: "#FFFFFF",
+        sortOrder: 3,
+        isDefault: false,
+        isStructural: false,
+        assignable: true,
+        showInFilters: true,
+        isProtected: false,
+      },
+    ];
+
+    assert.equal(
+      classifyHubMemberCategory(
+        4,
+        "sticky-participant",
+        categoriesWithPluralSticky
+      ),
+      "sticky-participants"
+    );
+    assert.equal(
+      classifyHubMemberCategory(
+        4,
+        "sticky-participants",
+        categoriesWithPluralSticky
+      ),
+      "sticky-participants"
     );
   });
 
@@ -123,5 +161,43 @@ describe("moderator category switches", () => {
       ),
       false
     );
+  });
+});
+
+describe("sticky slug aliases", () => {
+  const pluralStickyCategories = [
+    ...DEFAULT_PARTICIPANT_CATEGORIES,
+    {
+      id: "amsterdam-sticky",
+      slug: "sticky-participants",
+      label: "Sticky Participants",
+      bgColor: "#090359",
+      fontColor: "#FFFFFF",
+      sortOrder: 3,
+      isDefault: false,
+      isStructural: false,
+      assignable: true,
+      showInFilters: true,
+      isProtected: false,
+    },
+  ];
+
+  it("finds the plural sticky row when looking up the singular slug", () => {
+    const category = getCategoryBySlug(
+      pluralStickyCategories,
+      "sticky-participant"
+    );
+
+    assert.equal(category?.slug, "sticky-participants");
+    assert.equal(category?.bgColor, "#090359");
+  });
+
+  it("emits CSS vars for both sticky slugs from the plural category", () => {
+    const vars = buildCategoryCssVars(pluralStickyCategories);
+
+    assert.equal(vars["--cat-sticky-participants-color"], "#090359");
+    assert.equal(vars["--cat-sticky-participant-color"], "#090359");
+    assert.equal(vars["--cat-sticky-participants-font-color"], "#FFFFFF");
+    assert.equal(vars["--cat-sticky-participant-font-color"], "#FFFFFF");
   });
 });

@@ -163,6 +163,22 @@ describe("locationMatchesCategory", () => {
       false
     );
   });
+
+  it("matches singular sticky filter against a plural sticky member", () => {
+    const hubWithPluralSticky = {
+      ...hubWithStickyMember,
+      members: hubWithStickyMember.members?.map((member) =>
+        member.type === "sticky-participant"
+          ? { ...member, type: "sticky-participants" }
+          : member
+      ),
+    };
+
+    assert.equal(
+      locationMatchesCategory(hubWithPluralSticky, "sticky-participant"),
+      true
+    );
+  });
 });
 
 describe("filterMapLocationsForMap", () => {

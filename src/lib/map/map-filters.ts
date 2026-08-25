@@ -5,6 +5,7 @@ import {
 } from "@/lib/numbers/resolve-display-number-badges";
 import type { ExhibitorsFilterType } from "@/lib/participants/exhibitors-filters";
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
+import { categorySlugsMatch } from "@/lib/participants/participant-categories";
 import type { MapLocation, MapLocationDetailMember, MapRoute } from "@/lib/map/types";
 import { getMapLocationMarkerStackTier } from "./map-location-display";
 
@@ -74,10 +75,12 @@ export const locationMatchesCategory = (
   categoryType: ExhibitorsFilterType
 ): boolean => {
   if (categoryType === "all") return true;
-  if (location.type === categoryType) return true;
+  if (categorySlugsMatch(location.type, categoryType)) return true;
 
   return (
-    location.members?.some((member) => member.type === categoryType) ?? false
+    location.members?.some((member) =>
+      categorySlugsMatch(member.type, categoryType)
+    ) ?? false
   );
 };
 
@@ -87,8 +90,8 @@ export const getHubMembersMatchingCategory = (
 ): MapLocationDetailMember[] => {
   if (categoryType === "all") return [];
 
-  return (location.members ?? []).filter(
-    (member) => member.type === categoryType
+  return (location.members ?? []).filter((member) =>
+    categorySlugsMatch(member.type, categoryType)
   );
 };
 

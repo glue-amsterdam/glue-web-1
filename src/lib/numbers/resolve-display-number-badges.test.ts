@@ -16,6 +16,19 @@ describe("resolveDisplayNumberBadges", () => {
     ]);
   });
 
+  it("keeps the plural sticky type on inherited Hub badges", () => {
+    const badges = resolveDisplayNumberBadges({
+      ownNumber: null,
+      ownType: "sticky-participants",
+      showHubNumber: true,
+      hubs: [{ number: "11", type: "standard" }],
+    });
+
+    assert.deepEqual(badges, [
+      { value: "11", type: "sticky-participants", source: "hub" },
+    ]);
+  });
+
   it("sorts badges from smallest to largest", () => {
     const badges = resolveDisplayNumberBadges({
       ownNumber: "12",
