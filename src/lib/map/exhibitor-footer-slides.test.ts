@@ -62,6 +62,13 @@ describe("getExhibitorPopupDotType", () => {
       "standard"
     );
   });
+
+  it("uses the plural sticky slug when that is the current slide", () => {
+    assert.equal(
+      getExhibitorPopupDotType("hub", "sticky-participants"),
+      "sticky-participants"
+    );
+  });
 });
 
 describe("buildExhibitorFooterSlides", () => {

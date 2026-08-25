@@ -4,6 +4,7 @@ import type {
   ExhibitorSortOrder,
 } from "./exhibitor-types";
 import type { ExhibitorsFilterType } from "./exhibitors-filters";
+import { categorySlugsMatch } from "./participant-categories";
 import { sortExhibitors } from "./sort-exhibitors";
 
 export const filterExhibitorsByType = (
@@ -11,7 +12,7 @@ export const filterExhibitorsByType = (
   type: ExhibitorsFilterType
 ): ExhibitorItem[] => {
   if (type === "all") return items;
-  return items.filter((item) => item.type === type);
+  return items.filter((item) => categorySlugsMatch(item.type, type));
 };
 
 export const filterExhibitorsBySearch = (
