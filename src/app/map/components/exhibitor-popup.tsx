@@ -11,7 +11,11 @@ import { useMapLocationDetail } from "../hooks/use-map-location-detail";
 import RoundedNumber from "@/components/rounded-number";
 import CrossRotatedDesktop from "@/components/icons/cross-rotated-desktop";
 import { useCyclicIndex } from "@/hooks/useCyclicIndex";
-import { buildExhibitorFooterSlides, findExhibitorSlideIndex } from "@/lib/map/exhibitor-footer-slides";
+import {
+  buildExhibitorFooterSlides,
+  findExhibitorSlideIndex,
+  getExhibitorPopupDotType,
+} from "@/lib/map/exhibitor-footer-slides";
 import { buildGoogleMapsSearchUrl } from "@/lib/map/utils";
 import BigButton from "@/components/big-button";
 import SlideLineNav from "@/components/slide-line-nav";
@@ -64,6 +68,10 @@ const ExhibitorPopUp = ({
   });
 
   const currentSlide = slides[currentIndex] ?? slides[0];
+  const popupDotType = getExhibitorPopupDotType(
+    location.type,
+    currentSlide?.type
+  );
 
   const handleGoogleMapsRedirect = useCallback(() => {
     window.open(buildGoogleMapsSearchUrl(location), "_blank");
@@ -89,7 +97,7 @@ const ExhibitorPopUp = ({
       <div onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}         className="overflow-hidden border-t-2 border-(--black-color) px-[30px] pt-[15px] pb-[30px] text-(--black-color) bg-(--white-color) z-51 min-h-[452px] base-text-size w-[460px] max-w-full">
         <div className="flex min-w-0 gap-[25px] items-start w-full">
-          <RoundedNumber type={location.type} participant_n={location.displayNumber ?? " "} />
+          <RoundedNumber type={popupDotType} participant_n={location.displayNumber ?? " "} />
           <div className="min-w-0 flex-1">
             <div
               className="flex w-full items-start justify-between gap-3"

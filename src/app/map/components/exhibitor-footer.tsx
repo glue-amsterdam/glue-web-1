@@ -4,7 +4,11 @@ import { memo, useCallback, useMemo } from "react";
 import Image from "next/image";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useCyclicIndex } from "@/hooks/useCyclicIndex";
-import { buildExhibitorFooterSlides, findExhibitorSlideIndex } from "@/lib/map/exhibitor-footer-slides";
+import {
+  buildExhibitorFooterSlides,
+  findExhibitorSlideIndex,
+  getExhibitorPopupDotType,
+} from "@/lib/map/exhibitor-footer-slides";
 import { isMapHubEntity } from "@/lib/map/map-location-display";
 import { buildGoogleMapsSearchUrl } from "@/lib/map/utils";
 import type { MapLocation, MapTourMode } from "@/lib/map/types";
@@ -61,6 +65,10 @@ const ExhibitorFooter = ({
     });
 
     const currentSlide = slides[currentIndex] ?? slides[0];
+    const popupDotType = getExhibitorPopupDotType(
+        location.type,
+        currentSlide?.type
+    );
 
     const isHubEntity = isMapHubEntity(location);
 
@@ -86,7 +94,7 @@ const ExhibitorFooter = ({
             <MainContainer>
                 <div className="border-t border-(--black-color) px-[20px] pt-[15px] pb-[20px]">
                     <div className="flex min-w-0 gap-[25px] items-start w-full">
-                        <RoundedNumber type={location.type} participant_n={location.displayNumber ?? " "} />
+                        <RoundedNumber type={popupDotType} participant_n={location.displayNumber ?? " "} />
                         <div className="min-w-0 flex-1">
                             <div
                               className="flex w-full items-start justify-between gap-3"

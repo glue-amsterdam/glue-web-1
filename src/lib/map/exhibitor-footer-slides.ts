@@ -1,3 +1,4 @@
+import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
 import { getMapLocationProfileLink } from "./map-location-profile-link";
 import type {
   MapLocation,
@@ -5,11 +6,24 @@ import type {
   MapLocationDetailMember,
 } from "./types";
 
+export const STICKY_PARTICIPANT_SLUG = "sticky-participant";
+
 export type ExhibitorFooterSlide = {
   id: string;
   name: string;
   imageUrl: string | null;
   profileHref: string | null;
+  type?: ExhibitorType;
+};
+
+export const getExhibitorPopupDotType = (
+  locationType: ExhibitorType,
+  currentSlideType?: ExhibitorType
+): ExhibitorType => {
+  if (currentSlideType === STICKY_PARTICIPANT_SLUG) {
+    return currentSlideType;
+  }
+  return locationType;
 };
 
 const buildSlideId = (member: { slug?: string; userId?: string; name: string }, index: number) =>
@@ -76,6 +90,7 @@ export const buildExhibitorFooterSlides = (
       name: member.name,
       imageUrl: member.imageUrl ?? null,
       profileHref: hubProfileHref,
+      ...(member.type ? { type: member.type } : {}),
     }));
   }
 
