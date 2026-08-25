@@ -29,6 +29,19 @@ describe("resolveDisplayNumberBadges", () => {
     ]);
   });
 
+  it("keeps special-program color on inherited Hub badges", () => {
+    const badges = resolveDisplayNumberBadges({
+      ownNumber: null,
+      ownType: "special-program",
+      showHubNumber: true,
+      hubs: [{ number: "6", type: "hub" }],
+    });
+
+    assert.deepEqual(badges, [
+      { value: "6", type: "special-program", source: "hub" },
+    ]);
+  });
+
   it("sorts badges from smallest to largest", () => {
     const badges = resolveDisplayNumberBadges({
       ownNumber: "12",

@@ -1,6 +1,6 @@
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
 import { compareDisplayNumbers } from "@/lib/numbers/compare-display-numbers";
-import { isStickyParticipantSlug } from "@/lib/participants/participant-categories";
+import { keepsOwnCategoryColor } from "@/lib/participants/participant-categories";
 
 export type DisplayNumberBadgeSource = "own" | "hub";
 
@@ -24,7 +24,7 @@ const resolveInheritedBadgeType = (
   ownType: ExhibitorType,
   hubType: ExhibitorType
 ): ExhibitorType =>
-  isStickyParticipantSlug(ownType) ? ownType : hubType;
+  keepsOwnCategoryColor(ownType) ? ownType : hubType;
 
 export const resolveDisplayNumberBadges = (input: {
   ownNumber: string | null | undefined;
