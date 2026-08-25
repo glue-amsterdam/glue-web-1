@@ -122,6 +122,13 @@ const locationMatchesSearchQuery = (
   ) {
     return true;
   }
+  if (
+    location.inheritedHubs?.some((hub) =>
+      hub.displayNumber?.toLowerCase().includes(query)
+    )
+  ) {
+    return true;
+  }
   return (
     location.members?.some((member) =>
       member.name.toLowerCase().includes(query)
@@ -196,9 +203,31 @@ export const getMapLocationNumberBadges = (
   return resolveDisplayNumberBadges({
     ownNumber: location.displayNumber,
     ownType: location.type,
-    showHubNumber: false,
-    hubs: [],
+    showHubNumber: location.showHubNumber ?? Boolean(location.inheritedHubs?.length),
+    hubs: (location.inheritedHubs ?? []).map((hub) => ({
+      number: hub.displayNumber,
+      type: hub.type,
+    })),
   });
+};
+
+const withListNumberBadges = (location: MapLocation): MapLocation => {
+  if (location.numberBadges && location.numberBadges.length > 0) {
+    return location;
+  }
+
+  if (!location.inheritedHubs?.length) {
+    return location;
+  }
+
+  const badges = getMapLocationNumberBadges(location);
+  const primary = getPrimaryDisplayNumber(badges);
+
+  return {
+    ...location,
+    displayNumber: primary ?? location.displayNumber,
+    numberBadges: badges,
+  };
 };
 
 /** In "All" view, keep hub rows and add flat member rows (solo entries unchanged). */
@@ -272,7 +301,7 @@ export const flattenHubMembersForAllList = (
   for (const location of locations) {
     if (!location.hubId) {
       if (!isRedundantSoloListEntry(location)) {
-        result.push(location);
+        result.push(withListNumberBadges(location));
       }
       continue;
     }
@@ -340,7 +369,7 @@ export const flattenHubMembersForCategoryList = (
 
   for (const location of locations) {
     if (!location.hubId) {
-      result.push(location);
+      result.push(withListNumberBadges(location));
       continue;
     }
 

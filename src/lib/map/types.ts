@@ -23,6 +23,8 @@ export type MapLocation = {
   hubMemberUserId?: string;
   /** Public list badges (own + inherited Hub). Map pins still use `displayNumber`. */
   numberBadges?: DisplayNumberBadge[];
+  showHubNumber?: boolean;
+  inheritedHubs?: { displayNumber: string | null; type: ExhibitorType }[];
 };
 
 export type MapRouteDot = {

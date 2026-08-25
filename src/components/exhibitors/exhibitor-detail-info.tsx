@@ -1,5 +1,6 @@
 import { useEventsDays } from "@/context/MainContext";
 import type { ExhibitorContactInfo } from "@/lib/participants/exhibitor-detail-types";
+import { resolveExhibitorVisibleMapInfo } from "@/lib/participants/exhibitor-detail-navigation";
 import { cn } from "@/lib/utils";
 import { formatUrl } from "@/utils/formatUrl";
 import Link from "next/link";
@@ -12,7 +13,6 @@ type ExhibitorDetailInfoProps = {
 const ExhibitorDetailInfo = ({ contactInfo }: ExhibitorDetailInfoProps) => {
   const eventDays = useEventsDays();
   const {
-    mapInfo,
     phoneNumbers,
     visibleEmails,
     visibleWebsites,
@@ -40,9 +40,7 @@ const ExhibitorDetailInfo = ({ contactInfo }: ExhibitorDetailInfoProps) => {
     visitingHours !== null &&
     Object.values(visitingHours).some((times) => times.length > 0);
 
-  const visibleMapInfo = mapInfo.filter(
-    (map) => !map.no_address && map.id && map.formatted_address?.trim()
-  );
+  const visibleMapInfo = resolveExhibitorVisibleMapInfo(contactInfo);
 
   const hasAnyInfo =
     visibleMapInfo.length > 0 ||

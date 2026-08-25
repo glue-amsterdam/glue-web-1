@@ -7,10 +7,12 @@ import {
 } from "@/lib/participants/participant-categories";
 import { getTheme } from "@/lib/theme";
 import { getParticipantInheritedHubs } from "@/lib/numbers/get-participant-inherited-hubs";
+import type { InheritedHubOption } from "@/lib/numbers/pick-inherited-hub";
 import type { ExhibitorType } from "./exhibitor-types";
 import {
   ExhibitorNotFoundError,
   type ExhibitorContactInfo,
+  type ExhibitorMapInfo,
   type ExhibitorParticipantDetail,
   type ExhibitorSocialMedia,
 } from "./exhibitor-detail-types";
@@ -44,11 +46,6 @@ type ParticipantRow = {
   social_media: ExhibitorSocialMedia | Record<string, string> | null;
   visible_emails: string[] | null;
   visible_websites: string[] | null;
-};
-
-type HubHostMapContext = {
-  address: string | null;
-  mapInfoId: string | null;
 };
 
 type HubMembership = {
@@ -204,58 +201,85 @@ const resolveHubMembership = async (
   };
 };
 
-const resolveHubHostMapContext = async (
+const resolveHubHostMapLocations = async (
   supabase: SupabaseClient,
-  membership: HubMembership | null,
+  inheritedHubs: InheritedHubOption[],
   tourStatus: TourStatus
-): Promise<HubHostMapContext> => {
-  const hubHostUserId = membership?.hubHostUserId ?? null;
-  if (!hubHostUserId) {
-    return { address: null, mapInfoId: null };
+): Promise<ExhibitorMapInfo[]> => {
+  const hubHostUserIds = [
+    ...new Set(
+      inheritedHubs
+        .map((hub) => hub.hubHostUserId?.trim())
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+
+  if (hubHostUserIds.length === 0) {
+    return [];
   }
 
-  const { data: hostParticipant, error: hostParticipantError } =
-    await supabase
-      .from("participant_details")
-      .select("user_id, is_active, was_active_last_year, status")
-      .eq("user_id", hubHostUserId)
-      .maybeSingle();
+  const { data: hostParticipants, error: hostParticipantError } = await supabase
+    .from("participant_details")
+    .select("user_id, is_active, was_active_last_year, status")
+    .in("user_id", hubHostUserIds);
 
   if (hostParticipantError) {
-    console.error("Error fetching hub host participant:", hostParticipantError);
-    return { address: null, mapInfoId: null };
+    console.error("Error fetching hub host participants:", hostParticipantError);
+    return [];
   }
 
-  if (
-    !hostParticipant ||
-    !isParticipantEligibleForExhibitorsList(
-      hostParticipant,
-      new Set(),
-      tourStatus
-    )
-  ) {
-    return { address: null, mapInfoId: null };
+  const eligibleHostIds = new Set(
+    (hostParticipants ?? [])
+      .filter((host) =>
+        isParticipantEligibleForExhibitorsList(host, new Set(), tourStatus)
+      )
+      .map((host) => host.user_id)
+  );
+
+  if (eligibleHostIds.size === 0) {
+    return [];
   }
 
-  const { data: hostMapInfo, error: hostMapInfoError } = await supabase
+  const { data: hostMapInfoRows, error: hostMapInfoError } = await supabase
     .from("map_info")
-    .select("id, formatted_address, no_address")
-    .eq("user_id", hubHostUserId)
-    .maybeSingle();
+    .select("id, user_id, formatted_address, no_address")
+    .in("user_id", Array.from(eligibleHostIds));
 
   if (hostMapInfoError) {
     console.error("Error fetching hub host map info:", hostMapInfoError);
-    return { address: null, mapInfoId: null };
+    return [];
   }
 
-  if (!hostMapInfo?.id || hostMapInfo.no_address) {
-    return { address: null, mapInfoId: null };
+  const mapInfoByUserId = new Map(
+    ((hostMapInfoRows as {
+      id: string;
+      user_id: string;
+      formatted_address: string | null;
+      no_address: boolean;
+    }[]) ?? [])
+      .filter((row) => row.id && !row.no_address)
+      .map((row) => [row.user_id, row])
+  );
+
+  const locations: ExhibitorMapInfo[] = [];
+  const seenIds = new Set<string>();
+
+  for (const hostUserId of hubHostUserIds) {
+    const row = mapInfoByUserId.get(hostUserId);
+    if (!row || seenIds.has(row.id)) continue;
+
+    const address = toBaseFormattedAddress(row.formatted_address);
+    if (!address) continue;
+
+    seenIds.add(row.id);
+    locations.push({
+      id: row.id,
+      formatted_address: address,
+      no_address: false,
+    });
   }
 
-  return {
-    address: toBaseFormattedAddress(hostMapInfo.formatted_address) || null,
-    mapInfoId: hostMapInfo.id,
-  };
+  return locations;
 };
 
 const buildEventsQuery = (
@@ -281,9 +305,9 @@ const buildContactInfo = async (
   userId: string,
   participant: ParticipantRow,
   tourStatus: TourStatus,
-  membership: HubMembership | null
+  inheritedHubs: InheritedHubOption[]
 ): Promise<ExhibitorContactInfo> => {
-  const [mapInfoResult, visitingHoursResult, eventsResult, hubHostMapContext] =
+  const [mapInfoResult, visitingHoursResult, eventsResult, hubLocations] =
     await Promise.all([
       supabase
         .from("map_info")
@@ -294,7 +318,7 @@ const buildContactInfo = async (
         .select("day_id, hours")
         .eq("user_id", userId),
       buildEventsQuery(supabase, userId, tourStatus),
-      resolveHubHostMapContext(supabase, membership, tourStatus),
+      resolveHubHostMapLocations(supabase, inheritedHubs, tourStatus),
     ]);
 
   const visitingHours =
@@ -314,11 +338,13 @@ const buildContactInfo = async (
     ...map,
     formatted_address: toBaseFormattedAddress(map.formatted_address),
   }));
+  const firstHubLocation = hubLocations[0];
 
   return {
     mapInfo,
-    hubHostAddress: hubHostMapContext.address,
-    hubHostMapInfoId: hubHostMapContext.mapInfoId,
+    hubLocations,
+    hubHostAddress: firstHubLocation?.formatted_address ?? null,
+    hubHostMapInfoId: firstHubLocation?.id ?? null,
     phoneNumbers: participant.phone_numbers,
     visibleEmails: participant.visible_emails,
     visibleWebsites: participant.visible_websites,
@@ -397,7 +423,7 @@ export const getExhibitorBySlug = async (
       .select("id, image_url")
       .eq("user_id", row.user_id)
       .order("id", { ascending: true }),
-    buildContactInfo(supabase, row.user_id, row, tourStatus, membership),
+    buildContactInfo(supabase, row.user_id, row, tourStatus, inheritedHubs),
   ]);
 
   const carouselSlides = participantImagesToCarouselSlides(

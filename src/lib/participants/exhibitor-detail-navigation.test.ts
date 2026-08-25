@@ -5,6 +5,7 @@ import {
   canLinkExhibitorToMapAndEvents,
   resolveExhibitorDetailNavigation,
   resolveExhibitorMapInfoId,
+  resolveExhibitorVisibleMapInfo,
   resolveOwnMapInfoId,
 } from "./exhibitor-detail-navigation";
 
@@ -88,6 +89,134 @@ describe("canLinkExhibitorToMapAndEvents", () => {
   });
 });
 
+describe("resolveExhibitorVisibleMapInfo", () => {
+  it("returns the hub location when the participant has no own address", () => {
+    const visible = resolveExhibitorVisibleMapInfo(
+      baseContactInfo({
+        hubLocations: [
+          {
+            id: "hub-map",
+            formatted_address: "Via Milano 10",
+            no_address: false,
+          },
+        ],
+        hubHostAddress: "Via Milano 10",
+        hubHostMapInfoId: "hub-map",
+      })
+    );
+
+    assert.deepEqual(visible, [
+      {
+        id: "hub-map",
+        formatted_address: "Via Milano 10",
+        no_address: false,
+      },
+    ]);
+  });
+
+  it("keeps own and hub locations when they are different", () => {
+    const visible = resolveExhibitorVisibleMapInfo(
+      baseContactInfo({
+        mapInfo: [
+          {
+            id: "own-map",
+            formatted_address: "Via Roma 1",
+            no_address: false,
+          },
+        ],
+        hubLocations: [
+          {
+            id: "hub-map",
+            formatted_address: "Via Milano 10",
+            no_address: false,
+          },
+        ],
+      })
+    );
+
+    assert.deepEqual(
+      visible.map((map) => map.id),
+      ["own-map", "hub-map"]
+    );
+  });
+
+  it("dedupes own and hub locations that share an id", () => {
+    const visible = resolveExhibitorVisibleMapInfo(
+      baseContactInfo({
+        mapInfo: [
+          {
+            id: "same-map",
+            formatted_address: "Via Roma 1",
+            no_address: false,
+          },
+        ],
+        hubLocations: [
+          {
+            id: "same-map",
+            formatted_address: "Via Roma 1",
+            no_address: false,
+          },
+        ],
+      })
+    );
+
+    assert.deepEqual(
+      visible.map((map) => map.id),
+      ["same-map"]
+    );
+  });
+
+  it("dedupes own and hub locations that share a street line", () => {
+    const visible = resolveExhibitorVisibleMapInfo(
+      baseContactInfo({
+        mapInfo: [
+          {
+            id: "own-map",
+            formatted_address: "Via Roma 1",
+            no_address: false,
+          },
+        ],
+        hubLocations: [
+          {
+            id: "hub-map",
+            formatted_address: "via  roma  1",
+            no_address: false,
+          },
+        ],
+      })
+    );
+
+    assert.deepEqual(
+      visible.map((map) => map.id),
+      ["own-map"]
+    );
+  });
+
+  it("returns every hub location when the participant has no own address", () => {
+    const visible = resolveExhibitorVisibleMapInfo(
+      baseContactInfo({
+        hubLocations: [
+          {
+            id: "hub-a",
+            formatted_address: "Via Milano 10",
+            no_address: false,
+          },
+          {
+            id: "hub-b",
+            formatted_address: "Via Torino 4",
+            no_address: false,
+          },
+        ],
+      })
+    );
+
+    assert.deepEqual(
+      visible.map((map) => map.id),
+      ["hub-a", "hub-b"]
+    );
+  });
+});
+
 describe("resolveExhibitorMapInfoId", () => {
   it("prefers own map info over hub host map info", () => {
     assert.equal(
@@ -156,7 +285,7 @@ describe("resolveExhibitorDetailNavigation", () => {
     assert.deepEqual(navigation, {
       showMap: false,
       showEvents: false,
-      mapHref: null,
+      mapHrefs: [],
       eventsHref: null,
     });
   });
@@ -182,7 +311,7 @@ describe("resolveExhibitorDetailNavigation", () => {
 
     assert.equal(navigation.showMap, true);
     assert.equal(navigation.showEvents, true);
-    assert.equal(navigation.mapHref, "/map?place=map-1");
+    assert.deepEqual(navigation.mapHrefs, ["/map?place=map-1"]);
     assert.match(navigation.eventsHref ?? "", /\/program\?/);
   });
 
@@ -190,6 +319,13 @@ describe("resolveExhibitorDetailNavigation", () => {
     const navigation = resolveExhibitorDetailNavigation(
       baseParticipant({
         contactInfo: baseContactInfo({
+          hubLocations: [
+            {
+              id: "hub-map-id",
+              formatted_address: "Via Milano 10",
+              no_address: false,
+            },
+          ],
           hubHostAddress: "Via Milano 10",
           hubHostMapInfoId: "hub-map-id",
         }),
@@ -200,7 +336,7 @@ describe("resolveExhibitorDetailNavigation", () => {
     assert.deepEqual(navigation, {
       showMap: true,
       showEvents: false,
-      mapHref: "/map?place=hub-map-id",
+      mapHrefs: ["/map?place=hub-map-id"],
       eventsHref: null,
     });
   });
@@ -219,7 +355,7 @@ describe("resolveExhibitorDetailNavigation", () => {
     assert.deepEqual(navigation, {
       showMap: false,
       showEvents: false,
-      mapHref: null,
+      mapHrefs: [],
       eventsHref: null,
     });
   });
@@ -236,7 +372,89 @@ describe("resolveExhibitorDetailNavigation", () => {
 
     assert.equal(navigation.showMap, false);
     assert.equal(navigation.showEvents, true);
-    assert.equal(navigation.mapHref, null);
+    assert.deepEqual(navigation.mapHrefs, []);
     assert.match(navigation.eventsHref ?? "", /\/program\?/);
+  });
+
+  it("shows a map href for each distinct location", () => {
+    const navigation = resolveExhibitorDetailNavigation(
+      baseParticipant({
+        contactInfo: baseContactInfo({
+          mapInfo: [
+            {
+              id: "own-map",
+              formatted_address: "Via Roma 1",
+              no_address: false,
+            },
+          ],
+          hubLocations: [
+            {
+              id: "hub-map",
+              formatted_address: "Via Milano 10",
+              no_address: false,
+            },
+          ],
+        }),
+      }),
+      "new"
+    );
+
+    assert.deepEqual(navigation.mapHrefs, [
+      "/map?place=own-map",
+      "/map?place=hub-map",
+    ]);
+  });
+
+  it("shows one map href when own and hub addresses match", () => {
+    const navigation = resolveExhibitorDetailNavigation(
+      baseParticipant({
+        contactInfo: baseContactInfo({
+          mapInfo: [
+            {
+              id: "own-map",
+              formatted_address: "Via Roma 1",
+              no_address: false,
+            },
+          ],
+          hubLocations: [
+            {
+              id: "hub-map",
+              formatted_address: "Via Roma 1",
+              no_address: false,
+            },
+          ],
+        }),
+      }),
+      "new"
+    );
+
+    assert.deepEqual(navigation.mapHrefs, ["/map?place=own-map"]);
+  });
+
+  it("shows a map href for each hub when the participant has no own address", () => {
+    const navigation = resolveExhibitorDetailNavigation(
+      baseParticipant({
+        contactInfo: baseContactInfo({
+          hubLocations: [
+            {
+              id: "hub-a",
+              formatted_address: "Via Milano 10",
+              no_address: false,
+            },
+            {
+              id: "hub-b",
+              formatted_address: "Via Torino 4",
+              no_address: false,
+            },
+          ],
+        }),
+      }),
+      "new"
+    );
+
+    assert.deepEqual(navigation.mapHrefs, [
+      "/map?place=hub-a",
+      "/map?place=hub-b",
+    ]);
   });
 });

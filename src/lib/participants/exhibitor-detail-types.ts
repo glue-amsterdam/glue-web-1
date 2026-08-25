@@ -23,12 +23,14 @@ export type ExhibitorEventSummary = {
 export type ExhibitorDetailNavigation = {
   showMap: boolean;
   showEvents: boolean;
-  mapHref: string | null;
+  mapHrefs: string[];
   eventsHref: string | null;
 };
 
 export type ExhibitorContactInfo = {
   mapInfo: ExhibitorMapInfo[];
+  /** Eligible hub-host map_info rows for every inherited hub. */
+  hubLocations?: ExhibitorMapInfo[];
   /** Hub host street address when the participant belongs to a hub. */
   hubHostAddress?: string | null;
   /** map_info id of the hub host when the participant belongs to an eligible hub. */

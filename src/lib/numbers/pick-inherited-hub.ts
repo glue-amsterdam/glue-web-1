@@ -6,6 +6,7 @@ export type InheritedHubOption = {
   displayNumber: string | null;
   type: string;
   isHost: boolean;
+  hubHostUserId?: string;
 };
 
 export const toDisplayNumberHubInputs = (
