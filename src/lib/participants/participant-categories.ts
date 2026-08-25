@@ -106,6 +106,15 @@ export const categorySlugsMatch = (
 export const normalizeCategorySlug = (slug: string): string =>
   LEGACY_CATEGORY_SLUG_ALIASES[slug] ?? slug;
 
+/** Hub and Standard inherit venue color; any other DB category keeps its own. */
+export const keepsOwnCategoryColor = (
+  slug: string | null | undefined
+): slug is string => {
+  if (!slug) return false;
+  const normalized = normalizeCategorySlug(slug);
+  return normalized !== "hub" && normalized !== "standard";
+};
+
 export const mapParticipantCategoryFromRow = (
   row: ParticipantCategoryDbRow
 ): ParticipantCategory => ({

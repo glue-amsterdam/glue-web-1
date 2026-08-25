@@ -33,6 +33,21 @@ describe("getExhibitorNumberBadges", () => {
     assert.equal(badges[1]?.type, "sticky-participant");
   });
 
+  it("keeps special-program color when inheriting a Hub number", () => {
+    const badges = getExhibitorNumberBadges({
+      type: "special-program",
+      displayNumber: null,
+      hubDisplayNumber: "6",
+      hubType: "hub",
+      showHubNumber: true,
+    });
+
+    assert.equal(badges.length, 1);
+    assert.equal(badges[0]?.value, "6");
+    assert.equal(badges[0]?.type, "special-program");
+    assert.equal(badges[0]?.source, "hub");
+  });
+
   it("shows a circle per Hub when the member belongs to two Hubs", () => {
     const badges = getExhibitorNumberBadges({
       type: "standard",

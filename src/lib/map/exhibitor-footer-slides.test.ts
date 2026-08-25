@@ -56,10 +56,14 @@ describe("getExhibitorPopupDotType", () => {
     assert.equal(getExhibitorPopupDotType("hub", undefined), "hub");
   });
 
-  it("does not override for other assignable categories", () => {
+  it("uses the slide type for special-program and other non-hub categories", () => {
+    assert.equal(
+      getExhibitorPopupDotType("hub", "special-program"),
+      "special-program"
+    );
     assert.equal(
       getExhibitorPopupDotType("standard", "special-program"),
-      "standard"
+      "special-program"
     );
   });
 

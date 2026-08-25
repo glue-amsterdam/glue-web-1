@@ -6,6 +6,7 @@ import {
   DEFAULT_PARTICIPANT_CATEGORIES,
   getCategoryBySlug,
   isModeratorCategorySwitchChecked,
+  keepsOwnCategoryColor,
   resolveModeratorCategorySwitchChange,
 } from "./participant-categories";
 
@@ -199,5 +200,21 @@ describe("sticky slug aliases", () => {
     assert.equal(vars["--cat-sticky-participant-color"], "#090359");
     assert.equal(vars["--cat-sticky-participants-font-color"], "#FFFFFF");
     assert.equal(vars["--cat-sticky-participant-font-color"], "#FFFFFF");
+  });
+});
+
+describe("keepsOwnCategoryColor", () => {
+  it("is false for hub and standard", () => {
+    assert.equal(keepsOwnCategoryColor("hub"), false);
+    assert.equal(keepsOwnCategoryColor("standard"), false);
+    assert.equal(keepsOwnCategoryColor("up-to-three-participants"), false);
+    assert.equal(keepsOwnCategoryColor(undefined), false);
+  });
+
+  it("is true for any other category slug", () => {
+    assert.equal(keepsOwnCategoryColor("special-program"), true);
+    assert.equal(keepsOwnCategoryColor("sticky-participant"), true);
+    assert.equal(keepsOwnCategoryColor("sticky-participants"), true);
+    assert.equal(keepsOwnCategoryColor("custom-from-db"), true);
   });
 });

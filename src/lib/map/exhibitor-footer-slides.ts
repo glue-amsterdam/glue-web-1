@@ -1,6 +1,6 @@
 import type { ExhibitorType } from "@/lib/participants/exhibitor-types";
 import {
-  isStickyParticipantSlug,
+  keepsOwnCategoryColor,
   STICKY_PARTICIPANT_SLUG,
 } from "@/lib/participants/participant-categories";
 import { getMapLocationProfileLink } from "./map-location-profile-link";
@@ -24,7 +24,7 @@ export const getExhibitorPopupDotType = (
   locationType: ExhibitorType,
   currentSlideType?: ExhibitorType
 ): ExhibitorType => {
-  if (isStickyParticipantSlug(currentSlideType)) {
+  if (keepsOwnCategoryColor(currentSlideType)) {
     return currentSlideType;
   }
   return locationType;
