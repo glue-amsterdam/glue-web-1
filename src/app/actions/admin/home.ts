@@ -4,7 +4,10 @@ import { requireAdmin } from "@/lib/admin/require-admin";
 import { fetchHomeHero } from "@/lib/home/fetch-home-hero";
 import { mapHomeHeroToRow } from "@/lib/home/map-home-hero-row";
 import { toMediaKey, toMediaUrl } from "@/lib/media/media-url";
-import { revalidateHomeVideoCache } from "@/lib/home/revalidate-home-cache";
+import {
+  revalidateHomeStickyCtaCache,
+  revalidateHomeVideoCache,
+} from "@/lib/home/revalidate-home-cache";
 import {
   createHomeText,
   deleteHomeText,
@@ -13,6 +16,10 @@ import {
 } from "@/lib/main/fetch-home-text-admin";
 import { revalidateSiteThemeCache } from "@/lib/main/revalidate-site-theme-cache";
 import { homeHeroSchema } from "@/schemas/homeHeroSchema";
+import {
+  homeStickyCtaSchema,
+  type HomeStickyCta,
+} from "@/schemas/homeStickyCtaSchema";
 import type { HomeTextsFormData } from "@/schemas/mainSchema";
 import type { HomeTextPlacement } from "@/schemas/mainSchema";
 
@@ -64,6 +71,54 @@ export async function saveHomeHero(data: {
     description: savedRow.description,
     video_url: toMediaUrl(savedRow.video_url),
     poster_url: toMediaUrl(savedRow.poster_url),
+  });
+}
+
+export async function saveHomeStickyCta(data: HomeStickyCta): Promise<HomeStickyCta> {
+  const supabase = await requireAdmin();
+  const validated = homeStickyCtaSchema.parse(data);
+  const row = {
+    button_label: validated.button_label.trim(),
+    button_link: validated.button_link.trim(),
+    updated_at: new Date().toISOString(),
+  };
+
+  let savedRow;
+
+  if (validated.id) {
+    const { data: updated, error } = await supabase
+      .from("home_sticky_cta")
+      .update(row)
+      .eq("id", validated.id)
+      .select("id, button_label, button_link")
+      .single();
+
+    if (error) {
+      throw error;
+    }
+    savedRow = updated;
+  } else {
+    const { data: inserted, error } = await supabase
+      .from("home_sticky_cta")
+      .insert({
+        button_label: row.button_label,
+        button_link: row.button_link,
+      })
+      .select("id, button_label, button_link")
+      .single();
+
+    if (error) {
+      throw error;
+    }
+    savedRow = inserted;
+  }
+
+  revalidateHomeStickyCtaCache();
+
+  return homeStickyCtaSchema.parse({
+    id: savedRow.id,
+    button_label: savedRow.button_label,
+    button_link: savedRow.button_link,
   });
 }
 

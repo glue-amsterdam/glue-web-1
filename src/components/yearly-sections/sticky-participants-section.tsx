@@ -14,6 +14,8 @@ type Props = {
   participants: HomeStickyParticipant[];
   sectionId?: string;
   showCta?: boolean;
+  buttonLabel?: string;
+  buttonLink?: string;
   hasPadding?: boolean;
 };
 
@@ -26,12 +28,20 @@ const StickyParticipantsSection = ({
   participants,
   sectionId = "sticky-participants-section",
   showCta = true,
+  buttonLabel = "",
+  buttonLink = "",
   hasPadding = true,
 }: Props) => {
   const stickyTitle = year != null ? `Sticky participants ${year}` : "Sticky participants";
   const trimmedAdditionalText = additionalMembersText.trim();
   const hasParticipants = participants.length > 0;
   const hasAdditionalText = trimmedAdditionalText.length > 0;
+  const trimmedButtonLabel = buttonLabel.trim();
+  const trimmedButtonLink = buttonLink.trim();
+  const shouldShowCta =
+    showCta &&
+    trimmedButtonLabel.length > 0 &&
+    trimmedButtonLink.length > 0;
 
   if (!hasParticipants && !hasAdditionalText) {
     return null;
@@ -60,7 +70,7 @@ const StickyParticipantsSection = ({
           />
           <div className="pt-[40px] lg:pt-0 flex-1">
             <h3 className="body-text">{stickyTitle.toUpperCase()}</h3>
-            <ul className="mini-padding flex flex-wrap">
+            <ul className="mini-padding flex flex-wrap gap-x-[0.25em]">
               {participants.map((participant, index) => (
                 <li key={participant.userId} className="body-text">
                   {participant.slug ? (
@@ -70,7 +80,7 @@ const StickyParticipantsSection = ({
                   ) : (
                     <span>{participant.userName}</span>
                   )}
-                  {index < participants.length - 1 || hasAdditionalText ? `, ${" "}` : null}
+                  {index < participants.length - 1 || hasAdditionalText ? "," : null}
                 </li>
               ))}
               {hasAdditionalText ? (
@@ -82,12 +92,12 @@ const StickyParticipantsSection = ({
           </div>
         </div>
       </article>
-      {showCta ? (
+      {shouldShowCta ? (
         <div className="title-padding flex justify-center">
           <BigButton
             as="link"
-            label="show details"
-            href="/exhibitors"
+            label={trimmedButtonLabel}
+            href={trimmedButtonLink}
             mode="big"
           />
         </div>

@@ -21,6 +21,8 @@ export type StickySectionProps = {
   participants: HomeStickyGroupData["participants"];
   sectionId?: string;
   showCta?: boolean;
+  buttonLabel?: string;
+  buttonLink?: string;
 };
 
 export type YearNumbersSectionProps = {

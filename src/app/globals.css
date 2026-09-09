@@ -459,7 +459,8 @@
 }
 
 /* Empty paragraphs (Enter in the editor) render as a blank line, matching WYSIWYG */
-.post-content p:empty {
+.post-content p:empty,
+.post-content p:has(> br:only-child) {
   min-height: 1em;
   min-height: 1lh;
 }
