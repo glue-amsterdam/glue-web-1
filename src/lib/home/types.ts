@@ -1,6 +1,7 @@
 import type { ClientCitizen } from "@/schemas/citizenSchema";
 
 export const HOME_STICKY_CACHE_TAG = "home-sticky";
+export const HOME_STICKY_CTA_CACHE_TAG = "home-sticky-cta";
 export const HOME_CITIZENS_CACHE_TAG = "home-citizens";
 export const HOME_VIDEO_CACHE_TAG = "home-video";
 
@@ -18,6 +19,12 @@ export type HomeStickyGroupData = {
   group_photo_url: string | null;
   additional_members_text: string;
   participants: HomeStickyParticipant[];
+};
+
+export type HomeStickyCtaData = {
+  id: string | null;
+  buttonLabel: string;
+  buttonLink: string;
 };
 
 export type HomeCitizensData = {

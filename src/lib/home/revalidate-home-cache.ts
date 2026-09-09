@@ -3,6 +3,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import {
   HOME_CITIZENS_CACHE_TAG,
   HOME_STICKY_CACHE_TAG,
+  HOME_STICKY_CTA_CACHE_TAG,
   HOME_VIDEO_CACHE_TAG,
 } from "./types";
 
@@ -14,6 +15,11 @@ export const revalidateHomeStickyCache = (year?: number): void => {
     revalidateTag(`about-sticky-${year}`, "max");
     revalidateAboutArchiveYearCache(year);
   }
+};
+
+export const revalidateHomeStickyCtaCache = (): void => {
+  revalidateTag(HOME_STICKY_CTA_CACHE_TAG, "max");
+  revalidatePath("/");
 };
 
 export const revalidateHomeCitizensCache = (year?: number): void => {

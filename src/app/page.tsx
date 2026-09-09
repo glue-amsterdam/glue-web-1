@@ -51,7 +51,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page() {
-  const { stickyGroupData, citizensData, homeHeroData } = await loadHomePageData();
+  const { stickyGroupData, stickyCtaData, citizensData, homeHeroData } =
+    await loadHomePageData();
 
   return (
     <main id="main-content" className="first-padding">
@@ -69,7 +70,7 @@ export default async function Page() {
         <Separator />
         <CmsTextSection slug="alternatives-unexpected" />
 
-        <StickyParticipantsSection data={stickyGroupData} />
+        <StickyParticipantsSection data={stickyGroupData} cta={stickyCtaData} />
         <Separator />
         <CmsTextSection slug="newsletter" />
         <Separator />

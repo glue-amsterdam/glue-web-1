@@ -3,13 +3,16 @@ import { createPublicSupabaseClient } from "@/utils/supabase/public";
 import { fetchLatestStickyGroup } from "./fetch-sticky-group";
 import { fetchLatestYearCitizens } from "./fetch-citizens";
 import { fetchHomeHero } from "./fetch-home-hero";
+import { fetchHomeStickyCta } from "./fetch-home-sticky-cta";
 import { PUBLIC_MEDIA_CACHE_REVALIDATE_SECONDS } from "@/lib/media/public-media-cache";
 import {
   HOME_CITIZENS_CACHE_TAG,
   HOME_STICKY_CACHE_TAG,
+  HOME_STICKY_CTA_CACHE_TAG,
   HOME_VIDEO_CACHE_TAG,
   type HomeCitizensData,
   type HomeHeroData,
+  type HomeStickyCtaData,
   type HomeStickyGroupData,
 } from "./types";
 
@@ -20,6 +23,15 @@ export const getCachedHomeStickyGroup = unstable_cache(
   },
   [HOME_STICKY_CACHE_TAG],
   { tags: [HOME_STICKY_CACHE_TAG], revalidate: 3600 }
+);
+
+export const getCachedHomeStickyCta = unstable_cache(
+  async (): Promise<HomeStickyCtaData> => {
+    const supabase = createPublicSupabaseClient();
+    return fetchHomeStickyCta(supabase);
+  },
+  [HOME_STICKY_CTA_CACHE_TAG],
+  { tags: [HOME_STICKY_CTA_CACHE_TAG], revalidate: 3600 }
 );
 
 export const getCachedHomeCitizens = unstable_cache(

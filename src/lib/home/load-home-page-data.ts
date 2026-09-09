@@ -1,15 +1,23 @@
 import {
   getCachedHomeCitizens,
   getCachedHomeHero,
+  getCachedHomeStickyCta,
   getCachedHomeStickyGroup,
 } from "./cached-home-data";
 import { EMPTY_HOME_CITIZENS } from "./fetch-citizens";
 import { EMPTY_HOME_HERO } from "./fetch-home-hero";
+import { EMPTY_HOME_STICKY_CTA } from "./fetch-home-sticky-cta";
 import { EMPTY_STICKY_GROUP } from "./fetch-sticky-group";
-import type { HomeCitizensData, HomeHeroData, HomeStickyGroupData } from "./types";
+import type {
+  HomeCitizensData,
+  HomeHeroData,
+  HomeStickyCtaData,
+  HomeStickyGroupData,
+} from "./types";
 
 export type HomePageData = {
   stickyGroupData: HomeStickyGroupData;
+  stickyCtaData: HomeStickyCtaData;
   citizensData: HomeCitizensData;
   homeHeroData: HomeHeroData;
 };
@@ -29,11 +37,13 @@ const loadHomeSection = async <T>(
 
 /** Loads home CMS data; failed sections fall back to empty payloads so the page still renders. */
 export const loadHomePageData = async (): Promise<HomePageData> => {
-  const [stickyGroupData, citizensData, homeHeroData] = await Promise.all([
-    loadHomeSection("sticky group", getCachedHomeStickyGroup, EMPTY_STICKY_GROUP),
-    loadHomeSection("citizens", getCachedHomeCitizens, EMPTY_HOME_CITIZENS),
-    loadHomeSection("hero", getCachedHomeHero, EMPTY_HOME_HERO),
-  ]);
+  const [stickyGroupData, stickyCtaData, citizensData, homeHeroData] =
+    await Promise.all([
+      loadHomeSection("sticky group", getCachedHomeStickyGroup, EMPTY_STICKY_GROUP),
+      loadHomeSection("sticky cta", getCachedHomeStickyCta, EMPTY_HOME_STICKY_CTA),
+      loadHomeSection("citizens", getCachedHomeCitizens, EMPTY_HOME_CITIZENS),
+      loadHomeSection("hero", getCachedHomeHero, EMPTY_HOME_HERO),
+    ]);
 
-  return { stickyGroupData, citizensData, homeHeroData };
+  return { stickyGroupData, stickyCtaData, citizensData, homeHeroData };
 };
