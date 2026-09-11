@@ -156,8 +156,7 @@ export function CookieBanner({ variant = "fixed" }: CookieBannerProps) {
   const showActions = consentStatus !== "accepted";
 
   return (
-    <aside
-      role="dialog"
+    <footer
       aria-label="Cookie consent"
       className={cn(
         "bg-(--background-color)",
@@ -216,6 +215,6 @@ export function CookieBanner({ variant = "fixed" }: CookieBannerProps) {
             By clicking Accept, you consent to the use of analytics and performance cookies. <br />Ccookies are required for the website to function are always enabled.</p>)}
         </div>
       </MainContainer>
-    </aside>
+    </footer>
   );
 }
