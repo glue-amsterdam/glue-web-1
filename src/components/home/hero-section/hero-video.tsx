@@ -33,24 +33,35 @@ const HeroVideo = ({ src, poster, ariaLabel }: Props) => {
     };
   }, []);
 
-  const handleVideoReady = () => {
-    setIsPlaying(true);
+  const handlePlaying = () => {
+    const video = videoRef.current;
+    if (!video) {
+      setIsPlaying(true);
+      return;
+    }
+
+    const reveal = () => setIsPlaying(true);
+
+    if (typeof video.requestVideoFrameCallback === "function") {
+      video.requestVideoFrameCallback(() => reveal());
+      return;
+    }
+
+    reveal();
   };
 
   return (
-    <div className="relative w-full h-full">
-      {!isPlaying && (
-        <Image
-          src={poster}
-          alt=""
-          fill
-          priority
-          fetchPriority="high"
-          sizes="100vw"
-          className="object-cover"
-          aria-hidden
-        />
-      )}
+    <div className="relative h-full w-full">
+      <Image
+        src={poster}
+        alt=""
+        fill
+        priority
+        fetchPriority="high"
+        sizes="100vw"
+        className="absolute inset-0 z-0 object-cover"
+        aria-hidden
+      />
       <video
         ref={videoRef}
         src={videoSrc ?? undefined}
@@ -59,12 +70,11 @@ const HeroVideo = ({ src, poster, ariaLabel }: Props) => {
         loop
         playsInline
         preload="none"
-        onCanPlay={handleVideoReady}
-        onPlaying={handleVideoReady}
+        onPlaying={handlePlaying}
         className={
           isPlaying
-            ? "relative z-10 h-full w-full object-cover"
-            : "absolute inset-0 h-full w-full object-cover opacity-0"
+            ? "absolute inset-0 z-10 h-full w-full object-cover opacity-100"
+            : "absolute inset-0 z-10 h-full w-full object-cover opacity-0"
         }
         aria-label={ariaLabel}
       />
