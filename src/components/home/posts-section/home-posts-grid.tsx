@@ -25,20 +25,16 @@ const HomePostsGrid = ({ posts, mode = "home", loading = false }: Props) => {
       }`}
       aria-busy={loading}
     >
-      <div className="contents lg:hidden">
-        {mobilePosts.map((post) => (
-          <li key={post.id} className="mx-auto w-full">
-            <HomePostCard post={post} />
-          </li>
-        ))}
-      </div>
-      <div className="hidden lg:contents">
-        {posts.map((post) => (
-          <li key={post.id} className="mx-auto w-full">
-            <HomePostCard post={post} />
-          </li>
-        ))}
-      </div>
+      {mobilePosts.map((post) => (
+        <li key={`mobile-${post.id}`} className="mx-auto w-full lg:hidden">
+          <HomePostCard post={post} />
+        </li>
+      ))}
+      {posts.map((post) => (
+        <li key={`desktop-${post.id}`} className="mx-auto w-full hidden lg:block">
+          <HomePostCard post={post} />
+        </li>
+      ))}
     </ul>
   );
 };

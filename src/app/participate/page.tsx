@@ -21,7 +21,7 @@ export const revalidate = 5_184_000;
 
 const ApplicationClosed = ({ message }: { message: string }) => {
     return (
-        <div className="base-text-size col-span-full">
+        <div className="base-text-size">
             <p>{message || "Applications are currently closed."}</p>
         </div>
     )
@@ -102,26 +102,33 @@ async function Page({
                         />
                     </div>
                 ) : null}
-                <ul className="pt-[40px] lg:pt-[60px] grid grid-cols-1 lg:grid-cols-3 lg:items-stretch gap-[40px] lg:gap-x-[30px] lg:gap-y-[100px]">
+                <ul className="list-none pt-[40px] lg:pt-[60px] grid grid-cols-1 lg:grid-cols-3 lg:items-stretch gap-[40px] lg:gap-x-[30px] lg:gap-y-[100px]">
                     {
                         applicationClosed ?
                             (<>
-                                <ParticipatePlanCardView plan={basePackage} variant="base" />
-                                <ApplicationClosed message={closedMessage} />
+                                <li>
+                                    <ParticipatePlanCardView plan={basePackage} variant="base" />
+                                </li>
+                                <li className="col-span-full">
+                                    <ApplicationClosed message={closedMessage} />
+                                </li>
                             </>)
                             : (
                                 <>
-                                    <ParticipatePlanCardView plan={basePackage} variant="base" />
+                                    <li>
+                                        <ParticipatePlanCardView plan={basePackage} variant="base" />
+                                    </li>
                                     {selectablePlans.map((plan) => (
-                                        <ParticipatePlanCardView
-                                            key={plan.id}
-                                            plan={plan}
-                                            applyIntent={eligibility.resolvedIntent}
-                                            variant="selectable"
-                                            planSelectionDisabled={!eligibility.canSelectPlan}
-                                            disabledReason={eligibility.blockReason}
-                                            email={prefilledEmail}
-                                        />
+                                        <li key={plan.id}>
+                                            <ParticipatePlanCardView
+                                                plan={plan}
+                                                applyIntent={eligibility.resolvedIntent}
+                                                variant="selectable"
+                                                planSelectionDisabled={!eligibility.canSelectPlan}
+                                                disabledReason={eligibility.blockReason}
+                                                email={prefilledEmail}
+                                            />
+                                        </li>
                                     ))}
                                 </>
                             )}
