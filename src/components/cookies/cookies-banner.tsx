@@ -171,7 +171,7 @@ export function CookieBanner({ variant = "fixed" }: CookieBannerProps) {
             "main-boder-top flex flex-wrap items-baseline justify-between py-[30px]",
           )}
         >
-          <div className="min-w-[300px] max-w-[750px] flex-1 pl-[30px]">
+          <div className={`${isInline ? "pl-0" : "pl-[30px]"} min-w-[300px] max-w-[750px] flex-1`}>
             <p className="versal-body-text uppercase">{COOKIES_TEXT.title}</p>
 
             <p className="versal-body-text mini-padding">
