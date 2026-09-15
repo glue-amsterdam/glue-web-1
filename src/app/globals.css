@@ -595,9 +595,17 @@
 
   [data-route-print-root] {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
     width: 100%;
     display: block !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  [data-route-print-root] .break-after-page {
+    break-after: page;
+    page-break-after: always;
   }
 }
 

@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { NavBarClient } from "@/components/navbar/navbar-client";
 import Footer from "@/components/home/bottom-navigation/bottom-navigation";
+import { HomeTextsProvider } from "@/context/HomeTextsContext";
 import type { NavbarLink } from "@/lib/nav/build-navbar-links";
 import type { HomeTextItem } from "@/schemas/mainSchema";
 
@@ -23,10 +24,10 @@ export const AdminSiteChrome = ({
   const hideSiteChrome = isAdminRoute(pathname);
 
   return (
-    <>
+    <HomeTextsProvider homeTexts={homeTexts}>
       {!hideSiteChrome && <NavBarClient navLinks={navLinks} />}
       {children}
       {!hideSiteChrome && <Footer homeTexts={homeTexts} />}
-    </>
+    </HomeTextsProvider>
   );
 };

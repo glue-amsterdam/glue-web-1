@@ -41,14 +41,12 @@ import type { ExhibitorPopupAnchor } from "@/lib/map/exhibitor-popup-layout";
 import { measureMapBottomInset } from "@/lib/map/map-viewport-insets";
 import { composeRoutePrintMapDataUrl } from "@/lib/map/route-static-map";
 import { buildGlueLogoSrc } from "@/lib/map/route-print-logo";
-import {
-  formatEventDateRange,
-  type RoutePrintProps,
-} from "@/lib/map/route-print-props";
+import type { RoutePrintProps } from "@/lib/map/route-print-props";
 import { getRouteStopsForDisplay } from "@/lib/map/route-stop-display";
 import type { RouteStopDisplay } from "@/lib/map/route-stop-display";
 import { RoutePrintHost } from "@/components/map/route-print-host";
-import { useEventsDays } from "@/context/MainContext";
+import { useHomeTexts } from "@/context/HomeTextsContext";
+import { getHomeTextLabel } from "@/lib/main/map-home-text-row";
 import {
   buildLocationsGeoJSON,
   buildRouteStopsGeoJSON,
@@ -179,11 +177,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
   const [mapLoaded, setMapLoaded] = useState(false);
   const [routePrintProps, setRoutePrintProps] =
     useState<RoutePrintProps | null>(null);
-  const eventDays = useEventsDays();
-  const eventDate = useMemo(
-    () => formatEventDateRange(eventDays),
-    [eventDays]
-  );
+  const homeTexts = useHomeTexts();
   const [themeColors, setThemeColors] = useState<MapThemeColors>(() =>
     getMapThemeColorsFromDocument(categorySlugs)
   );
@@ -314,8 +308,9 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
         mapImageDataUrl: mapDataUrl,
         stops,
         primaryColor: themeColors.primaryColor,
-        logoSrc: buildGlueLogoSrc(themeColors.primaryColor),
-        eventDate,
+        logoSrc: buildGlueLogoSrc("#000000"),
+        headerText: getHomeTextLabel(homeTexts, "footer_left"),
+        footerText: getHomeTextLabel(homeTexts, "footer_right"),
       });
     } catch (error) {
       console.error("Route print generation failed:", error);
@@ -325,7 +320,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     mapLoaded,
     locations,
     themeColors,
-    eventDate,
+    homeTexts,
   ]);
 
   const handleRoutePrintComplete = useCallback(() => {

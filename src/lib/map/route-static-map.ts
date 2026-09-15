@@ -1,12 +1,15 @@
 import mapboxgl from "mapbox-gl";
 import type { MapRoute } from "@/lib/map/types";
 import type { RouteStopDisplay } from "@/lib/map/route-stop-display";
+import { ROUTE_PRINT_FIGMA } from "@/lib/map/route-print-figma";
+import { PRINT_ROUNDED_NUMBER } from "@/lib/map/map-point-marker-spec";
 
 const MAP_STYLE_URI = "mapbox://styles/mapbox/light-v11";
 const DEFAULT_ROUTE_LINE_COLOR = "#10069F";
 
-export const PRINT_MAP_WIDTH = 1280;
-export const PRINT_MAP_HEIGHT = 720;
+/** Must match the Figma map slot in RoutePrintTemplate (no object-cover crop). */
+export const PRINT_MAP_WIDTH = ROUTE_PRINT_FIGMA.mapWidth;
+export const PRINT_MAP_HEIGHT = ROUTE_PRINT_FIGMA.mapHeight;
 const PRINT_PADDING_PX = 72;
 const SINGLE_STOP_ZOOM = 14;
 const PRINT_MAX_ZOOM = 17;
@@ -38,6 +41,17 @@ const waitForMapIdle = (map: mapboxgl.Map): Promise<void> =>
   new Promise((resolve) => {
     map.once("idle", () => resolve());
   });
+
+const ensurePrintBadgeFont = async (): Promise<void> => {
+  if (typeof document === "undefined" || !document.fonts?.load) return;
+  try {
+    await document.fonts.load(
+      `${PRINT_ROUNDED_NUMBER.fontSizePx}px ${PRINT_ROUNDED_NUMBER.fontFamily}`
+    );
+  } catch {
+    // Fall through — canvas will use the fallback stack.
+  }
+};
 
 const createOffscreenPrintMap = async (
   accessToken: string
@@ -116,6 +130,7 @@ export const composeRoutePrintMapDataUrl = async (
     ({ map, container } = await createOffscreenPrintMap(accessToken));
     fitPrintMapToRoute(map, route);
     await waitForMapIdle(map);
+    await ensurePrintBadgeFont();
 
     const mapCanvas = map.getCanvas();
     const cssWidth = map.getContainer().clientWidth;
@@ -157,23 +172,24 @@ export const composeRoutePrintMapDataUrl = async (
       ctx.setLineDash([]);
     }
 
+    const badgeScale = scaleX;
+    const radius = (PRINT_ROUNDED_NUMBER.diameterPx * badgeScale) / 2;
+    const fontPx = PRINT_ROUNDED_NUMBER.fontSizePx * badgeScale;
+    const textOffsetY = PRINT_ROUNDED_NUMBER.textOffsetYPx * badgeScale;
+
+    ctx.font = `${fontPx}px ${PRINT_ROUNDED_NUMBER.fontFamily}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
     for (const stop of stops) {
       const [x, y] = lngLatToPx(stop.longitude, stop.latitude);
-      const r = Math.max(11, imgW / 85);
       ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fillStyle = stop.backgroundColor;
       ctx.fill();
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = Math.max(1.5, imgW / 450);
-      ctx.stroke();
 
       ctx.fillStyle = stop.color;
-      const fontPx = Math.round(Math.min(r * 1.15, imgW / 28));
-      ctx.font = `bold ${fontPx}px system-ui, -apple-system, Segoe UI, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(stop.label, x, y);
+      ctx.fillText(stop.label, x, y + textOffsetY);
     }
 
     return composite.toDataURL("image/jpeg", 0.78);

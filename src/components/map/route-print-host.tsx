@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { RoutePrintTemplate } from "@/components/map/route-print-template";
+import { RoutePrintDocument } from "@/components/map/route-print-document";
 import type { RoutePrintProps } from "@/lib/map/route-print-props";
 
 type RoutePrintHostProps = {
@@ -87,7 +87,7 @@ export const RoutePrintHost = ({
       className="pointer-events-none fixed top-0 left-0 z-9999 hidden print:block"
       aria-hidden={!printProps}
     >
-      <RoutePrintTemplate {...printProps} />
+      <RoutePrintDocument {...printProps} />
     </div>,
     document.body
   );
