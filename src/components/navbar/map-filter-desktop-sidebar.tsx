@@ -24,7 +24,7 @@ const MapFilterDesktopSidebar = () => {
       role="group"
       aria-label={getMapFilterAriaLabel(openFilter)}
       className={cn(
-        "absolute top-(--nav-secondary-h) left-0 z-10 w-[295px] h-full pb-(--site-footer-h)",
+        "absolute top-(--nav-secondary-h) left-0 z-10 max-w-[295px] w-full h-full pb-(--site-footer-h)",
         "overflow-y-auto bg-(--white-color)",
         "pointer-events-auto"
       )}

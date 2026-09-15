@@ -150,7 +150,7 @@ export const MapFilterPanelContent = ({
     return (
       <div
         className={cn(
-          variant === "sidebar" && "flex flex-col",
+          variant === "sidebar" && "flex flex-col max-w-[237px]",
           className
         )}
       >
@@ -162,7 +162,7 @@ export const MapFilterPanelContent = ({
           variant={variant}
         />
         {showRoutesInSearch && (
-          <div className="flex flex-col max-w-[237px] main-boder-top pb-[15px]">
+          <div className="flex flex-col main-boder-top pb-[15px]">
             <p className="sr-only">
               Routes
             </p>
