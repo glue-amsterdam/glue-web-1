@@ -107,7 +107,7 @@ const FaqBlockClient = ({ block, sanitized }: Props) => {
       ) : null}
       <Accordion
         type="multiple"
-        className="w-full title-padding lg:grid lg:grid-cols-2 lg:gap-x-[30px] lg:gap-y-[60px]"
+        className="w-full title-padding grid lg:grid-cols-2 lg:gap-x-[30px] lg:gap-y-[60px] gap-y-[40px]"
         aria-label={block.title}
         value={isLargeScreen ? allItemIds : openIds}
         onValueChange={handleValueChange}

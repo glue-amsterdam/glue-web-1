@@ -6,7 +6,11 @@ import { useMapFiltersFromUrl } from "@/hooks/useMapFiltersFromUrl";
 import {
   type MapFilterId,
   useMapFilterPanel,
+  useMapFilteredLocationsForList,
+  useMapFilteredRoutesForList,
   useMapPage,
+  useMapSelectedLocation,
+  useMapSelectedRoute,
 } from "@/app/map/stores/use-map-store";
 import ExhibitorList from "@/app/map/components/exhibitor-list";
 import RoutesList from "@/app/map/components/routes-list";
@@ -82,10 +86,11 @@ export const CategoryExhibitorListContent = ({
   categoryType,
   className,
 }: CategoryExhibitorListContentProps) => {
-  const mapPageStore = useMapPage();
+  const filteredLocationsForList = useMapFilteredLocationsForList();
+  const selectedLocation = useMapSelectedLocation();
   const filterPanelStore = useMapFilterPanel();
 
-  if (!filterPanelStore || !mapPageStore) return null;
+  if (!filterPanelStore) return null;
 
   const { onExhibitorListSelect } = filterPanelStore;
 
@@ -97,8 +102,8 @@ export const CategoryExhibitorListContent = ({
       )}
     >
       <ExhibitorList
-        locations={mapPageStore.filteredLocationsForList}
-        selectedLocation={mapPageStore.selectedLocation}
+        locations={filteredLocationsForList}
+        selectedLocation={selectedLocation}
         onLocationSelect={onExhibitorListSelect}
         categoryType={categoryType}
         variant={variant}
@@ -114,6 +119,10 @@ export const MapFilterPanelContent = ({
   className,
 }: MapFilterPanelContentProps) => {
   const mapPageStore = useMapPage();
+  const filteredLocationsForList = useMapFilteredLocationsForList();
+  const filteredRoutesForList = useMapFilteredRoutesForList();
+  const selectedLocation = useMapSelectedLocation();
+  const selectedRoute = useMapSelectedRoute();
   const filterPanelStore = useMapFilterPanel();
   const { user } = useAuth();
   const { filters } = useMapFiltersFromUrl();
@@ -126,6 +135,8 @@ export const MapFilterPanelContent = ({
     onRouteSelected,
   } = filterPanelStore;
 
+  const onDownloadSelectedRoute = mapPageStore?.onDownloadSelectedRoute;
+
   if (filterId === "exhibitors") {
     if (!mapPageStore) return null;
 
@@ -134,31 +145,32 @@ export const MapFilterPanelContent = ({
       Boolean(user) &&
       variant === "sidebar" &&
       searchQuery.length > 0 &&
-      mapPageStore.filteredRoutesForList.length > 0;
+      filteredRoutesForList.length > 0;
 
     return (
       <div
         className={cn(
-          variant === "sidebar" && "flex flex-col",
+          variant === "sidebar" && "flex flex-col max-w-[237px]",
           className
         )}
       >
         <ExhibitorList
-          locations={mapPageStore.filteredLocationsForList}
-          selectedLocation={mapPageStore.selectedLocation}
+          locations={filteredLocationsForList}
+          selectedLocation={selectedLocation}
           onLocationSelect={onExhibitorListSelect}
           categoryType={filters.type}
           variant={variant}
         />
         {showRoutesInSearch && (
-          <div className="flex flex-col gap-[15px] border-t border-(--black-color) pt-[20px]">
-            <p className="px-[30px] text-xs font-semibold uppercase tracking-wide text-(--gray-color)">
+          <div className="flex flex-col main-boder-top pb-[15px]">
+            <p className="sr-only">
               Routes
             </p>
             <RoutesList
-              routes={mapPageStore.filteredRoutesForList}
-              selectedRoute={mapPageStore.selectedRoute}
+              routes={filteredRoutesForList}
+              selectedRoute={selectedRoute}
               onRouteSelect={onRouteListSelect}
+              onDownloadSelectedRoute={onDownloadSelectedRoute}
               variant="sidebar"
               onRouteSelected={onRouteSelected}
             />
@@ -173,9 +185,10 @@ export const MapFilterPanelContent = ({
 
     return (
       <RoutesList
-        routes={mapPageStore.filteredRoutesForList}
-        selectedRoute={mapPageStore.selectedRoute}
+        routes={filteredRoutesForList}
+        selectedRoute={selectedRoute}
         onRouteSelect={onRouteListSelect}
+        onDownloadSelectedRoute={onDownloadSelectedRoute}
         variant={variant}
         className={className}
         onRouteSelected={onRouteSelected}

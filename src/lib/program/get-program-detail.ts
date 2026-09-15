@@ -11,6 +11,7 @@ import type { EventType } from "@/schemas/eventSchemas";
 import type { ProgramDetail } from "./program-types";
 import { ProgramNotFoundError } from "./program-types";
 import {
+  loadInheritedHubInputsByUserId,
   organizerBadgeFromParticipant,
   resolveLocationOrganizerBadge,
 } from "./resolve-program-organizer-badge";
@@ -111,10 +112,23 @@ export const getProgramDetail = async (
   >[0];
   const { category, displayNumber } =
     organizerBadgeFieldsFromEmbed(participantDetails);
+  const inheritedHubsByOrganizerId = organizer?.user_id
+    ? await loadInheritedHubInputsByUserId(
+        supabase,
+        [organizer.user_id],
+        tourStatus,
+        categories
+      )
+    : new Map();
   const organizerFallback = organizerBadgeFromParticipant(
     category,
     displayNumber,
-    categories
+    categories,
+    {
+      hubs: organizer?.user_id
+        ? (inheritedHubsByOrganizerId.get(organizer.user_id) ?? [])
+        : [],
+    }
   );
   const badge = await resolveLocationOrganizerBadge(
     supabase,

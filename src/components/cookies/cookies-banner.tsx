@@ -156,8 +156,7 @@ export function CookieBanner({ variant = "fixed" }: CookieBannerProps) {
   const showActions = consentStatus !== "accepted";
 
   return (
-    <aside
-      role="dialog"
+    <footer
       aria-label="Cookie consent"
       className={cn(
         "bg-(--background-color)",
@@ -172,7 +171,7 @@ export function CookieBanner({ variant = "fixed" }: CookieBannerProps) {
             "main-boder-top flex flex-wrap items-baseline justify-between py-[30px]",
           )}
         >
-          <div className="min-w-[300px] max-w-[750px] flex-1 pl-[30px]">
+          <div className={`${isInline ? "pl-0" : "pl-[30px]"} min-w-[300px] max-w-[750px] flex-1`}>
             <p className="versal-body-text uppercase">{COOKIES_TEXT.title}</p>
 
             <p className="versal-body-text mini-padding">
@@ -216,6 +215,6 @@ export function CookieBanner({ variant = "fixed" }: CookieBannerProps) {
             By clicking Accept, you consent to the use of analytics and performance cookies. <br />Ccookies are required for the website to function are always enabled.</p>)}
         </div>
       </MainContainer>
-    </aside>
+    </footer>
   );
 }

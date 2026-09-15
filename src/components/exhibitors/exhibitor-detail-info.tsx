@@ -215,7 +215,7 @@ const ExhibitorDetailInfo = ({ contactInfo }: ExhibitorDetailInfoProps) => {
                 <Link
                   href={`/program/${event.id}`}
                   target="_blank"
-                  className="hover-link"
+                  className="hover-link base-text-size"
                   rel="noopener noreferrer"
                 >
                   {event.title}

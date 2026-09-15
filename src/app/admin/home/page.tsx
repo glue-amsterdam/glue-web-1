@@ -19,11 +19,13 @@ const mapHeroDataToForm = (hero: {
   id: string | null;
   description: string;
   videoUrl: string;
+  videoUrlMobile: string;
   posterUrl: string;
 }): HomeHero => ({
   id: hero.id ?? undefined,
   description: hero.description,
   video_url: hero.videoUrl,
+  video_url_mobile: hero.videoUrlMobile || "",
   poster_url: hero.posterUrl,
 });
 

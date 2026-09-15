@@ -23,13 +23,12 @@ import {
   excludeHubFallbackMarkerLocations,
   resolveMapLocationSelectionId,
 } from "@/lib/map/map-selection";
+import { getRouteStopsForDisplay } from "@/lib/map/route-stop-display";
 import type { MapPageData } from "@/lib/map/types";
-import type { RouteStopDisplay } from "@/lib/map/route-stop-display";
 import { config } from "@/config";
 import { useMediaQuery } from "@/hooks/userMediaQuery";
 import { useMapStore } from "./stores/use-map-store";
 import type { MapViewHandle } from "./components/map-view";
-import RouteFooter from "./components/route-footer";
 import MapFilterDesktopSidebar from "@/components/navbar/map-filter-desktop-sidebar";
 import ExhibitorFooter from "./components/exhibitor-footer";
 
@@ -50,15 +49,14 @@ const MapMain = ({ initialData }: MapMainProps) => {
     selectedLocation,
     selectedHubMemberId,
     selectedRoute,
-    detailPanelDismissed,
     activeRouteStopId,
-    dismissRoutePanel,
     closeExhibitorSelection,
+    clearActiveRouteStop,
     clearSelectionIfHidden,
-    reopenDetailPanel,
     setActiveRouteStopId,
     setSelectedLocation,
     setSelectedRoute,
+    navigateMap,
   } = useMapPageState(initialData);
 
   const { filters } = useMapFiltersFromUrl();
@@ -124,6 +122,11 @@ const MapMain = ({ initialData }: MapMainProps) => {
   const clearPage = useMapStore((state) => state.clearPage);
   const setOptimisticFilters = useMapStore((state) => state.setOptimisticFilters);
 
+  const handleDownloadRoutePdf = useCallback(
+    () => mapRef.current?.downloadSelectedRoutePdf() ?? Promise.resolve(),
+    []
+  );
+
   useEffect(() => {
     setPage({
       routes,
@@ -134,6 +137,7 @@ const MapMain = ({ initialData }: MapMainProps) => {
       filteredRoutesForList,
       selectedLocation,
       onLocationSelect: setSelectedLocation,
+      onDownloadSelectedRoute: handleDownloadRoutePdf,
     });
   }, [
     routes,
@@ -144,6 +148,7 @@ const MapMain = ({ initialData }: MapMainProps) => {
     filteredRoutesForList,
     selectedLocation,
     setSelectedLocation,
+    handleDownloadRoutePdf,
     setPage,
   ]);
 
@@ -190,32 +195,59 @@ const MapMain = ({ initialData }: MapMainProps) => {
     return locations.find((location) => location.id === resolvedId) ?? null;
   }, [locations, selectedLocation]);
 
-  const showMobileRouteFooter =
-    !isLargeScreen && selectedRouteObject && !detailPanelDismissed;
-  const showMobileExhibitorFooter =
-    !isLargeScreen &&
-    !selectedRoute &&
-    selectedLocation &&
-    selectedLocationData;
+  const activeStopLocation = useMemo(() => {
+    if (!selectedRouteObject || !activeRouteStopId) return null;
 
-  const handleDownloadRoutePdf = useCallback(
-    () => mapRef.current?.downloadSelectedRoutePdf() ?? Promise.resolve(),
-    []
-  );
+    const stop = getRouteStopsForDisplay(selectedRouteObject, locations).find(
+      (item) => item.dotId === activeRouteStopId
+    );
+    if (!stop) return null;
 
-  const handleActiveStopChange = useCallback((stop: RouteStopDisplay) => {
-    mapRef.current?.focusOnPoint(stop.longitude, stop.latitude);
-  }, []);
+    const resolvedId = resolveMapLocationSelectionId(locations, stop.mapInfoId);
+    return locations.find((location) => location.id === resolvedId) ?? null;
+  }, [selectedRouteObject, activeRouteStopId, locations]);
+
+  const mobileExhibitorFooterLocation =
+    !isLargeScreen && selectedRoute
+      ? activeStopLocation
+      : !isLargeScreen && !selectedRoute
+        ? selectedLocationData
+        : null;
 
   const handleRouteStopSelect = useCallback(
     (dotId: string) => {
       if (!selectedRouteObject) return;
 
-      reopenDetailPanel();
+      if (!isLargeScreen) {
+        // Close routes sheet sync so it doesn't stack with ExhibitorFooter
+        // while navigateMap's view=none waits on URL ack.
+        useMapStore.getState().filterPanel?.dismissOpenFilter();
+      }
+
       setActiveRouteStopId(dotId);
+
+      if (!isLargeScreen) {
+        navigateMap({
+          filterPatch: { view: "none" },
+          selection: { route: selectedRouteObject.id },
+        });
+      }
     },
-    [selectedRouteObject, reopenDetailPanel, setActiveRouteStopId]
+    [
+      selectedRouteObject,
+      setActiveRouteStopId,
+      isLargeScreen,
+      navigateMap,
+    ]
   );
+
+  const handleMobileExhibitorFooterClose = useCallback(() => {
+    if (selectedRoute) {
+      clearActiveRouteStop();
+      return;
+    }
+    closeExhibitorSelection();
+  }, [selectedRoute, clearActiveRouteStop, closeExhibitorSelection]);
 
   return (
     <>
@@ -236,36 +268,23 @@ const MapMain = ({ initialData }: MapMainProps) => {
             selectedHubMemberId={selectedHubMemberId}
             selectedRoute={selectedRoute}
             activeRouteStopId={activeRouteStopId}
-            detailPanelDismissed={detailPanelDismissed}
             categoryFilterType={filters.type}
             onLocationSelect={setSelectedLocation}
             onCloseExhibitorSelection={closeExhibitorSelection}
-            onDismissRoutePanel={dismissRoutePanel}
+            onClearActiveRouteStop={clearActiveRouteStop}
+            onDismissRouteSelection={closeExhibitorSelection}
             onRouteStopSelect={handleRouteStopSelect}
           />
         </Suspense>
         {isLargeScreen && <MapFilterDesktopSidebar />}
       </div>
 
-      {showMobileExhibitorFooter && selectedLocationData && (
+      {mobileExhibitorFooterLocation && (
         <ExhibitorFooter
-          key={selectedLocationData.id}
-          location={selectedLocationData}
+          location={mobileExhibitorFooterLocation}
           tourMode={tourMode}
-          selectedHubMemberId={selectedHubMemberId}
-          onClose={closeExhibitorSelection}
-        />
-      )}
-
-      {showMobileRouteFooter && selectedRouteObject && (
-        <RouteFooter
-          route={selectedRouteObject}
-          locations={locations}
-          tourMode={tourMode}
-          activeStopId={activeRouteStopId}
-          onActiveStopChange={handleActiveStopChange}
-          onDownloadRoutePdf={handleDownloadRoutePdf}
-          onClose={dismissRoutePanel}
+          selectedHubMemberId={selectedRoute ? null : selectedHubMemberId}
+          onClose={handleMobileExhibitorFooterClose}
         />
       )}
     </>

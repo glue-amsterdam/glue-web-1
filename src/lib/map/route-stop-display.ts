@@ -61,7 +61,7 @@ export const getRouteStopsForDisplay = (
         participantType,
         longitude: dot.longitude,
         latitude: dot.latitude,
-        label: String(dot.routeStep),
+        label: location?.displayNumber?.trim() || " ",
         backgroundColor,
         color,
         userName: location?.name ?? dot.name,

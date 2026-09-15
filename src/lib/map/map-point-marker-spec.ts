@@ -18,6 +18,17 @@ export type MapPointMarkerDimensions = {
   textOffsetYPx: number;
 };
 
+/**
+ * Print badge metrics for `RoundedNumber` `size="print"` and route-print JPG
+ * canvas dots. Edit here to keep list + map markers matched on the A4 sheet.
+ */
+export const PRINT_ROUNDED_NUMBER = {
+  diameterPx: 72,
+  fontSizePx: 42, // ~72 * (15/26), same optical fill as map UI badges
+  textOffsetYPx: 1,
+  fontFamily: "Lausanne, sans-serif",
+} as const;
+
 const MOBILE_DIMENSIONS: MapPointMarkerDimensions = {
   diameterPx: 26,
   fontSizePx: 15,

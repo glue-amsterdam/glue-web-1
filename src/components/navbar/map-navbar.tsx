@@ -39,6 +39,7 @@ import {
   type MapViewMode,
 } from "@/lib/map/map-filters";
 import { buildMapPageUrl } from "@/lib/map/map-url";
+import { MAP_SEARCH_DEBOUNCE_MS } from "@/lib/map/map-search";
 import type { MapRoute } from "@/lib/map/types";
 import {
   type MapFilterId,
@@ -47,8 +48,6 @@ import {
   useMapPage,
   useMapStore,
 } from "@/app/map/stores/use-map-store";
-
-const SEARCH_DEBOUNCE_MS = 400;
 
 const PANEL_BY_VIEW: Record<MapViewMode, MapFilterId | null> = {
   none: null,
@@ -85,7 +84,10 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     (q: string) => {
       if (isLargeScreen) {
         if (q.trim()) {
-          applyFilters(withExhibitorsView(filters, { q, type: "all" }));
+          navigation?.clearSelectionLocal();
+          applyFilters(withExhibitorsView(filters, { q, type: "all" }), {
+            clearSelection: true,
+          });
           setOpenFilter("exhibitors");
           return;
         }
@@ -94,17 +96,21 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
       }
 
       if (q.trim()) {
-        applyFilters({
-          ...buildOpenMapViewPatch(filters, "exhibitors"),
-          q,
-          view: "none",
-        });
+        navigation?.clearSelectionLocal();
+        applyFilters(
+          {
+            ...buildOpenMapViewPatch(filters, "exhibitors"),
+            q,
+            view: "none",
+          },
+          { clearSelection: true }
+        );
         return;
       }
 
       applyFilters({ q });
     },
-    [applyFilters, filters, isLargeScreen, setOpenFilter]
+    [applyFilters, filters, isLargeScreen, navigation, setOpenFilter]
   );
 
   const {
@@ -114,12 +120,13 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
   } = useDebouncedUrlSearch({
     urlValue: urlFilters.q,
     onCommit: handleSearchCommit,
-    debounceMs: SEARCH_DEBOUNCE_MS,
+    debounceMs: MAP_SEARCH_DEBOUNCE_MS,
   });
 
   const routesPanelId = useId();
   const exhibitorsPanelId = useId();
   const categoryPanelId = useId();
+  const searchResultsPanelId = useId();
   const panelAnchorRef = useRef<HTMLDivElement>(null);
   const mapNavbarRef = useRef<HTMLElement>(null);
 
@@ -144,19 +151,42 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
       const q = event.target.value;
       previewFilters(withExhibitorsView(filters, { q, type: "all" }));
       if (q.trim()) {
+        if (mapPageStore?.selectedRoute) {
+          navigation?.clearSelectionLocal();
+          if (navigation) {
+            navigation.navigateMap({ selection: { clearSelection: true } });
+          }
+        }
         setOpenFilter("exhibitors");
       }
     },
-    [handleDebouncedSearchChange, isLargeScreen, previewFilters, filters, setOpenFilter]
+    [
+      handleDebouncedSearchChange,
+      isLargeScreen,
+      previewFilters,
+      filters,
+      mapPageStore?.selectedRoute,
+      navigation,
+      setOpenFilter,
+    ]
   );
 
   const openFilterView = useCallback(
     (view: MapViewMode, filterId: MapFilterId) => {
       panelDismissedByUserRef.current = false;
-      const patch = buildOpenMapViewPatch(filters, view);
+      const patch = {
+        ...buildOpenMapViewPatch(filters, view),
+        ...(!isLargeScreen ? { q: "" as const } : {}),
+      };
+      const shouldClearRouteSelection = view !== "routes";
 
       if (isLargeScreen) {
-        applyFilters(patch);
+        if (shouldClearRouteSelection) {
+          navigation?.clearSelectionLocal();
+          applyFilters(patch, { clearSelection: true });
+        } else {
+          applyFilters(patch);
+        }
       } else {
         navigation?.clearSelectionLocal();
         if (navigation) {
@@ -200,80 +230,53 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
 
   const handleExhibitorListSelect = useCallback(
     (locationId: string, options?: MapLocationSelectOptions) => {
-      if (!navigation) return;
+      if (!mapPageStore) return;
 
       if (!isLargeScreen) {
         panelDismissedByUserRef.current = true;
         closeFilter();
       }
 
-      navigation.selectLocationLocal(
-        locationId,
-        options?.memberUserId ?? null
-      );
-
-      const keepCategoryView =
-        isLargeScreen && filters.view === "category";
-
-      navigation.navigateMap({
-        filterPatch: keepCategoryView
-          ? { view: "category", type: filters.type }
-          : isLargeScreen
-            ? { view: "exhibitors" }
-            : { view: "none", type: filters.type },
-        selection: { place: locationId },
+      mapPageStore.onLocationSelect(locationId, {
+        ...options,
+        source: "list",
       });
     },
-    [navigation, closeFilter, isLargeScreen, filters.view, filters.type]
+    [mapPageStore, closeFilter, isLargeScreen]
   );
 
   const handleSearchExhibitorSelect = useCallback(
     (locationId: string) => {
-      if (!navigation) return;
+      if (!mapPageStore) return;
 
       if (!isLargeScreen) closeFilter();
-      navigation.selectLocationLocal(locationId);
-      navigation.navigateMap({
-        filterPatch: isLargeScreen
-          ? { q: "", type: "all" }
-          : { view: "none", q: "", type: "all" },
-        selection: { place: locationId },
+      mapPageStore.onLocationSelect(locationId, {
+        source: "search",
         clearSearch: !isLargeScreen,
       });
     },
-    [navigation, closeFilter, isLargeScreen]
+    [mapPageStore, closeFilter, isLargeScreen]
   );
 
   const handleSearchRouteSelect = useCallback(
     (routeId: string) => {
-      if (!navigation) return;
+      if (!mapPageStore) return;
 
-      if (!isLargeScreen) closeFilter();
-      navigation.selectRouteLocal(routeId);
-      navigation.navigateMap({
-        filterPatch: isLargeScreen
-          ? { q: "" }
-          : { view: "none", q: "", type: "all" },
-        selection: { route: routeId },
-      });
+      // Route nav clears `q` optimistically; exclusivity prefers routes over search.
+      mapPageStore.onRouteSelect(routeId, { source: "search" });
+      setOpenFilter("routes");
     },
-    [navigation, closeFilter, isLargeScreen]
+    [mapPageStore, setOpenFilter]
   );
 
   const handleRouteListSelect = useCallback(
     (routeId: string) => {
-      if (!navigation) return;
+      if (!mapPageStore) return;
 
-      if (!isLargeScreen) closeFilter();
-      navigation.selectRouteLocal(routeId);
-      navigation.navigateMap({
-        filterPatch: isLargeScreen
-          ? { q: "" }
-          : { view: "none", q: "", type: "all" },
-        selection: { route: routeId },
-      });
+      mapPageStore.onRouteSelect(routeId, { source: "list" });
+      setOpenFilter("routes");
     },
-    [navigation, closeFilter, isLargeScreen]
+    [mapPageStore, setOpenFilter]
   );
 
   const navigateToRoutesViewForUnauthenticated = useCallback(() => {
@@ -316,7 +319,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
 
     if (isCategoryPanelOpen && filters.type !== "all") {
       panelDismissedByUserRef.current = false;
-      applyFilters({ type: "all", view: "category" });
+      applyFilters({ type: "all", view: "category", q: "" });
       setOpenFilter("category");
       return;
     }
@@ -362,21 +365,28 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
   }, [openFilter, filters.view]);
 
   const handleRouteSelected = useCallback(() => {
-    if (!isLargeScreen) {
-      closeFilter();
-    }
-  }, [closeFilter, isLargeScreen]);
+    // Keep the routes panel open so the inline selected block stays visible.
+  }, []);
+
+  const dismissOpenFilter = useCallback(() => {
+    panelDismissedByUserRef.current = true;
+    closeFilter();
+  }, [closeFilter]);
 
   const handleDismissOpenFilter = useCallback(() => {
     panelDismissedByUserRef.current = true;
     closeFilterView(resolveClosingView());
   }, [closeFilterView, resolveClosingView]);
 
-  const openPanelIds = useMemo(() => {
-    if (openFilter === "exhibitors") return [exhibitorsPanelId];
-    if (openFilter === "routes") return [routesPanelId];
-    if (openFilter === "category") return [categoryPanelId];
-    return [];
+  const handleDismissSearchResults = useCallback(() => {
+    applyFilters({ q: "" });
+  }, [applyFilters]);
+
+  const openPanelId = useMemo(() => {
+    if (openFilter === "exhibitors") return exhibitorsPanelId;
+    if (openFilter === "routes") return routesPanelId;
+    if (openFilter === "category") return categoryPanelId;
+    return null;
   }, [
     openFilter,
     exhibitorsPanelId,
@@ -384,7 +394,12 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     categoryPanelId,
   ]);
 
-  const openPanelId = openPanelIds[0] ?? null;
+  const openPanelIds = useMemo(() => {
+    // Mobile: search sheet XOR filter sheet — never both.
+    if (showSearchResults) return [searchResultsPanelId];
+    if (openPanelId) return [openPanelId];
+    return [];
+  }, [showSearchResults, searchResultsPanelId, openPanelId]);
 
   useLayoutEffect(() => {
     setFilterPanel({
@@ -394,6 +409,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
       onRouteListSelect: handleRouteListSelect,
       onTypeSelect: handleTypeSelect,
       onRouteSelected: handleRouteSelected,
+      dismissOpenFilter,
     });
 
     return () => clearFilterPanel();
@@ -404,6 +420,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     handleRouteListSelect,
     handleTypeSelect,
     handleRouteSelected,
+    dismissOpenFilter,
     setFilterPanel,
     clearFilterPanel,
   ]);
@@ -437,6 +454,11 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
       const mapSurface = document.querySelector("[data-map-surface]");
       if (mapSurface?.contains(target)) return;
 
+      if (showSearchResults) {
+        handleDismissSearchResults();
+        return;
+      }
+
       handleDismissOpenFilter();
     };
 
@@ -451,6 +473,8 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
   }, [
     isLargeScreen,
     openPanelIds,
+    showSearchResults,
+    handleDismissSearchResults,
     handleDismissOpenFilter,
   ]);
 
@@ -498,16 +522,6 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
             onKeyDown={handleCategoryKeyDown}
           />
         </BaseSecondNavbar>
-
-        {showSearchResults && (
-          <MapSearchResults
-            locations={mapPageStore?.searchFilteredLocations ?? []}
-            routes={canShowRoutesInSearch ? filteredRoutesForList : []}
-            onExhibitorSelect={handleSearchExhibitorSelect}
-            onRouteSelect={handleSearchRouteSelect}
-            className="top-full inset-x-0 z-60 max-h-[min(300px,calc(100dvh-var(--nav-total-h-mobile)-var(--site-footer-h)-16px))]"
-          />
-        )}
       </div>
 
       <div
@@ -515,6 +529,25 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
         className="absolute left-0 right-0 top-full h-0 w-full pointer-events-none"
         aria-hidden
       />
+
+      {!isLargeScreen && (
+        <MapFilterScrollPanel
+          isOpen={showSearchResults}
+          panelId={searchResultsPanelId}
+          ariaLabel="Search results"
+          heightMode="rising-sheet"
+          anchorRef={panelAnchorRef}
+          onSwipeDownAtPeek={handleDismissSearchResults}
+          className={MAP_FILTER_PANEL_CLASS}
+        >
+          <MapSearchResults
+            locations={mapPageStore?.searchFilteredLocations ?? []}
+            routes={canShowRoutesInSearch ? filteredRoutesForList : []}
+            onExhibitorSelect={handleSearchExhibitorSelect}
+            onRouteSelect={handleSearchRouteSelect}
+          />
+        </MapFilterScrollPanel>
+      )}
 
       {!isLargeScreen && mapPageStore && (
         <MapFilterScrollPanel

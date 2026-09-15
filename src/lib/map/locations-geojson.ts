@@ -212,6 +212,7 @@ export const buildRouteStopsGeoJSON = (
     .map((dot) => {
       const location = locationById.get(dot.mapInfoId);
       const routeStep = dot.routeStep;
+      const label = location?.displayNumber?.trim() || " ";
 
       if (location) {
         return toPointFeature(
@@ -222,7 +223,7 @@ export const buildRouteStopsGeoJSON = (
           location.type,
           dot.name,
           location.memberCount,
-          String(routeStep),
+          label,
           getMarkerSortKey(location, routeStep),
           colors,
           variant
@@ -237,7 +238,7 @@ export const buildRouteStopsGeoJSON = (
         "route",
         dot.name,
         1,
-        String(routeStep),
+        label,
         getRouteMarkerSortKey(routeStep),
         colors,
         variant

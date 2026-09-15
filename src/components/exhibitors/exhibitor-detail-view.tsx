@@ -51,7 +51,11 @@ const ExhibitorDetailView = ({
                 <h2 className="versal-body-text uppercase">
                   {name.toUpperCase()}
                 </h2>
-                {contactInfo && <ExhibitorDetailInfo contactInfo={contactInfo} />}
+
+                {contactInfo && 
+                <ExhibitorDetailInfo contactInfo={contactInfo} 
+                />}
+                
                 {showNavigation ? (
                   <div className="flex gap-[20px] pt-[30px] flex-wrap">
                     {navigation.mapHrefs.map((href) => (

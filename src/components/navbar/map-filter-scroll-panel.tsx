@@ -300,7 +300,9 @@ export const MapFilterScrollPanel = ({
         setExpandOffset(0);
         setContentScrollOffset(0);
         measureContentHeight();
-    }, [isOpen, measureContentHeight, children, heightMode]);
+        // Remeasure on open / height mode only. Content size changes are handled
+        // by ResizeObserver — depending on `children` reset scroll every render.
+    }, [isOpen, measureContentHeight, heightMode]);
 
     useLayoutEffect(() => {
         if (!isOpen) return;
@@ -518,6 +520,7 @@ export const MapFilterScrollPanel = ({
             ref={panelRef}
             role="group"
             aria-label={ariaLabel}
+            data-map-filter-panel
             style={panelShellStyle}
         >
             <MainContainer>{panelBody}</MainContainer>

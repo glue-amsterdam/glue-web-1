@@ -124,3 +124,8 @@ export const focusExhibitorWithPopupLayout = (
 ): ExhibitorPopupLayout => {
   return focusWithPopupLayout(map, longitude, latitude, options, { instant: true });
 };
+
+export {
+  resolveExhibitorPopupLayoutTransition,
+  shouldShowExhibitorPopup,
+} from "@/lib/map/exhibitor-popup-visibility";

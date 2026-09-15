@@ -29,3 +29,15 @@ export const mapHomeTextFromRow = (row: HomeTextDbRow): HomeTextItem => ({
 
 export const mapHomeTextsFromRows = (rows: HomeTextDbRow[] | null): HomeTextItem[] =>
   (rows ?? []).map(mapHomeTextFromRow);
+
+export const getHomeTextByPlacement = (
+  homeTexts: HomeTextItem[],
+  placement: HomeTextPlacement
+): HomeTextItem | undefined =>
+  homeTexts.find((item) => item.placement === placement);
+
+/** Trimmed label for a placement, or empty string when missing. */
+export const getHomeTextLabel = (
+  homeTexts: HomeTextItem[],
+  placement: HomeTextPlacement
+): string => getHomeTextByPlacement(homeTexts, placement)?.label.trim() ?? "";

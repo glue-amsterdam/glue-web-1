@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { getHomeTextByPlacement } from "@/lib/main/map-home-text-row";
 import type { HomeTextItem } from "@/schemas/mainSchema";
 
 import MainContainer from "../../main-container";
@@ -12,17 +13,12 @@ type BottomNavigationProps = {
 const textStyles =
   "text-[21px] lg:text-[36px] leading-[21px] lg:leading-[36px] font-[400]";
 
-const getTextByPlacement = (
-  homeTexts: HomeTextItem[],
-  placement: HomeTextItem["placement"]
-) => homeTexts.find((item) => item.placement === placement);
-
 const BottomNavigation = ({ homeTexts }: BottomNavigationProps) => {
   const marqueeItems = homeTexts.filter(
     (item) => item.placement === "marquee" && item.label.trim().length > 0
   );
-  const footerLeft = getTextByPlacement(homeTexts, "footer_left");
-  const footerRight = getTextByPlacement(homeTexts, "footer_right");
+  const footerLeft = getHomeTextByPlacement(homeTexts, "footer_left");
+  const footerRight = getHomeTextByPlacement(homeTexts, "footer_right");
 
   return (
     <aside

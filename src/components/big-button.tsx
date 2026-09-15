@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-type BigButtonMode = "navbar" | "big" | "footer";
-type BigButtonFontSize = "small" | "base";
+type BigButtonMode = "navbar" | "big" | "footer" | "map";
+type BigButtonFontSize = "small" | "base" | "map";
 
 const activeClassName =
   "bg-[var(--primary-color)] text-[var(--white-color)] border-[var(--primary-color)]";
@@ -25,15 +25,19 @@ export const getBigButtonClassName = ({
       ? "text-[10px] leading-[10px]"
       : fontSize === "base"
         ? "body-text lg:button-text"
+        : mode === "map"
+          ? "text-[10px] leading-[10px] lg:text-[19px] lg:leading-[19px]"
         : "";
 
   const modeClass =
     mode === "navbar"
-      ? "pt-2 lg:pt-[10px] pb-[5px] lg:pb-[7px] px-[17px] lg:px-[20px]"
+      ? "pt-2 lg:pt-[10px] pb-[5px] lg:pb-[8px] px-[17px] lg:px-[20px]"
       : mode === "footer"
         ? "py-[8px] px-[13px] lg:border-[1px]"
         : mode === "big"
           ? "pt-2 pb-[5px] lg:py-[20px] px-[17px] lg:px-[35px]"
+          : mode === "map"
+            ? "py-[8px] px-[13px] lg:pt-[10px] lg:pb-[7px] lg:px-[20px]"
           : "";
 
   return cn(

@@ -21,6 +21,54 @@ type UseDebouncedUrlSearchReturn = {
   onInputKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
 };
 
+type UrlSearchSyncDecision =
+  | { action: "noop" }
+  | { action: "wait" }
+  | { action: "clear-pending" }
+  | { action: "sync"; nextInputValue: string; nextCommitted: string };
+
+type ResolveUrlSearchSyncArgs = {
+  urlValue: string;
+  committedValue: string;
+  pendingCommitValue: string | null;
+  preCommitUrlValue: string | null;
+};
+
+/**
+ * Decides how local search input should react when the URL `q` changes externally
+ * (e.g. category/filter clears search). Waits only while an in-flight commit still
+ * shows the pre-commit URL; any other URL change syncs immediately (including empty).
+ */
+export const resolveUrlSearchSync = ({
+  urlValue,
+  committedValue,
+  pendingCommitValue,
+  preCommitUrlValue,
+}: ResolveUrlSearchSyncArgs): UrlSearchSyncDecision => {
+  const normalizedUrl = urlValue.trim();
+  const normalizedCommitted = committedValue.trim();
+
+  if (normalizedUrl === normalizedCommitted) {
+    return pendingCommitValue !== null
+      ? { action: "clear-pending" }
+      : { action: "noop" };
+  }
+
+  if (
+    pendingCommitValue !== null &&
+    preCommitUrlValue !== null &&
+    normalizedUrl === preCommitUrlValue.trim()
+  ) {
+    return { action: "wait" };
+  }
+
+  return {
+    action: "sync",
+    nextInputValue: urlValue,
+    nextCommitted: normalizedUrl,
+  };
+};
+
 export const useDebouncedUrlSearch = ({
   urlValue,
   onCommit,
@@ -31,6 +79,7 @@ export const useDebouncedUrlSearch = ({
   const committedRef = useRef(urlValue);
   const debounceTimeoutRef = useRef<number | null>(null);
   const pendingCommitValueRef = useRef<string | null>(null);
+  const preCommitUrlValueRef = useRef<string | null>(null);
 
   onCommitRef.current = onCommit;
 
@@ -39,6 +88,7 @@ export const useDebouncedUrlSearch = ({
     if (normalized === committedRef.current.trim()) return;
 
     pendingCommitValueRef.current = normalized;
+    preCommitUrlValueRef.current = committedRef.current;
     committedRef.current = normalized;
     setInputValue(normalized);
     onCommitRef.current(normalized);
@@ -51,28 +101,29 @@ export const useDebouncedUrlSearch = ({
   }, []);
 
   useEffect(() => {
-    const normalizedUrl = urlValue.trim();
-    const normalizedCommitted = committedRef.current.trim();
+    const decision = resolveUrlSearchSync({
+      urlValue,
+      committedValue: committedRef.current,
+      pendingCommitValue: pendingCommitValueRef.current,
+      preCommitUrlValue: preCommitUrlValueRef.current,
+    });
 
-    if (normalizedUrl === normalizedCommitted) {
+    if (decision.action === "noop") return;
+
+    if (decision.action === "clear-pending") {
       pendingCommitValueRef.current = null;
+      preCommitUrlValueRef.current = null;
       return;
     }
 
-    if (debounceTimeoutRef.current !== null) return;
+    if (decision.action === "wait") return;
 
-    if (pendingCommitValueRef.current !== null) {
-      if (normalizedUrl !== pendingCommitValueRef.current) return;
-      pendingCommitValueRef.current = null;
-    }
-
-    if (inputValue.trim() !== normalizedUrl && inputValue.trim() !== "") {
-      return;
-    }
-
-    committedRef.current = normalizedUrl;
-    setInputValue(urlValue);
-  }, [urlValue, inputValue]);
+    clearDebounceTimeout();
+    pendingCommitValueRef.current = null;
+    preCommitUrlValueRef.current = null;
+    committedRef.current = decision.nextCommitted;
+    setInputValue(decision.nextInputValue);
+  }, [clearDebounceTimeout, urlValue]);
 
   useEffect(() => {
     clearDebounceTimeout();

@@ -13,6 +13,27 @@ export const shouldClearMapSelectionForBrowseView = (
   !selection?.place &&
   !selection?.route;
 
+/**
+ * Mobile place/route URLs drop browse chrome. Drop optimistic filters so the UI
+ * mirrors the stripped URL — except when clearSearch must keep `q: ""` visible
+ * immediately so the search sheet closes before the URL ack lands.
+ */
+export const shouldDropOptimisticFiltersOnMobileSelection = ({
+  mobile,
+  view,
+  hasPlaceOrRouteSelection,
+  clearSearch = false,
+}: {
+  mobile: boolean;
+  view: MapViewMode;
+  hasPlaceOrRouteSelection: boolean;
+  clearSearch?: boolean;
+}): boolean =>
+  mobile &&
+  hasPlaceOrRouteSelection &&
+  view === "none" &&
+  !clearSearch;
+
 export const withExhibitorsView = (
   current: MapFilters,
   patch: Partial<MapFilters>

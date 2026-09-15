@@ -169,7 +169,12 @@ export const uploadImageToFixedPath = async ({
   return { imageUrl, key, error: "" };
 };
 
-export const MAX_HERO_VIDEO_BYTES = 10 * 1024 * 1024;
+/** Generic / archive video cap. */
+export const MAX_HERO_VIDEO_BYTES = 30 * 1024 * 1024;
+/** Home hero desktop video hard max (recommended 5–10 MB). */
+export const MAX_HERO_DESKTOP_VIDEO_BYTES = 20 * 1024 * 1024;
+/** Home hero mobile video hard max (recommended 2–5 MB). */
+export const MAX_HERO_MOBILE_VIDEO_BYTES = 10 * 1024 * 1024;
 
 const ACCEPTED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"] as const;
 
@@ -183,6 +188,9 @@ export const isAcceptedVideoFile = (file: File): boolean => {
     extension as (typeof ACCEPTED_VIDEO_EXTENSIONS)[number]
   );
 };
+
+const formatMaxVideoMb = (maxBytes: number): string =>
+  String(Math.round(maxBytes / (1024 * 1024)));
 
 type UploadVideoProps = {
   file: File;
@@ -206,7 +214,7 @@ export const uploadVideo = async ({
   if (file.size > maxBytes) {
     return {
       videoUrl: "",
-      error: "Video must be 10 MB or smaller",
+      error: `Video must be ${formatMaxVideoMb(maxBytes)} MB or smaller`,
     };
   }
 

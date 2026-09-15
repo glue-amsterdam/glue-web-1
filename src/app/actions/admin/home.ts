@@ -27,6 +27,7 @@ export async function saveHomeHero(data: {
   id?: string;
   description: string;
   video_url: string;
+  video_url_mobile?: string;
   poster_url: string;
 }) {
   const supabase = await requireAdmin();
@@ -40,7 +41,7 @@ export async function saveHomeHero(data: {
       .from("home_hero")
       .update(row)
       .eq("id", validated.id)
-      .select("id, description, video_url, poster_url")
+      .select("id, description, video_url, video_url_mobile, poster_url")
       .single();
 
     if (error) {
@@ -53,9 +54,12 @@ export async function saveHomeHero(data: {
       .insert({
         description: validated.description,
         video_url: toMediaKey(validated.video_url) ?? "",
+        video_url_mobile: validated.video_url_mobile
+          ? (toMediaKey(validated.video_url_mobile) ?? null)
+          : null,
         poster_url: toMediaKey(validated.poster_url) ?? "",
       })
-      .select("id, description, video_url, poster_url")
+      .select("id, description, video_url, video_url_mobile, poster_url")
       .single();
 
     if (error) {
@@ -70,6 +74,7 @@ export async function saveHomeHero(data: {
     id: savedRow.id,
     description: savedRow.description,
     video_url: toMediaUrl(savedRow.video_url),
+    video_url_mobile: toMediaUrl(savedRow.video_url_mobile) ?? "",
     poster_url: toMediaUrl(savedRow.poster_url),
   });
 }
@@ -159,6 +164,7 @@ export async function getHomeHeroAdmin() {
     id: hero.id ?? undefined,
     description: hero.description,
     video_url: hero.videoUrl,
+    video_url_mobile: hero.videoUrlMobile,
     poster_url: hero.posterUrl,
   };
 }

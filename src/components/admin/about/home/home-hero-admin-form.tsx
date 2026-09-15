@@ -13,7 +13,8 @@ import { homeHeroSchema, type HomeHero } from "@/schemas/homeHeroSchema";
 import {
   deleteImage,
   isAcceptedVideoFile,
-  MAX_HERO_VIDEO_BYTES,
+  MAX_HERO_DESKTOP_VIDEO_BYTES,
+  MAX_HERO_MOBILE_VIDEO_BYTES,
   uploadImage,
   uploadVideo,
 } from "@/utils/supabase/storage/client";
@@ -48,50 +49,157 @@ const tryDeleteStoredFile = async (url: string): Promise<void> => {
   }
 };
 
+type VideoPreviewVariant = "desktop" | "mobile";
+
+type VideoSlotProps = {
+  id: string;
+  label: string;
+  variant: VideoPreviewVariant;
+  previewUrl: string;
+  uploadState: UploadState | null;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  isBusy: boolean;
+  onReplaceClick: () => void;
+  onFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+};
+
+const previewFrameClassName: Record<VideoPreviewVariant, string> = {
+  desktop:
+    "relative aspect-video w-full max-w-2xl overflow-hidden rounded-md border bg-muted",
+  mobile:
+    "relative h-[413px] w-full max-w-[320px] overflow-hidden rounded-md border bg-muted",
+};
+
+const HeroVideoUploadSlot = ({
+  id,
+  label,
+  variant,
+  previewUrl,
+  uploadState,
+  inputRef,
+  isBusy,
+  onReplaceClick,
+  onFileChange,
+}: VideoSlotProps) => (
+  <div>
+    <Label htmlFor={id}>{label}</Label>
+    <div className={`mt-2 ${previewFrameClassName[variant]}`}>
+      {previewUrl ? (
+        <video
+          src={previewUrl}
+          controls
+          muted
+          className="h-full w-full object-cover"
+          aria-label={`${label} preview`}
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center">
+          <VideoIcon className="h-12 w-12 text-muted-foreground" />
+        </div>
+      )}
+      {uploadState && (
+        <ImageUploadOverlay
+          stage={uploadState.stage}
+          progress={uploadState.progress}
+        />
+      )}
+    </div>
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="mt-2"
+      disabled={isBusy}
+      onClick={onReplaceClick}
+    >
+      Replace video
+    </Button>
+    <input
+      id={id}
+      ref={inputRef}
+      type="file"
+      accept="video/*,.mp4,.webm,.mov"
+      className="hidden"
+      disabled={isBusy}
+      onChange={onFileChange}
+    />
+  </div>
+);
+
 const HomeHeroAdminForm = ({ initialData }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [videoUploadState, setVideoUploadState] = useState<UploadState | null>(
-    null
-  );
+  const [desktopVideoUploadState, setDesktopVideoUploadState] =
+    useState<UploadState | null>(null);
+  const [mobileVideoUploadState, setMobileVideoUploadState] =
+    useState<UploadState | null>(null);
   const [posterUploadState, setPosterUploadState] = useState<UploadState | null>(
     null
   );
-  const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
+  const [pendingDesktopVideoFile, setPendingDesktopVideoFile] =
+    useState<File | null>(null);
+  const [pendingMobileVideoFile, setPendingMobileVideoFile] =
+    useState<File | null>(null);
   const [pendingPosterFile, setPendingPosterFile] = useState<File | null>(null);
-  const [videoPreviewUrl, setVideoPreviewUrl] = useState(initialData.video_url);
+  const [desktopVideoPreviewUrl, setDesktopVideoPreviewUrl] = useState(
+    initialData.video_url
+  );
+  const [mobileVideoPreviewUrl, setMobileVideoPreviewUrl] = useState(
+    initialData.video_url_mobile || ""
+  );
   const [posterPreviewUrl, setPosterPreviewUrl] = useState(
     initialData.poster_url
   );
-  const videoInputRef = useRef<HTMLInputElement>(null);
+  const desktopVideoInputRef = useRef<HTMLInputElement>(null);
+  const mobileVideoInputRef = useRef<HTMLInputElement>(null);
   const posterInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const router = useRouter();
 
   const methods = useForm<HomeHero>({
     resolver: zodResolver(homeHeroSchema),
-    defaultValues: initialData,
+    defaultValues: {
+      ...initialData,
+      video_url_mobile: initialData.video_url_mobile || "",
+    },
   });
 
   const { handleSubmit, reset, formState } = methods;
-  const hasMediaChanges = Boolean(pendingVideoFile || pendingPosterFile);
+  const hasMediaChanges = Boolean(
+    pendingDesktopVideoFile || pendingMobileVideoFile || pendingPosterFile
+  );
   const isBusy = Boolean(
-    isSubmitting || videoUploadState || posterUploadState
+    isSubmitting ||
+      desktopVideoUploadState ||
+      mobileVideoUploadState ||
+      posterUploadState
   );
 
   useEffect(() => {
-    reset(initialData);
-    setVideoPreviewUrl(initialData.video_url);
+    reset({
+      ...initialData,
+      video_url_mobile: initialData.video_url_mobile || "",
+    });
+    setDesktopVideoPreviewUrl(initialData.video_url);
+    setMobileVideoPreviewUrl(initialData.video_url_mobile || "");
     setPosterPreviewUrl(initialData.poster_url);
-    setPendingVideoFile(null);
+    setPendingDesktopVideoFile(null);
+    setPendingMobileVideoFile(null);
     setPendingPosterFile(null);
   }, [initialData, reset]);
 
   useEffect(() => {
-    if (!pendingVideoFile) return;
-    const objectUrl = URL.createObjectURL(pendingVideoFile);
-    setVideoPreviewUrl(objectUrl);
+    if (!pendingDesktopVideoFile) return;
+    const objectUrl = URL.createObjectURL(pendingDesktopVideoFile);
+    setDesktopVideoPreviewUrl(objectUrl);
     return () => URL.revokeObjectURL(objectUrl);
-  }, [pendingVideoFile]);
+  }, [pendingDesktopVideoFile]);
+
+  useEffect(() => {
+    if (!pendingMobileVideoFile) return;
+    const objectUrl = URL.createObjectURL(pendingMobileVideoFile);
+    setMobileVideoPreviewUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [pendingMobileVideoFile]);
 
   useEffect(() => {
     if (!pendingPosterFile) return;
@@ -100,10 +208,11 @@ const HomeHeroAdminForm = ({ initialData }: Props) => {
     return () => URL.revokeObjectURL(objectUrl);
   }, [pendingPosterFile]);
 
-  const handleVideoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const handleValidateVideoFile = (
+    file: File,
+    event: React.ChangeEvent<HTMLInputElement>,
+    maxBytes: number
+  ): boolean => {
     if (!isAcceptedVideoFile(file)) {
       toast({
         title: "Invalid file",
@@ -111,20 +220,43 @@ const HomeHeroAdminForm = ({ initialData }: Props) => {
         variant: "destructive",
       });
       event.target.value = "";
-      return;
+      return false;
     }
 
-    if (file.size > MAX_HERO_VIDEO_BYTES) {
+    if (file.size > maxBytes) {
+      const maxMb = Math.round(maxBytes / (1024 * 1024));
       toast({
         title: "Video too large",
-        description: "Video must be 10 MB or smaller.",
+        description: `Video must be ${maxMb} MB or smaller.`,
         variant: "destructive",
       });
       event.target.value = "";
-      return;
+      return false;
     }
 
-    setPendingVideoFile(file);
+    return true;
+  };
+
+  const handleDesktopVideoChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!handleValidateVideoFile(file, event, MAX_HERO_DESKTOP_VIDEO_BYTES)) {
+      return;
+    }
+    setPendingDesktopVideoFile(file);
+  };
+
+  const handleMobileVideoChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!handleValidateVideoFile(file, event, MAX_HERO_MOBILE_VIDEO_BYTES)) {
+      return;
+    }
+    setPendingMobileVideoFile(file);
   };
 
   const handlePosterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,11 +276,49 @@ const HomeHeroAdminForm = ({ initialData }: Props) => {
     setPendingPosterFile(file);
   };
 
+  const uploadHeroVideo = async ({
+    file,
+    previousUrl,
+    maxBytes,
+    setUploadState,
+  }: {
+    file: File;
+    previousUrl: string;
+    maxBytes: number;
+    setUploadState: (state: UploadState | null) => void;
+  }): Promise<string> => {
+    setUploadState({ stage: "deleting", progress: 10 });
+
+    if (isStoredMediaUrl(previousUrl)) {
+      await tryDeleteStoredFile(previousUrl);
+    }
+
+    setUploadState({ stage: "uploading", progress: 20 });
+
+    const { videoUrl: uploadedVideoUrl, error } = await uploadVideo({
+      file,
+      bucket: config.bucketName,
+      folder: "home-hero/videos",
+      maxBytes,
+      onProgress: (progress) => {
+        setUploadState({ stage: "uploading", progress });
+      },
+    });
+
+    if (error || !uploadedVideoUrl) {
+      throw new Error(error || "Video upload failed");
+    }
+
+    setUploadState(null);
+    return uploadedVideoUrl;
+  };
+
   const onSubmit = async (data: HomeHero) => {
     setIsSubmitting(true);
 
     try {
-      let videoUrl = data.video_url;
+      let desktopVideoUrl = data.video_url;
+      let mobileVideoUrl = data.video_url_mobile || "";
       let posterUrl = data.poster_url;
 
       if (pendingPosterFile) {
@@ -176,54 +346,57 @@ const HomeHeroAdminForm = ({ initialData }: Props) => {
         setPosterUploadState(null);
       }
 
-      if (pendingVideoFile) {
-        setVideoUploadState({ stage: "deleting", progress: 10 });
-
-        if (isStoredMediaUrl(data.video_url)) {
-          await tryDeleteStoredFile(data.video_url);
-        }
-
-        setVideoUploadState({ stage: "uploading", progress: 20 });
-
-        const { videoUrl: uploadedVideoUrl, error } = await uploadVideo({
-          file: pendingVideoFile,
-          bucket: config.bucketName,
-          folder: "home-hero/videos",
-          onProgress: (progress) => {
-            setVideoUploadState({ stage: "uploading", progress });
-          },
+      if (pendingDesktopVideoFile) {
+        desktopVideoUrl = await uploadHeroVideo({
+          file: pendingDesktopVideoFile,
+          previousUrl: data.video_url,
+          maxBytes: MAX_HERO_DESKTOP_VIDEO_BYTES,
+          setUploadState: setDesktopVideoUploadState,
         });
-
-        if (error) {
-          throw new Error(error);
-        }
-
-        videoUrl = uploadedVideoUrl;
-        setVideoUploadState(null);
       }
 
-      if (pendingPosterFile || pendingVideoFile) {
+      if (pendingMobileVideoFile) {
+        mobileVideoUrl = await uploadHeroVideo({
+          file: pendingMobileVideoFile,
+          previousUrl: data.video_url_mobile || "",
+          maxBytes: MAX_HERO_MOBILE_VIDEO_BYTES,
+          setUploadState: setMobileVideoUploadState,
+        });
+      }
+
+      if (
+        pendingPosterFile ||
+        pendingDesktopVideoFile ||
+        pendingMobileVideoFile
+      ) {
         if (pendingPosterFile) {
           setPosterUploadState({ stage: "saving", progress: 98 });
         }
-        if (pendingVideoFile) {
-          setVideoUploadState({ stage: "saving", progress: 98 });
+        if (pendingDesktopVideoFile) {
+          setDesktopVideoUploadState({ stage: "saving", progress: 98 });
+        }
+        if (pendingMobileVideoFile) {
+          setMobileVideoUploadState({ stage: "saving", progress: 98 });
         }
       }
 
       const saved = await saveHomeHero({
         id: data.id,
         description: data.description,
-        video_url: videoUrl,
+        video_url: desktopVideoUrl,
+        video_url_mobile: mobileVideoUrl,
         poster_url: posterUrl,
       });
 
       reset(saved);
-      setVideoPreviewUrl(saved.video_url);
+      setDesktopVideoPreviewUrl(saved.video_url);
+      setMobileVideoPreviewUrl(saved.video_url_mobile || "");
       setPosterPreviewUrl(saved.poster_url);
-      setPendingVideoFile(null);
+      setPendingDesktopVideoFile(null);
+      setPendingMobileVideoFile(null);
       setPendingPosterFile(null);
-      if (videoInputRef.current) videoInputRef.current.value = "";
+      if (desktopVideoInputRef.current) desktopVideoInputRef.current.value = "";
+      if (mobileVideoInputRef.current) mobileVideoInputRef.current.value = "";
       if (posterInputRef.current) posterInputRef.current.value = "";
 
       toast({
@@ -242,7 +415,8 @@ const HomeHeroAdminForm = ({ initialData }: Props) => {
         variant: "destructive",
       });
     } finally {
-      setVideoUploadState(null);
+      setDesktopVideoUploadState(null);
+      setMobileVideoUploadState(null);
       setPosterUploadState(null);
       setIsSubmitting(false);
     }
@@ -250,108 +424,140 @@ const HomeHeroAdminForm = ({ initialData }: Props) => {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="hero-video">Video</Label>
-            <p className="text-sm text-muted-foreground mb-2">
-              Max size 10 MB. Changes are cached until you save.
-            </p>
-            <div className="relative w-full max-w-2xl aspect-video rounded-md overflow-hidden border bg-muted">
-              {videoPreviewUrl ? (
-                <video
-                  src={videoPreviewUrl}
-                  controls
-                  muted
-                  className="h-full w-full object-cover"
-                  aria-label="Home hero video preview"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <VideoIcon className="h-12 w-12 text-muted-foreground" />
-                </div>
-              )}
-              {videoUploadState && (
-                <ImageUploadOverlay
-                  stage={videoUploadState.stage}
-                  progress={videoUploadState.progress}
-                />
-              )}
-            </div>
-            {pendingVideoFile && !videoUploadState && (
-              <p className="mt-2 text-sm text-muted-foreground">
-                New file selected — save to apply
-              </p>
-            )}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-2"
-              disabled={isBusy}
-              onClick={() => videoInputRef.current?.click()}
-            >
-              Replace video
-            </Button>
-            <input
-              id="hero-video"
-              ref={videoInputRef}
-              type="file"
-              accept="video/*,.mp4,.webm,.mov"
-              className="hidden"
-              disabled={isBusy}
-              onChange={handleVideoChange}
-            />
+      <aside className="space-y-6 border-t pt-6 text-sm text-muted-foreground">
+          <div className="space-y-2">
+            <h4 className="text-base font-semibold text-foreground">Desktop</h4>
+            <ul className="list-disc space-y-1 pl-5">
+              <li>
+                <span className="font-medium text-foreground">
+                  Recommended weight:
+                </span>{" "}
+                5–10 MB
+              </li>
+              <li>
+                <span className="font-medium text-foreground">
+                  Maximum weight:
+                </span>{" "}
+                15–20 MB
+              </li>
+              <li>
+                <span className="font-medium text-foreground">Why?</span> The
+                Hero is one of the first elements users see, so keeping the
+                video lightweight helps the homepage load quickly and keeps the
+                initial experience smooth. Since it is a prominent visual
+                element, we can allow a larger file than on mobile, while still
+                avoiding unnecessary page weight.
+              </li>
+            </ul>
           </div>
 
-          <div>
-            <Label htmlFor="hero-poster">Poster</Label>
-            <div className="relative mt-2 w-full max-w-md aspect-video rounded-md overflow-hidden border bg-muted">
-              {posterPreviewUrl ? (
-                <Image
-                  fill
-                  src={posterPreviewUrl}
-                  alt="Home hero poster preview"
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 448px"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <ImageIcon className="h-12 w-12 text-muted-foreground" />
-                </div>
-              )}
-              {posterUploadState && (
-                <ImageUploadOverlay
-                  stage={posterUploadState.stage}
-                  progress={posterUploadState.progress}
-                />
-              )}
-            </div>
-            {pendingPosterFile && !posterUploadState && (
-              <p className="mt-2 text-sm text-muted-foreground">
-                New file selected — save to apply
-              </p>
-            )}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-2"
-              disabled={isBusy}
-              onClick={() => posterInputRef.current?.click()}
-            >
-              Replace poster
-            </Button>
-            <input
-              id="hero-poster"
-              ref={posterInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              disabled={isBusy}
-              onChange={handlePosterChange}
-            />
+          <div className="space-y-2">
+            <h4 className="text-base font-semibold text-foreground">Mobile</h4>
+            <ul className="list-disc space-y-1 pl-5">
+              <li>
+                <span className="font-medium text-foreground">
+                  Recommended weight:
+                </span>{" "}
+                2–5 MB
+              </li>
+              <li>
+                <span className="font-medium text-foreground">
+                  Maximum weight:
+                </span>{" "}
+                8–10 MB
+              </li>
+              <li>
+                <span className="font-medium text-foreground">Why?</span> On
+                mobile, a heavier video means more data has to be downloaded by
+                the user, which can be especially relevant when using mobile
+                data. Keeping the file smaller reduces data consumption and
+                helps avoid making the homepage feel slow or heavy, while still
+                maintaining the intended visual impact.
+              </li>
+            </ul>
           </div>
+        </aside>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-6">
+        <div className="space-y-8">
+          <section className="space-y-4" aria-labelledby="hero-desktop-heading">
+            <HeroVideoUploadSlot
+              id="hero-video-desktop"
+              label="Desktop video"
+              variant="desktop"
+              previewUrl={desktopVideoPreviewUrl}
+              uploadState={desktopVideoUploadState}
+              inputRef={desktopVideoInputRef}
+              isBusy={isBusy}
+              onReplaceClick={() => desktopVideoInputRef.current?.click()}
+              onFileChange={handleDesktopVideoChange}
+            />
+
+            <div>
+              <Label htmlFor="hero-poster">Poster</Label>
+              <div className="relative mt-2 aspect-video w-full max-w-md overflow-hidden rounded-md border bg-muted">
+                {posterPreviewUrl ? (
+                  <Image
+                    fill
+                    src={posterPreviewUrl}
+                    alt="Home hero desktop poster preview"
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 448px"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <ImageIcon className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                )}
+                {posterUploadState && (
+                  <ImageUploadOverlay
+                    stage={posterUploadState.stage}
+                    progress={posterUploadState.progress}
+                  />
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-2"
+                disabled={isBusy}
+                onClick={() => posterInputRef.current?.click()}
+              >
+                Replace poster
+              </Button>
+              <input
+                id="hero-poster"
+                ref={posterInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={isBusy}
+                onChange={handlePosterChange}
+              />
+            </div>
+          </section>
+
+          <section className="space-y-4" aria-labelledby="hero-mobile-heading">
+            <h3
+              id="hero-mobile-heading"
+              className="text-base font-semibold tracking-tight"
+            >
+              Mobile
+            </h3>
+
+            <HeroVideoUploadSlot
+              id="hero-video-mobile"
+              label="Mobile video"
+              variant="mobile"
+              previewUrl={mobileVideoPreviewUrl}
+              uploadState={mobileVideoUploadState}
+              inputRef={mobileVideoInputRef}
+              isBusy={isBusy}
+              onReplaceClick={() => mobileVideoInputRef.current?.click()}
+              onFileChange={handleMobileVideoChange}
+            />
+          </section>
         </div>
 
         <FormField
@@ -374,7 +580,6 @@ const HomeHeroAdminForm = ({ initialData }: Props) => {
           )}
         />
 
-
         <SaveChangesButton
           isSubmitting={isSubmitting}
           isDirty={formState.isDirty || hasMediaChanges}
@@ -382,6 +587,7 @@ const HomeHeroAdminForm = ({ initialData }: Props) => {
           watchFields={["description"]}
         />
 
+        
       </form>
     </FormProvider>
   );

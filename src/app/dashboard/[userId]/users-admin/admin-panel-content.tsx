@@ -8,6 +8,8 @@ import {
 } from "@/app/dashboard/[userId]/users-admin/user-row";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { UsersReportDialog } from "@/app/dashboard/[userId]/users-admin/users-report-dialog";
+import type { AdminUserReportCategory } from "@/lib/admin/filter-admin-users";
 
 type Category = "all" | "participant" | "visitor" | "moderator";
 type SortBy = "name" | "status" | "createdAt";
@@ -84,6 +86,7 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
 
   const [sortBy, setSortBy] = useState<SortBy>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
   const router = useRouter();
   const { toast } = useToast();
@@ -391,16 +394,40 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
     <div className="px-4 md:px-[30px] mini-padding pb-8 min-w-0">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="title-text">Users Admin</h1>
-        <button
-          type="button"
-          onClick={handleDeleteSelected}
-          disabled={selectedUsers.size === 0 || isDeleting}
-          className="text-xs border border-red-300 rounded px-2 py-1 text-red-700 disabled:opacity-50"
-          aria-label="Delete selected users"
-        >
-          {isDeleting ? "Deleting…" : "Delete selected"}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsReportDialogOpen(true)}
+            className="text-xs border border-gray-300 rounded px-2 py-1 text-black"
+            aria-label="Print report"
+          >
+            Print Report
+          </button>
+          <button
+            type="button"
+            onClick={handleDeleteSelected}
+            disabled={selectedUsers.size === 0 || isDeleting}
+            className="text-xs border border-red-300 rounded px-2 py-1 text-red-700 disabled:opacity-50"
+            aria-label="Delete selected users"
+          >
+            {isDeleting ? "Deleting…" : "Delete selected"}
+          </button>
+        </div>
       </div>
+
+      <UsersReportDialog
+        open={isReportDialogOpen}
+        onOpenChange={setIsReportDialogOpen}
+        users={users}
+        initialCategory={category as AdminUserReportCategory}
+        initialParticipantStatus={
+          participantStatus === "pending" ||
+          participantStatus === "accepted" ||
+          participantStatus === "declined"
+            ? participantStatus
+            : "all"
+        }
+      />
 
       <div className="mb-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
         <span>{filteredAndSortedUsers.length} users</span>

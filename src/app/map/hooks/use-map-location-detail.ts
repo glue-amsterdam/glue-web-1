@@ -1,27 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  getCachedDetail,
+  resolveDisplayedDetail,
+  upsertDetail,
+  type MapLocationDetailCache,
+} from "@/lib/map/map-location-detail-cache";
 import type { MapLocationDetail } from "@/lib/map/types";
 
 export const useMapLocationDetail = (
   mapInfoId: string | null,
   enabled: boolean
 ) => {
-  const [detail, setDetail] = useState<MapLocationDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const cacheRef = useRef<MapLocationDetailCache>({});
+  const [fetched, setFetched] = useState<{
+    id: string;
+    detail: MapLocationDetail;
+  } | null>(null);
   const [error, setError] = useState(false);
+  const [fetchingId, setFetchingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!mapInfoId || !enabled) {
-      setDetail(null);
-      setIsLoading(false);
+      setFetched(null);
       setError(false);
+      setFetchingId(null);
       return;
     }
 
+    const cached = getCachedDetail(cacheRef.current, mapInfoId);
+    if (cached) {
+      setFetched({ id: mapInfoId, detail: cached });
+      setError(false);
+      setFetchingId(null);
+    } else {
+      setFetchingId(mapInfoId);
+    }
+
     let cancelled = false;
-    setDetail(null);
-    setIsLoading(true);
     setError(false);
 
     fetch(`/api/map/locations/${mapInfoId}`)
@@ -30,13 +47,15 @@ export const useMapLocationDetail = (
         return response.json() as Promise<MapLocationDetail>;
       })
       .then((data) => {
-        if (!cancelled) setDetail(data);
+        if (cancelled) return;
+        cacheRef.current = upsertDetail(cacheRef.current, mapInfoId, data);
+        setFetched({ id: mapInfoId, detail: data });
       })
       .catch(() => {
         if (!cancelled) setError(true);
       })
       .finally(() => {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled) setFetchingId(null);
       });
 
     return () => {
@@ -44,5 +63,24 @@ export const useMapLocationDetail = (
     };
   }, [mapInfoId, enabled]);
 
-  return { detail, isLoading, error };
+  const activeId = enabled ? mapInfoId : null;
+  const incoming =
+    fetched && activeId && fetched.id === activeId ? fetched.detail : null;
+
+  const resolved = resolveDisplayedDetail({
+    cache: cacheRef.current,
+    mapInfoId: activeId,
+    incoming,
+  });
+
+  const isLoading =
+    Boolean(activeId) &&
+    fetchingId === activeId &&
+    !resolved.detail;
+
+  return {
+    detail: resolved.detail,
+    isLoading,
+    error,
+  };
 };

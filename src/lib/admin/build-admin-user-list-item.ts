@@ -65,6 +65,19 @@ const buildAdminUserListItem = (
     item.participantReactivationStatus = participant.reactivation_status;
   }
 
+  const visitor = enrichment.visitorByUserId.get(authUser.id);
+  if (visitor) {
+    item.hasVisitorData = true;
+    item.visitorFirstName = visitor.first_name;
+    item.visitorLastName = visitor.last_name;
+    item.visitorBirthDate = visitor.birth_date;
+    item.visitorAreaId = visitor.area_id;
+    item.visitorCreatedAt = visitor.created_at;
+    item.visitorAreaName = visitor.area_id
+      ? (enrichment.areaNameById.get(visitor.area_id) ?? null)
+      : null;
+  }
+
   return item;
 };
 

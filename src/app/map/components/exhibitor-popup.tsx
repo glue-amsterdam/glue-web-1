@@ -48,6 +48,21 @@ const ExhibitorPopUp = ({
     [location, detail]
   );
 
+  const imageSlides = useMemo(
+    () =>
+      slides.map((slide) => ({
+        id: slide.id,
+        src: slide.imageUrl ?? null,
+        alt: `Image of ${slide.name}`,
+      })),
+    [slides]
+  );
+
+  const slideNavItems = useMemo(
+    () => slides.map((slide) => ({ id: slide.id, label: slide.name })),
+    [slides]
+  );
+
   const initialSlideIndex = useMemo(
     () => findExhibitorSlideIndex(slides, selectedHubMemberId),
     [slides, selectedHubMemberId]
@@ -135,11 +150,7 @@ const ExhibitorPopUp = ({
             </div>
           ) : hasMultiple ? (
             <PreloadedImageStack
-              slides={slides.map((slide) => ({
-                id: slide.id,
-                src: slide.imageUrl ?? null,
-                alt: `Image of ${slide.name}`,
-              }))}
+              slides={imageSlides}
               currentIndex={currentIndex}
               onAdvance={hasMultiple ? handleAdvance : undefined}
               className="relative h-full w-full"
@@ -161,7 +172,7 @@ const ExhibitorPopUp = ({
 
           ) : <></>}</div>
         <SlideLineNav
-          items={slides.map((slide) => ({ id: slide.id, label: slide.name }))}
+          items={slideNavItems}
           currentIndex={currentIndex}
           onSelect={handleSelect}
           ariaLabel={isHubEntity ? "Hub members" : "Exhibitor images"}

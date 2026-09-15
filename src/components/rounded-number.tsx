@@ -1,10 +1,15 @@
 import { getCategoryInlineStyles } from "@/lib/participants/exhibitor-type-styles";
+import { PRINT_ROUNDED_NUMBER } from "@/lib/map/map-point-marker-spec";
 
 type Props = {
   type: string;
   participant_n: string;
   className?: string;
-  size?: "default" | "sm";
+  size?: "default" | "sm" | "print";
+  /** Resolved fill; when set, overrides category CSS vars (print / map parity). */
+  backgroundColor?: string;
+  /** Resolved text color; when set, overrides category CSS vars. */
+  color?: string;
 };
 
 const RoundedNumber = ({
@@ -12,8 +17,42 @@ const RoundedNumber = ({
   participant_n,
   className,
   size = "default",
+  backgroundColor: backgroundColorProp,
+  color: colorProp,
 }: Props) => {
-  const { backgroundColor, color } = getCategoryInlineStyles(type);
+  const categoryStyles = getCategoryInlineStyles(type);
+  const backgroundColor = backgroundColorProp ?? categoryStyles.backgroundColor;
+  const color = colorProp ?? categoryStyles.color;
+  const isPrint = size === "print";
+
+  if (isPrint) {
+    const { diameterPx, fontSizePx, textOffsetYPx } = PRINT_ROUNDED_NUMBER;
+    return (
+      <div
+        className={`flex shrink-0 items-center justify-center rounded-full font-lausanne ${className ?? ""}`}
+        style={{
+          width: `${diameterPx}px`,
+          height: `${diameterPx}px`,
+          backgroundColor,
+          printColorAdjust: "exact",
+          WebkitPrintColorAdjust: "exact",
+        }}
+        aria-hidden
+      >
+        <span
+          className="m-0 block min-w-[1ch] text-center tabular-nums leading-none"
+          style={{
+            color,
+            fontSize: `${fontSizePx}px`,
+            transform: `translateY(${textOffsetYPx}px)`,
+          }}
+        >
+          {participant_n}
+        </span>
+      </div>
+    );
+  }
+
   const sizeClass =
     size === "sm"
       ? "size-[18px] md:size-[20px]"

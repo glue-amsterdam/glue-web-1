@@ -135,11 +135,9 @@ function BottomFooter({ mainLinks, aboutLinks }: BottomFooterProps) {
                 <h3 className="sr-only">{column[0].title}</h3>
                 <ul className="flex flex-col gap-[15px] lg:gap-[20px]">
                   {column.map((link) => (
-                    <Link key={link.title} href={link.link}>
-                      <li className="footer-text">
-                        {link.title}
-                      </li>
-                    </Link>
+                    <li className="footer-text" key={link.title}>
+                      <Link href={link.link}>{link.title}</Link>
+                    </li>
                   ))}
                 </ul>
               </div>

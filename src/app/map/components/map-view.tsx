@@ -29,41 +29,47 @@ import { MAP_CITY_BOUNDS, MAP_CITY_CENTER } from "@/lib/map/map-bounds";
 import {
   focusMapOnPoint,
   focusMapOnRoute,
+  getMapFocusPadding,
 } from "@/lib/map/map-viewport-focus";
 import {
   focusExhibitorWithPopupLayout,
-  focusWithPopupLayout,
-  getExhibitorPopupLayout,
+  MAP_FILTER_SIDEBAR_WIDTH_PX,
+  resolveExhibitorPopupLayoutTransition,
+  shouldShowExhibitorPopup,
 } from "@/lib/map/exhibitor-popup-layout";
 import type { ExhibitorPopupAnchor } from "@/lib/map/exhibitor-popup-layout";
 import { measureMapBottomInset } from "@/lib/map/map-viewport-insets";
 import { composeRoutePrintMapDataUrl } from "@/lib/map/route-static-map";
-import { downloadRoutePdf } from "@/lib/map/route-pdf";
+import { buildGlueLogoSrc } from "@/lib/map/route-print-logo";
+import type { RoutePrintProps } from "@/lib/map/route-print-props";
 import { getRouteStopsForDisplay } from "@/lib/map/route-stop-display";
-import { loadGlueLogoDataUrl } from "@/lib/branding/glue-logo-mark";
 import type { RouteStopDisplay } from "@/lib/map/route-stop-display";
+import { RoutePrintHost } from "@/components/map/route-print-host";
+import { useHomeTexts } from "@/context/HomeTextsContext";
+import { getHomeTextLabel } from "@/lib/main/map-home-text-row";
 import {
   buildLocationsGeoJSON,
   buildRouteStopsGeoJSON,
   getMapThemeColorsFromDocument,
   type MapThemeColors,
 } from "@/lib/map/locations-geojson";
+import {
+  selectMapMarkersData,
+  selectMapMarkersSelectedId,
+  selectRouteLineData,
+} from "@/lib/map/map-markers-data";
+import { buildSelectedRouteLinePaint } from "@/lib/map/map-route-line-paint";
+import { resolveMapBackgroundDismissAction } from "@/lib/map/map-background-dismiss";
 import { getMapPointMarkerVariant } from "@/lib/map/map-point-marker-spec";
 import { useParticipantCategories } from "@/context/ParticipantCategoriesContext";
-import RoutePopup from "./route-popup";
 import type { MapPointFeature } from "@/lib/map/locations-geojson";
 import MapMarkers from "./map-markers";
 import ExhibitorPopup from "./exhibitor-popup";
-import { useMapFilterPanel } from "../stores/use-map-store";
+import { useMapOpenFilter } from "../stores/use-map-store";
 
 type ExhibitorPopupLayoutState = {
   anchor: ExhibitorPopupAnchor;
   offset: [number, number];
-};
-
-type RoutePopupLayoutState = ExhibitorPopupLayoutState & {
-  longitude: number;
-  latitude: number;
 };
 
 const ZOOM_LEVELS = { INITIAL: 12.5 } as const;
@@ -118,14 +124,14 @@ type MapViewProps = {
   selectedHubMemberId?: string | null;
   selectedRoute: string | null;
   activeRouteStopId: string | null;
-  detailPanelDismissed: boolean;
   categoryFilterType?: ExhibitorsFilterType;
   onLocationSelect: (
     locationId: string,
     options?: MapLocationSelectOptions
   ) => void;
   onCloseExhibitorSelection: () => void;
-  onDismissRoutePanel: () => void;
+  onClearActiveRouteStop: () => void;
+  onDismissRouteSelection: () => void;
   onRouteStopSelect: (dotId: string) => void;
 };
 
@@ -139,11 +145,11 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     selectedHubMemberId = null,
     selectedRoute,
     activeRouteStopId,
-    detailPanelDismissed,
     categoryFilterType = "all",
     onLocationSelect,
     onCloseExhibitorSelection,
-    onDismissRoutePanel,
+    onClearActiveRouteStop,
+    onDismissRouteSelection,
     onRouteStopSelect,
   },
   forwardedRef
@@ -169,6 +175,9 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
   const { categorySlugs } = useParticipantCategories();
 
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [routePrintProps, setRoutePrintProps] =
+    useState<RoutePrintProps | null>(null);
+  const homeTexts = useHomeTexts();
   const [themeColors, setThemeColors] = useState<MapThemeColors>(() =>
     getMapThemeColorsFromDocument(categorySlugs)
   );
@@ -176,11 +185,9 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
   const isMdScreen = useMediaQuery("(min-width: 768px)");
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
   const markerVariant = getMapPointMarkerVariant(isMdScreen, isLargeScreen);
-  const filterPanel = useMapFilterPanel();
+  const openFilter = useMapOpenFilter();
   const [exhibitorPopupLayout, setExhibitorPopupLayout] =
     useState<ExhibitorPopupLayoutState | null>(null);
-  const [routePopupLayout, setRoutePopupLayout] =
-    useState<RoutePopupLayoutState | null>(null);
 
   useEffect(() => {
     setThemeColors(getMapThemeColorsFromDocument(categorySlugs));
@@ -209,6 +216,35 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     () => routes.find((route) => route.id === selectedRoute) ?? null,
     [selectedRoute, routes]
   );
+
+  const activeStopLocation = useMemo(() => {
+    if (!selectedRouteObject || !activeRouteStopId) return null;
+
+    const stop = getRouteStopsForDisplay(
+      selectedRouteObject,
+      selectionLocations
+    ).find((item) => item.dotId === activeRouteStopId);
+    if (!stop) return null;
+
+    const resolvedId = resolveMapLocationSelectionId(
+      selectionLocations,
+      stop.mapInfoId
+    );
+    return (
+      selectionLocations.find((location) => location.id === resolvedId) ??
+      locations.find((location) => location.id === resolvedId) ??
+      null
+    );
+  }, [
+    selectedRouteObject,
+    activeRouteStopId,
+    selectionLocations,
+    locations,
+  ]);
+
+  const popupExhibitorLocation = selectedRoute
+    ? activeStopLocation
+    : selectedLocationData;
 
   const routeGeoJSON = useMemo(() => {
     if (!selectedRouteObject) return null;
@@ -260,23 +296,36 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     if (stops.length === 0) return;
 
     try {
-      const [mapDataUrl, logoDataUrl] = await Promise.all([
-        composeRoutePrintMapDataUrl(
-          selectedRouteObject,
-          stops,
-          config.mapboxAccesToken,
-          themeColors.primaryColor
-        ),
-        loadGlueLogoDataUrl(themeColors.primaryColor),
-      ]);
-      await downloadRoutePdf(selectedRouteObject, mapDataUrl, stops, {
+      const mapDataUrl = await composeRoutePrintMapDataUrl(
+        selectedRouteObject,
+        stops,
+        config.mapboxAccesToken,
+        themeColors.primaryColor
+      );
+      setRoutePrintProps({
+        routeName: selectedRouteObject.name,
+        routeDescription: selectedRouteObject.description ?? undefined,
+        mapImageDataUrl: mapDataUrl,
+        stops,
         primaryColor: themeColors.primaryColor,
-        logoDataUrl,
+        logoSrc: buildGlueLogoSrc("#000000"),
+        headerText: getHomeTextLabel(homeTexts, "footer_left"),
+        footerText: getHomeTextLabel(homeTexts, "footer_right"),
       });
     } catch (error) {
-      console.error("Route PDF generation failed:", error);
+      console.error("Route print generation failed:", error);
     }
-  }, [selectedRouteObject, mapLoaded, locations, themeColors]);
+  }, [
+    selectedRouteObject,
+    mapLoaded,
+    locations,
+    themeColors,
+    homeTexts,
+  ]);
+
+  const handleRoutePrintComplete = useCallback(() => {
+    setRoutePrintProps(null);
+  }, []);
 
   const getFocusBottomPadding = useCallback(() => {
     return measureMapBottomInset();
@@ -297,33 +346,9 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
 
   const focusOnRouteStop = useCallback(
     (stop: RouteStopDisplay, instant = false) => {
-      const map = mapRef.current?.getMap();
-      if (!map) return;
-
-      if (!isLargeScreen) {
-        focusOnPoint(stop.longitude, stop.latitude, instant);
-        return;
-      }
-
-      const layout = focusWithPopupLayout(
-        map,
-        stop.longitude,
-        stop.latitude,
-        {
-          sidebarOpen: Boolean(filterPanel?.openFilter),
-          bottomInset: getFocusBottomPadding(),
-        },
-        { instant }
-      );
-
-      setRoutePopupLayout({
-        anchor: layout.anchor,
-        offset: layout.offset,
-        longitude: stop.longitude,
-        latitude: stop.latitude,
-      });
+      focusOnPoint(stop.longitude, stop.latitude, instant);
     },
-    [isLargeScreen, focusOnPoint, filterPanel?.openFilter, getFocusBottomPadding]
+    [focusOnPoint]
   );
 
   const focusOnRoute = useCallback(
@@ -331,45 +356,45 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
       const map = mapRef.current?.getMap();
       if (!map) return;
 
-      const stops = getRouteStopsForDisplay(route, locations);
-      const firstStop = stops[0];
-      if (!firstStop) return;
-
-      if (!isLargeScreen) {
-        setRoutePopupLayout(null);
-        focusMapOnRoute(map, route, {
-          instant,
-          padding: { bottom: getFocusBottomPadding() },
-        });
-        return;
-      }
-
-      const layoutOptions = {
-        sidebarOpen: Boolean(filterPanel?.openFilter),
-        bottomInset: getFocusBottomPadding(),
-      };
-
-      const initialLayout = getExhibitorPopupLayout(
-        map,
-        firstStop.longitude,
-        firstStop.latitude,
-        layoutOptions
-      );
+      const basePadding = getMapFocusPadding(getFocusBottomPadding());
+      const sidebarOpen = isLargeScreen && Boolean(openFilter);
 
       focusMapOnRoute(map, route, {
         instant,
-        padding: initialLayout.focusPadding,
+        padding: {
+          ...basePadding,
+          left:
+            basePadding.left +
+            (sidebarOpen ? MAP_FILTER_SIDEBAR_WIDTH_PX : 0),
+        },
       });
-
-      focusOnRouteStop(firstStop, instant);
     },
     [
       isLargeScreen,
-      locations,
       getFocusBottomPadding,
-      filterPanel?.openFilter,
-      focusOnRouteStop,
+      openFilter,
     ]
+  );
+
+  const commitExhibitorPopupLayout = useCallback(
+    (
+      nextLayout: ExhibitorPopupLayoutState | null,
+      hasSelection: boolean
+    ) => {
+      setExhibitorPopupLayout((prevLayout) => {
+        const resolved = resolveExhibitorPopupLayoutTransition({
+          prevLayout,
+          nextLayout,
+          hasSelection,
+        });
+        if (!resolved) return null;
+        return {
+          anchor: resolved.anchor,
+          offset: resolved.offset,
+        };
+      });
+    },
+    []
   );
 
   const focusOnExhibitor = useCallback(
@@ -378,7 +403,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
       if (!map) return;
 
       if (!isLargeScreen) {
-        setExhibitorPopupLayout(null);
+        commitExhibitorPopupLayout(null, false);
         focusOnPoint(location.longitude, location.latitude, true);
         return;
       }
@@ -387,15 +412,23 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
         map,
         location.longitude,
         location.latitude,
-        { sidebarOpen: Boolean(filterPanel?.openFilter) }
+        { sidebarOpen: Boolean(openFilter) }
       );
 
-      setExhibitorPopupLayout({
-        anchor: layout.anchor,
-        offset: layout.offset,
-      });
+      commitExhibitorPopupLayout(
+        {
+          anchor: layout.anchor,
+          offset: layout.offset,
+        },
+        true
+      );
     },
-    [isLargeScreen, focusOnPoint, filterPanel?.openFilter]
+    [
+      isLargeScreen,
+      focusOnPoint,
+      openFilter,
+      commitExhibitorPopupLayout,
+    ]
   );
 
   useImperativeHandle(
@@ -411,27 +444,47 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
 
   const handleLocationPopupClose = useCallback(() => {
     if (pathname !== "/map") return;
+    if (selectedRoute) {
+      onClearActiveRouteStop();
+      commitExhibitorPopupLayout(null, false);
+      return;
+    }
     onCloseExhibitorSelection();
-  }, [pathname, onCloseExhibitorSelection]);
-
-  const handleRoutePopupClose = useCallback(() => {
-    if (pathname !== "/map") return;
-    onDismissRoutePanel();
-  }, [pathname, onDismissRoutePanel]);
+  }, [
+    pathname,
+    selectedRoute,
+    onClearActiveRouteStop,
+    onCloseExhibitorSelection,
+    commitExhibitorPopupLayout,
+  ]);
 
   const handleDetailPanelDismiss = useCallback(() => {
-    if (selectedLocation) {
+    const action = resolveMapBackgroundDismissAction({
+      selectedLocation,
+      selectedRoute,
+      activeRouteStopId,
+    });
+
+    if (action === "clear-stop") {
+      onClearActiveRouteStop();
+      commitExhibitorPopupLayout(null, false);
+      return;
+    }
+    if (action === "clear-location") {
       onCloseExhibitorSelection();
       return;
     }
-    if (selectedRoute) {
-      onDismissRoutePanel();
+    if (action === "clear-route") {
+      onDismissRouteSelection();
     }
   }, [
+    activeRouteStopId,
     selectedLocation,
     selectedRoute,
+    onClearActiveRouteStop,
     onCloseExhibitorSelection,
-    onDismissRoutePanel,
+    onDismissRouteSelection,
+    commitExhibitorPopupLayout,
   ]);
 
   const handleMapLoad = useCallback(
@@ -497,18 +550,45 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
 
     prevActiveRouteStopIdRef.current = activeRouteStopId;
 
-    const stops = getRouteStopsForDisplay(selectedRouteObject, locations);
+    const stops = getRouteStopsForDisplay(
+      selectedRouteObject,
+      selectionLocations
+    );
     const stop = stops.find((item) => item.dotId === activeRouteStopId);
-    if (stop) {
-      focusOnRouteStop(stop, true);
+    if (!stop) return;
+
+    if (isLargeScreen) {
+      const resolvedId = resolveMapLocationSelectionId(
+        selectionLocations,
+        stop.mapInfoId
+      );
+      const location =
+        selectionLocations.find((item) => item.id === resolvedId) ??
+        locations.find((item) => item.id === resolvedId) ??
+        null;
+      if (location) {
+        focusOnExhibitor(location);
+        return;
+      }
     }
+
+    focusOnRouteStop(stop, true);
   }, [
     mapLoaded,
     selectedRouteObject,
     activeRouteStopId,
+    selectionLocations,
     locations,
+    isLargeScreen,
+    focusOnExhibitor,
     focusOnRouteStop,
   ]);
+
+  useEffect(() => {
+    if (activeRouteStopId) return;
+    if (!selectedRoute) return;
+    commitExhibitorPopupLayout(null, false);
+  }, [activeRouteStopId, selectedRoute, commitExhibitorPopupLayout]);
 
   useEffect(() => {
     if (!mapLoaded || !initialFocusDoneRef.current) return;
@@ -521,8 +601,8 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
         if (location) {
           focusOnExhibitor(location);
         }
-      } else {
-        setExhibitorPopupLayout(null);
+      } else if (!activeRouteStopId) {
+        commitExhibitorPopupLayout(null, false);
       }
     }
 
@@ -531,8 +611,6 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
 
       if (selectedRoute && selectedRouteObject) {
         focusOnRoute(selectedRouteObject, true);
-      } else {
-        setRoutePopupLayout(null);
       }
     }
   }, [
@@ -541,9 +619,39 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     selectedRoute,
     selectedRouteObject,
     locations,
+    activeRouteStopId,
     focusOnExhibitor,
     focusOnRoute,
+    commitExhibitorPopupLayout,
   ]);
+
+  const markersData = selectMapMarkersData({
+    selectedRoute,
+    locationsGeoJSON,
+    routeStopsGeoJSON: routeStopsGeoJSON ?? null,
+  });
+  const routeLineData = selectRouteLineData({
+    selectedRoute,
+    routeGeoJSON: routeGeoJSON ?? null,
+  });
+  const markersSelectedId = selectMapMarkersSelectedId({
+    selectedRoute,
+    selectedLocation,
+    activeRouteStopId,
+  });
+  const showExhibitorPopup = shouldShowExhibitorPopup({
+    location: popupExhibitorLocation,
+    isLargeScreen,
+    layout: exhibitorPopupLayout,
+  });
+  const selectedRouteLinePaint = useMemo(
+    () =>
+      buildSelectedRouteLinePaint({
+        color: themeColors.primaryColor,
+        isLargeScreen,
+      }),
+    [themeColors.primaryColor, isLargeScreen]
+  );
 
   const handleMarkerClick = useCallback(
     (feature: MapPointFeature) => {
@@ -587,88 +695,62 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     // click that reaches the map itself means the user clicked empty space.
     if (pathname !== "/map") return;
 
-    if (selectedLocation || selectedRoute) {
+    if (activeRouteStopId || selectedLocation || selectedRoute) {
       handleDetailPanelDismiss();
     }
-  }, [pathname, selectedLocation, selectedRoute, handleDetailPanelDismiss]);
+  }, [
+    pathname,
+    activeRouteStopId,
+    selectedLocation,
+    selectedRoute,
+    handleDetailPanelDismiss,
+  ]);
 
   return (
-    <MapGL
-      ref={mapRef}
-      mapboxAccessToken={config.mapboxAccesToken}
-      initialViewState={initialViewStateRef.current}
-      style={{ width: "100%", height: "100%" }}
-      mapStyle={MAP_STYLE_URI}
-      maxBounds={MAP_CITY_BOUNDS}
-      onClick={pathname === "/map" ? handleMapClick : undefined}
-      renderWorldCopies={false}
-      onLoad={handleMapLoad}
-    >
-      {!selectedRoute && (
+    <>
+      <MapGL
+        ref={mapRef}
+        mapboxAccessToken={config.mapboxAccesToken}
+        initialViewState={initialViewStateRef.current}
+        style={{ width: "100%", height: "100%" }}
+        mapStyle={MAP_STYLE_URI}
+        maxBounds={MAP_CITY_BOUNDS}
+        onClick={pathname === "/map" ? handleMapClick : undefined}
+        renderWorldCopies={false}
+        onLoad={handleMapLoad}
+      >
+        <Source id="selected-route" type="geojson" data={routeLineData}>
+          <Layer
+            id="selected-route-line"
+            type="line"
+            paint={selectedRouteLinePaint}
+          />
+        </Source>
         <MapMarkers
-          data={locationsGeoJSON}
+          data={markersData}
           variant={markerVariant}
-          selectedId={selectedLocation}
+          selectedId={markersSelectedId}
           onMarkerClick={handleMarkerClick}
         />
-      )}
 
-      {selectedRoute && routeGeoJSON && selectedRouteObject && routeStopsGeoJSON && (
-        <>
-          <Source id="selected-route" type="geojson" data={routeGeoJSON}>
-            <Layer
-              id="selected-route-line"
-              type="line"
-              paint={{
-                "line-color": themeColors.primaryColor,
-                "line-width": 5,
-                "line-dasharray": [3, 3],
-              }}
+        {showExhibitorPopup &&
+          popupExhibitorLocation &&
+          exhibitorPopupLayout && (
+            <ExhibitorPopup
+              location={popupExhibitorLocation}
+              tourMode={tourMode}
+              selectedHubMemberId={selectedRoute ? null : selectedHubMemberId}
+              anchor={exhibitorPopupLayout.anchor}
+              offset={exhibitorPopupLayout.offset}
+              onClose={handleLocationPopupClose}
             />
-          </Source>
-          <MapMarkers
-            data={routeStopsGeoJSON}
-            variant={markerVariant}
-            selectedId={activeRouteStopId}
-            onMarkerClick={handleMarkerClick}
-          />
-        </>
-      )}
-
-      {selectedLocation &&
-        selectedLocationData &&
-        isLargeScreen &&
-        exhibitorPopupLayout && (
-          <ExhibitorPopup
-            key={selectedLocation}
-            location={selectedLocationData}
-            tourMode={tourMode}
-            selectedHubMemberId={selectedHubMemberId}
-            anchor={exhibitorPopupLayout.anchor}
-            offset={exhibitorPopupLayout.offset}
-            onClose={handleLocationPopupClose}
-          />
-        )}
-
-      {selectedRoute &&
-        selectedRouteObject &&
-        isLargeScreen &&
-        routePopupLayout &&
-        !detailPanelDismissed && (
-          <RoutePopup
-            route={selectedRouteObject}
-            locations={locations}
-            tourMode={tourMode}
-            anchor={routePopupLayout.anchor}
-            offset={routePopupLayout.offset}
-            popupLongitude={routePopupLayout.longitude}
-            popupLatitude={routePopupLayout.latitude}
-            activeStopId={activeRouteStopId}
-            onClose={handleRoutePopupClose}
-            onDownloadRoutePdf={downloadSelectedRoutePdf}
-          />
-        )}
-    </MapGL>
+          )}
+      </MapGL>
+      <RoutePrintHost
+        printProps={routePrintProps}
+        onPrintComplete={handleRoutePrintComplete}
+      />
+    </>
   );
 });
 
