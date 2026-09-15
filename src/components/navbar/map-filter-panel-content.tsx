@@ -162,8 +162,8 @@ export const MapFilterPanelContent = ({
           variant={variant}
         />
         {showRoutesInSearch && (
-          <div className="flex flex-col gap-[15px] border-t border-(--black-color) pt-[20px]">
-            <p className="px-[30px] text-xs font-semibold uppercase tracking-wide text-(--gray-color)">
+          <div className="flex flex-col max-w-[237px] main-boder-top pb-[15px]">
+            <p className="sr-only">
               Routes
             </p>
             <RoutesList

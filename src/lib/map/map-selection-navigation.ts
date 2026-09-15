@@ -59,13 +59,16 @@ export const buildLocationSelectNavigation = ({
   }
 
   let filterPatch: Partial<MapFilters> | undefined;
+  let resolvedClearSearch = clearSearch;
 
   if (!isLargeScreen) {
     filterPatch = { view: "none" };
     if (filters.view === "category" && filters.type !== "all") {
       filterPatch.type = filters.type;
-    } else if (clearSearch) {
+    }
+    if (clearSearch || filters.q.trim()) {
       filterPatch.q = "";
+      resolvedClearSearch = true;
     }
   } else if (filters.view === "category") {
     filterPatch = {
@@ -77,7 +80,7 @@ export const buildLocationSelectNavigation = ({
   return {
     filterPatch,
     selection: { place: locationId },
-    clearSearch,
+    clearSearch: resolvedClearSearch,
   };
 };
 

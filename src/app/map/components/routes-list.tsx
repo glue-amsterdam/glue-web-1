@@ -47,10 +47,7 @@ const RoutesList = ({
     void onDownloadSelectedRoute?.();
   }, [onDownloadSelectedRoute]);
 
-  const nameClassName = cn(
-    variant === "panel" && "truncate",
-    variant === "sidebar" && "whitespace-normal wrap-break-word"
-  );
+  const nameClassName = "whitespace-normal wrap-break-word";
 
   const itemClassName = cn(
     "w-full max-w-full",

@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
-import { RouteIcon } from "lucide-react";
+import type { KeyboardEvent } from "react";
 import DisplayNumberCluster from "@/components/display-number-cluster";
 import type { MapLocation, MapRoute } from "@/lib/map/types";
 import { getMapLocationNumberBadges } from "@/lib/map/map-filters";
@@ -15,6 +14,89 @@ type MapSearchResultsProps = {
   className?: string;
 };
 
+type MapSearchExhibitorResultProps = {
+  location: MapLocation;
+  onSelect: (locationId: string) => void;
+};
+
+type MapSearchRouteResultProps = {
+  route: MapRoute;
+  onSelect: (routeId: string) => void;
+};
+
+const resultButtonClassName =
+  "flex w-full items-center gap-[15px] py-[10px] text-left cursor-pointer base-text-size";
+
+const MapSearchExhibitorResult = ({
+  location,
+  onSelect,
+}: MapSearchExhibitorResultProps) => {
+  const numberBadges = getMapLocationNumberBadges(location);
+
+  const handleClick = () => {
+    onSelect(location.id);
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    handleClick();
+  };
+
+  return (
+    <li>
+      <button
+        type="button"
+        role="option"
+        tabIndex={0}
+        aria-label={location.name}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        className={resultButtonClassName}
+      >
+        <DisplayNumberCluster
+          badges={numberBadges}
+          fallbackType={location.type}
+        />
+        <span className="min-w-0 flex-1 truncate">{location.name}</span>
+      </button>
+    </li>
+  );
+};
+
+const MapSearchRouteResult = ({
+  route,
+  onSelect,
+}: MapSearchRouteResultProps) => {
+  const handleClick = () => {
+    onSelect(route.id);
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    handleClick();
+  };
+
+  return (
+    <li>
+      <button
+        type="button"
+        role="option"
+        tabIndex={0}
+        aria-label={route.name}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        className={resultButtonClassName}
+      >
+        <span className="min-w-0 flex-1 whitespace-normal wrap-break-word">
+          {route.name}
+        </span>
+      </button>
+    </li>
+  );
+};
+
 const MapSearchResults = ({
   locations,
   routes,
@@ -22,78 +104,48 @@ const MapSearchResults = ({
   onRouteSelect,
   className,
 }: MapSearchResultsProps) => {
-  const handleExhibitorClick = useCallback(
-    (locationId: string) => {
-      onExhibitorSelect(locationId);
-    },
-    [onExhibitorSelect]
-  );
-
-  const handleRouteClick = useCallback(
-    (routeId: string) => {
-      onRouteSelect(routeId);
-    },
-    [onRouteSelect]
-  );
-
   if (locations.length === 0 && routes.length === 0) {
     return null;
   }
+
+  const hasLocations = locations.length > 0;
+  const hasRoutes = routes.length > 0;
 
   return (
     <div
       role="listbox"
       aria-label="Search results"
-      className={cn(
-        "absolute top-full left-0 z-51 w-full overflow-y-auto border-b border-(--black-color) bg-(--white-color) max-h-[300px] flex flex-col",
-        className
-      )}
+      className={cn("flex w-full flex-col base-text-size pb-[70px]", className)}
     >
-      {locations.length > 0 && (
-        <div>
-          <ul>
-            {locations.map((location) => {
-              const numberBadges = getMapLocationNumberBadges(location);
-              return (
-                <li key={location.id}>
-                  <button
-                    type="button"
-                    role="option"
-                    onClick={() => handleExhibitorClick(location.id)}
-                    className="flex w-full items-center gap-[15px] py-[12px] pl-[4px] base-text-size"
-                  >
-                    <DisplayNumberCluster
-                      badges={numberBadges}
-                      fallbackType={location.type}
-                    />
-                    <span className="truncate">
-                      {location.name}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+      {hasLocations && (
+        <ul className="flex flex-col gap-[30px] pt-[30px]">
+          {locations.map((location) => (
+            <MapSearchExhibitorResult
+              key={location.id}
+              location={location}
+              onSelect={onExhibitorSelect}
+            />
+          ))}
+        </ul>
       )}
 
-      {routes.length > 0 && (
-        <div>
-          <ul>
-            {routes.map((route) => (
-              <li key={route.id}>
-                <button
-                  type="button"
-                  role="option"
-                  onClick={() => handleRouteClick(route.id)}
-                  className="flex w-full items-center gap-[15px] py-[12px] pl-[4px] base-text-size"
-                >
-                  <span className="truncate">{route.name}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+      {hasLocations && hasRoutes && (
+        <div
+          className="main-boder-top mt-[30px]"
+          aria-hidden
+        />
+      )}
+
+      {hasRoutes && (
+        <ul className="flex flex-col gap-[30px] py-[30px]">
+          {routes.map((route) => (
+            <MapSearchRouteResult
+              key={route.id}
+              route={route}
+              onSelect={onRouteSelect}
+            />
+          ))}
+        </ul>
       )}
     </div>
   );

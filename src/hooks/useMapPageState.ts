@@ -7,7 +7,11 @@ import {
   searchParamsToMapFilters,
   type MapUrlSelection,
 } from "@/lib/map/map-url";
-import { mergeMapFilters, shouldClearMapSelectionForBrowseView } from "@/lib/map/map-filter-actions";
+import {
+  mergeMapFilters,
+  shouldClearMapSelectionForBrowseView,
+  shouldDropOptimisticFiltersOnMobileSelection,
+} from "@/lib/map/map-filter-actions";
 import { MAP_CITY_BOUNDS } from "@/lib/map/map-bounds";
 import type { MapFilters } from "@/lib/map/map-filters";
 import type { MapLocation, MapPageData, MapRoute } from "@/lib/map/types";
@@ -173,11 +177,17 @@ export const useMapPageState = (initialData: MapPageData) => {
 
       const mobile = !isLargeScreen;
       // Route-only / place-only mobile URLs drop browse chrome; keep optimistic
-      // filters when the routes panel stays open with the selection.
+      // filters when the routes panel stays open, or when clearSearch must show
+      // `q: ""` immediately so the search sheet closes before the URL ack.
       if (
-        mobile &&
-        (selection?.place || selection?.route) &&
-        mergedFilters.view === "none"
+        shouldDropOptimisticFiltersOnMobileSelection({
+          mobile,
+          view: mergedFilters.view,
+          hasPlaceOrRouteSelection: Boolean(
+            selection?.place || selection?.route
+          ),
+          clearSearch: params.clearSearch,
+        })
       ) {
         setOptimisticFilters(null);
       }

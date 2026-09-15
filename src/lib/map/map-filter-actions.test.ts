@@ -5,6 +5,7 @@ import {
   getClearPatchForView,
   getEffectiveMapViewMode,
   getSwitchViewPatch,
+  shouldDropOptimisticFiltersOnMobileSelection,
 } from "./map-filter-actions";
 
 describe("getClearPatchForView", () => {
@@ -95,6 +96,53 @@ describe("buildOpenMapViewPatch", () => {
         "category"
       ),
       { view: "category", q: "" }
+    );
+  });
+});
+
+describe("shouldDropOptimisticFiltersOnMobileSelection", () => {
+  it("drops optimistic on mobile place select with view none", () => {
+    assert.equal(
+      shouldDropOptimisticFiltersOnMobileSelection({
+        mobile: true,
+        view: "none",
+        hasPlaceOrRouteSelection: true,
+      }),
+      true
+    );
+  });
+
+  it("keeps optimistic when clearSearch so search sheet can close", () => {
+    assert.equal(
+      shouldDropOptimisticFiltersOnMobileSelection({
+        mobile: true,
+        view: "none",
+        hasPlaceOrRouteSelection: true,
+        clearSearch: true,
+      }),
+      false
+    );
+  });
+
+  it("keeps optimistic when routes panel stays open", () => {
+    assert.equal(
+      shouldDropOptimisticFiltersOnMobileSelection({
+        mobile: true,
+        view: "routes",
+        hasPlaceOrRouteSelection: true,
+      }),
+      false
+    );
+  });
+
+  it("does not drop on desktop", () => {
+    assert.equal(
+      shouldDropOptimisticFiltersOnMobileSelection({
+        mobile: false,
+        view: "none",
+        hasPlaceOrRouteSelection: true,
+      }),
+      false
     );
   });
 });

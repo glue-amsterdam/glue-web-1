@@ -75,6 +75,51 @@ describe("buildLocationSelectNavigation", () => {
       type: "all",
     });
   });
+
+  it("shouldClearActiveSearchOnMobileMapSelect", () => {
+    const result = buildLocationSelectNavigation({
+      locationId: "loc-1",
+      isLargeScreen: false,
+      filters: { ...DEFAULT_MAP_FILTERS, q: "darw" },
+      source: "map",
+    });
+    assert.equal(result.clearSearch, true);
+    assert.deepEqual(result.filterPatch, {
+      view: "none",
+      q: "",
+    });
+  });
+
+  it("shouldKeepCategoryTypeAndClearSearchOnMobileMapSelect", () => {
+    const result = buildLocationSelectNavigation({
+      locationId: "loc-1",
+      isLargeScreen: false,
+      filters: {
+        ...DEFAULT_MAP_FILTERS,
+        view: "category",
+        type: "gallery",
+        q: "darw",
+      },
+      source: "map",
+    });
+    assert.equal(result.clearSearch, true);
+    assert.deepEqual(result.filterPatch, {
+      view: "none",
+      type: "gallery",
+      q: "",
+    });
+  });
+
+  it("shouldNotClearSearchOnMobileMapSelectWhenQEmpty", () => {
+    const result = buildLocationSelectNavigation({
+      locationId: "loc-1",
+      isLargeScreen: false,
+      filters: DEFAULT_MAP_FILTERS,
+      source: "map",
+    });
+    assert.equal(result.clearSearch, false);
+    assert.deepEqual(result.filterPatch, { view: "none" });
+  });
 });
 
 describe("buildRouteSelectNavigation", () => {

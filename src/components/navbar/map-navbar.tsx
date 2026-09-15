@@ -96,11 +96,15 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
       }
 
       if (q.trim()) {
-        applyFilters({
-          ...buildOpenMapViewPatch(filters, "exhibitors"),
-          q,
-          view: "none",
-        });
+        navigation?.clearSelectionLocal();
+        applyFilters(
+          {
+            ...buildOpenMapViewPatch(filters, "exhibitors"),
+            q,
+            view: "none",
+          },
+          { clearSelection: true }
+        );
         return;
       }
 
@@ -122,6 +126,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
   const routesPanelId = useId();
   const exhibitorsPanelId = useId();
   const categoryPanelId = useId();
+  const searchResultsPanelId = useId();
   const panelAnchorRef = useRef<HTMLDivElement>(null);
   const mapNavbarRef = useRef<HTMLElement>(null);
 
@@ -169,7 +174,10 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
   const openFilterView = useCallback(
     (view: MapViewMode, filterId: MapFilterId) => {
       panelDismissedByUserRef.current = false;
-      const patch = buildOpenMapViewPatch(filters, view);
+      const patch = {
+        ...buildOpenMapViewPatch(filters, view),
+        ...(!isLargeScreen ? { q: "" as const } : {}),
+      };
       const shouldClearRouteSelection = view !== "routes";
 
       if (isLargeScreen) {
@@ -254,6 +262,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     (routeId: string) => {
       if (!mapPageStore) return;
 
+      // Route nav clears `q` optimistically; exclusivity prefers routes over search.
       mapPageStore.onRouteSelect(routeId, { source: "search" });
       setOpenFilter("routes");
     },
@@ -310,7 +319,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
 
     if (isCategoryPanelOpen && filters.type !== "all") {
       panelDismissedByUserRef.current = false;
-      applyFilters({ type: "all", view: "category" });
+      applyFilters({ type: "all", view: "category", q: "" });
       setOpenFilter("category");
       return;
     }
@@ -364,11 +373,15 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     closeFilterView(resolveClosingView());
   }, [closeFilterView, resolveClosingView]);
 
-  const openPanelIds = useMemo(() => {
-    if (openFilter === "exhibitors") return [exhibitorsPanelId];
-    if (openFilter === "routes") return [routesPanelId];
-    if (openFilter === "category") return [categoryPanelId];
-    return [];
+  const handleDismissSearchResults = useCallback(() => {
+    applyFilters({ q: "" });
+  }, [applyFilters]);
+
+  const openPanelId = useMemo(() => {
+    if (openFilter === "exhibitors") return exhibitorsPanelId;
+    if (openFilter === "routes") return routesPanelId;
+    if (openFilter === "category") return categoryPanelId;
+    return null;
   }, [
     openFilter,
     exhibitorsPanelId,
@@ -376,7 +389,12 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     categoryPanelId,
   ]);
 
-  const openPanelId = openPanelIds[0] ?? null;
+  const openPanelIds = useMemo(() => {
+    // Mobile: search sheet XOR filter sheet — never both.
+    if (showSearchResults) return [searchResultsPanelId];
+    if (openPanelId) return [openPanelId];
+    return [];
+  }, [showSearchResults, searchResultsPanelId, openPanelId]);
 
   useLayoutEffect(() => {
     setFilterPanel({
@@ -429,6 +447,11 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
       const mapSurface = document.querySelector("[data-map-surface]");
       if (mapSurface?.contains(target)) return;
 
+      if (showSearchResults) {
+        handleDismissSearchResults();
+        return;
+      }
+
       handleDismissOpenFilter();
     };
 
@@ -443,6 +466,8 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
   }, [
     isLargeScreen,
     openPanelIds,
+    showSearchResults,
+    handleDismissSearchResults,
     handleDismissOpenFilter,
   ]);
 
@@ -490,16 +515,6 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
             onKeyDown={handleCategoryKeyDown}
           />
         </BaseSecondNavbar>
-
-        {showSearchResults && (
-          <MapSearchResults
-            locations={mapPageStore?.searchFilteredLocations ?? []}
-            routes={canShowRoutesInSearch ? filteredRoutesForList : []}
-            onExhibitorSelect={handleSearchExhibitorSelect}
-            onRouteSelect={handleSearchRouteSelect}
-            className="top-full inset-x-0 z-60 max-h-[min(300px,calc(100dvh-var(--nav-total-h-mobile)-var(--site-footer-h)-16px))]"
-          />
-        )}
       </div>
 
       <div
@@ -507,6 +522,25 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
         className="absolute left-0 right-0 top-full h-0 w-full pointer-events-none"
         aria-hidden
       />
+
+      {!isLargeScreen && (
+        <MapFilterScrollPanel
+          isOpen={showSearchResults}
+          panelId={searchResultsPanelId}
+          ariaLabel="Search results"
+          heightMode="rising-sheet"
+          anchorRef={panelAnchorRef}
+          onSwipeDownAtPeek={handleDismissSearchResults}
+          className={MAP_FILTER_PANEL_CLASS}
+        >
+          <MapSearchResults
+            locations={mapPageStore?.searchFilteredLocations ?? []}
+            routes={canShowRoutesInSearch ? filteredRoutesForList : []}
+            onExhibitorSelect={handleSearchExhibitorSelect}
+            onRouteSelect={handleSearchRouteSelect}
+          />
+        </MapFilterScrollPanel>
+      )}
 
       {!isLargeScreen && mapPageStore && (
         <MapFilterScrollPanel
