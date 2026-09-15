@@ -11,3 +11,7 @@ export const ROUTE_PRINT_FIGMA = {
   mapWidth: 2230,
   mapHeight: 1175,
 } as const;
+
+/** Figma width → CSS A4 width (210mm at 96dpi). Unitless for cross-browser `scale()`. */
+export const ROUTE_PRINT_SCALE =
+  ((210 / 25.4) * 96) / ROUTE_PRINT_FIGMA.width;
