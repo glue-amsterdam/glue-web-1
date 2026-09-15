@@ -368,6 +368,11 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     // Keep the routes panel open so the inline selected block stays visible.
   }, []);
 
+  const dismissOpenFilter = useCallback(() => {
+    panelDismissedByUserRef.current = true;
+    closeFilter();
+  }, [closeFilter]);
+
   const handleDismissOpenFilter = useCallback(() => {
     panelDismissedByUserRef.current = true;
     closeFilterView(resolveClosingView());
@@ -404,6 +409,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
       onRouteListSelect: handleRouteListSelect,
       onTypeSelect: handleTypeSelect,
       onRouteSelected: handleRouteSelected,
+      dismissOpenFilter,
     });
 
     return () => clearFilterPanel();
@@ -414,6 +420,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     handleRouteListSelect,
     handleTypeSelect,
     handleRouteSelected,
+    dismissOpenFilter,
     setFilterPanel,
     clearFilterPanel,
   ]);

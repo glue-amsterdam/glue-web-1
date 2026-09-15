@@ -218,6 +218,12 @@ const MapMain = ({ initialData }: MapMainProps) => {
     (dotId: string) => {
       if (!selectedRouteObject) return;
 
+      if (!isLargeScreen) {
+        // Close routes sheet sync so it doesn't stack with ExhibitorFooter
+        // while navigateMap's view=none waits on URL ack.
+        useMapStore.getState().filterPanel?.dismissOpenFilter();
+      }
+
       setActiveRouteStopId(dotId);
 
       if (!isLargeScreen) {

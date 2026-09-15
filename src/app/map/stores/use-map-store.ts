@@ -46,6 +46,8 @@ export type MapFilterPanelSlice = {
   onRouteListSelect: (routeId: string) => void;
   onTypeSelect: (value: ExhibitorsFilterType) => void;
   onRouteSelected: () => void;
+  /** Sync-close the open filter sheet (mobile selection handoff). */
+  dismissOpenFilter: () => void;
 };
 
 type MapStoreState = {
