@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { ExhibitorsFilterType } from "@/lib/participants/exhibitors-filters";
 import type { MapFilters } from "@/lib/map/map-filters";
+import { mergeMapPageSlice } from "@/lib/map/map-page-slice";
 import type { MapUrlSelection } from "@/lib/map/map-url";
 import type { MapLocation, MapRoute } from "@/lib/map/types";
 
@@ -26,6 +27,11 @@ export type MapNavigationHandlers = {
 export type MapLocationSelectOptions = {
   clearSearch?: boolean;
   memberUserId?: string;
+  source?: "map" | "list" | "search";
+};
+
+export type MapRouteSelectOptions = {
+  source?: "map" | "list" | "search";
 };
 
 export type MapPageSlice = {
@@ -39,7 +45,7 @@ export type MapPageSlice = {
     locationId: string,
     options?: MapLocationSelectOptions
   ) => void;
-  onRouteSelect: (routeId: string) => void;
+  onRouteSelect: (routeId: string, options?: MapRouteSelectOptions) => void;
   onDownloadSelectedRoute: () => void | Promise<void>;
 };
 
@@ -60,7 +66,7 @@ type MapStoreState = {
   filterPanel: MapFilterPanelSlice | null;
   navigation: MapNavigationHandlers | null;
   optimisticFilters: MapFilters | null;
-  setPage: (value: MapPageSlice) => void;
+  setPage: (value: Partial<MapPageSlice>) => void;
   clearPage: () => void;
   setFilterPanel: (value: MapFilterPanelSlice) => void;
   clearFilterPanel: () => void;
@@ -76,13 +82,26 @@ const initialState = {
   optimisticFilters: null as MapFilters | null,
 };
 
-const mapStoreSlice = (set: (partial: Partial<MapStoreState>) => void) => ({
+const EMPTY_LOCATIONS: MapLocation[] = [];
+const EMPTY_ROUTES: MapRoute[] = [];
+
+const mapStoreSlice = (
+  set: (
+    partial:
+      | Partial<MapStoreState>
+      | ((state: MapStoreState) => Partial<MapStoreState>)
+  ) => void
+) => ({
   ...initialState,
-  setPage: (value: MapPageSlice) => set({ page: value }),
+  setPage: (value: Partial<MapPageSlice>) =>
+    set((state) => ({
+      page: mergeMapPageSlice(state.page, value) as MapPageSlice,
+    })),
   clearPage: () => set({ page: null }),
   setFilterPanel: (value: MapFilterPanelSlice) => set({ filterPanel: value }),
   clearFilterPanel: () => set({ filterPanel: null }),
-  setNavigation: (value: MapNavigationHandlers | null) => set({ navigation: value }),
+  setNavigation: (value: MapNavigationHandlers | null) =>
+    set({ navigation: value }),
   setOptimisticFilters: (value: MapFilters | null) =>
     set({ optimisticFilters: value }),
   reset: () => set({ ...initialState }),
@@ -99,3 +118,24 @@ export const useMapPage = () => useMapStore((state) => state.page);
 export const useMapFilterPanel = () => useMapStore((state) => state.filterPanel);
 
 export const useMapNavigation = () => useMapStore((state) => state.navigation);
+
+export const useMapSelectedLocation = () =>
+  useMapStore((state) => state.page?.selectedLocation ?? null);
+
+export const useMapSelectedRoute = () =>
+  useMapStore((state) => state.page?.selectedRoute ?? null);
+
+export const useMapFilteredLocationsForList = () =>
+  useMapStore((state) => state.page?.filteredLocationsForList ?? EMPTY_LOCATIONS);
+
+export const useMapFilteredRoutesForList = () =>
+  useMapStore((state) => state.page?.filteredRoutesForList ?? EMPTY_ROUTES);
+
+export const useMapOnLocationSelect = () =>
+  useMapStore((state) => state.page?.onLocationSelect);
+
+export const useMapOnRouteSelect = () =>
+  useMapStore((state) => state.page?.onRouteSelect);
+
+export const useMapOpenFilter = () =>
+  useMapStore((state) => state.filterPanel?.openFilter ?? null);

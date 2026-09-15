@@ -6,7 +6,11 @@ import { useMapFiltersFromUrl } from "@/hooks/useMapFiltersFromUrl";
 import {
   type MapFilterId,
   useMapFilterPanel,
+  useMapFilteredLocationsForList,
+  useMapFilteredRoutesForList,
   useMapPage,
+  useMapSelectedLocation,
+  useMapSelectedRoute,
 } from "@/app/map/stores/use-map-store";
 import ExhibitorList from "@/app/map/components/exhibitor-list";
 import RoutesList from "@/app/map/components/routes-list";
@@ -82,10 +86,11 @@ export const CategoryExhibitorListContent = ({
   categoryType,
   className,
 }: CategoryExhibitorListContentProps) => {
-  const mapPageStore = useMapPage();
+  const filteredLocationsForList = useMapFilteredLocationsForList();
+  const selectedLocation = useMapSelectedLocation();
   const filterPanelStore = useMapFilterPanel();
 
-  if (!filterPanelStore || !mapPageStore) return null;
+  if (!filterPanelStore) return null;
 
   const { onExhibitorListSelect } = filterPanelStore;
 
@@ -97,8 +102,8 @@ export const CategoryExhibitorListContent = ({
       )}
     >
       <ExhibitorList
-        locations={mapPageStore.filteredLocationsForList}
-        selectedLocation={mapPageStore.selectedLocation}
+        locations={filteredLocationsForList}
+        selectedLocation={selectedLocation}
         onLocationSelect={onExhibitorListSelect}
         categoryType={categoryType}
         variant={variant}
@@ -114,6 +119,10 @@ export const MapFilterPanelContent = ({
   className,
 }: MapFilterPanelContentProps) => {
   const mapPageStore = useMapPage();
+  const filteredLocationsForList = useMapFilteredLocationsForList();
+  const filteredRoutesForList = useMapFilteredRoutesForList();
+  const selectedLocation = useMapSelectedLocation();
+  const selectedRoute = useMapSelectedRoute();
   const filterPanelStore = useMapFilterPanel();
   const { user } = useAuth();
   const { filters } = useMapFiltersFromUrl();
@@ -136,7 +145,7 @@ export const MapFilterPanelContent = ({
       Boolean(user) &&
       variant === "sidebar" &&
       searchQuery.length > 0 &&
-      mapPageStore.filteredRoutesForList.length > 0;
+      filteredRoutesForList.length > 0;
 
     return (
       <div
@@ -146,8 +155,8 @@ export const MapFilterPanelContent = ({
         )}
       >
         <ExhibitorList
-          locations={mapPageStore.filteredLocationsForList}
-          selectedLocation={mapPageStore.selectedLocation}
+          locations={filteredLocationsForList}
+          selectedLocation={selectedLocation}
           onLocationSelect={onExhibitorListSelect}
           categoryType={filters.type}
           variant={variant}
@@ -158,8 +167,8 @@ export const MapFilterPanelContent = ({
               Routes
             </p>
             <RoutesList
-              routes={mapPageStore.filteredRoutesForList}
-              selectedRoute={mapPageStore.selectedRoute}
+              routes={filteredRoutesForList}
+              selectedRoute={selectedRoute}
               onRouteSelect={onRouteListSelect}
               onDownloadSelectedRoute={onDownloadSelectedRoute}
               variant="sidebar"
@@ -176,8 +185,8 @@ export const MapFilterPanelContent = ({
 
     return (
       <RoutesList
-        routes={mapPageStore.filteredRoutesForList}
-        selectedRoute={mapPageStore.selectedRoute}
+        routes={filteredRoutesForList}
+        selectedRoute={selectedRoute}
         onRouteSelect={onRouteListSelect}
         onDownloadSelectedRoute={onDownloadSelectedRoute}
         variant={variant}

@@ -39,6 +39,7 @@ import {
   type MapViewMode,
 } from "@/lib/map/map-filters";
 import { buildMapPageUrl } from "@/lib/map/map-url";
+import { MAP_SEARCH_DEBOUNCE_MS } from "@/lib/map/map-search";
 import type { MapRoute } from "@/lib/map/types";
 import {
   type MapFilterId,
@@ -47,8 +48,6 @@ import {
   useMapPage,
   useMapStore,
 } from "@/app/map/stores/use-map-store";
-
-const SEARCH_DEBOUNCE_MS = 400;
 
 const PANEL_BY_VIEW: Record<MapViewMode, MapFilterId | null> = {
   none: null,
@@ -117,7 +116,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
   } = useDebouncedUrlSearch({
     urlValue: urlFilters.q,
     onCommit: handleSearchCommit,
-    debounceMs: SEARCH_DEBOUNCE_MS,
+    debounceMs: MAP_SEARCH_DEBOUNCE_MS,
   });
 
   const routesPanelId = useId();
@@ -223,82 +222,52 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
 
   const handleExhibitorListSelect = useCallback(
     (locationId: string, options?: MapLocationSelectOptions) => {
-      if (!navigation) return;
+      if (!mapPageStore) return;
 
       if (!isLargeScreen) {
         panelDismissedByUserRef.current = true;
         closeFilter();
       }
 
-      navigation.selectLocationLocal(
-        locationId,
-        options?.memberUserId ?? null
-      );
-
-      const keepCategoryView =
-        isLargeScreen && filters.view === "category";
-
-      navigation.navigateMap({
-        filterPatch: keepCategoryView
-          ? { view: "category", type: filters.type }
-          : isLargeScreen
-            ? { view: "exhibitors" }
-            : { view: "none", type: filters.type },
-        selection: { place: locationId },
+      mapPageStore.onLocationSelect(locationId, {
+        ...options,
+        source: "list",
       });
     },
-    [navigation, closeFilter, isLargeScreen, filters.view, filters.type]
+    [mapPageStore, closeFilter, isLargeScreen]
   );
 
   const handleSearchExhibitorSelect = useCallback(
     (locationId: string) => {
-      if (!navigation) return;
+      if (!mapPageStore) return;
 
       if (!isLargeScreen) closeFilter();
-      navigation.selectLocationLocal(locationId);
-      navigation.navigateMap({
-        filterPatch: isLargeScreen
-          ? { q: "", type: "all" }
-          : { view: "none", q: "", type: "all" },
-        selection: { place: locationId },
+      mapPageStore.onLocationSelect(locationId, {
+        source: "search",
         clearSearch: !isLargeScreen,
       });
     },
-    [navigation, closeFilter, isLargeScreen]
+    [mapPageStore, closeFilter, isLargeScreen]
   );
 
   const handleSearchRouteSelect = useCallback(
     (routeId: string) => {
-      if (!navigation) return;
+      if (!mapPageStore) return;
 
-      navigation.selectRouteLocal(routeId);
-      navigation.navigateMap({
-        filterPatch: isLargeScreen
-          ? { q: "", view: "routes" }
-          : { view: "routes", q: "", type: "all" },
-        selection: { route: routeId },
-      });
+      mapPageStore.onRouteSelect(routeId, { source: "search" });
       setOpenFilter("routes");
     },
-    [navigation, isLargeScreen, setOpenFilter]
+    [mapPageStore, setOpenFilter]
   );
 
   const handleRouteListSelect = useCallback(
     (routeId: string) => {
-      if (!navigation) return;
+      if (!mapPageStore) return;
 
-      navigation.selectRouteLocal(routeId);
-      navigation.navigateMap({
-        filterPatch: isLargeScreen
-          ? { q: "" }
-          : { view: "routes", q: "", type: "all" },
-        selection: { route: routeId },
-      });
-      if (!isLargeScreen) {
-        setOpenFilter("routes");
-      }
+      mapPageStore.onRouteSelect(routeId, { source: "list" });
+      setOpenFilter("routes");
     },
-    [navigation, isLargeScreen, setOpenFilter]
+    [mapPageStore, setOpenFilter]
   );
 
   const navigateToRoutesViewForUnauthenticated = useCallback(() => {

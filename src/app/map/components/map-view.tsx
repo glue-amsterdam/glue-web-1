@@ -34,6 +34,8 @@ import {
 import {
   focusExhibitorWithPopupLayout,
   MAP_FILTER_SIDEBAR_WIDTH_PX,
+  resolveExhibitorPopupLayoutTransition,
+  shouldShowExhibitorPopup,
 } from "@/lib/map/exhibitor-popup-layout";
 import type { ExhibitorPopupAnchor } from "@/lib/map/exhibitor-popup-layout";
 import { measureMapBottomInset } from "@/lib/map/map-viewport-insets";
@@ -53,12 +55,19 @@ import {
   getMapThemeColorsFromDocument,
   type MapThemeColors,
 } from "@/lib/map/locations-geojson";
+import {
+  selectMapMarkersData,
+  selectMapMarkersSelectedId,
+  selectRouteLineData,
+} from "@/lib/map/map-markers-data";
+import { buildSelectedRouteLinePaint } from "@/lib/map/map-route-line-paint";
+import { resolveMapBackgroundDismissAction } from "@/lib/map/map-background-dismiss";
 import { getMapPointMarkerVariant } from "@/lib/map/map-point-marker-spec";
 import { useParticipantCategories } from "@/context/ParticipantCategoriesContext";
 import type { MapPointFeature } from "@/lib/map/locations-geojson";
 import MapMarkers from "./map-markers";
 import ExhibitorPopup from "./exhibitor-popup";
-import { useMapFilterPanel } from "../stores/use-map-store";
+import { useMapOpenFilter } from "../stores/use-map-store";
 
 type ExhibitorPopupLayoutState = {
   anchor: ExhibitorPopupAnchor;
@@ -68,8 +77,6 @@ type ExhibitorPopupLayoutState = {
 const ZOOM_LEVELS = { INITIAL: 12.5 } as const;
 const MAP_STYLE_URI = "mapbox://styles/mapbox/light-v11";
 const RESIZE_DEBOUNCE_MS = 150;
-/** 2× inactive SlideLineNav thickness (1px / lg:2px). */
-const SELECTED_ROUTE_LINE_WIDTH = { mobile: 2, desktop: 4 } as const;
 
 type MapInitialViewState = {
   longitude: number;
@@ -119,7 +126,6 @@ type MapViewProps = {
   selectedHubMemberId?: string | null;
   selectedRoute: string | null;
   activeRouteStopId: string | null;
-  detailPanelDismissed: boolean;
   categoryFilterType?: ExhibitorsFilterType;
   onLocationSelect: (
     locationId: string,
@@ -127,7 +133,7 @@ type MapViewProps = {
   ) => void;
   onCloseExhibitorSelection: () => void;
   onClearActiveRouteStop: () => void;
-  onDismissRoutePanel: () => void;
+  onDismissRouteSelection: () => void;
   onRouteStopSelect: (dotId: string) => void;
 };
 
@@ -141,12 +147,11 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     selectedHubMemberId = null,
     selectedRoute,
     activeRouteStopId,
-    detailPanelDismissed: _detailPanelDismissed,
     categoryFilterType = "all",
     onLocationSelect,
     onCloseExhibitorSelection,
     onClearActiveRouteStop,
-    onDismissRoutePanel,
+    onDismissRouteSelection,
     onRouteStopSelect,
   },
   forwardedRef
@@ -186,7 +191,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
   const isMdScreen = useMediaQuery("(min-width: 768px)");
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
   const markerVariant = getMapPointMarkerVariant(isMdScreen, isLargeScreen);
-  const filterPanel = useMapFilterPanel();
+  const openFilter = useMapOpenFilter();
   const [exhibitorPopupLayout, setExhibitorPopupLayout] =
     useState<ExhibitorPopupLayoutState | null>(null);
 
@@ -357,7 +362,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
       if (!map) return;
 
       const basePadding = getMapFocusPadding(getFocusBottomPadding());
-      const sidebarOpen = isLargeScreen && Boolean(filterPanel?.openFilter);
+      const sidebarOpen = isLargeScreen && Boolean(openFilter);
 
       focusMapOnRoute(map, route, {
         instant,
@@ -372,8 +377,29 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     [
       isLargeScreen,
       getFocusBottomPadding,
-      filterPanel?.openFilter,
+      openFilter,
     ]
+  );
+
+  const commitExhibitorPopupLayout = useCallback(
+    (
+      nextLayout: ExhibitorPopupLayoutState | null,
+      hasSelection: boolean
+    ) => {
+      setExhibitorPopupLayout((prevLayout) => {
+        const resolved = resolveExhibitorPopupLayoutTransition({
+          prevLayout,
+          nextLayout,
+          hasSelection,
+        });
+        if (!resolved) return null;
+        return {
+          anchor: resolved.anchor,
+          offset: resolved.offset,
+        };
+      });
+    },
+    []
   );
 
   const focusOnExhibitor = useCallback(
@@ -382,7 +408,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
       if (!map) return;
 
       if (!isLargeScreen) {
-        setExhibitorPopupLayout(null);
+        commitExhibitorPopupLayout(null, false);
         focusOnPoint(location.longitude, location.latitude, true);
         return;
       }
@@ -391,15 +417,23 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
         map,
         location.longitude,
         location.latitude,
-        { sidebarOpen: Boolean(filterPanel?.openFilter) }
+        { sidebarOpen: Boolean(openFilter) }
       );
 
-      setExhibitorPopupLayout({
-        anchor: layout.anchor,
-        offset: layout.offset,
-      });
+      commitExhibitorPopupLayout(
+        {
+          anchor: layout.anchor,
+          offset: layout.offset,
+        },
+        true
+      );
     },
-    [isLargeScreen, focusOnPoint, filterPanel?.openFilter]
+    [
+      isLargeScreen,
+      focusOnPoint,
+      openFilter,
+      commitExhibitorPopupLayout,
+    ]
   );
 
   useImperativeHandle(
@@ -417,7 +451,7 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     if (pathname !== "/map") return;
     if (selectedRoute) {
       onClearActiveRouteStop();
-      setExhibitorPopupLayout(null);
+      commitExhibitorPopupLayout(null, false);
       return;
     }
     onCloseExhibitorSelection();
@@ -426,20 +460,27 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     selectedRoute,
     onClearActiveRouteStop,
     onCloseExhibitorSelection,
+    commitExhibitorPopupLayout,
   ]);
 
   const handleDetailPanelDismiss = useCallback(() => {
-    if (activeRouteStopId) {
+    const action = resolveMapBackgroundDismissAction({
+      selectedLocation,
+      selectedRoute,
+      activeRouteStopId,
+    });
+
+    if (action === "clear-stop") {
       onClearActiveRouteStop();
-      setExhibitorPopupLayout(null);
+      commitExhibitorPopupLayout(null, false);
       return;
     }
-    if (selectedLocation) {
+    if (action === "clear-location") {
       onCloseExhibitorSelection();
       return;
     }
-    if (selectedRoute) {
-      onDismissRoutePanel();
+    if (action === "clear-route") {
+      onDismissRouteSelection();
     }
   }, [
     activeRouteStopId,
@@ -447,7 +488,8 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     selectedRoute,
     onClearActiveRouteStop,
     onCloseExhibitorSelection,
-    onDismissRoutePanel,
+    onDismissRouteSelection,
+    commitExhibitorPopupLayout,
   ]);
 
   const handleMapLoad = useCallback(
@@ -550,8 +592,8 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
   useEffect(() => {
     if (activeRouteStopId) return;
     if (!selectedRoute) return;
-    setExhibitorPopupLayout(null);
-  }, [activeRouteStopId, selectedRoute]);
+    commitExhibitorPopupLayout(null, false);
+  }, [activeRouteStopId, selectedRoute, commitExhibitorPopupLayout]);
 
   useEffect(() => {
     if (!mapLoaded || !initialFocusDoneRef.current) return;
@@ -564,8 +606,8 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
         if (location) {
           focusOnExhibitor(location);
         }
-      } else {
-        setExhibitorPopupLayout(null);
+      } else if (!activeRouteStopId) {
+        commitExhibitorPopupLayout(null, false);
       }
     }
 
@@ -582,9 +624,39 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     selectedRoute,
     selectedRouteObject,
     locations,
+    activeRouteStopId,
     focusOnExhibitor,
     focusOnRoute,
+    commitExhibitorPopupLayout,
   ]);
+
+  const markersData = selectMapMarkersData({
+    selectedRoute,
+    locationsGeoJSON,
+    routeStopsGeoJSON: routeStopsGeoJSON ?? null,
+  });
+  const routeLineData = selectRouteLineData({
+    selectedRoute,
+    routeGeoJSON: routeGeoJSON ?? null,
+  });
+  const markersSelectedId = selectMapMarkersSelectedId({
+    selectedRoute,
+    selectedLocation,
+    activeRouteStopId,
+  });
+  const showExhibitorPopup = shouldShowExhibitorPopup({
+    location: popupExhibitorLocation,
+    isLargeScreen,
+    layout: exhibitorPopupLayout,
+  });
+  const selectedRouteLinePaint = useMemo(
+    () =>
+      buildSelectedRouteLinePaint({
+        color: themeColors.primaryColor,
+        isLargeScreen,
+      }),
+    [themeColors.primaryColor, isLargeScreen]
+  );
 
   const handleMarkerClick = useCallback(
     (feature: MapPointFeature) => {
@@ -652,51 +724,24 @@ const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
         renderWorldCopies={false}
         onLoad={handleMapLoad}
       >
-        {!selectedRoute && (
-          <MapMarkers
-            data={locationsGeoJSON}
-            variant={markerVariant}
-            selectedId={selectedLocation}
-            onMarkerClick={handleMarkerClick}
+        <Source id="selected-route" type="geojson" data={routeLineData}>
+          <Layer
+            id="selected-route-line"
+            type="line"
+            paint={selectedRouteLinePaint}
           />
-        )}
+        </Source>
+        <MapMarkers
+          data={markersData}
+          variant={markerVariant}
+          selectedId={markersSelectedId}
+          onMarkerClick={handleMarkerClick}
+        />
 
-        {selectedRoute &&
-          routeGeoJSON &&
-          selectedRouteObject &&
-          routeStopsGeoJSON && (
-            <>
-              <Source id="selected-route" type="geojson" data={routeGeoJSON}>
-                <Layer
-                  id="selected-route-line"
-                  type="line"
-                  paint={{
-                    "line-color": themeColors.primaryColor,
-                    "line-width": isLargeScreen
-                      ? SELECTED_ROUTE_LINE_WIDTH.desktop
-                      : SELECTED_ROUTE_LINE_WIDTH.mobile,
-                    "line-dasharray": [8, 4],
-                  }}
-                />
-              </Source>
-              <MapMarkers
-                data={routeStopsGeoJSON}
-                variant={markerVariant}
-                selectedId={activeRouteStopId}
-                onMarkerClick={handleMarkerClick}
-              />
-            </>
-          )}
-
-        {popupExhibitorLocation &&
-          isLargeScreen &&
+        {showExhibitorPopup &&
+          popupExhibitorLocation &&
           exhibitorPopupLayout && (
             <ExhibitorPopup
-              key={
-                selectedRoute
-                  ? `route-stop-${activeRouteStopId}`
-                  : selectedLocation
-              }
               location={popupExhibitorLocation}
               tourMode={tourMode}
               selectedHubMemberId={selectedRoute ? null : selectedHubMemberId}

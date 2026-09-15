@@ -47,32 +47,18 @@ const SelectedRouteBlock = ({
 
       {isSelected && (
         <>
-          <div className="flex gap-[15px] lg:hidden">
+          <div className="flex gap-[15px]">
             <BigButton
               as="button"
-              mode="navbar"
-              fontSize="small"
+              mode="map"
+              fontSize="map"
               label="navigate"
               onClick={onNavigate}
             />
             <BigButton
               as="button"
-              mode="navbar"
-              fontSize="small"
-              label="download"
-              onClick={handleDownload}
-            />
-          </div>
-          <div className="hidden gap-[15px] lg:flex">
-            <BigButton
-              as="button"
-              mode="navbar"
-              label="navigate"
-              onClick={onNavigate}
-            />
-            <BigButton
-              as="button"
-              mode="navbar"
+              mode="map"
+              fontSize="map"
               label="download"
               onClick={handleDownload}
             />

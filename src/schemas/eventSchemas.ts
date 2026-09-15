@@ -1,5 +1,5 @@
 import { EVENT_TYPES } from "@/constants";
-import { ImageData, imageDataSchema } from "@/schemas/baseSchema";
+import { imageDataSchema, type ImageData } from "@/schemas/baseSchema";
 import {
   enhancedOrganizerSchema,
   enhancedUserSchema,

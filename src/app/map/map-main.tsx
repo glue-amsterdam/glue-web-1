@@ -49,13 +49,10 @@ const MapMain = ({ initialData }: MapMainProps) => {
     selectedLocation,
     selectedHubMemberId,
     selectedRoute,
-    detailPanelDismissed,
     activeRouteStopId,
-    dismissRoutePanel,
     closeExhibitorSelection,
     clearActiveRouteStop,
     clearSelectionIfHidden,
-    reopenDetailPanel,
     setActiveRouteStopId,
     setSelectedLocation,
     setSelectedRoute,
@@ -221,7 +218,6 @@ const MapMain = ({ initialData }: MapMainProps) => {
     (dotId: string) => {
       if (!selectedRouteObject) return;
 
-      reopenDetailPanel();
       setActiveRouteStopId(dotId);
 
       if (!isLargeScreen) {
@@ -233,7 +229,6 @@ const MapMain = ({ initialData }: MapMainProps) => {
     },
     [
       selectedRouteObject,
-      reopenDetailPanel,
       setActiveRouteStopId,
       isLargeScreen,
       navigateMap,
@@ -267,12 +262,11 @@ const MapMain = ({ initialData }: MapMainProps) => {
             selectedHubMemberId={selectedHubMemberId}
             selectedRoute={selectedRoute}
             activeRouteStopId={activeRouteStopId}
-            detailPanelDismissed={detailPanelDismissed}
             categoryFilterType={filters.type}
             onLocationSelect={setSelectedLocation}
             onCloseExhibitorSelection={closeExhibitorSelection}
             onClearActiveRouteStop={clearActiveRouteStop}
-            onDismissRoutePanel={dismissRoutePanel}
+            onDismissRouteSelection={closeExhibitorSelection}
             onRouteStopSelect={handleRouteStopSelect}
           />
         </Suspense>
@@ -281,7 +275,6 @@ const MapMain = ({ initialData }: MapMainProps) => {
 
       {mobileExhibitorFooterLocation && (
         <ExhibitorFooter
-          key={mobileExhibitorFooterLocation.id}
           location={mobileExhibitorFooterLocation}
           tourMode={tourMode}
           selectedHubMemberId={selectedRoute ? null : selectedHubMemberId}
