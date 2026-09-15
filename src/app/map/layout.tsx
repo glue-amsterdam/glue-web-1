@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { createClient } from "@/utils/supabase/server";
 import { loadMapPageData } from "@/lib/map/fetch-map-data";
 import MainContainer from "@/components/main-container";
 import MapNavbar from "@/components/navbar/map-navbar";
@@ -9,8 +8,7 @@ type MapLayoutProps = {
 };
 
 const MapLayout = async ({ children }: MapLayoutProps) => {
-  const supabase = await createClient();
-  const { initialData } = await loadMapPageData(supabase);
+  const { initialData } = await loadMapPageData();
 
   return (
     <main>

@@ -19,6 +19,10 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+export const revalidate = 3600;
+
+export const generateStaticParams = () => [];
+
 const isPublicExhibitor = (status: string, isSticky: boolean) =>
   isSticky || status === "accepted";
 
@@ -86,7 +90,9 @@ export default async function ExhibitorPage({ params }: PageProps) {
                 <li>{participant.name}</li>
               </ol>
             </nav>
-            <ExhibitorDetailView {...toDisplayPropsFromParticipant(participant)} />
+            <ExhibitorDetailView
+              {...toDisplayPropsFromParticipant(participant)}
+            />
             <BottomBlock />
           </StaggerEnterContainer>
         </main>

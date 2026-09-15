@@ -5,32 +5,20 @@ import { config } from "@/config";
 import { exhibitorsMetadata } from "@/lib/metadata";
 import { getCachedHomeExhibitorsHeader } from "@/lib/participants/cached-home-exhibitors-header";
 import { fetchExhibitorsPage } from "@/lib/participants/fetch-exhibitors";
-import { getValidFilterSlugs } from "@/lib/participants/participant-categories";
-import { getTheme } from "@/lib/theme";
+import { DEFAULT_EXHIBITORS_FILTERS } from "@/lib/participants/exhibitors-filters";
 import { buildExhibitorsCollectionJsonLd } from "@/lib/seo/build-json-ld";
-import {
-  filtersToQueryParams,
-  recordToSearchParams,
-  searchParamsToFilters,
-} from "@/lib/participants/exhibitors-url";
+import { filtersToQueryParams } from "@/lib/participants/exhibitors-url";
 import StaggerEnterContainer from "@/components/stagger-enter-container";
 import MainContainer from "@/components/main-container";
 import BottomBlock from "@/components/bottom-block";
 import SrOnlySanitized from "@/components/sr-only-sanitized";
 import LoadingSpinner from "../components/LoadingSpinner";
 
-type PageProps = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
-
 export const metadata: Metadata = exhibitorsMetadata;
+export const revalidate = 60;
 
-export default async function Page({ searchParams }: PageProps) {
-  const resolvedSearchParams = await searchParams;
-  const urlSearchParams = recordToSearchParams(resolvedSearchParams);
-  const theme = await getTheme();
-  const validSlugs = getValidFilterSlugs(theme.participantCategories);
-  const initialFilters = searchParamsToFilters(urlSearchParams, validSlugs);
+export default async function Page() {
+  const initialFilters = DEFAULT_EXHIBITORS_FILTERS;
   const [initialData, header] = await Promise.all([
     fetchExhibitorsPage(filtersToQueryParams(initialFilters, 0)),
     getCachedHomeExhibitorsHeader(),

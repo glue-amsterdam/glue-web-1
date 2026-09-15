@@ -1,16 +1,20 @@
 import { ExhibitorNotFoundError } from "@/lib/participants/exhibitor-detail-types";
-import { getExhibitorBySlug } from "@/lib/participants/get-exhibitor-by-slug";
-import { getExhibitorHubById } from "@/lib/participants/get-exhibitor-hub-by-id";
+import {
+  EXHIBITOR_DETAIL_CACHE_TAG,
+  EXHIBITOR_HUB_DETAIL_CACHE_TAG,
+  fetchExhibitorDetailByHubId,
+  fetchExhibitorDetailBySlug,
+} from "@/lib/participants/fetch-exhibitor-detail";
 import { getExhibitorLink } from "@/lib/participants/exhibitors-filters";
-import type { MapLocationDetail } from "@/lib/map/types";
-import { createClient } from "@/utils/supabase/server";
+import { MAP_DATA_CACHE_TAG, type MapLocationDetail } from "@/lib/map/types";
+import { createPublicSupabaseClient } from "@/utils/supabase/public";
+import { unstable_cache } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 const buildDetailFromSlug = async (
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  slug: string
+  slug: string,
 ): Promise<MapLocationDetail> => {
-  const exhibitor = await getExhibitorBySlug(supabase, slug);
+  const exhibitor = await fetchExhibitorDetailBySlug(slug);
   return {
     imageUrl: exhibitor.carouselSlides[0]?.imageUrl ?? null,
     description: exhibitor.description ?? null,
@@ -20,10 +24,9 @@ const buildDetailFromSlug = async (
 };
 
 const buildDetailFromHub = async (
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  hubId: string
+  hubId: string,
 ): Promise<MapLocationDetail> => {
-  const hub = await getExhibitorHubById(supabase, hubId);
+  const hub = await fetchExhibitorDetailByHubId(hubId);
   return {
     imageUrl: hub.members[0]?.imageUrl ?? null,
     description: hub.description,
@@ -38,14 +41,9 @@ const buildDetailFromHub = async (
   };
 };
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id: mapInfoId } = await params;
-    const supabase = await createClient();
-
+const getCachedMapLocationDetail = unstable_cache(
+  async (mapInfoId: string): Promise<MapLocationDetail> => {
+    const supabase = createPublicSupabaseClient();
     const { data: mapInfo, error: mapInfoError } = await supabase
       .from("map_info")
       .select("id, user_id")
@@ -54,7 +52,7 @@ export async function GET(
 
     if (mapInfoError) throw mapInfoError;
     if (!mapInfo) {
-      return NextResponse.json({ error: "Location not found" }, { status: 404 });
+      throw new ExhibitorNotFoundError("Location not found");
     }
 
     const { data: hub, error: hubError } = await supabase
@@ -64,13 +62,8 @@ export async function GET(
       .maybeSingle();
 
     if (hubError) throw hubError;
-
     if (hub?.id) {
-      const detail = await buildDetailFromHub(supabase, hub.id);
-      return NextResponse.json(detail, {
-        status: 200,
-        headers: { "Cache-Control": "private, max-age=60" },
-      });
+      return buildDetailFromHub(hub.id);
     }
 
     const { data: participant, error: participantError } = await supabase
@@ -81,15 +74,35 @@ export async function GET(
 
     if (participantError) throw participantError;
     if (!participant?.slug) {
-      return NextResponse.json({ error: "Location not found" }, { status: 404 });
+      throw new ExhibitorNotFoundError("Location not found");
     }
 
-    const detail = await buildDetailFromSlug(supabase, participant.slug);
+    return buildDetailFromSlug(participant.slug);
+  },
+  ["map-location-detail"],
+  {
+    tags: [
+      MAP_DATA_CACHE_TAG,
+      EXHIBITOR_DETAIL_CACHE_TAG,
+      EXHIBITOR_HUB_DETAIL_CACHE_TAG,
+    ],
+    revalidate: 600,
+  },
+);
+
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id: mapInfoId } = await params;
+    const detail = await getCachedMapLocationDetail(mapInfoId);
 
     return NextResponse.json(detail, {
       status: 200,
       headers: {
-        "Cache-Control": "private, max-age=60",
+        "Cache-Control":
+          "public, max-age=60, s-maxage=600, stale-while-revalidate=86400",
       },
     });
   } catch (error) {
@@ -99,7 +112,7 @@ export async function GET(
     console.error("Error fetching map location detail:", error);
     return NextResponse.json(
       { error: "Failed to fetch location detail" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

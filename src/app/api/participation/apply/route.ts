@@ -25,7 +25,7 @@ const PARTICIPANT_PLAN_TYPE = "participant" as const;
 
 const ensureParticipantPlan = async (
   supabase: Awaited<ReturnType<typeof createClient>>,
-  planId: string
+  planId: string,
 ) => {
   const { data: plan, error } = await supabase
     .from("plans")
@@ -50,9 +50,9 @@ export async function POST(request: Request) {
 
   const intent =
     typeof json === "object" &&
-      json !== null &&
-      "intent" in json &&
-      typeof (json as { intent: string }).intent === "string"
+    json !== null &&
+    "intent" in json &&
+    typeof (json as { intent: string }).intent === "string"
       ? (json as { intent: string }).intent
       : "new";
 
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Validation error", details: parsed.error.flatten() },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
           error:
             "No participant profile found. Submit a new application instead.",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
           error:
             "You are already an active participant. Manage your profile from the dashboard.",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -107,7 +107,7 @@ export async function POST(request: Request) {
           error:
             "Your participant application is still under review. Reactivation is not available yet.",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -117,7 +117,7 @@ export async function POST(request: Request) {
           error:
             "Your reactivation request is already pending review by administrators.",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -144,10 +144,7 @@ export async function POST(request: Request) {
       .eq("user_id", user.id);
 
     if (updateError) {
-      return NextResponse.json(
-        { error: updateError.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
     const { data: profile } = await admin
@@ -190,7 +187,7 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: "Validation error", details: parsed.error.flatten() },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -236,7 +233,10 @@ export async function POST(request: Request) {
         .eq("id", existingVisitor.id);
 
       if (visitorError) {
-        return NextResponse.json({ error: visitorError.message }, { status: 500 });
+        return NextResponse.json(
+          { error: visitorError.message },
+          { status: 500 },
+        );
       }
     } else {
       const { error: visitorError } = await admin.from("visitor_data").insert({
@@ -251,7 +251,10 @@ export async function POST(request: Request) {
       });
 
       if (visitorError) {
-        return NextResponse.json({ error: visitorError.message }, { status: 500 });
+        return NextResponse.json(
+          { error: visitorError.message },
+          { status: 500 },
+        );
       }
     }
 
@@ -286,7 +289,8 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   const displayName = getVisitorDisplayName(visitorRow ?? {});
-  const userEmail = user.email ?? visitorRow?.email ?? data.glue_communication_email;
+  const userEmail =
+    user.email ?? visitorRow?.email ?? data.glue_communication_email;
 
   const { data: existingParticipant } = await admin
     .from("participant_details")
@@ -301,7 +305,7 @@ export async function POST(request: Request) {
           error:
             "Inactive participants must use the reactivation flow instead of upgrade.",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -311,7 +315,7 @@ export async function POST(request: Request) {
           error:
             "Your participant application is still under review. Upgrade is not available yet.",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
   }
@@ -327,7 +331,7 @@ export async function POST(request: Request) {
           error:
             "Your participant application is already under review. Please wait for moderator approval.",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -337,7 +341,7 @@ export async function POST(request: Request) {
           error:
             "You already have a participant profile. Use the reactivation flow if you need to re-subscribe.",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -346,7 +350,7 @@ export async function POST(request: Request) {
         error:
           "You are already an active participant. Manage your profile from the dashboard.",
       },
-      { status: 409 }
+      { status: 409 },
     );
   }
 
@@ -354,7 +358,7 @@ export async function POST(request: Request) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
-  const slug = await generateUniqueSlug(baseSlug || user.id);
+  const slug = await generateUniqueSlug(admin, baseSlug || user.id);
 
   const participantPayload = {
     user_id: user.id,
@@ -400,12 +404,6 @@ export async function POST(request: Request) {
     }
   }
 
-  const { data: existingInvoice } = await admin
-    .from("invoice_data")
-    .select("user_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
   const invoicePayload = {
     user_id: user.id,
     invoice_company_name: data.invoice_company_name,
@@ -416,12 +414,6 @@ export async function POST(request: Request) {
     invoice_extra: data.invoice_extra ?? null,
   };
 
-  if (existingInvoice) {
-    await admin.from("invoice_data").update(invoicePayload).eq("user_id", user.id);
-  } else {
-    await admin.from("invoice_data").insert(invoicePayload);
-  }
-
   const mapPayload = {
     user_id: user.id,
     no_address: data.no_address,
@@ -431,17 +423,27 @@ export async function POST(request: Request) {
     exhibition_space_preference: data.exhibition_space_preference ?? null,
   };
 
-  const { data: existingMap } = await admin
-    .from("map_info")
-    .select("user_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const [{ data: existingInvoice }, { data: existingMap }] = await Promise.all([
+    admin
+      .from("invoice_data")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    admin
+      .from("map_info")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
 
-  if (existingMap) {
-    await admin.from("map_info").update(mapPayload).eq("user_id", user.id);
-  } else {
-    await admin.from("map_info").insert(mapPayload);
-  }
+  await Promise.all([
+    existingInvoice
+      ? admin.from("invoice_data").update(invoicePayload).eq("user_id", user.id)
+      : admin.from("invoice_data").insert(invoicePayload),
+    existingMap
+      ? admin.from("map_info").update(mapPayload).eq("user_id", user.id)
+      : admin.from("map_info").insert(mapPayload),
+  ]);
 
   const notificationPayload = {
     user_id: user.id,
@@ -467,28 +469,31 @@ export async function POST(request: Request) {
     visible_websites: data.visible_websites ?? undefined,
   };
 
-  await sendModeratorParticipantNotification(
-    notificationPayload as Parameters<typeof sendModeratorParticipantNotification>[0]
-  );
+  const participantEmailPromise = userEmail
+    ? sendParticipantRegistrationEmail({
+        email: userEmail,
+        user_name: displayName,
+      })
+    : Promise.resolve();
 
-  if (userEmail) {
-    await sendParticipantRegistrationEmail({
-      email: userEmail,
-      user_name: displayName,
-    });
-  }
-
-  await ensureVisitorDataForAuthUser(
-    user.id,
-    {
-      email: userEmail,
-      displayName,
-      userName: displayName,
-    },
-    user.email ?? userEmail
-  );
-
-  await revalidateParticipantVisibilityCaches(admin);
+  await Promise.all([
+    sendModeratorParticipantNotification(
+      notificationPayload as Parameters<
+        typeof sendModeratorParticipantNotification
+      >[0],
+    ),
+    participantEmailPromise,
+    ensureVisitorDataForAuthUser(
+      user.id,
+      {
+        email: userEmail,
+        displayName,
+        userName: displayName,
+      },
+      user.email ?? userEmail,
+    ),
+    revalidateParticipantVisibilityCaches(admin),
+  ]);
 
   return NextResponse.json({ success: true, userId: user.id });
 }

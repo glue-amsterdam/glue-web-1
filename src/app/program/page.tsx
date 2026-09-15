@@ -8,24 +8,16 @@ import { config } from "@/config";
 import { getCachedEventHeaderTitle } from "@/lib/events/cached-event-header-title";
 import { programMetadata } from "@/lib/metadata";
 import { fetchProgramPage } from "@/lib/program/fetch-program-page";
+import { DEFAULT_PROGRAM_FILTERS } from "@/lib/program/program-filters";
 import { buildProgramCollectionJsonLd } from "@/lib/seo/build-json-ld";
-import {
-  filtersToQueryParams,
-  recordToSearchParams,
-  searchParamsToFilters,
-} from "@/lib/program/program-url";
+import { filtersToQueryParams } from "@/lib/program/program-url";
 import LoadingSpinner from "../components/LoadingSpinner";
 
-type PageProps = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
-
 export const metadata: Metadata = programMetadata;
+export const revalidate = 60;
 
-export default async function Page({ searchParams }: PageProps) {
-  const resolvedSearchParams = await searchParams;
-  const urlSearchParams = recordToSearchParams(resolvedSearchParams);
-  const initialFilters = searchParamsToFilters(urlSearchParams);
+export default async function Page() {
+  const initialFilters = DEFAULT_PROGRAM_FILTERS;
   const [initialData, header] = await Promise.all([
     fetchProgramPage(filtersToQueryParams(initialFilters, 0)),
     getCachedEventHeaderTitle(),
