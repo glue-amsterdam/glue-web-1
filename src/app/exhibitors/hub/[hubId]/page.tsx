@@ -16,6 +16,10 @@ interface PageProps {
   params: Promise<{ hubId: string }>;
 }
 
+export const revalidate = 3600;
+
+export const generateStaticParams = () => [];
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {

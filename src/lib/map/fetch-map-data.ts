@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import { createPublicSupabaseClient } from "@/utils/supabase/public";
 import { buildMapLocations } from "./build-map-locations";
 import { fetchMapRoutes } from "./fetch-map-routes";
@@ -12,7 +13,7 @@ import type { MapPageData, TourStatusRow } from "./types";
 import { MAP_DATA_CACHE_TAG } from "./types";
 
 export const getTourStatusRow = async (
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
 ): Promise<TourStatusRow> => {
   const { data, error } = await supabase
     .from("tour_status")
@@ -29,8 +30,7 @@ export const getTourStatusRow = async (
   }
 
   return {
-    current_tour_status:
-      data.current_tour_status === "older" ? "older" : "new",
+    current_tour_status: data.current_tour_status === "older" ? "older" : "new",
     updated_at: data.updated_at,
     previous_tour_map_info: data.previous_tour_map_info,
   };
@@ -39,7 +39,7 @@ export const getTourStatusRow = async (
 const fetchMapPageDataWithClient = async (
   supabase: SupabaseClient,
   tourStatus: TourStatusRow["current_tour_status"],
-  previousTourMapInfo: unknown
+  previousTourMapInfo: unknown,
 ): Promise<MapPageData> => {
   const routes = await fetchMapRoutes(supabase);
 
@@ -51,7 +51,7 @@ const fetchMapPageDataWithClient = async (
         ? await enrichLegacyLocationsWithHubIds(
             supabase,
             previousTourMapInfo,
-            snapshotLocations
+            snapshotLocations,
           )
         : snapshotLocations;
 
@@ -63,7 +63,7 @@ const fetchMapPageDataWithClient = async (
     }
 
     console.warn(
-      "Tour is older but map snapshot is missing; falling back to live build with was_active_last_year filter."
+      "Tour is older but map snapshot is missing; falling back to live build with was_active_last_year filter.",
     );
 
     const locations = await buildMapLocations(supabase, "older");
@@ -90,25 +90,26 @@ export const getCachedMapPageData = unstable_cache(
   async (
     _cacheKey: string,
     tourStatus: TourStatusRow["current_tour_status"],
-    previousTourMapInfo: unknown
+    previousTourMapInfo: unknown,
   ): Promise<MapPageData> => {
     const supabase = createPublicSupabaseClient();
     return fetchMapPageDataWithClient(
       supabase,
       tourStatus,
-      previousTourMapInfo
+      previousTourMapInfo,
     );
   },
   ["map-page-data"],
-  { tags: [MAP_DATA_CACHE_TAG], revalidate: 60 }
+  { tags: [MAP_DATA_CACHE_TAG], revalidate: 60 },
 );
 
-export const loadMapPageData = async (supabase: SupabaseClient) => {
+export const loadMapPageData = cache(async () => {
+  const supabase = createPublicSupabaseClient();
   const tourRow = await getTourStatusRow(supabase);
   const initialData = await getCachedMapPageData(
     tourRow.updated_at,
     tourRow.current_tour_status,
-    tourRow.previous_tour_map_info
+    tourRow.previous_tour_map_info,
   );
   return { tourRow, initialData };
-};
+});

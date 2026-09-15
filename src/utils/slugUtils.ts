@@ -1,8 +1,10 @@
 import { nanoid } from "nanoid";
-import { createClient } from "@/utils/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-export async function generateUniqueSlug(baseSlug: string): Promise<string> {
-  const supabase = await createClient();
+export async function generateUniqueSlug(
+  supabase: SupabaseClient,
+  baseSlug: string,
+): Promise<string> {
   let slug = baseSlug;
   let isUnique = false;
   let attempts = 0;

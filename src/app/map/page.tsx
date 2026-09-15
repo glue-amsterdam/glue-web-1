@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { createClient } from "@/utils/supabase/server";
 import { loadMapPageData } from "@/lib/map/fetch-map-data";
 import { mapMetadata } from "@/lib/metadata";
 import { buildMapPageJsonLd } from "@/lib/seo/build-json-ld";
@@ -8,10 +7,10 @@ import MapClientPage from "./map-client-page";
 import MainContainer from "@/components/main-container";
 
 export const metadata: Metadata = mapMetadata;
+export const revalidate = 60;
 
 const MapPage = async () => {
-  const supabase = await createClient();
-  const { initialData } = await loadMapPageData(supabase);
+  const { initialData } = await loadMapPageData();
   const structuredData = buildMapPageJsonLd(initialData.locations);
 
   return (

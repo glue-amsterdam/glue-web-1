@@ -16,6 +16,10 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
+export const revalidate = 3600;
+
+export const generateStaticParams = () => [];
+
 export const generateMetadata = async ({
   params,
 }: PageProps): Promise<Metadata> => {
@@ -25,8 +29,7 @@ export const generateMetadata = async ({
     const event = await fetchProgramDetail(id);
     const title = `GLUE ${config.cityName} - ${event.name}`;
     const description =
-      event.description ||
-      `${event.name} at GLUE ${config.cityName} program.`;
+      event.description || `${event.name} at GLUE ${config.cityName} program.`;
 
     return buildEntityMetadata({
       title,
