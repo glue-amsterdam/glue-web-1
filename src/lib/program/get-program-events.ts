@@ -12,6 +12,7 @@ import type { EventType } from "@/schemas/eventSchemas";
 import type { ProgramListItem } from "./program-types";
 import {
   buildProgramLocationBadgeIndex,
+  loadInheritedHubInputsByUserId,
   organizerBadgeFromParticipant,
   resolveOrganizerBadge,
 } from "./resolve-program-organizer-badge";
@@ -139,11 +140,22 @@ export const loadProgramListItems = async (
 
   const tourStatus: TourStatus =
     currentTourStatus === "older" ? "older" : "new";
-  const badgeByLocationId = await buildProgramLocationBadgeIndex(
-    supabase,
-    validEvents.map((event) => event.location_id),
-    tourStatus
-  );
+  const organizerIds = validEvents
+    .map((event) => event.organizer_id)
+    .filter((id): id is string => Boolean(id));
+  const [badgeByLocationId, inheritedHubsByOrganizerId] = await Promise.all([
+    buildProgramLocationBadgeIndex(
+      supabase,
+      validEvents.map((event) => event.location_id),
+      tourStatus
+    ),
+    loadInheritedHubInputsByUserId(
+      supabase,
+      organizerIds,
+      tourStatus,
+      categories
+    ),
+  ]);
 
   return validEvents.map((event) => {
     const locationEmbed = normalizeLocationEmbed(event.location);
@@ -165,7 +177,12 @@ export const loadProgramListItems = async (
     const organizerFallback = organizerBadgeFromParticipant(
       category,
       displayNumber,
-      categories
+      categories,
+      {
+        hubs: organizer?.user_id
+          ? (inheritedHubsByOrganizerId.get(organizer.user_id) ?? [])
+          : [],
+      }
     );
     const badge = resolveOrganizerBadge(
       event.location_id,
