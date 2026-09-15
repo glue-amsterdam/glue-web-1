@@ -59,6 +59,7 @@ export default async function Page() {
       <StaggerEnterContainer variant="enter">
         <Hero
           videoUrl={homeHeroData.videoUrl}
+          videoUrlMobile={homeHeroData.videoUrlMobile}
           posterUrl={homeHeroData.posterUrl}
           description={homeHeroData.description}
         />

@@ -11,6 +11,7 @@ export const EMPTY_HOME_HERO: HomeHeroData = {
   id: null,
   description: "",
   videoUrl: "",
+  videoUrlMobile: "",
   posterUrl: "",
 };
 
@@ -19,7 +20,7 @@ export const fetchHomeHero = async (
 ): Promise<HomeHeroData> => {
   const { data, error } = await supabase
     .from("home_hero")
-    .select("id, description, video_url, poster_url")
+    .select("id, description, video_url, video_url_mobile, poster_url")
     .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -34,6 +35,7 @@ export const fetchHomeHero = async (
     id: null,
     description: getDefaultHeroDescription(config.cityName),
     videoUrl: legacy.videoUrl,
+    videoUrlMobile: legacy.videoUrlMobile,
     posterUrl: legacy.posterUrl,
   };
 };

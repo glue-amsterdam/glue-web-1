@@ -9,7 +9,7 @@ export const getDefaultHeroDescription = (cityName: string): string =>
 
 export const getLegacyHeroMediaUrls = (
   supabase: SupabaseClient
-): { videoUrl: string; posterUrl: string } => {
+): { videoUrl: string; videoUrlMobile: string; posterUrl: string } => {
   const {
     data: { publicUrl: videoUrl },
   } = supabase.storage.from(config.bucketName).getPublicUrl(LEGACY_HOME_VIDEO_PATH);
@@ -18,5 +18,5 @@ export const getLegacyHeroMediaUrls = (
     data: { publicUrl: posterUrl },
   } = supabase.storage.from(config.bucketName).getPublicUrl(LEGACY_HOME_POSTER_PATH);
 
-  return { videoUrl, posterUrl };
+  return { videoUrl, videoUrlMobile: videoUrl, posterUrl };
 };

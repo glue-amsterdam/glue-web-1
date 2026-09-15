@@ -4,11 +4,12 @@ import HeroVideo from "@/components/home/hero-section/hero-video";
 
 type Props = {
   videoUrl: string;
+  videoUrlMobile: string;
   posterUrl: string;
   description: string;
 };
 
-const Hero = ({ videoUrl, posterUrl, description }: Props) => {
+const Hero = ({ videoUrl, videoUrlMobile, posterUrl, description }: Props) => {
   const { cityName } = config;
   const videoAriaLabel = `Video introducing GLUE ${cityName} design route from last year`;
 
@@ -20,7 +21,8 @@ const Hero = ({ videoUrl, posterUrl, description }: Props) => {
       </h1>
       <div className="relative mx-auto h-[413px] w-full lg:h-[630px] 2xl:h-[735px]">
         <HeroVideo
-          src={videoUrl}
+          srcDesktop={videoUrl}
+          srcMobile={videoUrlMobile}
           poster={posterUrl}
           ariaLabel={videoAriaLabel}
         />

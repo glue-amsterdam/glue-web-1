@@ -39,7 +39,10 @@ export { PUBLIC_MEDIA_CACHE_REVALIDATE_SECONDS as HOME_HERO_REVALIDATE_SECONDS }
 export type HomeHeroData = {
   id: string | null;
   description: string;
+  /** Desktop hero video (md+). */
   videoUrl: string;
+  /** Mobile hero video (< md). Empty falls back to videoUrl. */
+  videoUrlMobile: string;
   posterUrl: string;
 };
 

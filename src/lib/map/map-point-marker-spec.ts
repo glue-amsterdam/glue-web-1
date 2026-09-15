@@ -24,7 +24,7 @@ export type MapPointMarkerDimensions = {
  */
 export const PRINT_ROUNDED_NUMBER = {
   diameterPx: 72,
-  fontSizePx: 32,
+  fontSizePx: 42, // ~72 * (15/26), same optical fill as map UI badges
   textOffsetYPx: 1,
   fontFamily: "Lausanne, sans-serif",
 } as const;
