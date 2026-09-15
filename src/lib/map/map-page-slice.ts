@@ -1,8 +1,21 @@
 import type { MapLocation, MapRoute } from "@/lib/map/types";
 
+export type MapLocationSelectOptions = {
+  clearSearch?: boolean;
+  memberUserId?: string;
+  source?: "map" | "list" | "search";
+};
+
+export type MapRouteSelectOptions = {
+  source?: "map" | "list" | "search";
+};
+
 export type MapPageSelectionHandlers = {
-  onLocationSelect: (locationId: string, options?: unknown) => void;
-  onRouteSelect: (routeId: string, options?: unknown) => void;
+  onLocationSelect: (
+    locationId: string,
+    options?: MapLocationSelectOptions
+  ) => void;
+  onRouteSelect: (routeId: string, options?: MapRouteSelectOptions) => void;
   onDownloadSelectedRoute: () => void | Promise<void>;
 };
 

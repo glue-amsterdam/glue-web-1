@@ -4,7 +4,12 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { ExhibitorsFilterType } from "@/lib/participants/exhibitors-filters";
 import type { MapFilters } from "@/lib/map/map-filters";
-import { mergeMapPageSlice } from "@/lib/map/map-page-slice";
+import {
+  mergeMapPageSlice,
+  type MapLocationSelectOptions,
+  type MapPageSliceData,
+  type MapRouteSelectOptions,
+} from "@/lib/map/map-page-slice";
 import type { MapUrlSelection } from "@/lib/map/map-url";
 import type { MapLocation, MapRoute } from "@/lib/map/types";
 
@@ -24,30 +29,12 @@ export type MapNavigationHandlers = {
   selectRouteLocal: (routeId: string) => void;
 };
 
-export type MapLocationSelectOptions = {
-  clearSearch?: boolean;
-  memberUserId?: string;
-  source?: "map" | "list" | "search";
+export type {
+  MapLocationSelectOptions,
+  MapRouteSelectOptions,
 };
 
-export type MapRouteSelectOptions = {
-  source?: "map" | "list" | "search";
-};
-
-export type MapPageSlice = {
-  routes: MapRoute[];
-  filteredLocationsForList: MapLocation[];
-  searchFilteredLocations: MapLocation[];
-  filteredRoutesForList: MapRoute[];
-  selectedLocation: string | null;
-  selectedRoute: string | null;
-  onLocationSelect: (
-    locationId: string,
-    options?: MapLocationSelectOptions
-  ) => void;
-  onRouteSelect: (routeId: string, options?: MapRouteSelectOptions) => void;
-  onDownloadSelectedRoute: () => void | Promise<void>;
-};
+export type MapPageSlice = MapPageSliceData;
 
 export type MapFilterPanelSlice = {
   openFilter: MapFilterId | null;
