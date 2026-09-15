@@ -16,6 +16,13 @@ export type AdminUserListItem = {
   participantCategory?: string;
   participantReactivationRequested?: boolean;
   participantReactivationStatus?: string | null;
+  hasVisitorData?: boolean;
+  visitorFirstName?: string | null;
+  visitorLastName?: string | null;
+  visitorBirthDate?: string | null;
+  visitorAreaId?: string | null;
+  visitorAreaName?: string | null;
+  visitorCreatedAt?: string | null;
 };
 
 export type AdminVisitorData = {

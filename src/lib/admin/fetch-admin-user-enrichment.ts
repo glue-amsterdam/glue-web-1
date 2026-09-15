@@ -19,11 +19,15 @@ export type VisitorDataRow = {
   last_name: string | null;
   full_name: string | null;
   display_name: string | null;
+  birth_date: string | null;
+  area_id: string | null;
+  created_at: string | null;
 };
 
 export type AdminUserEnrichment = {
   participantByUserId: Map<string, ParticipantDetailRow>;
   visitorByUserId: Map<string, VisitorDataRow>;
+  areaNameById: Map<string, string>;
   modByUserId: Map<string, boolean>;
   stickyParticipantIds: Set<string>;
 };
@@ -44,6 +48,7 @@ export const fetchAdminUserEnrichment = async (
 ): Promise<AdminUserEnrichment> => {
   const participantByUserId = new Map<string, ParticipantDetailRow>();
   const visitorByUserId = new Map<string, VisitorDataRow>();
+  const areaNameById = new Map<string, string>();
   const modByUserId = new Map<string, boolean>();
   const stickyParticipantIds = new Set<string>();
 
@@ -51,6 +56,7 @@ export const fetchAdminUserEnrichment = async (
     return {
       participantByUserId,
       visitorByUserId,
+      areaNameById,
       modByUserId,
       stickyParticipantIds,
     };
@@ -79,7 +85,7 @@ export const fetchAdminUserEnrichment = async (
         admin
           .from("visitor_data")
           .select(
-            "id, auth_user_id, email, first_name, last_name, full_name, display_name"
+            "id, auth_user_id, email, first_name, last_name, full_name, display_name, birth_date, area_id, created_at"
           )
           .in("auth_user_id", ids),
         admin
@@ -108,10 +114,12 @@ export const fetchAdminUserEnrichment = async (
       );
     }
 
-    for (const row of (participantsResult.data ?? []) as unknown as ParticipantDetailRow[]) {
+    for (const row of (participantsResult.data ??
+      []) as unknown as ParticipantDetailRow[]) {
       participantByUserId.set(row.user_id, row);
     }
-    for (const row of (visitorsResult.data ?? []) as unknown as VisitorDataRow[]) {
+    for (const row of (visitorsResult.data ??
+      []) as unknown as VisitorDataRow[]) {
       if (row.auth_user_id) {
         visitorByUserId.set(row.auth_user_id, row);
       }
@@ -124,9 +132,37 @@ export const fetchAdminUserEnrichment = async (
     }
   }
 
+  const areaIds = [
+    ...new Set(
+      [...visitorByUserId.values()]
+        .map((visitor) => visitor.area_id?.trim())
+        .filter((areaId): areaId is string => Boolean(areaId))
+    ),
+  ];
+
+  if (areaIds.length > 0) {
+    for (const areaIdChunk of chunk(areaIds, IN_CHUNK_SIZE)) {
+      const areasResult = await admin
+        .from("visitor_areas")
+        .select("id, name")
+        .in("id", areaIdChunk);
+
+      if (areasResult.error) {
+        throw new Error(
+          `Failed to fetch visitor areas: ${areasResult.error.message}`
+        );
+      }
+
+      for (const row of areasResult.data ?? []) {
+        areaNameById.set(row.id, row.name);
+      }
+    }
+  }
+
   return {
     participantByUserId,
     visitorByUserId,
+    areaNameById,
     modByUserId,
     stickyParticipantIds,
   };
