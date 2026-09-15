@@ -3,12 +3,15 @@
 import { useCallback, useMemo } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { MapRoute } from "@/lib/map/types";
+import { openRouteInGoogleMaps } from "@/lib/map/utils";
 import { cn } from "@/lib/utils";
+import SelectedRouteBlock from "./selected-route-block";
 
 type RoutesListProps = {
   routes: MapRoute[];
   selectedRoute: string | null;
   onRouteSelect: (routeId: string) => void;
+  onDownloadSelectedRoute?: () => void | Promise<void>;
   variant?: "sidebar" | "panel";
   className?: string;
   onRouteSelected?: () => void;
@@ -18,6 +21,7 @@ const RoutesList = ({
   routes,
   selectedRoute,
   onRouteSelect,
+  onDownloadSelectedRoute,
   variant = "sidebar",
   className,
   onRouteSelected,
@@ -35,34 +39,43 @@ const RoutesList = ({
     [onRouteSelect, onRouteSelected]
   );
 
-  const routeButtonClassName = cn(
-    "w-full text-left flex gap-[15px] cursor-pointer",
+  const handleNavigate = useCallback((route: MapRoute) => {
+    openRouteInGoogleMaps(route);
+  }, []);
+
+  const handleDownload = useCallback(() => {
+    void onDownloadSelectedRoute?.();
+  }, [onDownloadSelectedRoute]);
+
+  const nameClassName = cn(
+    variant === "panel" && "truncate",
+    variant === "sidebar" && "whitespace-normal wrap-break-word"
+  );
+
+  const itemClassName = cn(
+    "w-full max-w-full",
     variant === "panel" && "max-w-[90%]",
     variant === "sidebar" && "max-w-[237px]"
   );
 
   const listContent = (
-    <ul className="py-[30px] flex flex-col gap-[30px]">
-      {sortedRoutes.map((route) => (
-        <li key={route.id}>
-          <button
-            type="button"
-            onClick={() => handleRouteClick(route.id)}
-            aria-pressed={selectedRoute === route.id}
-            className={routeButtonClassName}
-          >
-            <p
-              className={cn(
-                "min-w-0 flex-1 versal-body-text",
-                variant === "panel" && "truncate",
-                variant === "sidebar" && "whitespace-normal wrap-break-word"
-              )}
-            >
-              {route.name}
-            </p>
-          </button>
-        </li>
-      ))}
+    <ul className="flex flex-col gap-[30px] py-[30px]">
+      {sortedRoutes.map((route) => {
+        const isSelected = selectedRoute === route.id;
+
+        return (
+          <li key={route.id} className={itemClassName}>
+            <SelectedRouteBlock
+              routeName={route.name}
+              isSelected={isSelected}
+              onSelect={() => handleRouteClick(route.id)}
+              onNavigate={() => handleNavigate(route)}
+              onDownload={handleDownload}
+              nameClassName={nameClassName}
+            />
+          </li>
+        );
+      })}
       {sortedRoutes.length === 0 && (
         <li className="base-text-size text-(--gray-color)">
           No routes available.
@@ -76,7 +89,7 @@ const RoutesList = ({
   }
 
   return (
-    <ScrollArea className={cn("flex-1 min-h-0", className)}>
+    <ScrollArea className={cn("min-h-0 flex-1", className)}>
       {listContent}
     </ScrollArea>
   );

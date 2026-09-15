@@ -40,7 +40,7 @@ const RouteStopBadge = ({ stop }: RouteStopBadgeProps) => {
     return (
       <RoundedNumber
         type={stop.participantType}
-        participant_n={String(stop.routeStep)}
+        participant_n={stop.label}
       />
     );
   }
@@ -55,7 +55,7 @@ const RouteStopBadge = ({ stop }: RouteStopBadgeProps) => {
       aria-hidden
     >
       <span className="m-0 block min-w-[1ch] text-center translate-y-[1.5px]">
-        {stop.routeStep}
+        {stop.label}
       </span>
     </div>
   );

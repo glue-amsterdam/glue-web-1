@@ -34,6 +34,7 @@ const MapStoreEarlyHydrator = ({ initialData }: MapStoreEarlyHydratorProps) => {
       selectedRoute: null,
       onLocationSelect: () => { },
       onRouteSelect: () => { },
+      onDownloadSelectedRoute: () => { },
     });
   }, [initialData, filters, setPage]);
 

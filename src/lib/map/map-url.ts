@@ -96,7 +96,9 @@ export const buildMapPageUrl = (
     options?.mobile &&
     selection?.route &&
     !selection?.place &&
-    !selection?.clearSelection
+    !selection?.clearSelection &&
+    // Keep browse params when the routes panel should stay open with the selection.
+    filters.view === "none"
   ) {
     return `${pathname}?route=${encodeURIComponent(selection.route)}`;
   }

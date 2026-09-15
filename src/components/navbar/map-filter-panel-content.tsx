@@ -126,6 +126,8 @@ export const MapFilterPanelContent = ({
     onRouteSelected,
   } = filterPanelStore;
 
+  const onDownloadSelectedRoute = mapPageStore?.onDownloadSelectedRoute;
+
   if (filterId === "exhibitors") {
     if (!mapPageStore) return null;
 
@@ -159,6 +161,7 @@ export const MapFilterPanelContent = ({
               routes={mapPageStore.filteredRoutesForList}
               selectedRoute={mapPageStore.selectedRoute}
               onRouteSelect={onRouteListSelect}
+              onDownloadSelectedRoute={onDownloadSelectedRoute}
               variant="sidebar"
               onRouteSelected={onRouteSelected}
             />
@@ -176,6 +179,7 @@ export const MapFilterPanelContent = ({
         routes={mapPageStore.filteredRoutesForList}
         selectedRoute={mapPageStore.selectedRoute}
         onRouteSelect={onRouteListSelect}
+        onDownloadSelectedRoute={onDownloadSelectedRoute}
         variant={variant}
         className={className}
         onRouteSelected={onRouteSelected}

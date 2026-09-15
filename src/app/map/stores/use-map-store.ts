@@ -40,6 +40,7 @@ export type MapPageSlice = {
     options?: MapLocationSelectOptions
   ) => void;
   onRouteSelect: (routeId: string) => void;
+  onDownloadSelectedRoute: () => void | Promise<void>;
 };
 
 export type MapFilterPanelSlice = {

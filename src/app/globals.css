@@ -577,3 +577,27 @@
   margin-right: 0;
 }
 
+/* Route download: isolate printable sheet from the rest of the app */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  [data-route-print-root],
+  [data-route-print-root] * {
+    visibility: visible !important;
+  }
+
+  [data-route-print-root] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    display: block !important;
+  }
+}
+

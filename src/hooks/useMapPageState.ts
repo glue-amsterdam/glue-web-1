@@ -83,6 +83,10 @@ export const useMapPageState = (initialData: MapPageData) => {
     setDetailPanelDismissed(false);
   }, []);
 
+  const clearActiveRouteStop = useCallback(() => {
+    setActiveRouteStopId(null);
+  }, []);
+
   const clearSelectionLocal = useCallback(() => {
     pendingPlaceIdRef.current = null;
     pendingRouteIdRef.current = null;
@@ -175,7 +179,13 @@ export const useMapPageState = (initialData: MapPageData) => {
       }
 
       const mobile = !isLargeScreen;
-      if (mobile && (selection?.place || selection?.route)) {
+      // Route-only / place-only mobile URLs drop browse chrome; keep optimistic
+      // filters when the routes panel stays open with the selection.
+      if (
+        mobile &&
+        (selection?.place || selection?.route) &&
+        mergedFilters.view === "none"
+      ) {
         setOptimisticFilters(null);
       }
 
@@ -265,16 +275,17 @@ export const useMapPageState = (initialData: MapPageData) => {
       if (pendingPlaceIdRef.current) return;
 
       pendingRouteIdRef.current = null;
-      if (lastSyncedRouteIdRef.current !== routeId) {
+      const routeChanged = lastSyncedRouteIdRef.current !== routeId;
+      if (routeChanged) {
         setDetailPanelDismissed(false);
         lastSyncedRouteIdRef.current = routeId;
+        setActiveRouteStopId(null);
       }
       setSelectedRoute(routeId);
       setSelectedLocation(null);
       lastSyncedPlaceIdRef.current = null;
       pendingHubMemberIdRef.current = null;
       setSelectedHubMemberId(null);
-      setActiveRouteStopId(null);
       return;
     }
 
@@ -454,6 +465,7 @@ export const useMapPageState = (initialData: MapPageData) => {
     activeRouteStopId,
     dismissRoutePanel,
     closeExhibitorSelection,
+    clearActiveRouteStop,
     clearSelectionIfHidden,
     reopenDetailPanel,
     setActiveRouteStopId,

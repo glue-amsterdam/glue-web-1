@@ -85,7 +85,10 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     (q: string) => {
       if (isLargeScreen) {
         if (q.trim()) {
-          applyFilters(withExhibitorsView(filters, { q, type: "all" }));
+          navigation?.clearSelectionLocal();
+          applyFilters(withExhibitorsView(filters, { q, type: "all" }), {
+            clearSelection: true,
+          });
           setOpenFilter("exhibitors");
           return;
         }
@@ -104,7 +107,7 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
 
       applyFilters({ q });
     },
-    [applyFilters, filters, isLargeScreen, setOpenFilter]
+    [applyFilters, filters, isLargeScreen, navigation, setOpenFilter]
   );
 
   const {
@@ -144,19 +147,39 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
       const q = event.target.value;
       previewFilters(withExhibitorsView(filters, { q, type: "all" }));
       if (q.trim()) {
+        if (mapPageStore?.selectedRoute) {
+          navigation?.clearSelectionLocal();
+          if (navigation) {
+            navigation.navigateMap({ selection: { clearSelection: true } });
+          }
+        }
         setOpenFilter("exhibitors");
       }
     },
-    [handleDebouncedSearchChange, isLargeScreen, previewFilters, filters, setOpenFilter]
+    [
+      handleDebouncedSearchChange,
+      isLargeScreen,
+      previewFilters,
+      filters,
+      mapPageStore?.selectedRoute,
+      navigation,
+      setOpenFilter,
+    ]
   );
 
   const openFilterView = useCallback(
     (view: MapViewMode, filterId: MapFilterId) => {
       panelDismissedByUserRef.current = false;
       const patch = buildOpenMapViewPatch(filters, view);
+      const shouldClearRouteSelection = view !== "routes";
 
       if (isLargeScreen) {
-        applyFilters(patch);
+        if (shouldClearRouteSelection) {
+          navigation?.clearSelectionLocal();
+          applyFilters(patch, { clearSelection: true });
+        } else {
+          applyFilters(patch);
+        }
       } else {
         navigation?.clearSelectionLocal();
         if (navigation) {
@@ -248,32 +271,34 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
     (routeId: string) => {
       if (!navigation) return;
 
-      if (!isLargeScreen) closeFilter();
       navigation.selectRouteLocal(routeId);
       navigation.navigateMap({
         filterPatch: isLargeScreen
-          ? { q: "" }
-          : { view: "none", q: "", type: "all" },
+          ? { q: "", view: "routes" }
+          : { view: "routes", q: "", type: "all" },
         selection: { route: routeId },
       });
+      setOpenFilter("routes");
     },
-    [navigation, closeFilter, isLargeScreen]
+    [navigation, isLargeScreen, setOpenFilter]
   );
 
   const handleRouteListSelect = useCallback(
     (routeId: string) => {
       if (!navigation) return;
 
-      if (!isLargeScreen) closeFilter();
       navigation.selectRouteLocal(routeId);
       navigation.navigateMap({
         filterPatch: isLargeScreen
           ? { q: "" }
-          : { view: "none", q: "", type: "all" },
+          : { view: "routes", q: "", type: "all" },
         selection: { route: routeId },
       });
+      if (!isLargeScreen) {
+        setOpenFilter("routes");
+      }
     },
-    [navigation, closeFilter, isLargeScreen]
+    [navigation, isLargeScreen, setOpenFilter]
   );
 
   const navigateToRoutesViewForUnauthenticated = useCallback(() => {
@@ -362,10 +387,8 @@ const MapNavbar = ({ initialRoutes }: MapNavbarProps) => {
   }, [openFilter, filters.view]);
 
   const handleRouteSelected = useCallback(() => {
-    if (!isLargeScreen) {
-      closeFilter();
-    }
-  }, [closeFilter, isLargeScreen]);
+    // Keep the routes panel open so the inline selected block stays visible.
+  }, []);
 
   const handleDismissOpenFilter = useCallback(() => {
     panelDismissedByUserRef.current = true;
