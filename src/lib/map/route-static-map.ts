@@ -7,7 +7,7 @@ import { PRINT_ROUNDED_NUMBER } from "@/lib/map/map-point-marker-spec";
 const MAP_STYLE_URI = "mapbox://styles/mapbox/light-v11";
 const DEFAULT_ROUTE_LINE_COLOR = "#10069F";
 
-/** Must match the Figma map slot in RoutePrintTemplate (no object-cover crop). */
+/** Must match the Figma map slot in RoutePrintTemplate (full width; may object-cover vertically when slot shrinks). */
 export const PRINT_MAP_WIDTH = ROUTE_PRINT_FIGMA.mapWidth;
 export const PRINT_MAP_HEIGHT = ROUTE_PRINT_FIGMA.mapHeight;
 const PRINT_PADDING_PX = 72;

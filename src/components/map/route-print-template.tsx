@@ -16,14 +16,13 @@ type RoutePrintTemplateProps = RoutePrintProps & {
 
 const StopsGrid = ({ stops }: { stops: RouteStopDisplay[] }) => (
   <ul
-    className="grid w-full grid-flow-col content-start gap-x-[80px] gap-y-[48px]"
+    className="grid w-full grid-flow-col grid-cols-4 content-start gap-x-[80px] gap-y-[48px]"
     style={{
       gridTemplateRows: `repeat(${ROUTE_PRINT_STOPS_ROWS}, auto)`,
-      gridAutoColumns: "minmax(0, 1fr)",
     }}
   >
     {stops.map((stop) => (
-      <li key={stop.dotId} className="flex items-start gap-[28px]">
+      <li key={stop.dotId} className="flex min-w-0 items-start gap-[28px]">
         <RoundedNumber
           type={stop.participantType ?? "route"}
           participant_n={stop.label}
@@ -31,7 +30,10 @@ const StopsGrid = ({ stops }: { stops: RouteStopDisplay[] }) => (
           backgroundColor={stop.backgroundColor}
           color={stop.color}
         />
-        <div className="min-w-0 break-words">
+        <div
+          className="min-w-0 break-words"
+          style={{ maxWidth: ROUTE_PRINT_FIGMA.stopTextMaxWidth }}
+        >
           <p className="text-[38px] leading-[50px]">{stop.userName}</p>
           {stop.addressLine ? (
             <p className="text-[38px] leading-[50px]">{stop.addressLine}</p>
@@ -90,10 +92,7 @@ export const RoutePrintTemplate = ({
           </h1>
 
           {routeDescription?.trim() ? (
-            <div
-              className="shrink-0 columns-2 gap-[60px] overflow-hidden pt-[120px]"
-              style={{ maxHeight: ROUTE_PRINT_FIGMA.descriptionMaxHeight }}
-            >
+            <div className="shrink-0 columns-2 gap-[60px] pt-[120px]">
               <p className="text-[46px] leading-[58px]">
                 {routeDescription.trim()}
               </p>
@@ -114,13 +113,14 @@ export const RoutePrintTemplate = ({
               alt={`Map for ${routeName}`}
               width={ROUTE_PRINT_FIGMA.mapWidth}
               height={ROUTE_PRINT_FIGMA.mapHeight}
-              className="h-full w-full object-contain object-left-top"
+              className="h-full w-full object-cover object-center"
             />
           </div>
 
           <section
             aria-label="Stops"
-            className="flex min-h-0 flex-1 flex-col pt-[120px]"
+            className="mt-[120px] w-full shrink-0"
+            style={{ minHeight: ROUTE_PRINT_FIGMA.stopsMinHeight }}
           >
             <StopsGrid stops={stops} />
           </section>
