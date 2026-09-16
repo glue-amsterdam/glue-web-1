@@ -16,9 +16,10 @@ type RoutePrintTemplateProps = RoutePrintProps & {
 
 const StopsGrid = ({ stops }: { stops: RouteStopDisplay[] }) => (
   <ul
-    className="grid w-full grid-flow-col grid-cols-4 content-start gap-x-[80px] gap-y-[48px]"
+    className="grid w-full grid-flow-col content-start gap-x-[80px] gap-y-[48px]"
     style={{
       gridTemplateRows: `repeat(${ROUTE_PRINT_STOPS_ROWS}, auto)`,
+      gridAutoColumns: "minmax(0, 1fr)",
     }}
   >
     {stops.map((stop) => (
