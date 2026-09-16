@@ -23,7 +23,7 @@ export type MapPointMarkerDimensions = {
  * canvas dots. Edit here to keep list + map markers matched on the A4 sheet.
  */
 export const PRINT_ROUNDED_NUMBER = {
-  diameterPx: 72,
+  diameterPx: 65,
   fontSizePx: 42, // ~72 * (15/26), same optical fill as map UI badges
   textOffsetYPx: 1,
   fontFamily: "Lausanne, sans-serif",
