@@ -22,7 +22,7 @@ const StopsGrid = ({ stops }: { stops: RouteStopDisplay[] }) => (
     }}
   >
     {stops.map((stop) => (
-      <li key={stop.dotId} className="flex min-w-0 items-start gap-[28px]">
+      <li key={stop.dotId} className="flex min-w-0 items-start gap-[15px]">
         <RoundedNumber
           type={stop.participantType ?? "route"}
           participant_n={stop.label}
