@@ -16,9 +16,10 @@ type RoutePrintTemplateProps = RoutePrintProps & {
 
 const StopsGrid = ({ stops }: { stops: RouteStopDisplay[] }) => (
   <ul
-    className="grid w-full grid-flow-col grid-cols-4 content-start gap-x-[80px] gap-y-[48px]"
+    className="grid w-full grid-flow-col content-start gap-x-[80px] gap-y-[48px]"
     style={{
       gridTemplateRows: `repeat(${ROUTE_PRINT_STOPS_ROWS}, auto)`,
+      gridAutoColumns: "minmax(0, 1fr)",
     }}
   >
     {stops.map((stop) => (
@@ -89,24 +90,31 @@ export const RoutePrintTemplate = ({
           </h1>
 
           {routeDescription?.trim() ? (
-            <div className="max-h-[450px] shrink-0 columns-2 gap-[60px] overflow-hidden pt-[120px]">
+            <div
+              className="shrink-0 columns-2 gap-[60px] overflow-hidden pt-[120px]"
+              style={{ maxHeight: ROUTE_PRINT_FIGMA.descriptionMaxHeight }}
+            >
               <p className="text-[46px] leading-[58px]">
                 {routeDescription.trim()}
               </p>
             </div>
           ) : null}
 
-          <div className="shrink-0 pt-[120px]">
+          <div
+            className="mt-[120px] min-h-0 w-full"
+            style={{
+              flex: `0 1 ${ROUTE_PRINT_FIGMA.mapHeight}px`,
+              maxHeight: ROUTE_PRINT_FIGMA.mapHeight,
+              minHeight: ROUTE_PRINT_FIGMA.mapMinHeight,
+            }}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element -- map capture data URL */}
             <img
               src={mapImageDataUrl}
               alt={`Map for ${routeName}`}
               width={ROUTE_PRINT_FIGMA.mapWidth}
               height={ROUTE_PRINT_FIGMA.mapHeight}
-              className="w-full"
-              style={{
-                height: ROUTE_PRINT_FIGMA.mapHeight,
-              }}
+              className="h-full w-full object-contain object-left-top"
             />
           </div>
 
