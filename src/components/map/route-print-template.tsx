@@ -100,7 +100,7 @@ export const RoutePrintTemplate = ({
           ) : null}
 
           <div
-            className="mt-[120px] min-h-0 w-full"
+            className="mt-[120px] flex min-h-0 w-full items-center justify-center"
             style={{
               flex: `0 1 ${ROUTE_PRINT_FIGMA.mapHeight}px`,
               maxHeight: ROUTE_PRINT_FIGMA.mapHeight,
@@ -113,7 +113,7 @@ export const RoutePrintTemplate = ({
               alt={`Map for ${routeName}`}
               width={ROUTE_PRINT_FIGMA.mapWidth}
               height={ROUTE_PRINT_FIGMA.mapHeight}
-              className="h-full w-full object-cover object-center"
+              className="h-auto max-h-full w-auto max-w-full"
             />
           </div>
 
