@@ -12,6 +12,7 @@ import {
   buildFallbackEntityMetadata,
 } from "@/lib/seo/build-entity-metadata";
 import { buildExhibitorPersonJsonLd } from "@/lib/seo/build-json-ld";
+import { serializeJsonLd } from "@/lib/seo/serialize-json-ld";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -56,9 +57,6 @@ export async function generateMetadata({
       creator: exhibitor.name,
       indexable,
       openGraphType: "profile",
-      structuredData: indexable
-        ? buildExhibitorPersonJsonLd(exhibitor)
-        : undefined,
     });
   } catch {
     return buildFallbackEntityMetadata({
@@ -76,8 +74,16 @@ export default async function ExhibitorPage({ params }: PageProps) {
     const participant = await fetchExhibitorDetailBySlug(slug);
 
     if (participant.is_sticky || participant.status === "accepted") {
+      const structuredData = buildExhibitorPersonJsonLd(participant);
+
       return (
         <main id="exhibitor-detail-page">
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: serializeJsonLd(structuredData),
+            }}
+          />
           <StaggerEnterContainer variant="fade">
             <nav className="sr-only" aria-label="Breadcrumb">
               <ol>

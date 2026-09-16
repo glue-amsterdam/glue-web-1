@@ -11,6 +11,7 @@ import {
   buildFallbackEntityMetadata,
 } from "@/lib/seo/build-entity-metadata";
 import { buildProgramEventJsonLd } from "@/lib/seo/build-json-ld";
+import { serializeJsonLd } from "@/lib/seo/serialize-json-ld";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -47,7 +48,6 @@ export const generateMetadata = async ({
       ],
       authors: [event.organizer.userName],
       creator: event.organizer.userName,
-      structuredData: buildProgramEventJsonLd(event),
     });
   } catch {
     return buildFallbackEntityMetadata({
@@ -63,9 +63,16 @@ export default async function ProgramEventPage({ params }: PageProps) {
 
   try {
     const event = await fetchProgramDetail(id);
+    const structuredData = buildProgramEventJsonLd(event);
 
     return (
       <main id="program-detail-page">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: serializeJsonLd(structuredData),
+          }}
+        />
         <StaggerEnterContainer variant="fade">
           <nav className="sr-only" aria-label="Breadcrumb">
             <ol>

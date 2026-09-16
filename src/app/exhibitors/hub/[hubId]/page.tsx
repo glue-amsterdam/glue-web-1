@@ -9,6 +9,8 @@ import {
   buildFallbackEntityMetadata,
 } from "@/lib/seo/build-entity-metadata";
 import { buildExhibitorHubJsonLd } from "@/lib/seo/build-json-ld";
+import { serializeJsonLd } from "@/lib/seo/serialize-json-ld";
+import { parseUuidParam } from "@/lib/validation/uuid";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -24,6 +26,14 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { hubId } = await params;
+
+  if (!parseUuidParam(hubId)) {
+    return buildFallbackEntityMetadata({
+      title: `GLUE ${config.cityName} | Exhibitor Hub`,
+      description: `Exhibitor hub at GLUE ${config.cityName}.`,
+      canonicalPath: `/exhibitors/hub/${hubId}`,
+    });
+  }
 
   try {
     const hub = await fetchExhibitorDetailByHubId(hubId);
@@ -47,7 +57,6 @@ export async function generateMetadata({
       ],
       authors: [hub.name],
       creator: hub.name,
-      structuredData: buildExhibitorHubJsonLd(hub),
     });
   } catch {
     return buildFallbackEntityMetadata({
@@ -61,11 +70,22 @@ export async function generateMetadata({
 export default async function ExhibitorHubPage({ params }: PageProps) {
   const { hubId } = await params;
 
+  if (!parseUuidParam(hubId)) {
+    notFound();
+  }
+
   try {
     const hub = await fetchExhibitorDetailByHubId(hubId);
+    const structuredData = buildExhibitorHubJsonLd(hub);
 
     return (
       <main id="exhibitor-detail-page">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: serializeJsonLd(structuredData),
+          }}
+        />
         <StaggerEnterContainer variant="fade">
           <nav className="sr-only" aria-label="Breadcrumb">
             <ol>

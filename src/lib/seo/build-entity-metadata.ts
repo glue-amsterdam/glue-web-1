@@ -29,7 +29,6 @@ type BuildEntityMetadataOptions = {
   creator?: string;
   indexable?: boolean;
   openGraphType?: "website" | "profile" | "article";
-  structuredData?: Record<string, unknown> | Record<string, unknown>[];
 };
 
 export const buildEntityMetadata = ({
@@ -43,7 +42,6 @@ export const buildEntityMetadata = ({
   creator,
   indexable = true,
   openGraphType = "website",
-  structuredData,
 }: BuildEntityMetadataOptions): Metadata => {
   const defaultImage = `${config.baseUrl}/${config.cityName}/og-image.jpg`;
   const resolvedImage = imageUrl?.trim() || defaultImage;
@@ -103,12 +101,6 @@ export const buildEntityMetadata = ({
       images: [resolvedImage],
     },
   };
-
-  if (structuredData) {
-    metadata.other = {
-      "application/ld+json": JSON.stringify(structuredData),
-    };
-  }
 
   return metadata;
 };
