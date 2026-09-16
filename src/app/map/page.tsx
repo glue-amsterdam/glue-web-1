@@ -7,7 +7,7 @@ import MapClientPage from "./map-client-page";
 import MainContainer from "@/components/main-container";
 
 export const metadata: Metadata = mapMetadata;
-export const revalidate = 60;
+export const revalidate = 3600;
 
 const MapPage = async () => {
   const { initialData } = await loadMapPageData();

@@ -17,6 +17,6 @@ export const getExhibitorsGroupedCached = unstable_cache(
   [EXHIBITORS_RAW_CACHE_TAG],
   {
     tags: [EXHIBITORS_PAGE_CACHE_TAG, EXHIBITORS_RAW_CACHE_TAG],
-    revalidate: 60,
+    revalidate: 3600,
   }
 );

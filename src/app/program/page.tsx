@@ -14,7 +14,7 @@ import { filtersToQueryParams } from "@/lib/program/program-url";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 export const metadata: Metadata = programMetadata;
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export default async function Page() {
   const initialFilters = DEFAULT_PROGRAM_FILTERS;

@@ -22,7 +22,7 @@ const fetchExhibitorsPageCached = unstable_cache(
     return getExhibitorsPage(supabase, query);
   },
   [EXHIBITORS_PAGE_CACHE_TAG],
-  { tags: [EXHIBITORS_PAGE_CACHE_TAG], revalidate: 60 }
+  { tags: [EXHIBITORS_PAGE_CACHE_TAG], revalidate: 3600 }
 );
 
 export async function fetchExhibitorsPage(

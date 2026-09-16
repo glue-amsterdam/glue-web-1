@@ -17,6 +17,6 @@ export const loadProgramListItemsCached = unstable_cache(
   [PROGRAM_RAW_CACHE_TAG],
   {
     tags: [PROGRAM_PAGE_CACHE_TAG, PROGRAM_RAW_CACHE_TAG],
-    revalidate: 60,
+    revalidate: 3600,
   }
 );
