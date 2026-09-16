@@ -1,11 +1,17 @@
 import { cache } from "react";
 import type { HubApiCall } from "@/schemas/hubSchemas";
 import { getHubHostProfile } from "@/lib/hubs/get-hub-host-profiles";
+import { parseUuidParam } from "@/lib/validation/uuid";
 import { createClient } from "@/utils/supabase/server";
 
 export const getHubById = cache(async (
   hubId: string
 ): Promise<HubApiCall | null> => {
+  const parsedHubId = parseUuidParam(hubId);
+  if (!parsedHubId) {
+    return null;
+  }
+
   const supabase = await createClient();
 
   const { data: hub, error } = await supabase
@@ -20,7 +26,7 @@ export const getHubById = cache(async (
         participants: hub_participants (user_id)
       `
     )
-    .eq("id", hubId)
+    .eq("id", parsedHubId)
     .maybeSingle();
 
   if (error) {

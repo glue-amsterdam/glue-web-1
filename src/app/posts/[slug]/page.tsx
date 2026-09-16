@@ -11,6 +11,7 @@ import {
   buildFallbackEntityMetadata,
 } from "@/lib/seo/build-entity-metadata";
 import { buildPostArticleJsonLd } from "@/lib/seo/build-json-ld";
+import { serializeJsonLd } from "@/lib/seo/serialize-json-ld";
 import { stripHtmlTags } from "@/lib/sanitize-html";
 
 type PageProps = {
@@ -69,7 +70,6 @@ export const generateMetadata = async ({
       authors: post.author ? [post.author] : undefined,
       creator: post.author ?? undefined,
       openGraphType: "article",
-      structuredData: buildPostArticleJsonLd(post),
     });
   } catch {
     return buildFallbackEntityMetadata({
@@ -88,8 +88,16 @@ export default async function PostDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const structuredData = buildPostArticleJsonLd(post);
+
   return (
     <main id="post-detail-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(structuredData),
+        }}
+      />
       <StaggerEnterContainer variant="enter">
         <nav className="sr-only" aria-label="Breadcrumb">
           <ol>

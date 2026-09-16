@@ -4,7 +4,6 @@ import {
   classifyHubMemberCategory,
   type ParticipantCategory,
 } from "@/lib/participants/participant-categories";
-import { getTheme } from "@/lib/theme";
 import type { ExhibitorType } from "./exhibitor-types";
 import {
   ExhibitorNotFoundError,
@@ -22,6 +21,7 @@ import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
 import { getParticipantDisplayName } from "./get-participant-display-name";
 import { getParticipantPlaceholderUrl } from "./get-participant-placeholder-url";
 import { toMediaUrl } from "@/lib/media/media-url";
+import { requireHubUuid } from "@/lib/participants/require-hub-uuid";
 
 type ParticipantRow = {
   user_id: string;
@@ -122,11 +122,23 @@ const getOrderedEligibleMemberIds = (
   return ordered;
 };
 
+type ThemeLoader = () => Promise<{
+  participantCategories: ParticipantCategory[];
+}>;
+
+const loadDefaultTheme: ThemeLoader = async () => {
+  const { getTheme } = await import("@/lib/theme");
+  return getTheme();
+};
+
 export const getExhibitorHubById = async (
   supabase: SupabaseClient,
-  hubId: string
+  hubId: string,
+  loadTheme: ThemeLoader = loadDefaultTheme
 ): Promise<ExhibitorHubDetail> => {
-  const { participantCategories: categories } = await getTheme();
+  const parsedHubId = requireHubUuid(hubId);
+
+  const { participantCategories: categories } = await loadTheme();
 
   const { data: hub, error: hubError } = await supabase
     .from("hubs")
@@ -142,7 +154,7 @@ export const getExhibitorHubById = async (
         )
       `
     )
-    .eq("id", hubId)
+    .eq("id", parsedHubId)
     .single();
 
   if (hubError) {
