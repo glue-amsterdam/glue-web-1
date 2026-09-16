@@ -15,7 +15,7 @@ const fetchProgramPageCached = unstable_cache(
     return getProgramPage(supabase, query);
   },
   [PROGRAM_PAGE_CACHE_TAG],
-  { tags: [PROGRAM_PAGE_CACHE_TAG], revalidate: 60 }
+  { tags: [PROGRAM_PAGE_CACHE_TAG], revalidate: 3600 }
 );
 
 export const fetchProgramPage = async (
