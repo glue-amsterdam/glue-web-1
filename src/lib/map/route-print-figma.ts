@@ -7,9 +7,13 @@ export const ROUTE_PRINT_FIGMA = {
   height: 3494,
   paddingX: 120,
   paddingY: 80,
+  /** Primary-page description cap (Figma was 450; +100 when copy needs it). */
+  descriptionMaxHeight: 550,
   /** Content-width map slot (artboard width − horizontal padding × 2). */
   mapWidth: 2230,
   mapHeight: 1175,
+  /** Map can yield this much height when the description grows. */
+  mapMinHeight: 1075,
 } as const;
 
 /** Figma width → CSS A4 width (210mm at 96dpi). Unitless for cross-browser `scale()`. */
