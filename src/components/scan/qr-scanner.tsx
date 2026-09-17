@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 export type QrScannerTarget =
@@ -56,11 +57,26 @@ const getScanErrorMessage = async (
   return fallback;
 };
 
+const getAuthErrorMessage = (status: number, apiMessage: string): string => {
+  if (status === 401) {
+    return "Session expired. Sign in again, then reopen Scan.";
+  }
+
+  if (status === 403) {
+    return apiMessage.trim().length > 0
+      ? apiMessage
+      : "You do not have permission to scan this QR code.";
+  }
+
+  return apiMessage;
+};
+
 export const QrScanner = ({
   target,
   timeZone,
   onScanSuccess,
 }: QrScannerProps) => {
+  const { toast } = useToast();
   const containerId = useId().replace(/:/g, "");
   const scannerRef = useRef<import("html5-qrcode").Html5Qrcode | null>(null);
   const isProcessingRef = useRef(false);
@@ -90,81 +106,102 @@ export const QrScanner = ({
     }
   }, []);
 
-  const handleDecoded = useCallback(async (decodedText: string) => {
-    if (isProcessingRef.current) return;
-    isProcessingRef.current = true;
-    setScanStatus({ type: "processing", message: "Checking in…" });
+  const handleDecoded = useCallback(
+    async (decodedText: string) => {
+      if (isProcessingRef.current) return;
+      isProcessingRef.current = true;
+      setScanStatus({ type: "processing", message: "Checking in…" });
 
-    const currentTarget = targetRef.current;
-    const currentTimeZone = timeZoneRef.current;
+      const currentTarget = targetRef.current;
+      const currentTimeZone = timeZoneRef.current;
 
-    try {
-      const endpoint =
-        currentTarget.mode === "event" ? "/api/scan" : "/api/scan/location-day";
-      const body =
-        currentTarget.mode === "event"
-          ? {
-              token: decodedText,
-              event_id: currentTarget.eventId,
-              time_zone: currentTimeZone,
-            }
-          : {
-              token: decodedText,
-              day_id: currentTarget.dayId,
-              location_id: currentTarget.locationId,
-              time_zone: currentTimeZone,
-            };
+      try {
+        const endpoint =
+          currentTarget.mode === "event"
+            ? "/api/scan"
+            : "/api/scan/location-day";
+        const body =
+          currentTarget.mode === "event"
+            ? {
+                token: decodedText,
+                event_id: currentTarget.eventId,
+                time_zone: currentTimeZone,
+              }
+            : {
+                token: decodedText,
+                day_id: currentTarget.dayId,
+                location_id: currentTarget.locationId,
+                time_zone: currentTimeZone,
+              };
 
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(body),
-      });
-
-      if (response.status === 200) {
-        onScanSuccess?.(currentTarget);
-        setScanStatus({
-          type: "success",
-          message: "Visitor checked in.",
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(body),
         });
-        return;
-      }
 
-      if (response.status === 409) {
+        if (response.status === 200) {
+          onScanSuccess?.(currentTarget);
+          setScanStatus({
+            type: "success",
+            message: "Visitor checked in.",
+          });
+          return;
+        }
+
+        if (response.status === 409) {
+          setScanStatus({
+            type: "error",
+            message:
+              currentTarget.mode === "event"
+                ? "Already checked in for this event."
+                : "Already checked in at this venue today.",
+          });
+          return;
+        }
+
+        if (!response.ok) {
+          const apiMessage = await getScanErrorMessage(
+            response,
+            "Unexpected scan error. Try again.",
+          );
+          const message =
+            response.status === 401 || response.status === 403
+              ? getAuthErrorMessage(response.status, apiMessage)
+              : apiMessage;
+
+          setScanStatus({
+            type: "error",
+            message,
+          });
+
+          if (response.status === 401 || response.status === 403) {
+            toast({
+              title:
+                response.status === 401
+                  ? "Sign in required"
+                  : "Scan not allowed",
+              description: message,
+              variant: "destructive",
+            });
+          }
+          return;
+        }
+      } catch (error) {
+        console.error("Scan request error:", error);
         setScanStatus({
           type: "error",
-          message:
-            currentTarget.mode === "event"
-              ? "Already checked in for this event."
-              : "Already checked in at this venue today.",
+          message: "Network error while sending scan.",
         });
-        return;
+      } finally {
+        window.setTimeout(() => {
+          isProcessingRef.current = false;
+        }, 900);
       }
-
-      if (!response.ok) {
-        const message = await getScanErrorMessage(
-          response,
-          "Unexpected scan error. Try again.",
-        );
-        setScanStatus({
-          type: "error",
-          message,
-        });
-        return;
-      }
-    } catch (error) {
-      console.error("Scan request error:", error);
-      setScanStatus({
-        type: "error",
-        message: "Network error while sending scan.",
-      });
-    } finally {
-      window.setTimeout(() => {
-        isProcessingRef.current = false;
-      }, 900);
-    }
-  }, [onScanSuccess]);
+    },
+    [onScanSuccess, toast],
+  );
 
   useEffect(() => {
     const session = ++startSessionRef.current;
@@ -285,33 +322,36 @@ export const QrScanner = ({
       scanStatus.type === "success" ||
       scanStatus.type === "error");
 
+  const statusHint =
+    showStatusBanner ? (
+      <p
+        role="status"
+        aria-live="polite"
+        className={cn(
+          "w-full rounded-lg p-4 text-center text-xl font-bold shadow-md sm:text-2xl",
+          statusBannerClass,
+        )}
+      >
+        {scanStatus.message}
+      </p>
+    ) : cameraPhase === "starting" ? (
+      <p className="text-center text-sm text-muted-foreground">
+        Starting camera…
+      </p>
+    ) : cameraPhase === "scanning" ? (
+      <p className="text-center text-sm text-muted-foreground">
+        Point at the visitor QR code.
+      </p>
+    ) : null;
+
   return (
     <div className="space-y-3">
+      {statusHint}
+
       <div
         id={containerId}
         className="min-h-[220px] w-full overflow-hidden rounded-lg bg-neutral-900 [&_video]:max-h-[220px] [&_video]:w-full"
       />
-
-      {showStatusBanner ? (
-        <p
-          role="status"
-          aria-live="polite"
-          className={cn(
-            "w-full rounded-lg p-4 text-center text-xl font-bold shadow-md sm:text-2xl",
-            statusBannerClass,
-          )}
-        >
-          {scanStatus.message}
-        </p>
-      ) : cameraPhase === "starting" ? (
-        <p className="text-center text-sm text-muted-foreground">
-          Starting camera…
-        </p>
-      ) : cameraPhase === "scanning" ? (
-        <p className="text-center text-sm text-muted-foreground">
-          Point at the visitor QR code.
-        </p>
-      ) : null}
     </div>
   );
 };
