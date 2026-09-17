@@ -310,9 +310,19 @@ export const QrScanClient = ({
           if (!open) setActiveTarget(null);
         }}
       >
-        <DialogContent className="max-w-sm gap-3 p-4 sm:max-w-md">
+        <DialogContent
+          className={[
+            "max-w-sm gap-3 p-4 sm:max-w-md",
+            // Avoid CSS translate on mobile — breaks html5-qrcode video/canvas on iOS Safari.
+            "max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:top-auto max-sm:left-0 max-sm:translate-x-0 max-sm:translate-y-0",
+            "max-sm:w-full max-sm:max-w-none max-sm:rounded-b-none max-sm:rounded-t-xl max-sm:max-h-[90dvh] max-sm:overflow-y-auto",
+          ].join(" ")}
+        >
           <DialogHeader className="space-y-1 pr-8">
             <DialogTitle className="text-base">{activeTarget?.label}</DialogTitle>
+            <DialogDescription className="sr-only">
+              Point your camera at a visitor QR code to check in.
+            </DialogDescription>
           </DialogHeader>
           {activeTarget ? (
             <QrScanner

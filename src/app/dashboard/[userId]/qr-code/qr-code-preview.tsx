@@ -26,7 +26,7 @@ export default function QrCodePreview({ token }: QrCodePreviewProps) {
         const QRCode = (await import("qrcode")).default;
         const svg = await QRCode.toString(token, {
           type: "svg",
-          errorCorrectionLevel: "M",
+          errorCorrectionLevel: "H",
           margin: 1,
           width: 360,
         });

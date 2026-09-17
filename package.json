@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --experimental-strip-types --import ./scripts/register-test-loader.mjs --test $(find src -name '*.test.ts' ! -name 'exhibitor-detail-navigation.test.ts')"
+    "test": "node --experimental-strip-types --import ./scripts/register-test-loader.mjs --test $(find src -name '*.test.ts' ! -name 'exhibitor-detail-navigation.test.ts')",
+    "test:scan-smoke": "node scripts/scan-api-smoke.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
