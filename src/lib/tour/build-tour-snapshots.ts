@@ -23,6 +23,8 @@ import {
 
 const DETAIL_CONCURRENCY = 8;
 
+export type ProgramSnapshotSource = "current" | "last_year";
+
 const mapPool = async <T, R>(
   items: T[],
   concurrency: number,
@@ -59,30 +61,54 @@ const createParticipantCategoriesSnapshot = async (
   };
 };
 
-const createProgramSnapshot = async (
-  supabase: SupabaseClient
+/**
+ * Build program freeze from live events.
+ * - current: is_last_year_event = false (normal Close)
+ * - last_year: is_last_year_event = true (repair / Close recovery when already flagged)
+ */
+export const buildProgramSnapshot = async (
+  supabase: SupabaseClient,
+  source: ProgramSnapshotSource
 ): Promise<TourProgramSnapshot> => {
   const { data: events, error } = await supabase
     .from("events")
     .select("id")
     .eq("event_day_out", false)
-    .eq("is_last_year_event", false);
+    .eq("is_last_year_event", source === "last_year");
 
   if (error) {
     throw new Error(`Failed to list events for program snapshot: ${error.message}`);
   }
 
   const eventIds = (events ?? []).map((event) => event.id as string);
+
+  if (eventIds.length === 0) {
+    return {
+      version: 1,
+      capturedAt: new Date().toISOString(),
+      details: [],
+    };
+  }
+
   const details = (
     await mapPool(eventIds, DETAIL_CONCURRENCY, async (eventId) => {
       try {
-        return await getProgramDetail(supabase, eventId);
+        return await getProgramDetail(supabase, eventId, {
+          bypassSnapshot: true,
+          eventSource: source,
+        });
       } catch (error) {
         if (error instanceof ProgramNotFoundError) return null;
         throw error;
       }
     })
   ).filter((detail): detail is NonNullable<typeof detail> => detail !== null);
+
+  if (details.length === 0) {
+    throw new Error(
+      `Program snapshot detail build failed: listed ${eventIds.length} events but resolved 0 details (source=${source}).`
+    );
+  }
 
   return {
     version: 1,
@@ -165,17 +191,27 @@ const createHubDetailsSnapshot = async (
 /**
  * Build frozen public DTOs from the live (current) tour.
  * Call this BEFORE flipping tour status / last-year flags.
+ *
+ * Program snapshot prefers current events; if none remain, falls back to
+ * last-year events (covers already-flagged recovery). Fails if both empty.
  */
 export const buildTourContentSnapshots = async (
   supabase: SupabaseClient
 ): Promise<BuiltTourContentSnapshots> => {
-  const [program, exhibitorsGrouped, participantCategories] = await Promise.all(
-    [
-      createProgramSnapshot(supabase),
-      createExhibitorsGroupedSnapshot(supabase),
-      createParticipantCategoriesSnapshot(supabase),
-    ]
-  );
+  let program = await buildProgramSnapshot(supabase, "current");
+  if (program.details.length === 0) {
+    program = await buildProgramSnapshot(supabase, "last_year");
+  }
+  if (program.details.length === 0) {
+    throw new Error(
+      "No events available to snapshot for program (current and last-year are empty)."
+    );
+  }
+
+  const [exhibitorsGrouped, participantCategories] = await Promise.all([
+    createExhibitorsGroupedSnapshot(supabase),
+    createParticipantCategoriesSnapshot(supabase),
+  ]);
 
   const [exhibitorDetails, hubDetails] = await Promise.all([
     createExhibitorDetailsSnapshot(supabase, exhibitorsGrouped.grouped),

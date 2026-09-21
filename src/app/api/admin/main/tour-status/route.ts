@@ -6,7 +6,11 @@ import { revalidateMainSectionCache } from "@/lib/main/revalidate-main-section-c
 import { revalidateMapDataCache } from "@/lib/map/revalidate-map-cache";
 import { revalidateProgramCache } from "@/lib/program/revalidate-program-cache";
 import { revalidateExhibitorCaches } from "@/lib/participants/revalidate-participant-visibility-caches";
-import { buildTourContentSnapshots } from "@/lib/tour/build-tour-snapshots";
+import {
+  buildProgramSnapshot,
+  buildTourContentSnapshots,
+} from "@/lib/tour/build-tour-snapshots";
+import { getProgramSnapshotEventCount } from "@/lib/tour/read-tour-snapshots";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { toMediaKey } from "@/lib/media/media-url";
@@ -15,6 +19,8 @@ import { cookies } from "next/headers";
 import { config } from "@/config";
 
 const TOUR_STATUS_ROW_ID = "00000000-0000-0000-0000-000000000001";
+
+const VALID_ACTIONS = ["close", "open", "repair-program-snapshot"] as const;
 
 const revalidatePublicTourCaches = (): void => {
   revalidateMapDataCache();
@@ -28,7 +34,15 @@ export async function GET() {
     const supabase = await createClient();
     const { data: tourStatus, error } = await supabase
       .from("tour_status")
-      .select("*")
+      .select(
+        `
+        id,
+        current_tour_status,
+        updated_at,
+        updated_by,
+        previous_tour_program
+      `
+      )
       .single();
 
     if (error) {
@@ -39,7 +53,17 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json(tourStatus);
+    const programSnapshotEventCount = getProgramSnapshotEventCount(
+      tourStatus.previous_tour_program
+    );
+
+    return NextResponse.json({
+      id: tourStatus.id,
+      current_tour_status: tourStatus.current_tour_status,
+      updated_at: tourStatus.updated_at,
+      updated_by: tourStatus.updated_by ?? null,
+      programSnapshotEventCount,
+    });
   } catch (error) {
     console.error("Error in GET /api/admin/main/tour-status:", error);
     return NextResponse.json(
@@ -64,11 +88,108 @@ export async function PUT(request: Request) {
     const supabase = await createAdminClient();
     const { current_tour_status, action } = await request.json();
 
-    if (action && !["close", "open"].includes(action)) {
+    if (
+      action &&
+      !VALID_ACTIONS.includes(action as (typeof VALID_ACTIONS)[number])
+    ) {
       return NextResponse.json(
-        { error: "Invalid action. Must be 'close' or 'open'" },
+        {
+          error:
+            "Invalid action. Must be 'close', 'open', or 'repair-program-snapshot'",
+        },
         { status: 400 }
       );
+    }
+
+    if (action === "repair-program-snapshot") {
+      const { data: tourRow, error: tourReadError } = await supabase
+        .from("tour_status")
+        .select("current_tour_status, previous_tour_program")
+        .eq("id", TOUR_STATUS_ROW_ID)
+        .single();
+
+      if (tourReadError || !tourRow) {
+        console.error("Error reading tour status for repair:", tourReadError);
+        return NextResponse.json(
+          { error: "Failed to read tour status" },
+          { status: 500 }
+        );
+      }
+
+      if (tourRow.current_tour_status !== "older") {
+        return NextResponse.json(
+          {
+            error:
+              "Program snapshot repair is only allowed when tour status is older",
+          },
+          { status: 400 }
+        );
+      }
+
+      const existingCount = getProgramSnapshotEventCount(
+        tourRow.previous_tour_program
+      );
+      if (existingCount > 0) {
+        return NextResponse.json(
+          {
+            error:
+              "Program snapshot already has events; repair refused to overwrite",
+          },
+          { status: 400 }
+        );
+      }
+
+      let programSnapshot;
+      try {
+        programSnapshot = await buildProgramSnapshot(supabase, "last_year");
+      } catch (snapshotError) {
+        console.error("Error rebuilding program snapshot:", snapshotError);
+        return NextResponse.json(
+          {
+            error:
+              snapshotError instanceof Error
+                ? snapshotError.message
+                : "Failed to rebuild program snapshot",
+          },
+          { status: 500 }
+        );
+      }
+
+      if (programSnapshot.details.length === 0) {
+        return NextResponse.json(
+          {
+            error:
+              "No last-year events available to rebuild the program snapshot",
+          },
+          { status: 400 }
+        );
+      }
+
+      const { data, error: statusError } = await supabase
+        .from("tour_status")
+        .update({
+          previous_tour_program: programSnapshot,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", TOUR_STATUS_ROW_ID)
+        .select("id, current_tour_status, updated_at");
+
+      if (statusError) {
+        console.error("Error saving repaired program snapshot:", statusError);
+        return NextResponse.json(
+          { error: "Failed to save repaired program snapshot" },
+          { status: 500 }
+        );
+      }
+
+      revalidateProgramCache();
+
+      return NextResponse.json({
+        ...data[0],
+        programSnapshotEventCount: programSnapshot.details.length,
+        programEventsCount: programSnapshot.details.length,
+        message: `Program snapshot repaired with ${programSnapshot.details.length} event(s).`,
+      });
     }
 
     if (action === "close" || current_tour_status === "older") {
@@ -79,7 +200,12 @@ export async function PUT(request: Request) {
       } catch (snapshotError) {
         console.error("Error building tour content snapshots:", snapshotError);
         return NextResponse.json(
-          { error: "Failed to build tour content snapshots" },
+          {
+            error:
+              snapshotError instanceof Error
+                ? snapshotError.message
+                : "Failed to build tour content snapshots",
+          },
           { status: 500 }
         );
       }
@@ -186,6 +312,7 @@ export async function PUT(request: Request) {
         participantCount: participantCount || 0,
         mapLocationsCount,
         programEventsCount: contentSnapshots.program.details.length,
+        programSnapshotEventCount: contentSnapshots.program.details.length,
         exhibitorDetailsCount: Object.keys(
           contentSnapshots.exhibitorDetails.bySlug
         ).length,
@@ -276,6 +403,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({
         ...data[0],
         deletedEventsCount: deletedCount,
+        programSnapshotEventCount: 0,
         message: `New tour opened successfully. ${deletedCount} old event(s) and their images have been deleted.`,
       });
     }

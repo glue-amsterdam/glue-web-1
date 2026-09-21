@@ -43,6 +43,12 @@ export const normalizeProgramSnapshot = (
   };
 };
 
+/** Count of frozen program events; 0 when missing/invalid/empty. */
+export const getProgramSnapshotEventCount = (raw: unknown): number => {
+  const snapshot = normalizeProgramSnapshot(raw);
+  return snapshot?.details.length ?? 0;
+};
+
 export const normalizeExhibitorsGroupedSnapshot = (
   raw: unknown
 ): TourExhibitorsGroupedSnapshot | null => {
