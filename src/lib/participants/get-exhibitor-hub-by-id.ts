@@ -22,6 +22,10 @@ import { getParticipantDisplayName } from "./get-participant-display-name";
 import { getParticipantPlaceholderUrl } from "./get-participant-placeholder-url";
 import { toMediaUrl } from "@/lib/media/media-url";
 import { requireHubUuid } from "@/lib/participants/require-hub-uuid";
+import {
+  fetchTourSnapshotRow,
+  getHubDetailFromSnapshot,
+} from "@/lib/tour/read-tour-snapshots";
 
 type ParticipantRow = {
   user_id: string;
@@ -137,6 +141,21 @@ export const getExhibitorHubById = async (
   loadTheme: ThemeLoader = loadDefaultTheme
 ): Promise<ExhibitorHubDetail> => {
   const parsedHubId = requireHubUuid(hubId);
+  const tourStatusEarly = await getTourStatus(supabase);
+
+  if (tourStatusEarly === "older") {
+    const snapshotRow = await fetchTourSnapshotRow(supabase);
+    const snapshotted = getHubDetailFromSnapshot(
+      snapshotRow?.previous_tour_hub_details,
+      parsedHubId
+    );
+    if (snapshotted) {
+      return snapshotted;
+    }
+    console.warn(
+      `Tour is older but hub detail snapshot missing for hubId=${parsedHubId}; falling back to live.`
+    );
+  }
 
   const { participantCategories: categories } = await loadTheme();
 
@@ -169,7 +188,7 @@ export const getExhibitorHubById = async (
   }
 
   const hubRow = hub as HubRow;
-  const tourStatus = await getTourStatus(supabase);
+  const tourStatus = tourStatusEarly;
   const stickyIds = await getStickyParticipantIds(supabase);
 
   const memberIds = [

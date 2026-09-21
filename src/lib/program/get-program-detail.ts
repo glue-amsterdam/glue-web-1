@@ -21,6 +21,10 @@ import {
   organizerBadgeFieldsFromEmbed,
   slugFromEmbed,
 } from "./program-utils";
+import {
+  fetchTourSnapshotRow,
+  getProgramDetailFromSnapshot,
+} from "@/lib/tour/read-tour-snapshots";
 
 type LocationEmbed = {
   id: string;
@@ -40,6 +44,20 @@ export const getProgramDetail = async (
   eventId: string
 ): Promise<ProgramDetail> => {
   const currentTourStatus = await getCurrentTourStatus(supabase);
+
+  if (currentTourStatus === "older") {
+    const snapshotRow = await fetchTourSnapshotRow(supabase);
+    const snapshotted = getProgramDetailFromSnapshot(
+      snapshotRow?.previous_tour_program,
+      eventId
+    );
+    if (snapshotted) {
+      return snapshotted;
+    }
+    console.warn(
+      "Tour is older but program detail snapshot is missing; falling back to live last-year event."
+    );
+  }
 
   let eventQuery = supabase
     .from("events")

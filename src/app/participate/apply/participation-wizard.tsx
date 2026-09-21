@@ -11,17 +11,9 @@ import {
   MapInfoStep,
 } from "@/components/participate/map-info-step";
 import type { MapInfo } from "@/schemas/mapInfoSchemas";
-import {
-  VisitorAccountStep,
-  type VisitorWorkAreaOption,
-} from "@/components/participate/visitor-account-step";
-import { VisitorCheckInStep } from "@/components/participate/visitor-check-in-step";
-import { ParticipationPrefilledHint } from "@/components/participate/participation-prefilled-hint";
+import { VisitorAccountStep } from "@/components/participate/visitor-account-step";
 import type { ParticipationFormContext } from "@/lib/participate/get-participation-form-context";
-import {
-  toVisitorProfileFormValues,
-  type VisitorParticipantAccountValues,
-} from "@/schemas/visitorSchemas";
+import type { VisitorParticipantAccountValues } from "@/schemas/visitorSchemas";
 import MainContainer from "@/components/main-container";
 import HeadlineWCross from "@/components/headline-w-cross";
 import { useToast } from "@/hooks/use-toast";
@@ -34,7 +26,6 @@ type ParticipationWizardProps = {
   formContext: ParticipationFormContext;
   participateBackHref: string;
   termsContent: string;
-  workAreas: VisitorWorkAreaOption[];
   prefilledEmail?: string | null;
 };
 
@@ -47,7 +38,6 @@ export const ParticipationWizard = ({
   formContext,
   participateBackHref,
   termsContent,
-  workAreas,
   prefilledEmail,
 }: ParticipationWizardProps) => {
   const router = useRouter();
@@ -72,9 +62,7 @@ export const ParticipationWizard = ({
 
   const isReactivation = intent === "reactivation";
   const showAccountStep = !isAuthenticated && intent === "new";
-  const showVisitorCheckInStep =
-    isAuthenticated && !formContext.visitorProfileComplete;
-  const hasFinalStep = showAccountStep || showVisitorCheckInStep;
+  const hasFinalStep = showAccountStep;
 
   const handleBack = () => {
     if (step === 1) {
@@ -272,33 +260,16 @@ export const ParticipationWizard = ({
     void submitApplication(data, true);
   };
 
-  const handleVisitorCheckInSubmit = () => {
-    setTermsAccepted(true);
-
-    if (isReactivation) {
-      if (!invoiceData || !extraData || !mapInfo) return;
-      void submitReactivation(invoiceData, extraData, mapInfo, true);
-      return;
-    }
-
-    void submitApplication(undefined, true);
-  };
-
   const invoiceSubmitLabel = (() => {
     if (hasFinalStep) return "next step";
     if (isReactivation) return "submit request";
     return "submit";
   })();
 
-  const visitorProfileFormValues = formContext.visitorProfile
-    ? toVisitorProfileFormValues(formContext.visitorProfile)
-    : null;
-
   return (
     <MainContainer className="terms-and-conditions-padding pb-(--site-footer-h) min-h-dvh flex flex-col">
       {step === 1 && (
         <>
-          <ParticipationPrefilledHint show={sectionStatus.extra === "complete"} />
           <HeadlineWCross
             title="Participant Information"
             closeFallbackHref={participateBackHref}
@@ -315,7 +286,7 @@ export const ParticipationWizard = ({
       )}
       {step === 2 && (
         <>
-          <ParticipationPrefilledHint show={sectionStatus.map === "complete"} />
+       
           <HeadlineWCross title="Location" closeFallbackHref={participateBackHref} />
           <MapInfoStep
             defaultValues={mapInfo ?? undefined}
@@ -327,7 +298,7 @@ export const ParticipationWizard = ({
       )}
       {step === 3 && (
         <>
-          <ParticipationPrefilledHint show={sectionStatus.invoice === "complete"} />
+      
           <HeadlineWCross
             title="Invoice Information"
             closeFallbackHref={participateBackHref}
@@ -358,32 +329,6 @@ export const ParticipationWizard = ({
             backLabel="Back"
             isSubmitting={loading}
             loadingMessage="Submitting your application…"
-            termsContent={termsContent}
-            termsAccepted={termsAccepted}
-            onTermsAcceptedChange={setTermsAccepted}
-          />
-        </>
-      )}
-      {step === 4 && showVisitorCheckInStep && visitorProfileFormValues && (
-        <>
-          <HeadlineWCross
-            title="Check-in profile"
-            closeFallbackHref={participateBackHref}
-          />
-          <VisitorCheckInStep
-            workAreas={workAreas}
-            initialProfile={visitorProfileFormValues}
-            onSubmit={handleVisitorCheckInSubmit}
-            onBack={handleBack}
-            submitLabel={
-              isReactivation ? "submit request" : "submit"
-            }
-            isSubmitting={loading}
-            loadingMessage={
-              isReactivation
-                ? "Submitting your reactivation request…"
-                : "Submitting your application…"
-            }
             termsContent={termsContent}
             termsAccepted={termsAccepted}
             onTermsAcceptedChange={setTermsAccepted}

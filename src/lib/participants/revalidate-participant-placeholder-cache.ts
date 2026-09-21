@@ -1,16 +1,16 @@
 import { revalidatePath, revalidateTag } from "next/cache";
-import { revalidateMapDataCache } from "@/lib/map/revalidate-map-cache";
-import { revalidateProgramCache } from "@/lib/program/revalidate-program-cache";
-import { EXHIBITORS_PAGE_CACHE_TAG } from "@/lib/participants/exhibitors-cache-tags";
-import { HOME_EXHIBITORS_RANDOM_CACHE_TAG } from "@/lib/participants/fetch-random-home-exhibitors";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { revalidateMapDataCacheIfLiveTour } from "@/lib/map/revalidate-map-cache";
+import { revalidateProgramCacheIfLiveTour } from "@/lib/program/revalidate-program-cache";
+import { revalidateExhibitorCachesIfLiveTour } from "@/lib/participants/revalidate-participant-visibility-caches";
 import { PARTICIPANT_PLACEHOLDER_CACHE_TAG } from "@/lib/participants/get-participant-placeholder-url";
 
-export const revalidateParticipantPlaceholderCache = (): void => {
+export const revalidateParticipantPlaceholderCache = async (
+  supabase: SupabaseClient
+): Promise<void> => {
   revalidateTag(PARTICIPANT_PLACEHOLDER_CACHE_TAG, "max");
-  revalidateTag(EXHIBITORS_PAGE_CACHE_TAG, "max");
-  revalidateTag(HOME_EXHIBITORS_RANDOM_CACHE_TAG, "max");
   revalidatePath("/");
-  revalidatePath("/exhibitors");
-  revalidateMapDataCache();
-  revalidateProgramCache();
+  await revalidateExhibitorCachesIfLiveTour(supabase);
+  await revalidateMapDataCacheIfLiveTour(supabase);
+  await revalidateProgramCacheIfLiveTour(supabase);
 };

@@ -1,4 +1,5 @@
 import { revalidatePath, revalidateTag } from "next/cache";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { EVENT_HEADER_CACHE_TAG } from "@/lib/events/fetch-event-header-title";
 import {
   PROGRAM_DETAIL_CACHE_TAG,
@@ -10,4 +11,26 @@ export const revalidateProgramCache = (): void => {
   revalidateTag(PROGRAM_DETAIL_CACHE_TAG, "max");
   revalidateTag(EVENT_HEADER_CACHE_TAG, "max");
   revalidatePath("/program");
+};
+
+/** Invalidate program caches only while the tour is live (snapshot data is frozen). */
+export const revalidateProgramCacheIfLiveTour = async (
+  supabase: SupabaseClient
+): Promise<void> => {
+  const { data, error } = await supabase
+    .from("tour_status")
+    .select("current_tour_status")
+    .single();
+
+  if (error) {
+    console.error(
+      "Could not read tour status for program cache invalidation:",
+      error
+    );
+    return;
+  }
+
+  if (data?.current_tour_status === "new") {
+    revalidateProgramCache();
+  }
 };

@@ -4,12 +4,24 @@ import {
 } from "@/lib/map/build-map-locations";
 import { revalidateMainSectionCache } from "@/lib/main/revalidate-main-section-cache";
 import { revalidateMapDataCache } from "@/lib/map/revalidate-map-cache";
+import { revalidateProgramCache } from "@/lib/program/revalidate-program-cache";
+import { revalidateExhibitorCaches } from "@/lib/participants/revalidate-participant-visibility-caches";
+import { buildTourContentSnapshots } from "@/lib/tour/build-tour-snapshots";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { toMediaKey } from "@/lib/media/media-url";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { config } from "@/config";
+
+const TOUR_STATUS_ROW_ID = "00000000-0000-0000-0000-000000000001";
+
+const revalidatePublicTourCaches = (): void => {
+  revalidateMapDataCache();
+  revalidateMainSectionCache();
+  revalidateProgramCache();
+  revalidateExhibitorCaches();
+};
 
 export async function GET() {
   try {
@@ -49,13 +61,9 @@ export async function PUT(request: Request) {
   }
 
   try {
-    // Use admin client to bypass RLS when closing/opening tours
-    // This is required for all database operations: updating participants, events, 
-    // fetching/deleting old events, and updating tour_status
     const supabase = await createAdminClient();
     const { current_tour_status, action } = await request.json();
 
-    // Validate action type
     if (action && !["close", "open"].includes(action)) {
       return NextResponse.json(
         { error: "Invalid action. Must be 'close' or 'open'" },
@@ -63,11 +71,55 @@ export async function PUT(request: Request) {
       );
     }
 
-    // If closing tour (setting to "older"), perform atomic operations
     if (action === "close" || current_tour_status === "older") {
-      // Start a transaction-like operation by performing all updates
+      // 1. Build content snapshots from live current-tour data BEFORE flags flip.
+      let contentSnapshots;
+      try {
+        contentSnapshots = await buildTourContentSnapshots(supabase);
+      } catch (snapshotError) {
+        console.error("Error building tour content snapshots:", snapshotError);
+        return NextResponse.json(
+          { error: "Failed to build tour content snapshots" },
+          { status: 500 }
+        );
+      }
 
-      // 1. Update all active participants: set was_active_last_year = true
+      let mapInfoSnapshot = createMapLocationSnapshot([]);
+      try {
+        const locations = await buildMapLocations(supabase, "new");
+        mapInfoSnapshot = createMapLocationSnapshot(locations);
+      } catch (mapError) {
+        console.error("Error building map snapshot:", mapError);
+        return NextResponse.json(
+          { error: "Failed to fetch map info for snapshot" },
+          { status: 500 }
+        );
+      }
+
+      const { data: currentEventDays, error: eventDaysFetchError } =
+        await supabase
+          .from("events_days")
+          .select("dayId, label, date")
+          .order("dayId");
+
+      if (eventDaysFetchError) {
+        console.error(
+          "Error fetching event days for snapshot:",
+          eventDaysFetchError
+        );
+        return NextResponse.json(
+          { error: "Failed to fetch event days for snapshot" },
+          { status: 500 }
+        );
+      }
+
+      const eventDaysSnapshot = (currentEventDays || []).map((day) => ({
+        dayId: day.dayId,
+        label: day.label,
+        date: day.date,
+      }));
+
+      // 2. Flag active participants + current events for previous tour.
       const { error: participantError } = await supabase
         .from("participant_details")
         .update({ was_active_last_year: true })
@@ -81,8 +133,6 @@ export async function PUT(request: Request) {
         );
       }
 
-      // 2. Update all current tour events: set is_last_year_event = true
-      // Only update events that are not already marked as last year events
       const { error: eventsError } = await supabase
         .from("events")
         .update({ is_last_year_event: true })
@@ -97,53 +147,22 @@ export async function PUT(request: Request) {
         );
       }
 
-      // 3. Save snapshot of current event days before closing tour
-      // Fetch ALL current event days to store as snapshot (no filtering needed)
-      const { data: currentEventDays, error: eventDaysFetchError } =
-        await supabase
-          .from("events_days")
-          .select("dayId, label, date")
-          .order("dayId");
-
-      if (eventDaysFetchError) {
-        console.error("Error fetching event days for snapshot:", eventDaysFetchError);
-        return NextResponse.json(
-          { error: "Failed to fetch event days for snapshot" },
-          { status: 500 }
-        );
-      }
-
-      // Transform to snapshot format (only dayId, label, date)
-      const eventDaysSnapshot = (currentEventDays || []).map((day) => ({
-        dayId: day.dayId,
-        label: day.label,
-        date: day.date,
-      }));
-
-      // 4. Save lean map snapshot (v2) before closing tour
-      let mapInfoSnapshot = createMapLocationSnapshot([]);
-
-      try {
-        const locations = await buildMapLocations(supabase, "new");
-        mapInfoSnapshot = createMapLocationSnapshot(locations);
-      } catch (mapError) {
-        console.error("Error building map snapshot:", mapError);
-        return NextResponse.json(
-          { error: "Failed to fetch map info for snapshot" },
-          { status: 500 }
-        );
-      }
-
-      // 5. Update tour status to "older" and save the snapshots
+      // 3. Persist snapshots and flip status.
       const { data, error: statusError } = await supabase
         .from("tour_status")
         .update({
           current_tour_status: "older",
           previous_tour_event_days: eventDaysSnapshot,
           previous_tour_map_info: mapInfoSnapshot,
+          previous_tour_program: contentSnapshots.program,
+          previous_tour_exhibitors_grouped: contentSnapshots.exhibitorsGrouped,
+          previous_tour_exhibitor_details: contentSnapshots.exhibitorDetails,
+          previous_tour_hub_details: contentSnapshots.hubDetails,
+          previous_tour_participant_categories:
+            contentSnapshots.participantCategories,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", "00000000-0000-0000-0000-000000000001")
+        .eq("id", TOUR_STATUS_ROW_ID)
         .select();
 
       if (statusError) {
@@ -154,26 +173,27 @@ export async function PUT(request: Request) {
         );
       }
 
-      // Get count of participants that were marked
       const { count: participantCount } = await supabase
         .from("participant_details")
         .select("*", { count: "exact", head: true })
         .eq("was_active_last_year", true);
 
       const mapLocationsCount = mapInfoSnapshot.locations.length;
-      revalidateMapDataCache();
-      revalidateMainSectionCache();
+      revalidatePublicTourCaches();
+
       return NextResponse.json({
         ...data[0],
         participantCount: participantCount || 0,
-        mapLocationsCount: mapLocationsCount,
-        message: `Tour closed successfully. All active participants, events, event days (${eventDaysSnapshot.length}), and map data (${mapLocationsCount} locations) have been marked/snapshotted for the previous tour.`,
+        mapLocationsCount,
+        programEventsCount: contentSnapshots.program.details.length,
+        exhibitorDetailsCount: Object.keys(
+          contentSnapshots.exhibitorDetails.bySlug
+        ).length,
+        message: `Tour closed successfully. Snapshotted program (${contentSnapshots.program.details.length}), exhibitors, categories, event days (${eventDaysSnapshot.length}), and map (${mapLocationsCount} locations).`,
       });
     }
 
-    // If opening new tour (setting to "new")
     if (action === "open" || current_tour_status === "new") {
-      // Fetch all last year events to delete them and their images
       const { data: oldEvents, error: fetchOldEventsError } = await supabase
         .from("events")
         .select("id, image_url")
@@ -187,8 +207,6 @@ export async function PUT(request: Request) {
         );
       }
 
-      // Delete event images from storage. Stored values are bucket-relative keys
-      // (toMediaKey also tolerates legacy absolute URLs).
       if (oldEvents && oldEvents.length > 0) {
         for (const event of oldEvents) {
           const path = toMediaKey(event.image_url as string | null);
@@ -205,13 +223,14 @@ export async function PUT(request: Request) {
                 );
               }
             } catch (error) {
-              // Log but don't fail if image deletion fails
-              console.error(`Failed to delete image for event ${event.id}:`, error);
+              console.error(
+                `Failed to delete image for event ${event.id}:`,
+                error
+              );
             }
           }
         }
 
-        // Delete old events from database
         const eventIds = oldEvents.map((e) => e.id);
         const { error: deleteEventsError } = await supabase
           .from("events")
@@ -227,18 +246,20 @@ export async function PUT(request: Request) {
         }
       }
 
-      // Update tour status to "new" and clear snapshots
-      // Snapshots are only needed when viewing "older" tour, so we can clear them
-      // when opening a new tour to keep database clean
       const { data, error: statusError } = await supabase
         .from("tour_status")
         .update({
           current_tour_status: "new",
           previous_tour_event_days: null,
           previous_tour_map_info: null,
+          previous_tour_program: null,
+          previous_tour_exhibitors_grouped: null,
+          previous_tour_exhibitor_details: null,
+          previous_tour_hub_details: null,
+          previous_tour_participant_categories: null,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", "00000000-0000-0000-0000-000000000001")
+        .eq("id", TOUR_STATUS_ROW_ID)
         .select();
 
       if (statusError) {
@@ -250,8 +271,8 @@ export async function PUT(request: Request) {
       }
 
       const deletedCount = oldEvents?.length || 0;
-      revalidateMapDataCache();
-      revalidateMainSectionCache();
+      revalidatePublicTourCaches();
+
       return NextResponse.json({
         ...data[0],
         deletedEventsCount: deletedCount,
@@ -259,14 +280,13 @@ export async function PUT(request: Request) {
       });
     }
 
-    // Default: just update the status without performing snapshot operations
     const { data, error: statusError } = await supabase
       .from("tour_status")
       .update({
         current_tour_status,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", "00000000-0000-0000-0000-000000000001")
+      .eq("id", TOUR_STATUS_ROW_ID)
       .select();
 
     if (statusError) {

@@ -1,5 +1,5 @@
 import { fetchEventHeaderTitle as fetchEventHeaderTitleFromDb } from "@/lib/events/fetch-event-header-title";
-import { revalidateProgramCache } from "@/lib/program/revalidate-program-cache";
+import { revalidateProgramCacheIfLiveTour } from "@/lib/program/revalidate-program-cache";
 import { EventDay, eventDaysResponseSchema } from "@/schemas/eventSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
@@ -43,7 +43,7 @@ export const upsertEventHeaderTitle = async (
     }
 
     revalidatePath("/program");
-    revalidateProgramCache();
+    await revalidateProgramCacheIfLiveTour(client);
 
     return { header_title: insertData.header_title };
   }
@@ -65,7 +65,7 @@ export const upsertEventHeaderTitle = async (
   }
 
   revalidatePath("/program");
-  revalidateProgramCache();
+  await revalidateProgramCacheIfLiveTour(client);
 
   return { header_title: data.header_title };
 };
