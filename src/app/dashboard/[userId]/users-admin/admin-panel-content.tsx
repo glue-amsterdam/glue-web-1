@@ -1,38 +1,26 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { AdminUserDetail, AdminUserListItem } from "@/types/admin-user";
 import {
   UserRowDesktop,
   UserRowMobile,
 } from "@/app/dashboard/[userId]/users-admin/user-row";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
+import {
+  ADMIN_USERS_PAGE_SIZE,
+  buildAdminUsersPageSearchParams,
+  type AdminUsersCategory,
+  type AdminUsersCreatedAtFilter,
+  type AdminUsersPageResponse,
+  type AdminUsersSortBy,
+} from "@/lib/admin/get-admin-users-page";
 import { UsersReportDialog } from "@/app/dashboard/[userId]/users-admin/users-report-dialog";
 import type { AdminUserReportCategory } from "@/lib/admin/filter-admin-users";
 
-type Category = "all" | "participant" | "visitor" | "moderator";
-type SortBy = "name" | "status" | "createdAt";
-type CreatedAtFilter = "all" | "7d" | "30d" | "90d";
-
-const CREATED_AT_FILTER_DAYS: Record<Exclude<CreatedAtFilter, "all">, number> = {
-  "7d": 7,
-  "30d": 30,
-  "90d": 90,
-};
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-const getCreatedAtCutoff = (filter: CreatedAtFilter): number | null => {
-  if (filter === "all") return null;
-  return Date.now() - CREATED_AT_FILTER_DAYS[filter] * MS_PER_DAY;
-};
-
-const getCreatedAtTimestamp = (createdAt: string | null): number | null => {
-  if (!createdAt) return null;
-  const timestamp = new Date(createdAt).getTime();
-  return Number.isNaN(timestamp) ? null : timestamp;
-};
+type Category = AdminUsersCategory;
+type SortBy = AdminUsersSortBy;
+type CreatedAtFilter = AdminUsersCreatedAtFilter;
 
 const CATEGORIES: { value: Category; label: string }[] = [
   { value: "all", label: "All" },
@@ -41,12 +29,6 @@ const CATEGORIES: { value: Category; label: string }[] = [
   { value: "moderator", label: "Moderators" },
 ];
 
-const STATUS_ORDER: Record<string, number> = {
-  pending: 0,
-  accepted: 1,
-  declined: 2,
-};
-
 const selectClass =
   "text-sm border border-gray-300 rounded px-2 py-1.5 bg-white text-black";
 
@@ -54,16 +36,54 @@ const inputClass =
   "w-full text-sm border border-gray-300 rounded px-2 py-1.5 bg-white text-black md:max-w-sm";
 
 const filterButtonClass = (active: boolean) =>
-  `text-xs border rounded px-2 py-1 ${active ? "bg-black text-white border-black" : "border-gray-300"
+  `text-xs border rounded px-2 py-1 ${
+    active ? "bg-black text-white border-black" : "border-gray-300"
   }`;
 
+const paginationButtonClass = (active: boolean, disabled: boolean) =>
+  `min-w-8 text-xs border rounded px-2 py-1 ${
+    active
+      ? "bg-black text-white border-black"
+      : "border-gray-300 text-black"
+  } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`;
+
+const SEARCH_DEBOUNCE_MS = 300;
+
+const getVisiblePageNumbers = (
+  currentPage: number,
+  totalPages: number
+): number[] => {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const pages = new Set<number>([1, totalPages, currentPage]);
+  for (const offset of [-2, -1, 1, 2]) {
+    const page = currentPage + offset;
+    if (page > 1 && page < totalPages) {
+      pages.add(page);
+    }
+  }
+
+  return [...pages].sort((a, b) => a - b);
+};
+
 interface UsersAdminPanelProps {
-  users: AdminUserListItem[];
+  initialData: AdminUsersPageResponse;
 }
 
-export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanelProps) {
-  const [users, setUsers] = useState(initialUsers);
+export default function UsersAdminPanel({
+  initialData,
+}: UsersAdminPanelProps) {
+  const [users, setUsers] = useState<AdminUserListItem[]>(initialData.items);
+  const [page, setPage] = useState(initialData.page);
+  const [total, setTotal] = useState(initialData.total);
+  const [totalPages, setTotalPages] = useState(initialData.totalPages);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState<Category>("all");
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
@@ -82,18 +102,114 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
   const [specialProgramFilter, setSpecialProgramFilter] = useState("all");
   const [reactivationStatusFilter, setReactivationStatusFilter] =
     useState("all");
-  const [createdAtFilter, setCreatedAtFilter] = useState<CreatedAtFilter>("all");
+  const [createdAtFilter, setCreatedAtFilter] =
+    useState<CreatedAtFilter>("all");
 
   const [sortBy, setSortBy] = useState<SortBy>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
-  const router = useRouter();
   const { toast } = useToast();
+  const skipFirstFetchRef = useRef(true);
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
-    setUsers(initialUsers);
-  }, [initialUsers]);
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(searchTerm.trim());
+    }, SEARCH_DEBOUNCE_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  const hasParticipantFilterActive =
+    participantStatus !== "all" ||
+    stickyFilter !== "all" ||
+    activeFilter !== "all" ||
+    specialProgramFilter !== "all" ||
+    reactivationStatusFilter !== "all";
+
+  const hasAnyFilterActive =
+    hasParticipantFilterActive ||
+    createdAtFilter !== "all" ||
+    searchTerm !== "";
+
+  const fetchUsersPage = async (nextPage: number) => {
+    const requestId = ++requestIdRef.current;
+    setIsLoading(true);
+    setLoadError(null);
+
+    try {
+      const params = buildAdminUsersPageSearchParams({
+        page: nextPage,
+        limit: ADMIN_USERS_PAGE_SIZE,
+        search: debouncedSearch,
+        category,
+        createdAtFilter,
+        participantStatus,
+        stickyFilter,
+        activeFilter,
+        specialProgramFilter,
+        reactivationStatusFilter,
+        sortBy,
+        sortOrder,
+      });
+
+      const response = await fetch(`/api/admin/users?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("Failed to load users");
+      }
+
+      const data = (await response.json()) as AdminUsersPageResponse;
+      if (requestId !== requestIdRef.current) return;
+
+      setUsers(data.items);
+      setPage(data.page);
+      setTotal(data.total);
+      setTotalPages(data.totalPages);
+      setSelectedUsers(new Set());
+      setExpandedUserId(null);
+    } catch {
+      if (requestId !== requestIdRef.current) return;
+      setLoadError("Failed to load users");
+      toast({
+        title: "Error",
+        description: "Failed to load users",
+        variant: "destructive",
+      });
+    } finally {
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (skipFirstFetchRef.current) {
+      skipFirstFetchRef.current = false;
+      return;
+    }
+    void fetchUsersPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch when filters/search/sort change
+  }, [
+    debouncedSearch,
+    category,
+    createdAtFilter,
+    participantStatus,
+    stickyFilter,
+    activeFilter,
+    specialProgramFilter,
+    reactivationStatusFilter,
+    sortBy,
+    sortOrder,
+  ]);
+
+  useEffect(() => {
+    if (
+      expandedUserId &&
+      !users.some((user) => user.userId === expandedUserId)
+    ) {
+      setExpandedUserId(null);
+    }
+  }, [users, expandedUserId]);
 
   const handleModStatusChange = (userId: string, isMod: boolean) => {
     setUsers((current) =>
@@ -109,162 +225,7 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
       next.set(userId, { ...detail, isMod });
       return next;
     });
-    router.refresh();
   };
-
-  const hasParticipantFilterActive =
-    participantStatus !== "all" ||
-    stickyFilter !== "all" ||
-    activeFilter !== "all" ||
-    specialProgramFilter !== "all" ||
-    reactivationStatusFilter !== "all";
-
-  const hasAnyFilterActive =
-    hasParticipantFilterActive ||
-    createdAtFilter !== "all" ||
-    searchTerm !== "";
-
-  useEffect(() => {
-    if (
-      expandedUserId &&
-      !users.some((user) => user.userId === expandedUserId)
-    ) {
-      setExpandedUserId(null);
-    }
-  }, [users, expandedUserId]);
-
-  const filteredAndSortedUsers = useMemo(() => {
-    const createdAtCutoff = getCreatedAtCutoff(createdAtFilter);
-
-    const filtered = users.filter((user) => {
-      if (category === "participant" && user.entityType !== "participant") {
-        return false;
-      }
-      if (category === "visitor" && user.entityType !== "visitor") {
-        return false;
-      }
-      if (category === "moderator" && !user.isMod) {
-        return false;
-      }
-
-      if (hasParticipantFilterActive && user.entityType !== "participant") {
-        return false;
-      }
-
-      if (createdAtCutoff !== null) {
-        const createdAtTimestamp = getCreatedAtTimestamp(user.createdAt);
-        if (createdAtTimestamp === null || createdAtTimestamp < createdAtCutoff) {
-          return false;
-        }
-      }
-
-      if (searchTerm) {
-        const searchLower = searchTerm.toLowerCase();
-        const matchesName = user.displayName
-          .toLowerCase()
-          .includes(searchLower);
-        const matchesEmail = user.email?.toLowerCase().includes(searchLower);
-        const matchesId = user.userId.toLowerCase().includes(searchLower);
-        const matchesSlug = user.participantSlug
-          ?.toLowerCase()
-          .includes(searchLower);
-
-        if (!matchesName && !matchesEmail && !matchesId && !matchesSlug) {
-          return false;
-        }
-      }
-
-      if (user.entityType === "participant") {
-        if (
-          participantStatus !== "all" &&
-          user.participantStatus !== participantStatus
-        ) {
-          return false;
-        }
-        if (stickyFilter === "sticky" && !user.participantIsSticky) {
-          return false;
-        }
-        if (stickyFilter === "not_sticky" && user.participantIsSticky) {
-          return false;
-        }
-        if (activeFilter === "active" && !user.participantIsActive) {
-          return false;
-        }
-        if (activeFilter === "inactive" && user.participantIsActive) {
-          return false;
-        }
-        if (specialProgramFilter === "yes" && user.participantCategory === "standard") {
-          return false;
-        }
-        if (specialProgramFilter === "no" && user.participantCategory !== "standard") {
-          return false;
-        }
-        if (
-          reactivationStatusFilter !== "all" &&
-          user.participantReactivationStatus !== reactivationStatusFilter
-        ) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-    filtered.sort((a, b) => {
-      let cmp = 0;
-
-      if (sortBy === "status" && category === "participant") {
-        const aOrder = STATUS_ORDER[a.participantStatus ?? ""] ?? 99;
-        const bOrder = STATUS_ORDER[b.participantStatus ?? ""] ?? 99;
-        cmp = aOrder - bOrder;
-        if (cmp === 0) {
-          cmp = a.displayName.localeCompare(b.displayName, undefined, {
-            sensitivity: "base",
-          });
-        }
-      } else if (sortBy === "createdAt") {
-        const aTimestamp = getCreatedAtTimestamp(a.createdAt);
-        const bTimestamp = getCreatedAtTimestamp(b.createdAt);
-
-        if (aTimestamp === null && bTimestamp === null) {
-          cmp = 0;
-        } else if (aTimestamp === null) {
-          cmp = 1;
-        } else if (bTimestamp === null) {
-          cmp = -1;
-        } else {
-          cmp = aTimestamp - bTimestamp;
-        }
-
-        if (cmp === 0) {
-          cmp = a.displayName.localeCompare(b.displayName, undefined, {
-            sensitivity: "base",
-          });
-        }
-      } else {
-        cmp = a.displayName.localeCompare(b.displayName, undefined, {
-          sensitivity: "base",
-        });
-      }
-
-      return sortOrder === "asc" ? cmp : -cmp;
-    });
-
-    return filtered;
-  }, [
-    users,
-    searchTerm,
-    category,
-    participantStatus,
-    stickyFilter,
-    activeFilter,
-    specialProgramFilter,
-    reactivationStatusFilter,
-    createdAtFilter,
-    sortBy,
-    sortOrder,
-    hasParticipantFilterActive,
-  ]);
 
   const handleToggleExpand = async (userId: string) => {
     if (expandedUserId === userId) {
@@ -340,7 +301,11 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
       if (response.ok) {
         setSelectedUsers(new Set());
         setExpandedUserId(null);
-        router.refresh();
+
+        const remainingOnPage = users.length - (result.deletedUsers?.length ?? 0);
+        const nextPage =
+          remainingOnPage <= 0 && page > 1 ? page - 1 : page;
+        await fetchUsersPage(nextPage);
 
         if (response.status === 207) {
           toast({
@@ -371,6 +336,7 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
 
   const handleClearFilters = () => {
     setSearchTerm("");
+    setDebouncedSearch("");
     setParticipantStatus("all");
     setStickyFilter("all");
     setActiveFilter("all");
@@ -388,7 +354,15 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
     }
   };
 
+  const handlePageChange = (nextPage: number) => {
+    if (nextPage < 1 || nextPage > totalPages || nextPage === page || isLoading) {
+      return;
+    }
+    void fetchUsersPage(nextPage);
+  };
+
   const showParticipantFilters = category === "participant";
+  const visiblePages = getVisiblePageNumbers(page, Math.max(totalPages, 0));
 
   return (
     <div className="px-4 md:px-[30px] mini-padding pb-8 min-w-0">
@@ -418,7 +392,6 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
       <UsersReportDialog
         open={isReportDialogOpen}
         onOpenChange={setIsReportDialogOpen}
-        users={users}
         initialCategory={category as AdminUserReportCategory}
         initialParticipantStatus={
           participantStatus === "pending" ||
@@ -430,10 +403,14 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
       />
 
       <div className="mb-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
-        <span>{filteredAndSortedUsers.length} users</span>
+        <span>
+          {total} user{total === 1 ? "" : "s"}
+          {totalPages > 0 ? ` · page ${page} of ${totalPages}` : ""}
+        </span>
         {selectedUsers.size > 0 && (
           <span>{selectedUsers.size} selected</span>
         )}
+        {isLoading && <span aria-live="polite">Loading…</span>}
       </div>
 
       <div className="mb-3">
@@ -473,7 +450,9 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
         ))}
         <select
           value={createdAtFilter}
-          onChange={(e) => setCreatedAtFilter(e.target.value as CreatedAtFilter)}
+          onChange={(e) =>
+            setCreatedAtFilter(e.target.value as CreatedAtFilter)
+          }
           className={selectClass}
           aria-label="Filter by registration date"
         >
@@ -580,11 +559,17 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
         </div>
       )}
 
-      {filteredAndSortedUsers.length === 0 ? (
+      {loadError && users.length === 0 ? (
+        <p className="text-sm text-red-600">{loadError}</p>
+      ) : users.length === 0 ? (
         <p className="text-sm text-muted-foreground">No users found</p>
       ) : (
         <>
-          <div className="md:hidden border border-gray-200 min-w-0">
+          <div
+            className={`md:hidden border border-gray-200 min-w-0 ${
+              isLoading ? "opacity-60" : ""
+            }`}
+          >
             <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-2 py-2 text-sm font-medium">
               <span className="w-4 shrink-0">
                 <span className="sr-only">Select</span>
@@ -592,7 +577,7 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
               <span className="min-w-0 flex-1">Name</span>
               <span className="shrink-0">Actions</span>
             </div>
-            {filteredAndSortedUsers.map((user) => (
+            {users.map((user) => (
               <UserRowMobile
                 key={user.userId}
                 user={user}
@@ -608,7 +593,11 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
             ))}
           </div>
 
-          <div className="hidden md:block border border-gray-200 overflow-x-auto">
+          <div
+            className={`hidden md:block border border-gray-200 overflow-x-auto ${
+              isLoading ? "opacity-60" : ""
+            }`}
+          >
             <table className="w-full table-fixed text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 text-left">
@@ -628,7 +617,7 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
                 </tr>
               </thead>
               <tbody>
-                {filteredAndSortedUsers.map((user) => (
+                {users.map((user) => (
                   <UserRowDesktop
                     key={user.userId}
                     user={user}
@@ -646,6 +635,62 @@ export default function UsersAdminPanel({ users: initialUsers }: UsersAdminPanel
             </table>
           </div>
         </>
+      )}
+
+      {totalPages > 1 && (
+        <nav
+          className="mt-4 flex flex-wrap items-center gap-2"
+          aria-label="Users pagination"
+        >
+          <button
+            type="button"
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page <= 1 || isLoading}
+            className={paginationButtonClass(false, page <= 1 || isLoading)}
+            aria-label="Previous page"
+          >
+            Prev
+          </button>
+          {visiblePages.map((pageNumber, index) => {
+            const previous = visiblePages[index - 1];
+            const showEllipsis =
+              previous !== undefined && pageNumber - previous > 1;
+            return (
+              <span key={pageNumber} className="flex items-center gap-2">
+                {showEllipsis && (
+                  <span className="text-xs text-muted-foreground" aria-hidden>
+                    …
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(pageNumber)}
+                  disabled={isLoading}
+                  className={paginationButtonClass(
+                    pageNumber === page,
+                    isLoading
+                  )}
+                  aria-label={`Page ${pageNumber}`}
+                  aria-current={pageNumber === page ? "page" : undefined}
+                >
+                  {pageNumber}
+                </button>
+              </span>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page >= totalPages || isLoading}
+            className={paginationButtonClass(
+              false,
+              page >= totalPages || isLoading
+            )}
+            aria-label="Next page"
+          >
+            Next
+          </button>
+        </nav>
       )}
     </div>
   );

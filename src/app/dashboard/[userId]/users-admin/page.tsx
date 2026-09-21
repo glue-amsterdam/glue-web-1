@@ -1,4 +1,8 @@
-import { getAdminUserList } from "@/lib/admin/get-admin-user-list";
+import {
+  DEFAULT_ADMIN_USERS_PAGE_QUERY,
+  getAdminUsersPage,
+  type AdminUsersPageResponse,
+} from "@/lib/admin/get-admin-users-page";
 import { generateDashboardSectionMetadata } from "@/lib/metadata/build-dashboard-metadata";
 import { getIsPlatformMod } from "@/lib/permissions/get-is-mod";
 import { createAdminClient } from "@/utils/supabase/adminClient";
@@ -37,7 +41,10 @@ export default async function UsersAdminPage({
   }
 
   const admin = await createAdminClient();
-  const users = await getAdminUserList(admin);
+  const initialData: AdminUsersPageResponse = await getAdminUsersPage(
+    admin,
+    DEFAULT_ADMIN_USERS_PAGE_QUERY
+  );
 
-  return <UsersAdminClient users={users} key={userId} />;
+  return <UsersAdminClient initialData={initialData} key={userId} />;
 }

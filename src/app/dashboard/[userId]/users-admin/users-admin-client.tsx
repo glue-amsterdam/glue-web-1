@@ -1,12 +1,12 @@
 "use client";
 
-import type { AdminUserListItem } from "@/types/admin-user";
+import type { AdminUsersPageResponse } from "@/lib/admin/get-admin-users-page";
 import UsersAdminPanel from "@/app/dashboard/[userId]/users-admin/admin-panel-content";
 
 type Props = {
-  users: AdminUserListItem[];
+  initialData: AdminUsersPageResponse;
 };
 
-export default function UsersAdminClient({ users }: Props) {
-  return <UsersAdminPanel users={users} />;
+export default function UsersAdminClient({ initialData }: Props) {
+  return <UsersAdminPanel initialData={initialData} />;
 }

@@ -22,6 +22,10 @@ import {
   organizerBadgeFieldsFromEmbed,
   slugFromEmbed,
 } from "./program-utils";
+import {
+  fetchTourSnapshotRow,
+  getProgramListFromSnapshot,
+} from "@/lib/tour/read-tour-snapshots";
 
 type LocationEmbed = {
   formatted_address: string | null;
@@ -74,6 +78,23 @@ export const loadProgramListItems = async (
   options: LoadProgramEventsOptions = {}
 ): Promise<ProgramListItem[]> => {
   const currentTourStatus = await getCurrentTourStatus(supabase);
+
+  if (currentTourStatus === "older") {
+    const snapshotRow = await fetchTourSnapshotRow(supabase);
+    const snapshotted = getProgramListFromSnapshot(
+      snapshotRow?.previous_tour_program
+    );
+    if (snapshotted) {
+      return snapshotted.filter((item) => {
+        if (options.type && item.type !== options.type) return false;
+        if (options.day && item.date.dayId !== options.day) return false;
+        return true;
+      });
+    }
+    console.warn(
+      "Tour is older but program snapshot is missing; falling back to live last-year events."
+    );
+  }
 
   let query = supabase.from("events").select(`
     id,

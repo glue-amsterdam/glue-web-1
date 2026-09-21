@@ -94,6 +94,6 @@ export async function removePressKitLink(id: string) {
 
 export async function notifyParticipantPlaceholderUpdated(): Promise<string> {
   const supabase = await requireAdmin();
-  revalidateParticipantPlaceholderCache();
+  await revalidateParticipantPlaceholderCache(supabase);
   return getParticipantPlaceholderUrlFresh(supabase);
 }

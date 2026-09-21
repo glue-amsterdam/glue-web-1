@@ -42,14 +42,40 @@ export const revalidateExhibitorSlugPaths = (
   }
 };
 
-export const revalidateParticipantVisibilityCaches = async (
-  supabase: SupabaseClient
-): Promise<void> => {
+export const revalidateExhibitorCaches = (): void => {
   revalidateTag(EXHIBITORS_PAGE_CACHE_TAG, "max");
   revalidateTag(EXHIBITOR_DETAIL_CACHE_TAG, "max");
   revalidateTag(EXHIBITOR_HUB_DETAIL_CACHE_TAG, "max");
   revalidateTag(HOME_EXHIBITORS_RANDOM_CACHE_TAG, "max");
   revalidatePath("/exhibitors");
   revalidatePath("/");
+};
+
+/** Invalidate exhibitor caches only while the tour is live (snapshot data is frozen). */
+export const revalidateExhibitorCachesIfLiveTour = async (
+  supabase: SupabaseClient
+): Promise<void> => {
+  const { data, error } = await supabase
+    .from("tour_status")
+    .select("current_tour_status")
+    .single();
+
+  if (error) {
+    console.error(
+      "Could not read tour status for exhibitor cache invalidation:",
+      error
+    );
+    return;
+  }
+
+  if (data?.current_tour_status === "new") {
+    revalidateExhibitorCaches();
+  }
+};
+
+export const revalidateParticipantVisibilityCaches = async (
+  supabase: SupabaseClient
+): Promise<void> => {
+  await revalidateExhibitorCachesIfLiveTour(supabase);
   await revalidateMapDataCacheIfLiveTour(supabase);
 };

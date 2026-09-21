@@ -1,7 +1,7 @@
 import { config } from "@/config";
 import { toMediaUrl } from "@/lib/media/media-url";
 import { validateEventWrite } from "@/lib/events/validate-event-write";
-import { revalidateProgramCache } from "@/lib/program/revalidate-program-cache";
+import { revalidateProgramCacheIfLiveTour } from "@/lib/program/revalidate-program-cache";
 import { EventType } from "@/schemas/eventSchemas";
 import {
   collectOrganizerUserIds,
@@ -10,6 +10,11 @@ import {
 } from "@/lib/participants/load-organizer-profiles";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
+import {
+  fetchTourSnapshotRow,
+  getProgramListFromSnapshot,
+  getProgramDetailFromSnapshot,
+} from "@/lib/tour/read-tour-snapshots";
 
 type ParticipantDetailsEmbed =
   | { slug?: string | null }
@@ -33,7 +38,6 @@ export async function GET(request: Request) {
 
   const supabase = await createClient();
 
-  // Fetch tour status first to determine filtering logic
   const { data: tourStatus, error: tourStatusError } = await supabase
     .from("tour_status")
     .select("current_tour_status")
@@ -41,10 +45,81 @@ export async function GET(request: Request) {
 
   if (tourStatusError) {
     console.error("Error fetching tour status:", tourStatusError);
-    // Default to "new" if tour status fetch fails
   }
 
   const currentTourStatus = tourStatus?.current_tour_status || "new";
+
+  if (currentTourStatus === "older") {
+    const snapshotRow = await fetchTourSnapshotRow(supabase);
+    const snapshotted = getProgramListFromSnapshot(
+      snapshotRow?.previous_tour_program
+    );
+    if (snapshotted) {
+      const items = snapshotted.filter((item) => {
+        if (type && item.type !== type) return false;
+        if (day && item.date.dayId !== day) return false;
+        return true;
+      });
+
+      const programSnapshot = snapshotRow?.previous_tour_program;
+      let enhancedEvents = items.map((item) => {
+        const detail = getProgramDetailFromSnapshot(
+          programSnapshot,
+          item.eventId
+        );
+        return {
+          eventId: item.eventId,
+          name: item.name,
+          description: detail?.description || "",
+          type: item.type || "",
+          date: item.date,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          thumbnail: {
+            image_url: item.eventImg || "",
+            alt: `${item.name} - event from GLUE design routes in ${config.cityName}`,
+          },
+          organizer: {
+            user_id: item.organizer.userId,
+            user_name: item.organizer.userName,
+            slug: item.organizer.slug || "",
+          },
+          location: {
+            id: detail?.location?.id || "",
+            formatted_address:
+              detail?.location?.formattedAddress ||
+              item.locationAddress ||
+              "",
+          },
+          coOrganizers: item.coOrganizers.map((co) => ({
+            user_id: co.userId,
+            user_name: co.userName,
+            slug: co.slug || "",
+          })),
+          rsvp: detail?.rsvp ?? false,
+          rsvpMessage: "",
+          rsvpLink: detail?.rsvpLink || "",
+          createdAt: "",
+        };
+      });
+
+      if (search) {
+        const searchLower = search.toLowerCase();
+        enhancedEvents = enhancedEvents.filter((event) => {
+          const coOrganizerMatch = event.coOrganizers.some((co) =>
+            co.user_name.toLowerCase().includes(searchLower)
+          );
+          const eventMatch =
+            event.name.toLowerCase().includes(searchLower) ||
+            event.description.toLowerCase().includes(searchLower) ||
+            event.organizer.user_name.toLowerCase().includes(searchLower);
+          return eventMatch || coOrganizerMatch;
+        });
+      }
+
+      return NextResponse.json(enhancedEvents);
+    }
+  }
 
   let query = supabase.from("events").select(`
     *,
@@ -247,7 +322,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    revalidateProgramCache();
+    await revalidateProgramCacheIfLiveTour(supabase);
 
     return NextResponse.json({
       message: "Event created successfully",

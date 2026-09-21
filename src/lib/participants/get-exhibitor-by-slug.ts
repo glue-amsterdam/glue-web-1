@@ -29,6 +29,10 @@ import { participantImagesToCarouselSlides } from "./exhibitor-carousel-slides";
 import { toBaseFormattedAddress } from "@/lib/map/to-base-formatted-address";
 import { getParticipantDisplayName } from "./get-participant-display-name";
 import { getParticipantPlaceholderUrl } from "./get-participant-placeholder-url";
+import {
+  fetchTourSnapshotRow,
+  getExhibitorDetailFromSnapshot,
+} from "@/lib/tour/read-tour-snapshots";
 
 type ParticipantRow = {
   user_id: string;
@@ -358,6 +362,21 @@ export const getExhibitorBySlug = async (
   supabase: SupabaseClient,
   slug: string
 ): Promise<ExhibitorParticipantDetail> => {
+  const tourStatusEarly = await getTourStatus(supabase);
+  if (tourStatusEarly === "older") {
+    const snapshotRow = await fetchTourSnapshotRow(supabase);
+    const snapshotted = getExhibitorDetailFromSnapshot(
+      snapshotRow?.previous_tour_exhibitor_details,
+      slug
+    );
+    if (snapshotted) {
+      return snapshotted;
+    }
+    console.warn(
+      `Tour is older but exhibitor detail snapshot missing for slug=${slug}; falling back to live.`
+    );
+  }
+
   const { data, error } = await supabase
     .from("participant_details")
     .select(
@@ -397,7 +416,7 @@ export const getExhibitorBySlug = async (
   const [isSticky, tourStatus, categories, membership, placeholderUrl, inheritedHubs] =
     await Promise.all([
       isParticipantSticky(supabase, row.user_id),
-      getTourStatus(supabase),
+      Promise.resolve(tourStatusEarly),
       getTheme().then((theme) => theme.participantCategories),
       resolveHubMembership(supabase, row.user_id),
       getParticipantPlaceholderUrl(supabase),

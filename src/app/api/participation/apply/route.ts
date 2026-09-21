@@ -12,16 +12,17 @@ import { ensureVisitorDataForAuthUser } from "@/lib/visitor/ensure-visitor-data"
 import { createVisitorToken } from "@/lib/visitor/create-visitor-token";
 import {
   sendModeratorParticipantNotification,
+  sendModeratorReactivationNotification,
   sendParticipantRegistrationEmail,
 } from "@/lib/email";
 import { config } from "@/config";
 import { revalidateParticipantVisibilityCaches } from "@/lib/participants/revalidate-participant-visibility-caches";
 import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/subscribe-to-mailchimp";
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const PARTICIPANT_PLAN_TYPE = "participant" as const;
+
+const buildParticipantReviewUrl = (userId: string) =>
+  `${config.baseUrl}/dashboard/${userId}/participant-details`;
 
 const ensureParticipantPlan = async (
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -29,7 +30,9 @@ const ensureParticipantPlan = async (
 ) => {
   const { data: plan, error } = await supabase
     .from("plans")
-    .select("plan_id, plan_type, plan_label, is_participant_enabled")
+    .select(
+      "plan_id, plan_type, plan_label, plan_price, plan_currency, is_participant_enabled",
+    )
     .eq("plan_id", planId)
     .maybeSingle();
 
@@ -153,22 +156,26 @@ export async function POST(request: Request) {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    const adminEmails = config.adminEmails
-      .split(",")
-      .filter((e) => e.trim() !== "");
+    const reactivation = parsed.data.reactivation;
 
-    if (adminEmails.length > 0 && user.email) {
-      try {
-        await resend.emails.send({
-          from: `GLUE <${config.baseEmail}>`,
-          to: adminEmails,
-          subject: "Participant Reactivation Request",
-          html: `<p>Reactivation request from ${profile?.display_name ?? user.email}</p><p>Plan: ${plan.plan_label}</p>`,
-        });
-      } catch (e) {
-        console.error("Reactivation email:", e);
-      }
-    }
+    await sendModeratorReactivationNotification({
+      user_id: user.id,
+      user_name: profile?.display_name ?? user.email ?? "Unknown",
+      email: user.email ?? reactivation.glue_communication_email ?? "N/A",
+      plan_id: plan.plan_id,
+      plan_type: PARTICIPANT_PLAN_TYPE,
+      plan_label: plan.plan_label,
+      plan_price: plan.plan_price,
+      plan_currency: plan.plan_currency,
+      review_url: buildParticipantReviewUrl(user.id),
+      invoice_company_name: reactivation.invoice_company_name,
+      invoice_city: reactivation.invoice_city,
+      invoice_country: reactivation.invoice_country,
+      formatted_address: reactivation.formatted_address,
+      exhibition_space_preference:
+        reactivation.exhibition_space_preference ?? null,
+      glue_communication_email: reactivation.glue_communication_email,
+    });
 
     return NextResponse.json({ success: true });
   }
@@ -445,12 +452,22 @@ export async function POST(request: Request) {
       : admin.from("map_info").insert(mapPayload),
   ]);
 
-  const notificationPayload = {
+  const notificationIntent =
+    data.intent === "upgrade" ? ("upgrade" as const) : ("new" as const);
+
+  const notificationPayload: Parameters<
+    typeof sendModeratorParticipantNotification
+  >[0] = {
     user_id: user.id,
     user_name: displayName,
-    email: userEmail,
+    email: userEmail ?? "N/A",
+    intent: notificationIntent,
     plan_id: data.plan_id,
     plan_type: PARTICIPANT_PLAN_TYPE,
+    plan_label: plan.plan_label,
+    plan_price: plan.plan_price,
+    plan_currency: plan.plan_currency,
+    review_url: buildParticipantReviewUrl(user.id),
     invoice_company_name: data.invoice_company_name,
     invoice_address: data.invoice_address,
     invoice_city: data.invoice_city,
@@ -460,7 +477,7 @@ export async function POST(request: Request) {
     formatted_address: data.formatted_address,
     latitude: data.latitude,
     longitude: data.longitude,
-    no_address: data.no_address,
+    no_address: data.no_address ?? undefined,
     exhibition_space_preference: data.exhibition_space_preference,
     phone_numbers: data.phone_numbers ?? undefined,
     social_media: data.social_media as Record<string, string> | undefined,
@@ -477,11 +494,7 @@ export async function POST(request: Request) {
     : Promise.resolve();
 
   await Promise.all([
-    sendModeratorParticipantNotification(
-      notificationPayload as Parameters<
-        typeof sendModeratorParticipantNotification
-      >[0],
-    ),
+    sendModeratorParticipantNotification(notificationPayload),
     participantEmailPromise,
     ensureVisitorDataForAuthUser(
       user.id,

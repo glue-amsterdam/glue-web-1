@@ -19,6 +19,10 @@ import { getParticipantDisplayName } from "./get-participant-display-name";
 import { getParticipantPlaceholderUrl } from "./get-participant-placeholder-url";
 import { toMediaUrl } from "@/lib/media/media-url";
 import type { InheritedHubOption } from "@/lib/numbers/pick-inherited-hub";
+import {
+  fetchTourSnapshotRow,
+  getExhibitorsGroupedFromSnapshot,
+} from "@/lib/tour/read-tour-snapshots";
 
 type ParticipantRow = {
   user_id: string;
@@ -144,17 +148,30 @@ const buildHubItem = (
 export const getExhibitors = async (
   supabase: SupabaseClient
 ): Promise<ExhibitorsGroupedResponse> => {
+  const currentTourStatus = await getTourStatus(supabase);
+
+  if (currentTourStatus === "older") {
+    const snapshotRow = await fetchTourSnapshotRow(supabase);
+    const snapshotted = getExhibitorsGroupedFromSnapshot(
+      snapshotRow?.previous_tour_exhibitors_grouped
+    );
+    if (snapshotted) {
+      return snapshotted;
+    }
+    console.warn(
+      "Tour is older but exhibitors snapshot is missing; falling back to live was_active_last_year list."
+    );
+  }
+
   const categories = await fetchParticipantCategories(supabase);
   const categorySlugs = categories.map((c) => c.slug);
   const grouped = createEmptyGroupedExhibitors(categorySlugs);
 
   const [
-    currentTourStatus,
     stickyIds,
     participantsResult,
     hubsResult,
   ] = await Promise.all([
-    getTourStatus(supabase),
     getStickyParticipantIds(supabase),
     supabase
       .from("participant_details")
