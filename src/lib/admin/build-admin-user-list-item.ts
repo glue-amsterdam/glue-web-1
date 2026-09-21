@@ -39,7 +39,7 @@ const resolveEmail = (
   return null;
 };
 
-const buildAdminUserListItem = (
+export const buildAdminUserListItem = (
   authUser: AuthUserSummary,
   enrichment: AdminUserEnrichment
 ): AdminUserListItem => {

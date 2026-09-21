@@ -34,7 +34,6 @@ type VisitorAreaOption = {
 type UsersReportDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  users: AdminUserListItem[];
   initialCategory?: AdminUserReportCategory;
   initialParticipantStatus?: ParticipantStatusFilter;
 };
@@ -58,7 +57,6 @@ const toolbarButtonClass =
 export const UsersReportDialog = ({
   open,
   onOpenChange,
-  users,
   initialCategory = "all",
   initialParticipantStatus = "all",
 }: UsersReportDialogProps) => {
@@ -76,6 +74,9 @@ export const UsersReportDialog = ({
   );
   const [visitorAreas, setVisitorAreas] = useState<VisitorAreaOption[]>([]);
   const [areasLoadError, setAreasLoadError] = useState<string | null>(null);
+  const [users, setUsers] = useState<AdminUserListItem[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [usersLoadError, setUsersLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -88,7 +89,46 @@ export const UsersReportDialog = ({
     setCreatedTo("");
     setSelectedFields(getDefaultReportFieldsForCategory(initialCategory));
     setAreasLoadError(null);
+    setUsersLoadError(null);
   }, [open, initialCategory, initialParticipantStatus]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    let cancelled = false;
+
+    const loadUsers = async () => {
+      setIsLoadingUsers(true);
+      setUsersLoadError(null);
+      try {
+        const response = await fetch("/api/admin/users/report");
+        if (!response.ok) {
+          throw new Error("Failed to load users");
+        }
+        const data = (await response.json()) as {
+          users?: AdminUserListItem[];
+        };
+        if (!cancelled) {
+          setUsers(data.users ?? []);
+        }
+      } catch {
+        if (!cancelled) {
+          setUsers([]);
+          setUsersLoadError("Could not load full user list for report");
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingUsers(false);
+        }
+      }
+    };
+
+    void loadUsers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open || category !== "visitor") return;
@@ -182,9 +222,12 @@ export const UsersReportDialog = ({
   };
 
   const canDownload =
+    !isLoadingUsers &&
+    !usersLoadError &&
     selectedFields.some((field) =>
       availableFields.some((option) => option.key === field)
-    ) && matchedUsers.length > 0;
+    ) &&
+    matchedUsers.length > 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -315,8 +358,13 @@ export const UsersReportDialog = ({
           </fieldset>
 
           <p className="text-sm text-muted-foreground" aria-live="polite">
-            {matchedUsers.length} user
-            {matchedUsers.length === 1 ? "" : "s"} match
+            {isLoadingUsers
+              ? "Loading full user list…"
+              : usersLoadError
+                ? usersLoadError
+                : `${matchedUsers.length} user${
+                    matchedUsers.length === 1 ? "" : "s"
+                  } match`}
           </p>
         </div>
 
