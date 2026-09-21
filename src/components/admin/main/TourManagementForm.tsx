@@ -29,6 +29,7 @@ interface TourStatus {
   current_tour_status: "new" | "older";
   updated_at: string;
   updated_by?: string | null;
+  programSnapshotEventCount?: number;
 }
 
 interface TourManagementFormProps {
@@ -42,6 +43,7 @@ export default function TourManagementForm({
   const [isLoading, setIsLoading] = useState(true);
   const [isClosing, setIsClosing] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
+  const [isRepairingProgram, setIsRepairingProgram] = useState(false);
   const [participantCount, setParticipantCount] = useState<number | null>(null);
   const [showCarryoverModal, setShowCarryoverModal] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -56,7 +58,13 @@ export default function TourManagementForm({
         throw new Error("Failed to fetch tour status");
       }
       const data = await response.json();
-      setTourStatus(data);
+      setTourStatus({
+        id: data.id,
+        current_tour_status: data.current_tour_status,
+        updated_at: data.updated_at,
+        updated_by: data.updated_by ?? null,
+        programSnapshotEventCount: data.programSnapshotEventCount ?? 0,
+      });
       setParticipantCount(null); // Reset participant count
     } catch (error) {
       console.error("Error fetching tour status:", error);
@@ -155,6 +163,8 @@ export default function TourManagementForm({
         ...tourStatus,
         current_tour_status: "older",
         updated_at: data.updated_at,
+        programSnapshotEventCount:
+          data.programSnapshotEventCount ?? data.programEventsCount ?? 0,
       });
       setParticipantCount(participantCountResult);
 
@@ -214,6 +224,7 @@ export default function TourManagementForm({
         ...tourStatus,
         current_tour_status: "new",
         updated_at: data.updated_at,
+        programSnapshotEventCount: 0,
       });
       setParticipantCount(null);
 
@@ -240,6 +251,63 @@ export default function TourManagementForm({
       });
     } finally {
       setIsOpening(false);
+    }
+  };
+
+  const handleRepairProgramSnapshot = async () => {
+    if (!tourStatus) return;
+
+    setIsRepairingProgram(true);
+    try {
+      const response = await fetch("/api/admin/main/tour-status", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "repair-program-snapshot",
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to repair program snapshot");
+      }
+
+      const data = await response.json();
+      const repairedCount =
+        data.programSnapshotEventCount ?? data.programEventsCount ?? 0;
+
+      setTourStatus({
+        ...tourStatus,
+        updated_at: data.updated_at,
+        programSnapshotEventCount: repairedCount,
+      });
+
+      toast({
+        title: "Program Snapshot Repaired",
+        description:
+          data.message ||
+          `Program snapshot saved with ${repairedCount} event(s).`,
+      });
+
+      router.refresh();
+
+      if (onTourStatusChanged) {
+        onTourStatusChanged();
+      }
+    } catch (error) {
+      console.error("Error repairing program snapshot:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to repair program snapshot. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRepairingProgram(false);
     }
   };
 
@@ -287,6 +355,8 @@ export default function TourManagementForm({
 
   const isOlder = tourStatus.current_tour_status === "older";
   const canOpenTour = isOlder; // Can only open new tour if current is "older"
+  const needsProgramSnapshotRepair =
+    isOlder && (tourStatus.programSnapshotEventCount ?? 0) === 0;
 
   return (
     <>
@@ -361,6 +431,31 @@ export default function TourManagementForm({
                 Use the participant carryover modal to select which participants
                 should remain active for the next tour.
               </div>
+            </div>
+          )}
+
+          {needsProgramSnapshotRepair && (
+            <div className="flex items-center justify-between gap-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
+              <div className="space-y-0.5 flex-1">
+                <Label htmlFor="repair-program-snapshot" className="text-base text-amber-950">
+                  Repair program snapshot
+                </Label>
+                <div className="text-sm text-amber-800">
+                  The frozen program snapshot is empty, so /program has no
+                  events. Rebuild it from last-year events without changing
+                  other snapshots.
+                </div>
+              </div>
+              <Button
+                id="repair-program-snapshot"
+                onClick={handleRepairProgramSnapshot}
+                disabled={isRepairingProgram || isClosing || isOpening}
+                variant="outline"
+                className="border-amber-400 text-amber-950 hover:bg-amber-100"
+                aria-label="Repair empty program snapshot"
+              >
+                {isRepairingProgram ? "Repairing..." : "Repair"}
+              </Button>
             </div>
           )}
 

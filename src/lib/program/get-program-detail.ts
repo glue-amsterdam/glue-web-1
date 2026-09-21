@@ -39,13 +39,21 @@ const normalizeLocation = (
   return location;
 };
 
+export type GetProgramDetailOptions = {
+  /** Skip reading previous_tour_program (used when building/repairing snapshots). */
+  bypassSnapshot?: boolean;
+  /** Force which events flag to query, independent of tour_status. */
+  eventSource?: "current" | "last_year";
+};
+
 export const getProgramDetail = async (
   supabase: SupabaseClient,
-  eventId: string
+  eventId: string,
+  options: GetProgramDetailOptions = {}
 ): Promise<ProgramDetail> => {
   const currentTourStatus = await getCurrentTourStatus(supabase);
 
-  if (currentTourStatus === "older") {
+  if (!options.bypassSnapshot && currentTourStatus === "older") {
     const snapshotRow = await fetchTourSnapshotRow(supabase);
     const snapshotted = getProgramDetailFromSnapshot(
       snapshotRow?.previous_tour_program,
@@ -86,9 +94,13 @@ export const getProgramDetail = async (
     .eq("id", eventId)
     .eq("event_day_out", false);
 
-  if (currentTourStatus === "new") {
+  const eventSource =
+    options.eventSource ??
+    (currentTourStatus === "older" ? "last_year" : "current");
+
+  if (eventSource === "current") {
     eventQuery = eventQuery.eq("is_last_year_event", false);
-  } else if (currentTourStatus === "older") {
+  } else {
     eventQuery = eventQuery.eq("is_last_year_event", true);
   }
 
